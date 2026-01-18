@@ -9,16 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { slugify } from "@/lib/utils";
-import { Shield, Building2, Users, Loader2, Ticket } from "lucide-react";
+import { Shield, Building2, Users, Loader2, Ticket, LogOut } from "lucide-react";
 
 const Onboarding = () => {
   const [step, setStep] = useState<"choice" | "create" | "invite">("choice");
   const [orgName, setOrgName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { refreshMemberships } = useOrganization();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
 
   const handleCreateOrg = async () => {
     if (!orgName.trim() || !user) return;
@@ -132,6 +137,15 @@ const Onboarding = () => {
           <p className="mt-2 text-muted-foreground">
             Vamos a configurar tu cuenta para empezar
           </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="mt-4 text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar sesión
+          </Button>
         </div>
 
         {step === "choice" && (
