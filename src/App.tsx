@@ -15,10 +15,13 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import Onboarding from "./pages/app/Onboarding";
 import Dashboard from "./pages/app/Dashboard";
 import {
-  DocketPlaceholder, DataHubPlaceholder, SpiderPlaceholder,
+  DataHubPlaceholder, SpiderPlaceholder,
   CRMPlaceholder, MarketingPlaceholder, MarketPlaceholder,
   GeniusPlaceholder, FinancePlaceholder, HelpPlaceholder
 } from "./pages/app/placeholders";
+import MatterList from "./pages/app/docket";
+import MatterDetail from "./pages/app/docket/MatterDetail";
+import MatterForm from "./pages/app/docket/MatterForm";
 import BackofficePlaceholder from "./pages/backoffice/BackofficePlaceholder";
 import NotFound from "./pages/NotFound";
 
@@ -53,7 +56,10 @@ const App = () => (
               <Route path="/app" element={<AppLayout />}>
                 <Route index element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="docket/*" element={<DocketPlaceholder />} />
+                <Route path="docket" element={<MatterList />} />
+                <Route path="docket/new" element={<MatterForm />} />
+                <Route path="docket/:id" element={<MatterDetail />} />
+                <Route path="docket/:id/edit" element={<MatterForm />} />
                 <Route path="data-hub/*" element={<DataHubPlaceholder />} />
                 <Route path="spider/*" element={<SpiderPlaceholder />} />
                 <Route path="crm/*" element={<CRMPlaceholder />} />
