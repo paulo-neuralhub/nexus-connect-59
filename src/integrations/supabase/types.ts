@@ -140,6 +140,360 @@ export type Database = {
           },
         ]
       }
+      ai_conversations: {
+        Row: {
+          agent_type: string
+          contact_id: string | null
+          created_at: string | null
+          document_id: string | null
+          id: string
+          is_starred: boolean | null
+          last_message_at: string | null
+          matter_id: string | null
+          message_count: number | null
+          organization_id: string
+          status: string | null
+          title: string | null
+          token_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_type?: string
+          contact_id?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          is_starred?: boolean | null
+          last_message_at?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          organization_id: string
+          status?: string | null
+          title?: string | null
+          token_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_type?: string
+          contact_id?: string | null
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          is_starred?: boolean | null
+          last_message_at?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          organization_id?: string
+          status?: string | null
+          title?: string | null
+          token_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "matter_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_generated_documents: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          content: string
+          content_format: string | null
+          conversation_id: string | null
+          created_at: string | null
+          created_by: string | null
+          document_type: string
+          id: string
+          matter_id: string | null
+          organization_id: string
+          parent_id: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content: string
+          content_format?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          document_type: string
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          parent_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content?: string
+          content_format?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          document_type?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          parent_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generated_documents_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_documents_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_documents_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_generated_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          feedback: string | null
+          feedback_comment: string | null
+          id: string
+          model_used: string | null
+          role: string
+          sources: Json | null
+          tokens_used: number | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          feedback?: string | null
+          feedback_comment?: string | null
+          id?: string
+          model_used?: string | null
+          role: string
+          sources?: Json | null
+          tokens_used?: number | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          feedback?: string | null
+          feedback_comment?: string | null
+          id?: string
+          model_used?: string | null
+          role?: string
+          sources?: Json | null
+          tokens_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompt_templates: {
+        Row: {
+          agent_type: string
+          category: string | null
+          code: string
+          created_at: string | null
+          default_model: string | null
+          default_temperature: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_tokens: number | null
+          name: string
+          system_prompt: string
+          updated_at: string | null
+          user_prompt_template: string | null
+        }
+        Insert: {
+          agent_type: string
+          category?: string | null
+          code: string
+          created_at?: string | null
+          default_model?: string | null
+          default_temperature?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          name: string
+          system_prompt: string
+          updated_at?: string | null
+          user_prompt_template?: string | null
+        }
+        Update: {
+          agent_type?: string
+          category?: string | null
+          code?: string
+          created_at?: string | null
+          default_model?: string | null
+          default_temperature?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          name?: string
+          system_prompt?: string
+          updated_at?: string | null
+          user_prompt_template?: string | null
+        }
+        Relationships: []
+      }
+      ai_usage: {
+        Row: {
+          chat_messages: number | null
+          created_at: string | null
+          document_analyses: number | null
+          document_generations: number | null
+          estimated_cost_cents: number | null
+          id: string
+          messages_count: number | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          tokens_input: number | null
+          tokens_output: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_messages?: number | null
+          created_at?: string | null
+          document_analyses?: number | null
+          document_generations?: number | null
+          estimated_cost_cents?: number | null
+          id?: string
+          messages_count?: number | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_messages?: number | null
+          created_at?: string | null
+          document_analyses?: number | null
+          document_generations?: number | null
+          estimated_cost_cents?: number | null
+          id?: string
+          messages_count?: number | null
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_enrollments: {
         Row: {
           action_history: Json | null
@@ -645,6 +999,50 @@ export type Database = {
           },
         ]
       }
+      document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          source_id: string
+          source_type: string
+          tokens: number | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          source_id: string
+          source_type: string
+          tokens?: number | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          source_id?: string
+          source_type?: string
+          tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_campaigns: {
         Row: {
           ab_test_config: Json | null
@@ -1097,6 +1495,74 @@ export type Database = {
           url?: string | null
         }
         Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          content_type: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          effective_date: string | null
+          expiry_date: string | null
+          id: string
+          is_current: boolean | null
+          jurisdiction: string | null
+          language: string | null
+          source: string | null
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          jurisdiction?: string | null
+          language?: string | null
+          source?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          jurisdiction?: string | null
+          language?: string | null
+          source?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       matter_documents: {
         Row: {
