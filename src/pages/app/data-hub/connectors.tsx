@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDataHub } from '@/hooks/use-data-hub';
+import { useDataConnectors, useDeleteConnector, useSyncConnector } from '@/hooks/use-data-hub';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 
-const CONNECTOR_ICONS: Record<string, typeof Database> = {
+const CONNECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   euipo: Globe,
   oepm: Globe,
   wipo: Globe,
@@ -33,16 +33,17 @@ const CONNECTOR_ICONS: Record<string, typeof Database> = {
 };
 
 export default function DataHubConnectors() {
-  const { connectors, isLoading, deleteConnector, syncConnector } = useDataHub();
+  const { data: connectors = [], isLoading } = useDataConnectors();
+  const deleteConnector = useDeleteConnector();
+  const syncConnector = useSyncConnector();
   const [showModal, setShowModal] = useState(false);
-  const [editingConnector, setEditingConnector] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
 
   const handleSync = async (id: string) => {
     setSyncing(id);
     try {
-      await syncConnector.mutateAsync(id);
+      await syncConnector.mutateAsync({ connectorId: id, syncType: 'full' });
     } finally {
       setSyncing(null);
     }
@@ -92,7 +93,7 @@ export default function DataHubConnectors() {
           <h1 className="text-2xl font-bold text-foreground">Conectores</h1>
           <p className="text-muted-foreground">Gestiona tus conexiones con sistemas externos</p>
         </div>
-        <Button onClick={() => { setEditingConnector(null); setShowModal(true); }}>
+        <Button onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Conector
         </Button>
@@ -101,7 +102,7 @@ export default function DataHubConnectors() {
       {/* Connectors Grid */}
       {connectors.length === 0 ? (
         <EmptyState
-          icon={Plug}
+          icon={<Plug className="h-8 w-8" />}
           title="Sin conectores"
           description="Aún no has configurado ningún conector. Crea uno para sincronizar datos automáticamente."
           action={
@@ -172,7 +173,7 @@ export default function DataHubConnectors() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => { setEditingConnector(connector); setShowModal(true); }}
+                      onClick={() => setShowModal(true)}
                     >
                       <Settings2 className="h-4 w-4" />
                     </Button>
@@ -195,7 +196,6 @@ export default function DataHubConnectors() {
       <ConnectorModal 
         open={showModal} 
         onOpenChange={setShowModal}
-        connector={editingConnector}
       />
 
       {/* Delete Confirmation */}

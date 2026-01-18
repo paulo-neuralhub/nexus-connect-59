@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDataHub } from '@/hooks/use-data-hub';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCreateImport } from '@/hooks/use-data-hub';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Select,
@@ -16,9 +14,9 @@ import {
 } from '@/components/ui/select';
 import { 
   ArrowLeft, ArrowRight, Upload, FileSpreadsheet, 
-  CheckCircle, AlertTriangle, Loader2, Database
+  CheckCircle, Database
 } from 'lucide-react';
-import { IMPORT_ENTITY_TYPES } from '@/lib/constants/data-hub';
+import { IMPORT_TYPES } from '@/lib/constants/data-hub';
 import { ImportWizardModal } from './components/import-wizard-modal';
 
 const STEPS = [
@@ -32,12 +30,11 @@ const STEPS = [
 export default function DataHubImport() {
   const { type } = useParams();
   const navigate = useNavigate();
-  const { createImport } = useDataHub();
+  const createImport = useCreateImport();
   
   const [currentStep, setCurrentStep] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [entityType, setEntityType] = useState(type || '');
-  const [isImporting, setIsImporting] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,24 +49,6 @@ export default function DataHubImport() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0]);
       setCurrentStep(1);
-    }
-  };
-
-  const handleImport = async () => {
-    if (!file || !entityType) return;
-    
-    setIsImporting(true);
-    try {
-      await createImport.mutateAsync({
-        file,
-        entityType,
-        mapping: {},
-      });
-      navigate('/app/data-hub/history');
-    } catch (error) {
-      console.error('Import failed:', error);
-    } finally {
-      setIsImporting(false);
     }
   };
 
@@ -170,7 +149,7 @@ export default function DataHubImport() {
                       <SelectValue placeholder="Selecciona el tipo de entidad" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(IMPORT_ENTITY_TYPES).map(([key, value]) => (
+                      {Object.entries(IMPORT_TYPES).map(([key, value]) => (
                         <SelectItem key={key} value={key}>
                           <div className="flex items-center gap-2">
                             <Database className="h-4 w-4" />
@@ -233,8 +212,6 @@ export default function DataHubImport() {
       <ImportWizardModal
         open={showWizard}
         onOpenChange={setShowWizard}
-        file={file}
-        entityType={entityType}
       />
     </div>
   );

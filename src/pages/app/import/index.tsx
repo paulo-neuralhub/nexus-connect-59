@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Plus, Upload, Database, Cloud, Globe, FileSpreadsheet, 
   RefreshCw, History, Settings2, Play, CheckCircle, XCircle,
-  Clock, Sparkles, Link2, Plug, AlertCircle
+  Clock, Sparkles, Link2, Plug
 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -97,11 +97,11 @@ export default function UniversalImport() {
 
   const getSourceIcon = (type: string) => {
     switch (type) {
-      case 'api': return <Globe className="h-5 w-5" />;
-      case 'database': return <Database className="h-5 w-5" />;
-      case 'file': return <FileSpreadsheet className="h-5 w-5" />;
-      case 'cloud': return <Cloud className="h-5 w-5" />;
-      default: return <Plug className="h-5 w-5" />;
+      case 'api': return Globe;
+      case 'database': return Database;
+      case 'file': return FileSpreadsheet;
+      case 'cloud': return Cloud;
+      default: return Plug;
     }
   };
 
@@ -273,7 +273,7 @@ export default function UniversalImport() {
         <TabsContent value="sources" className="space-y-4">
           {mockSources.length === 0 ? (
             <EmptyState
-              icon={Plug}
+              icon={<Plug className="h-8 w-8" />}
               title="Sin fuentes configuradas"
               description="Añade tu primera fuente de datos para comenzar a importar."
               action={
@@ -285,39 +285,42 @@ export default function UniversalImport() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockSources.map(source => (
-                <Card key={source.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                          {getSourceIcon(source.type)}
+              {mockSources.map(source => {
+                const Icon = getSourceIcon(source.type);
+                return (
+                  <Card key={source.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">{source.name}</CardTitle>
+                            <CardDescription className="text-xs capitalize">{source.type}</CardDescription>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-base">{source.name}</CardTitle>
-                          <CardDescription className="text-xs capitalize">{source.type}</CardDescription>
-                        </div>
+                        {getStatusBadge(source.status)}
                       </div>
-                      {getStatusBadge(source.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{source.totalRecords.toLocaleString()} registros</span>
-                      <span>{source.lastSync ? 'Última sync: hace 2h' : 'Sin sincronizar'}</span>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Play className="h-4 w-4 mr-1" />
-                        Ejecutar
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Settings2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>{source.totalRecords.toLocaleString()} registros</span>
+                        <span>{source.lastSync ? 'Última sync: hace 2h' : 'Sin sincronizar'}</span>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Play className="h-4 w-4 mr-1" />
+                          Ejecutar
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Settings2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -368,7 +371,7 @@ export default function UniversalImport() {
             </CardHeader>
             <CardContent>
               <EmptyState
-                icon={History}
+                icon={<History className="h-8 w-8" />}
                 title="Sin historial"
                 description="Las importaciones completadas aparecerán aquí."
               />
