@@ -54,6 +54,8 @@ import BillingSettingsPage from "./pages/app/settings/billing";
 import IntegrationsPage from "./pages/app/settings/integrations";
 import EmailHistoryPage from "./pages/app/settings/email-history";
 import NotFound from "./pages/NotFound";
+import ReportsPage from "./pages/app/reports";
+import NewReportPage from "./pages/app/reports/NewReport";
 
 // Admin Pages
 import AdminLayout from "./layouts/admin-layout";
@@ -138,6 +140,8 @@ const App = () => (
                   <Route path="invoices" element={<InvoiceListPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                 </Route>
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="reports/new" element={<NewReportPage />} />
                 <Route path="help/*" element={<HelpPlaceholder />} />
                 <Route path="settings/team" element={<TeamSettingsPage />} />
                 <Route path="settings/billing" element={<BillingSettingsPage />} />
