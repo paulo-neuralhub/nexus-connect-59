@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDataHub } from '@/hooks/use-data-hub';
+import { useImports } from '@/hooks/use-data-hub';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export default function DataHubHistory() {
-  const { imports, isLoading } = useDataHub();
+  const { data: imports = [], isLoading } = useImports();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -37,9 +37,9 @@ export default function DataHubHistory() {
   const filteredImports = imports.filter((imp: any) => {
     const matchesSearch = !search || 
       imp.file_name?.toLowerCase().includes(search.toLowerCase()) ||
-      imp.entity_type?.toLowerCase().includes(search.toLowerCase());
+      imp.import_type?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || imp.status === statusFilter;
-    const matchesType = typeFilter === 'all' || imp.entity_type === typeFilter;
+    const matchesType = typeFilter === 'all' || imp.import_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -49,12 +49,12 @@ export default function DataHubHistory() {
         return <Badge className="bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="h-3 w-3 mr-1" />Completado</Badge>;
       case 'failed':
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Fallido</Badge>;
-      case 'processing':
+      case 'importing':
         return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20"><Clock className="h-3 w-3 mr-1 animate-spin" />Procesando</Badge>;
       case 'pending':
         return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Pendiente</Badge>;
-      case 'partial':
-        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20"><AlertCircle className="h-3 w-3 mr-1" />Parcial</Badge>;
+      case 'validated':
+        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20"><AlertCircle className="h-3 w-3 mr-1" />Validado</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -146,7 +146,7 @@ export default function DataHubHistory() {
                 <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="completed">Completado</SelectItem>
                 <SelectItem value="failed">Fallido</SelectItem>
-                <SelectItem value="processing">Procesando</SelectItem>
+                <SelectItem value="importing">Procesando</SelectItem>
                 <SelectItem value="pending">Pendiente</SelectItem>
               </SelectContent>
             </Select>
@@ -167,7 +167,7 @@ export default function DataHubHistory() {
         <CardContent>
           {filteredImports.length === 0 ? (
             <EmptyState
-              icon={History}
+              icon={<History className="h-8 w-8" />}
               title="Sin importaciones"
               description="No se encontraron importaciones que coincidan con los filtros."
             />
@@ -195,12 +195,12 @@ export default function DataHubHistory() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{imp.entity_type || 'N/A'}</Badge>
+                      <Badge variant="outline">{imp.import_type || 'N/A'}</Badge>
                     </TableCell>
                     <TableCell>{getStatusBadge(imp.status)}</TableCell>
                     <TableCell>{imp.total_rows || 0}</TableCell>
-                    <TableCell className="text-green-600">{imp.imported_rows || 0}</TableCell>
-                    <TableCell className="text-destructive">{imp.failed_rows || 0}</TableCell>
+                    <TableCell className="text-green-600">{imp.success_rows || 0}</TableCell>
+                    <TableCell className="text-destructive">{imp.error_rows || 0}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {imp.created_at ? format(new Date(imp.created_at), 'dd MMM yyyy HH:mm', { locale: es }) : '-'}
                     </TableCell>
@@ -209,11 +209,9 @@ export default function DataHubHistory() {
                         <Button variant="ghost" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {imp.error_file_url && (
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
