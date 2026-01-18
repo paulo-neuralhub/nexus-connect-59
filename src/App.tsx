@@ -53,6 +53,7 @@ import TeamSettingsPage from "./pages/app/settings/team";
 import BillingSettingsPage from "./pages/app/settings/billing";
 import IntegrationsPage from "./pages/app/settings/integrations";
 import EmailHistoryPage from "./pages/app/settings/email-history";
+import NotificationSettingsPage from "./pages/app/settings/notifications";
 import NotFound from "./pages/NotFound";
 import ReportsPage from "./pages/app/reports";
 import NewReportPage from "./pages/app/reports/NewReport";
@@ -147,6 +148,7 @@ const App = () => (
                 <Route path="settings/billing" element={<BillingSettingsPage />} />
                 <Route path="settings/integrations" element={<IntegrationsPage />} />
                 <Route path="settings/emails" element={<EmailHistoryPage />} />
+                <Route path="settings/notifications" element={<NotificationSettingsPage />} />
               </Route>
               
               {/* ADMIN PANEL */}
