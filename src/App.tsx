@@ -49,6 +49,8 @@ import FinanceDashboard from "./pages/app/finance/FinanceDashboard";
 import InvoiceListPage from "./pages/app/finance/invoices";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
 import CostsPage from "./pages/app/finance/costs";
+import TeamSettingsPage from "./pages/app/settings/team";
+import BillingSettingsPage from "./pages/app/settings/billing";
 import BackofficePlaceholder from "./pages/backoffice/BackofficePlaceholder";
 import NotFound from "./pages/NotFound";
 
@@ -123,6 +125,8 @@ const App = () => (
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                 </Route>
                 <Route path="help/*" element={<HelpPlaceholder />} />
+                <Route path="settings/team" element={<TeamSettingsPage />} />
+                <Route path="settings/billing" element={<BillingSettingsPage />} />
               </Route>
               
               {/* BACKOFFICE */}
