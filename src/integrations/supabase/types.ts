@@ -3267,6 +3267,302 @@ export type Database = {
           },
         ]
       }
+      migration_files: {
+        Row: {
+          analysis: Json | null
+          column_mapping: Json | null
+          created_at: string | null
+          entity_type: string
+          failed_rows: number | null
+          file_format: string | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          migrated_rows: number | null
+          organization_id: string
+          processed_rows: number | null
+          project_id: string
+          skipped_rows: number | null
+          total_rows: number | null
+          transformations: Json | null
+          validation_errors: Json | null
+          validation_status: string | null
+          validation_warnings: Json | null
+        }
+        Insert: {
+          analysis?: Json | null
+          column_mapping?: Json | null
+          created_at?: string | null
+          entity_type: string
+          failed_rows?: number | null
+          file_format?: string | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          migrated_rows?: number | null
+          organization_id: string
+          processed_rows?: number | null
+          project_id: string
+          skipped_rows?: number | null
+          total_rows?: number | null
+          transformations?: Json | null
+          validation_errors?: Json | null
+          validation_status?: string | null
+          validation_warnings?: Json | null
+        }
+        Update: {
+          analysis?: Json | null
+          column_mapping?: Json | null
+          created_at?: string | null
+          entity_type?: string
+          failed_rows?: number | null
+          file_format?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          migrated_rows?: number | null
+          organization_id?: string
+          processed_rows?: number | null
+          project_id?: string
+          skipped_rows?: number | null
+          total_rows?: number | null
+          transformations?: Json | null
+          validation_errors?: Json | null
+          validation_status?: string | null
+          validation_warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migration_files_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migration_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "migration_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      migration_id_mapping: {
+        Row: {
+          created_at: string | null
+          entity_type: string
+          id: string
+          project_id: string
+          source_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_type: string
+          id?: string
+          project_id: string
+          source_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_type?: string
+          id?: string
+          project_id?: string
+          source_id?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migration_id_mapping_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "migration_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      migration_logs: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          entity_type: string | null
+          file_id: string | null
+          id: string
+          log_type: string
+          message: string
+          project_id: string
+          row_number: number | null
+          source_id: string | null
+          target_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          entity_type?: string | null
+          file_id?: string | null
+          id?: string
+          log_type: string
+          message: string
+          project_id: string
+          row_number?: number | null
+          source_id?: string | null
+          target_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          entity_type?: string | null
+          file_id?: string | null
+          id?: string
+          log_type?: string
+          message?: string
+          project_id?: string
+          row_number?: number | null
+          source_id?: string | null
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migration_logs_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "migration_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migration_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "migration_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      migration_projects: {
+        Row: {
+          completed_at: string | null
+          config: Json | null
+          created_at: string | null
+          created_by: string | null
+          current_step: number | null
+          description: string | null
+          errors: Json | null
+          field_mapping: Json | null
+          id: string
+          name: string
+          organization_id: string
+          source_system: string
+          source_system_version: string | null
+          started_at: string | null
+          stats: Json | null
+          status: string | null
+          total_steps: number | null
+          updated_at: string | null
+          uploaded_files: Json | null
+        }
+        Insert: {
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          current_step?: number | null
+          description?: string | null
+          errors?: Json | null
+          field_mapping?: Json | null
+          id?: string
+          name: string
+          organization_id: string
+          source_system: string
+          source_system_version?: string | null
+          started_at?: string | null
+          stats?: Json | null
+          status?: string | null
+          total_steps?: number | null
+          updated_at?: string | null
+          uploaded_files?: Json | null
+        }
+        Update: {
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          current_step?: number | null
+          description?: string | null
+          errors?: Json | null
+          field_mapping?: Json | null
+          id?: string
+          name?: string
+          organization_id?: string
+          source_system?: string
+          source_system_version?: string | null
+          started_at?: string | null
+          stats?: Json | null
+          status?: string | null
+          total_steps?: number | null
+          updated_at?: string | null
+          uploaded_files?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "migration_projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migration_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      migration_templates: {
+        Row: {
+          created_at: string | null
+          default_mapping: Json
+          entity_type: string
+          id: string
+          is_verified: boolean | null
+          last_used_at: string | null
+          source_system: string
+          source_system_version: string | null
+          use_count: number | null
+          validation_rules: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_mapping: Json
+          entity_type: string
+          id?: string
+          is_verified?: boolean | null
+          last_used_at?: string | null
+          source_system: string
+          source_system_version?: string | null
+          use_count?: number | null
+          validation_rules?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          default_mapping?: Json
+          entity_type?: string
+          id?: string
+          is_verified?: boolean | null
+          last_used_at?: string | null
+          source_system?: string
+          source_system_version?: string | null
+          use_count?: number | null
+          validation_rules?: Json | null
+        }
+        Relationships: []
+      }
       monitored_deadlines: {
         Row: {
           assigned_to: string | null
