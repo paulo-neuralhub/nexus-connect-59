@@ -11702,6 +11702,404 @@ export type Database = {
           },
         ]
       }
+      workflow_action_logs: {
+        Row: {
+          action_config: Json | null
+          action_index: number
+          action_type: string
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          execution_id: string
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          retry_count: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          action_config?: Json | null
+          action_index: number
+          action_type: string
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          execution_id: string
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          action_config?: Json | null
+          action_index?: number
+          action_type?: string
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          execution_id?: string
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_action_logs_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_executions: {
+        Row: {
+          actions_completed: number | null
+          actions_failed: number | null
+          completed_at: string | null
+          context: Json | null
+          created_at: string | null
+          current_action_index: number | null
+          error_message: string | null
+          id: string
+          organization_id: string
+          result: Json | null
+          started_at: string | null
+          status: string
+          trigger_data: Json | null
+          trigger_type: string
+          workflow_id: string
+        }
+        Insert: {
+          actions_completed?: number | null
+          actions_failed?: number | null
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          current_action_index?: number | null
+          error_message?: string | null
+          id?: string
+          organization_id: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          trigger_data?: Json | null
+          trigger_type: string
+          workflow_id: string
+        }
+        Update: {
+          actions_completed?: number | null
+          actions_failed?: number | null
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          current_action_index?: number | null
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          trigger_data?: Json | null
+          trigger_type?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_queue: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          execution_id: string | null
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_attempts: number | null
+          organization_id: string
+          priority: number | null
+          scheduled_for: string | null
+          status: string
+          trigger_data: Json | null
+          trigger_type: string
+          workflow_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          execution_id?: string | null
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number | null
+          organization_id: string
+          priority?: number | null
+          scheduled_for?: string | null
+          status?: string
+          trigger_data?: Json | null
+          trigger_type: string
+          workflow_id: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          execution_id?: string | null
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number | null
+          organization_id?: string
+          priority?: number | null
+          scheduled_for?: string | null
+          status?: string
+          trigger_data?: Json | null
+          trigger_type?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_queue_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_queue_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_queue_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_schedules: {
+        Row: {
+          created_at: string | null
+          cron_expression: string | null
+          description: string | null
+          id: string
+          interval_minutes: number | null
+          is_active: boolean | null
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          organization_id: string
+          run_count: number | null
+          schedule_type: string
+          timezone: string | null
+          updated_at: string | null
+          workflow_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          cron_expression?: string | null
+          description?: string | null
+          id?: string
+          interval_minutes?: number | null
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          organization_id: string
+          run_count?: number | null
+          schedule_type?: string
+          timezone?: string | null
+          updated_at?: string | null
+          workflow_id: string
+        }
+        Update: {
+          created_at?: string | null
+          cron_expression?: string | null
+          description?: string | null
+          id?: string
+          interval_minutes?: number | null
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          organization_id?: string
+          run_count?: number | null
+          schedule_type?: string
+          timezone?: string | null
+          updated_at?: string | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_schedules_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_templates: {
+        Row: {
+          actions: Json | null
+          category: string
+          code: string
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          last_executed_at: string | null
+          name: string
+          organization_id: string | null
+          trigger_config: Json | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          category?: string
+          code: string
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          organization_id?: string | null
+          trigger_config?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          category?: string
+          code?: string
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          organization_id?: string | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_variables: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_secret: boolean | null
+          key: string
+          organization_id: string
+          scope: string
+          scope_id: string | null
+          updated_at: string | null
+          value: Json
+          value_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_secret?: boolean | null
+          key: string
+          organization_id: string
+          scope?: string
+          scope_id?: string | null
+          updated_at?: string | null
+          value: Json
+          value_type?: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_secret?: boolean | null
+          key?: string
+          organization_id?: string
+          scope?: string
+          scope_id?: string | null
+          updated_at?: string | null
+          value?: Json
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_variables_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       ipo_expiring_credentials: {
@@ -11740,11 +12138,26 @@ export type Database = {
       cleanup_rate_limits: { Args: never; Returns: undefined }
       get_user_org_ids: { Args: never; Returns: string[] }
       get_user_role_in_org: { Args: { org_id: string }; Returns: string }
+      get_workflow_stats: {
+        Args: { p_days?: number; p_organization_id: string }
+        Returns: {
+          avg_duration_ms: number
+          by_workflow: Json
+          failed: number
+          pending: number
+          successful: number
+          total_executions: number
+        }[]
+      }
       increment_rate_limit: {
         Args: { p_api_key_id: string }
         Returns: undefined
       }
       is_member_of_org: { Args: { org_id: string }; Returns: boolean }
+      trigger_workflow_manually: {
+        Args: { p_trigger_data?: Json; p_workflow_id: string }
+        Returns: string
+      }
       verify_api_key: {
         Args: { p_key: string }
         Returns: {
