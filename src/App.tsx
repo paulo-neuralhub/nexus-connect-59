@@ -69,6 +69,7 @@ import EmailHistoryPage from "./pages/app/settings/email-history";
 import NotificationSettingsPage from "./pages/app/settings/notifications";
 import ApiKeysPage from "./pages/app/settings/api-keys";
 import IPChainPage from "./pages/app/ip-chain";
+import TranslatorPage from "./pages/app/genius/translator";
 import ToolsPage from "./pages/app/tools";
 import NotFound from "./pages/NotFound";
 import ReportsPage from "./pages/app/reports";
@@ -175,6 +176,7 @@ const App = () => (
                   <Route path="kyc/:type" element={<KycVerificationPage />} />
                 </Route>
                 <Route path="genius/*" element={<GeniusPage />} />
+                <Route path="genius/translator" element={<TranslatorPage />} />
                 <Route path="finance" element={<FinanceLayout />}>
                   <Route index element={<FinanceDashboard />} />
                   <Route path="costs" element={<CostsPage />} />

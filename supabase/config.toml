@@ -89,3 +89,6 @@ verify_jwt = true
 
 [functions.ai-validate-data]
 verify_jwt = true
+
+[functions.ai-legal-translate]
+verify_jwt = true

@@ -66,6 +66,19 @@ export const AGENTS: Record<AgentType, AgentConfig> = {
       'OCR inteligente',
     ],
   },
+  translator: {
+    type: 'translator',
+    name: 'NEXUS TRANSLATOR',
+    description: 'Traducción legal de documentos PI',
+    icon: 'Languages',
+    color: '#14B8A6',
+    capabilities: [
+      'Traducción de contratos',
+      'Traducción de patentes',
+      'Glosarios especializados',
+      'Terminología legal precisa',
+    ],
+  },
 };
 
 export const KNOWLEDGE_CATEGORIES: Record<KnowledgeCategory, { label: string; icon: string }> = {
@@ -124,6 +137,12 @@ export const QUICK_PROMPTS: Record<AgentType, string[]> = {
     '¿Qué plazos menciona?',
     'Identifica las partes del contrato',
   ],
+  translator: [
+    'Traduce este contrato al inglés',
+    'Traduce estas reivindicaciones de patente',
+    'Traduce este office action al español',
+    '¿Cuál es la traducción de este término legal?',
+  ],
 };
 
 export const AI_LIMITS = {
@@ -155,4 +174,5 @@ export const AGENT_COLORS: Record<AgentType, string> = {
   legal: 'hsl(263, 70%, 50%)', // Purple
   watch: 'hsl(38, 92%, 50%)', // Amber
   docs: 'hsl(330, 81%, 60%)', // Pink
+  translator: 'hsl(168, 76%, 42%)', // Teal
 };
