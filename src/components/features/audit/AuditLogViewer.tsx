@@ -69,7 +69,6 @@ export function AuditLogViewer() {
   const { data: logs, isLoading } = useAuditLogs({
     resourceType: resourceFilter || undefined,
     action: actionFilter || undefined,
-    limit: 100,
   });
 
   const filteredLogs = logs?.filter(log => {

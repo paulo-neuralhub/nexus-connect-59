@@ -12,19 +12,15 @@ import {
   Info,
   CheckCircle2,
   Clock,
-  User,
   ChevronRight,
-  Filter,
   RefreshCw,
   XCircle,
-  ArrowUp,
 } from 'lucide-react';
 import {
   useSecurityAlerts,
   useOpenAlerts,
   useCriticalAlerts,
   useResolveSecurityAlert,
-  useEscalateSecurityAlert,
   useSecurityStats,
   type SecurityAlert,
 } from '@/hooks/audit';
@@ -43,12 +39,11 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
 
 const SEVERITY_CONFIG = {
   critical: {
     icon: XCircle,
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200',
+    color: 'bg-destructive/10 text-destructive border-destructive/20',
     badge: 'destructive' as const,
   },
   high: {
@@ -69,12 +64,14 @@ const SEVERITY_CONFIG = {
 };
 
 const STATUS_CONFIG = {
-  open: { label: 'Open', color: 'bg-red-500' },
-  investigating: { label: 'Investigating', color: 'bg-yellow-500' },
+  open: { label: 'Open', color: 'bg-destructive' },
+  investigating: { label: 'Investigating', color: 'bg-primary' },
   resolved: { label: 'Resolved', color: 'bg-green-500' },
-  false_positive: { label: 'False Positive', color: 'bg-gray-500' },
-  escalated: { label: 'Escalated', color: 'bg-purple-500' },
+  false_positive: { label: 'False Positive', color: 'bg-muted-foreground' },
 };
+
+type SeverityConfigType = typeof SEVERITY_CONFIG[keyof typeof SEVERITY_CONFIG];
+type StatusConfigType = typeof STATUS_CONFIG[keyof typeof STATUS_CONFIG];
 
 export function SecurityAlertsDashboard() {
   const { t } = useTranslation();
@@ -88,15 +85,14 @@ export function SecurityAlertsDashboard() {
   const { data: stats } = useSecurityStats();
 
   const resolveMutation = useResolveSecurityAlert();
-  const escalateMutation = useEscalateSecurityAlert();
 
   const handleResolve = async () => {
     if (!selectedAlert) return;
     
     await resolveMutation.mutateAsync({
       id: selectedAlert.id,
-      resolution_notes: resolutionNotes,
-      false_positive: false,
+      status: 'resolved',
+      notes: resolutionNotes,
     });
     
     setShowResolveDialog(false);
@@ -104,18 +100,11 @@ export function SecurityAlertsDashboard() {
     setResolutionNotes('');
   };
 
-  const handleEscalate = async (alert: SecurityAlert) => {
-    await escalateMutation.mutateAsync({
-      id: alert.id,
-      escalation_level: (alert.escalation_level || 0) + 1,
-    });
-  };
-
-  const getSeverityConfig = (severity: string) => {
+  const getSeverityConfig = (severity: string): SeverityConfigType => {
     return SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG] || SEVERITY_CONFIG.low;
   };
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: string): StatusConfigType => {
     return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.open;
   };
 
@@ -147,11 +136,11 @@ export function SecurityAlertsDashboard() {
                 <p className="text-sm text-muted-foreground">
                   {t('security.stats.open', 'Open Alerts')}
                 </p>
-                <p className="text-2xl font-bold text-red-600">
-                  {stats?.open_count || 0}
+                <p className="text-2xl font-bold text-destructive">
+                  {stats?.open_alerts || 0}
                 </p>
               </div>
-              <AlertCircle className="h-8 w-8 text-red-500" />
+              <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -163,11 +152,11 @@ export function SecurityAlertsDashboard() {
                 <p className="text-sm text-muted-foreground">
                   {t('security.stats.critical', 'Critical')}
                 </p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {stats?.critical_count || 0}
+                <p className="text-2xl font-bold text-destructive">
+                  {stats?.critical_alerts || 0}
                 </p>
               </div>
-              <XCircle className="h-8 w-8 text-orange-500" />
+              <XCircle className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -177,13 +166,13 @@ export function SecurityAlertsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {t('security.stats.resolved', 'Resolved (30d)')}
+                  {t('security.stats.resolved', 'Resolved Today')}
                 </p>
-                <p className="text-2xl font-bold text-green-600">
-                  {stats?.resolved_last_30_days || 0}
+                <p className="text-2xl font-bold text-primary">
+                  {stats?.resolved_today || 0}
                 </p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-500" />
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -193,13 +182,13 @@ export function SecurityAlertsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {t('security.stats.avgTime', 'Avg Resolution')}
+                  {t('security.stats.total', 'Total Alerts')}
                 </p>
                 <p className="text-2xl font-bold">
-                  {stats?.avg_resolution_hours ? `${Math.round(stats.avg_resolution_hours)}h` : '-'}
+                  {stats?.total_alerts || 0}
                 </p>
               </div>
-              <Clock className="h-8 w-8 text-blue-500" />
+              <Clock className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -232,7 +221,6 @@ export function SecurityAlertsDashboard() {
             alerts={openAlerts}
             isLoading={isLoading}
             onSelect={setSelectedAlert}
-            onEscalate={handleEscalate}
             getSeverityConfig={getSeverityConfig}
             getStatusConfig={getStatusConfig}
           />
@@ -243,7 +231,6 @@ export function SecurityAlertsDashboard() {
             alerts={criticalAlerts}
             isLoading={isLoading}
             onSelect={setSelectedAlert}
-            onEscalate={handleEscalate}
             getSeverityConfig={getSeverityConfig}
             getStatusConfig={getStatusConfig}
           />
@@ -254,7 +241,6 @@ export function SecurityAlertsDashboard() {
             alerts={allAlerts}
             isLoading={isLoading}
             onSelect={setSelectedAlert}
-            onEscalate={handleEscalate}
             getSeverityConfig={getSeverityConfig}
             getStatusConfig={getStatusConfig}
           />
@@ -283,7 +269,7 @@ export function SecurityAlertsDashboard() {
                   {selectedAlert.alert_type}
                 </Badge>
                 <Badge variant="secondary">
-                  {getStatusConfig(selectedAlert.status).label}
+                  {getStatusConfig(selectedAlert.status || 'open').label}
                 </Badge>
               </div>
 
@@ -303,13 +289,13 @@ export function SecurityAlertsDashboard() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    {t('security.detail.affectedUser', 'Affected User')}
+                    {t('security.detail.sourceIp', 'Source IP')}
                   </label>
-                  <p className="font-mono text-sm">{selectedAlert.affected_user_id || '-'}</p>
+                  <p className="font-mono text-sm">{selectedAlert.source_ip || '-'}</p>
                 </div>
               </div>
 
-              {selectedAlert.evidence && Object.keys(selectedAlert.evidence).length > 0 && (
+              {selectedAlert.evidence && Object.keys(selectedAlert.evidence as object).length > 0 && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     {t('security.detail.evidence', 'Evidence')}
@@ -326,20 +312,10 @@ export function SecurityAlertsDashboard() {
               {t('common.close', 'Close')}
             </Button>
             {selectedAlert?.status === 'open' && (
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => selectedAlert && handleEscalate(selectedAlert)}
-                  disabled={escalateMutation.isPending}
-                >
-                  <ArrowUp className="h-4 w-4 mr-2" />
-                  {t('security.actions.escalate', 'Escalate')}
-                </Button>
-                <Button onClick={() => setShowResolveDialog(true)}>
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  {t('security.actions.resolve', 'Resolve')}
-                </Button>
-              </>
+              <Button onClick={() => setShowResolveDialog(true)}>
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                {t('security.actions.resolve', 'Resolve')}
+              </Button>
             )}
           </DialogFooter>
         </DialogContent>
@@ -381,16 +357,14 @@ function AlertsList({
   alerts,
   isLoading,
   onSelect,
-  onEscalate,
   getSeverityConfig,
   getStatusConfig,
 }: {
   alerts: SecurityAlert[] | undefined;
   isLoading: boolean;
   onSelect: (alert: SecurityAlert) => void;
-  onEscalate: (alert: SecurityAlert) => void;
-  getSeverityConfig: (severity: string) => typeof SEVERITY_CONFIG.critical;
-  getStatusConfig: (status: string) => typeof STATUS_CONFIG.open;
+  getSeverityConfig: (severity: string) => SeverityConfigType;
+  getStatusConfig: (status: string) => StatusConfigType;
 }) {
   const { t } = useTranslation();
 
@@ -418,7 +392,7 @@ function AlertsList({
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
+          <CheckCircle2 className="h-12 w-12 text-primary mb-4" />
           <h3 className="text-lg font-medium">{t('security.empty.title', 'No alerts')}</h3>
           <p className="text-muted-foreground">
             {t('security.empty.description', 'All clear! No security alerts at this time.')}
@@ -434,7 +408,7 @@ function AlertsList({
         {alerts.map((alert) => {
           const config = getSeverityConfig(alert.severity);
           const SeverityIcon = config.icon;
-          const statusConfig = getStatusConfig(alert.status);
+          const statusConfig = getStatusConfig(alert.status || 'open');
 
           return (
             <Card
