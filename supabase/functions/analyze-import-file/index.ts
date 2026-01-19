@@ -268,7 +268,7 @@ async function analyzeSpreadsheet(fileContent: Blob, options: any) {
       headerRow,
       dataStartRow: headerRow + 1,
       emptyRows: dataRows.filter((row: any[]) => row?.every((cell: any) => !cell)).length,
-      duplicateRows: dataRows.length - new Set(dataRows.map(JSON.stringify)).size,
+      duplicateRows: dataRows.length - new Set(dataRows.map((row: any[]) => JSON.stringify(row))).size,
       columnDetails: columns
     });
   }
