@@ -1,4 +1,4 @@
-// src/pages/admin/kyc-review.tsx
+// src/pages/backoffice/kyc-review.tsx
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
