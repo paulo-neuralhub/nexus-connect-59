@@ -88,6 +88,8 @@ export default {
           marketing: "hsl(var(--module-marketing))",
           help: "hsl(var(--module-help))",
         },
+        // Direct module color access
+        market: "hsl(var(--module-market))",
         // Backoffice colors
         backoffice: {
           dashboard: "hsl(var(--backoffice-dashboard))",

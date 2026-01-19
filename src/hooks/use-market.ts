@@ -194,9 +194,10 @@ export function useUpdateMarketAsset() {
 // LISTING HOOKS
 // ============================================
 
-interface ListingFilters {
+export interface ListingFilters {
   status?: ListingStatus;
   asset_type?: AssetType;
+  transaction_type?: string;
   min_price?: number;
   max_price?: number;
   jurisdiction?: string;
