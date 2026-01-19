@@ -118,6 +118,8 @@ import BackofficeSettingsPage from "./pages/backoffice/settings";
 import KycReviewPage from "./pages/backoffice/kyc-review";
 import ModerationPage from "./pages/backoffice/moderation";
 import ComplianceDashboardPage from "./pages/backoffice/compliance";
+import AIBrainPage from "./pages/backoffice/ai-brain";
+import KillSwitchPage from "./pages/backoffice/kill-switch";
 
 // KYC Pages
 import MarketKycPage from "./pages/app/market/kyc";
@@ -260,6 +262,8 @@ const App = () => (
                 <Route path="ipo/new" element={<NewIPOOfficePage />} />
                 <Route path="ipo/:officeId" element={<IPOOfficeDetailPage />} />
                 <Route path="ipo/:officeId/edit" element={<EditIPOOfficePage />} />
+                {/* AI Brain */}
+                <Route path="ai" element={<AIBrainPage />} />
                 {/* Tools */}
                 <Route path="feature-flags" element={<FeatureFlagsPage />} />
                 <Route path="api-keys" element={<BackofficeApiKeysPage />} />
@@ -272,6 +276,7 @@ const App = () => (
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="feedback" element={<BackofficeFeedbackPage />} />
                 <Route path="settings" element={<BackofficeSettingsPage />} />
+                <Route path="kill-switch" element={<KillSwitchPage />} />
               </Route>
               
               {/* 404 */}
