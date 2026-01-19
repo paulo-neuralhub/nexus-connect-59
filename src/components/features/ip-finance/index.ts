@@ -3,3 +3,5 @@ export * from './PortfolioOverview';
 export * from './ValuationWizard';
 export * from './ValuationResult';
 export * from './PortfolioCard';
+export * from './PortfolioPerformanceChart';
+export * from './AssetAllocationChart';
