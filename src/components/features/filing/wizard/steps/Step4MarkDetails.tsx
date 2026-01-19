@@ -33,7 +33,7 @@ const MARK_TYPE_CONFIG = [
   { value: 'figurative', label: 'Figurativa', icon: ImageIcon, description: 'Solo imagen' },
   { value: 'combined', label: 'Mixta', icon: Layers, description: 'Texto + imagen' },
   { value: 'sound', label: 'Sonora', icon: Music, description: 'Marca sonora' },
-  { value: '3d', label: '3D', icon: Box, description: 'Tridimensional' },
+  { value: 'shape_3d', label: '3D', icon: Box, description: 'Tridimensional' },
   { value: 'position', label: 'Posición', icon: Target, description: 'Ubicación específica' },
   { value: 'pattern', label: 'Patrón', icon: Grid, description: 'Diseño repetitivo' },
   { value: 'color', label: 'Color', icon: Palette, description: 'Color único' },
@@ -58,14 +58,13 @@ export function Step4MarkDetails({ formData, updateFormData, errors }: Step4Prop
   const [colorInput, setColorInput] = useState('');
   
   // If not trademark, show appropriate message
-  if (formData.filing_type !== 'trademark') {
+  if (formData.ip_type !== 'trademark') {
     return (
       <Card className="bg-muted/50">
         <CardContent className="p-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">
-            Detalles de {formData.filing_type === 'patent' ? 'Patente' : 
-                         formData.filing_type === 'design' ? 'Diseño' : 'Modelo de Utilidad'}
+            Detalles de {formData.ip_type === 'patent' ? 'Patente' : 'Diseño'}
           </h3>
           <p className="text-muted-foreground">
             Los formularios específicos para este tipo de PI están en desarrollo.

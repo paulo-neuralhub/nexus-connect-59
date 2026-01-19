@@ -1,9 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Stamp, Lightbulb, PenTool, Wrench } from 'lucide-react';
+import { CheckCircle, AlertCircle, Stamp, Lightbulb, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { WizardFormData } from '../FilingWizard';
-import { FILING_TYPES } from '@/types/filing.types';
 
 interface Step3Props {
   formData: WizardFormData;
@@ -42,16 +41,6 @@ const IP_TYPE_DETAILS = [
     examples: ['Forma de envases', 'Diseño de muebles', 'Patrones textiles', 'Iconos'],
     duration: '25 años (períodos de 5 años)',
   },
-  {
-    value: 'utility_model',
-    label: 'Modelo de Utilidad',
-    icon: Wrench,
-    color: 'bg-amber-500',
-    lightColor: 'bg-amber-50 text-amber-700 border-amber-200',
-    description: 'Protege invenciones con menor grado de actividad inventiva que las patentes',
-    examples: ['Herramientas', 'Utensilios', 'Dispositivos mecánicos', 'Objetos de uso'],
-    duration: '10 años (no renovable)',
-  },
 ];
 
 export function Step3IPDetails({ formData, updateFormData, errors }: Step3Props) {
@@ -64,16 +53,16 @@ export function Step3IPDetails({ formData, updateFormData, errors }: Step3Props)
         </p>
       </div>
 
-      {errors.filing_type && (
+      {errors.ip_type && (
         <div className="flex items-center gap-2 text-destructive text-sm mb-4">
           <AlertCircle className="h-4 w-4" />
-          {errors.filing_type[0]}
+          {errors.ip_type[0]}
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         {IP_TYPE_DETAILS.map(type => {
-          const isSelected = formData.filing_type === type.value;
+          const isSelected = formData.ip_type === type.value;
           const Icon = type.icon;
           
           return (
@@ -83,7 +72,10 @@ export function Step3IPDetails({ formData, updateFormData, errors }: Step3Props)
                 "cursor-pointer transition-all hover:shadow-md",
                 isSelected && "ring-2 ring-primary border-primary"
               )}
-              onClick={() => updateFormData({ filing_type: type.value as any })}
+              onClick={() => updateFormData({ 
+                ip_type: type.value as 'trademark' | 'patent' | 'design',
+                filing_type: 'new_application'
+              })}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -133,21 +125,20 @@ export function Step3IPDetails({ formData, updateFormData, errors }: Step3Props)
       </div>
 
       {/* Info box based on selection */}
-      {formData.filing_type && (
+      {formData.ip_type && (
         <Card className="bg-muted/50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium mb-1">
-                  Has seleccionado: {IP_TYPE_DETAILS.find(t => t.value === formData.filing_type)?.label}
+                  Has seleccionado: {IP_TYPE_DETAILS.find(t => t.value === formData.ip_type)?.label}
                 </p>
                 <p className="text-muted-foreground">
                   En los siguientes pasos te pediremos la información específica para este tipo de registro.
-                  {formData.filing_type === 'trademark' && ' Incluye el nombre/logotipo y las clases de productos o servicios.'}
-                  {formData.filing_type === 'patent' && ' Incluye el título, reivindicaciones y descripción técnica.'}
-                  {formData.filing_type === 'design' && ' Incluye las representaciones gráficas del diseño.'}
-                  {formData.filing_type === 'utility_model' && ' Incluye la descripción técnica y reivindicaciones.'}
+                  {formData.ip_type === 'trademark' && ' Incluye el nombre/logotipo y las clases de productos o servicios.'}
+                  {formData.ip_type === 'patent' && ' Incluye el título, reivindicaciones y descripción técnica.'}
+                  {formData.ip_type === 'design' && ' Incluye las representaciones gráficas del diseño.'}
                 </p>
               </div>
             </div>

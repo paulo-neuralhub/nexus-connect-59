@@ -28,7 +28,7 @@ import {
   useValidateFiling,
   useSubmitFiling 
 } from '@/hooks/filing/useFiling';
-import type { FilingApplication } from '@/types/filing.types';
+import type { FilingType } from '@/types/filing.types';
 
 const STEPS = [
   { id: 1, title: 'Oficina', icon: Building2, description: 'Selecciona la oficina de destino' },
@@ -52,18 +52,19 @@ export interface WizardFormData {
   applicant_country: string;
   applicant_email: string;
   applicant_phone: string;
-  applicant_type: 'individual' | 'company';
+  applicant_type: 'natural_person' | 'legal_entity';
   applicant_tax_id: string;
   representative_name?: string;
   representative_address?: string;
   representative_id?: string;
   
   // Step 3 - IP Type
-  filing_type: 'trademark' | 'patent' | 'design' | 'utility_model';
+  ip_type: 'trademark' | 'patent' | 'design';
+  filing_type: FilingType;
   
   // Step 4 - Mark/IP Details
   mark_name?: string;
-  mark_type?: 'word' | 'figurative' | 'combined' | 'sound' | '3d' | 'position' | 'pattern' | 'color' | 'motion' | 'hologram' | 'other';
+  mark_type?: 'word' | 'figurative' | 'combined' | 'sound' | 'shape_3d' | 'position' | 'pattern' | 'color' | 'motion' | 'hologram' | 'other';
   mark_description?: string;
   mark_image_url?: string;
   mark_colors?: string[];
@@ -96,7 +97,6 @@ export interface WizardFormData {
   
   // Internal
   matter_id?: string;
-  contact_id?: string;
 }
 
 const initialFormData: WizardFormData = {
@@ -107,9 +107,10 @@ const initialFormData: WizardFormData = {
   applicant_country: '',
   applicant_email: '',
   applicant_phone: '',
-  applicant_type: 'company',
+  applicant_type: 'legal_entity',
   applicant_tax_id: '',
-  filing_type: 'trademark',
+  ip_type: 'trademark',
+  filing_type: 'new_application',
   mark_name: '',
   mark_type: 'word',
   mark_description: '',
@@ -129,7 +130,7 @@ export function FilingWizard() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { data: existingApplication } = useFilingApplication(id || '');
+  const { data: existingApplication } = useFilingApplication(id);
   const createFiling = useCreateFiling();
   const updateFiling = useUpdateFiling();
   const validateFiling = useValidateFiling();
@@ -138,37 +139,37 @@ export function FilingWizard() {
   // Load existing data if editing
   useEffect(() => {
     if (existingApplication) {
-      // Map existing application to form data
+      const trademarkData = existingApplication.trademark_data?.[0];
       setFormData({
         office_id: existingApplication.office_id,
-        office_code: existingApplication.ipo_offices?.code || '',
-        applicant_name: existingApplication.applicant_name || '',
-        applicant_address: existingApplication.applicant_address || '',
-        applicant_country: existingApplication.applicant_country || '',
-        applicant_email: existingApplication.applicant_email || '',
-        applicant_phone: existingApplication.applicant_phone || '',
-        applicant_type: (existingApplication.applicant_type as 'individual' | 'company') || 'company',
-        applicant_tax_id: existingApplication.applicant_tax_id || '',
-        representative_name: existingApplication.representative_name || undefined,
-        representative_address: existingApplication.representative_address || undefined,
+        office_code: existingApplication.office?.code || existingApplication.office_code,
+        applicant_name: existingApplication.applicant_data?.name || '',
+        applicant_address: existingApplication.applicant_data?.address?.street || '',
+        applicant_country: existingApplication.applicant_data?.country || '',
+        applicant_email: existingApplication.applicant_data?.email || '',
+        applicant_phone: existingApplication.applicant_data?.phone || '',
+        applicant_type: existingApplication.applicant_data?.type || 'legal_entity',
+        applicant_tax_id: existingApplication.applicant_data?.tax_id || '',
+        representative_name: existingApplication.representative_data?.name || undefined,
+        representative_address: existingApplication.representative_data?.address?.street || undefined,
         representative_id: existingApplication.representative_id || undefined,
-        filing_type: existingApplication.filing_type as any,
-        mark_name: existingApplication.filing_trademark_data?.mark_name || '',
-        mark_type: existingApplication.filing_trademark_data?.mark_type || 'word',
-        mark_description: existingApplication.filing_trademark_data?.mark_description || '',
-        mark_image_url: existingApplication.filing_trademark_data?.mark_image_url || undefined,
-        mark_colors: existingApplication.filing_trademark_data?.mark_colors || undefined,
-        mark_disclaimer: existingApplication.filing_trademark_data?.mark_disclaimer || undefined,
-        priority_claimed: existingApplication.priority_claimed || false,
-        priority_country: existingApplication.priority_country || undefined,
-        priority_date: existingApplication.priority_date || undefined,
-        priority_number: existingApplication.priority_number || undefined,
-        nice_classes: existingApplication.filing_trademark_data?.nice_classes || [],
-        goods_services: existingApplication.filing_trademark_data?.goods_services || {},
-        vienna_codes: existingApplication.filing_trademark_data?.vienna_codes || undefined,
+        ip_type: existingApplication.ip_type,
+        filing_type: existingApplication.filing_type,
+        mark_name: trademarkData?.mark_text || '',
+        mark_type: trademarkData?.mark_type || 'word',
+        mark_description: trademarkData?.mark_description || '',
+        mark_image_url: undefined,
+        mark_colors: trademarkData?.colors_claimed || undefined,
+        mark_disclaimer: trademarkData?.disclaimer || undefined,
+        priority_claimed: (existingApplication.priority_claims?.length || 0) > 0,
+        priority_country: existingApplication.priority_claims?.[0]?.country || undefined,
+        priority_date: existingApplication.priority_claims?.[0]?.date || undefined,
+        priority_number: existingApplication.priority_claims?.[0]?.number || undefined,
+        nice_classes: trademarkData?.nice_classes || [],
+        goods_services: trademarkData?.goods_services || {},
+        vienna_codes: trademarkData?.vienna_codes || undefined,
         documents: [],
         matter_id: existingApplication.matter_id || undefined,
-        contact_id: existingApplication.contact_id || undefined,
       });
     }
   }, [existingApplication]);
@@ -207,17 +208,17 @@ export function FilingWizard() {
         }
         break;
       case 3:
-        if (!formData.filing_type) {
-          errors.filing_type = ['Debes seleccionar un tipo de PI'];
+        if (!formData.ip_type) {
+          errors.ip_type = ['Debes seleccionar un tipo de PI'];
         }
         break;
       case 4:
-        if (formData.filing_type === 'trademark' && !formData.mark_name) {
+        if (formData.ip_type === 'trademark' && !formData.mark_name) {
           errors.mark_name = ['El nombre de la marca es obligatorio'];
         }
         break;
       case 5:
-        if (formData.filing_type === 'trademark' && formData.nice_classes.length === 0) {
+        if (formData.ip_type === 'trademark' && formData.nice_classes.length === 0) {
           errors.nice_classes = ['Debes seleccionar al menos una clase'];
         }
         break;
@@ -239,12 +240,35 @@ export function FilingWizard() {
 
   const handleSaveDraft = async () => {
     try {
-      const applicationData = mapFormToApplication(formData);
-      
       if (isEditing && id) {
-        await updateFiling.mutateAsync({ id, ...applicationData });
+        await updateFiling.mutateAsync({ 
+          id,
+          applicant_data: {
+            name: formData.applicant_name,
+            type: formData.applicant_type,
+            country: formData.applicant_country,
+            address: { street: formData.applicant_address },
+            email: formData.applicant_email,
+            phone: formData.applicant_phone,
+            tax_id: formData.applicant_tax_id,
+          },
+          representative_data: formData.representative_name ? {
+            name: formData.representative_name,
+            address: { street: formData.representative_address },
+          } : undefined,
+          priority_claims: formData.priority_claimed && formData.priority_country ? [{
+            country: formData.priority_country,
+            date: formData.priority_date || '',
+            number: formData.priority_number || '',
+          }] : [],
+        });
       } else {
-        await createFiling.mutateAsync(applicationData);
+        await createFiling.mutateAsync({
+          filing_type: formData.filing_type,
+          ip_type: formData.ip_type,
+          office_code: formData.office_code,
+          office_id: formData.office_id,
+        });
       }
       
       toast.success('Borrador guardado correctamente');
@@ -259,13 +283,28 @@ export function FilingWizard() {
     try {
       // First save/update
       let applicationId = id;
-      const applicationData = mapFormToApplication(formData);
       
       if (!applicationId) {
-        const created = await createFiling.mutateAsync(applicationData);
+        const created = await createFiling.mutateAsync({
+          filing_type: formData.filing_type,
+          ip_type: formData.ip_type,
+          office_code: formData.office_code,
+          office_id: formData.office_id,
+        });
         applicationId = created.id;
       } else {
-        await updateFiling.mutateAsync({ id: applicationId, ...applicationData });
+        await updateFiling.mutateAsync({ 
+          id: applicationId,
+          applicant_data: {
+            name: formData.applicant_name,
+            type: formData.applicant_type,
+            country: formData.applicant_country,
+            address: { street: formData.applicant_address },
+            email: formData.applicant_email,
+            phone: formData.applicant_phone,
+            tax_id: formData.applicant_tax_id,
+          },
+        });
       }
 
       // Validate
@@ -287,40 +326,6 @@ export function FilingWizard() {
       setIsSubmitting(false);
     }
   };
-
-  const mapFormToApplication = (data: WizardFormData): Partial<FilingApplication> => ({
-    office_id: data.office_id,
-    filing_type: data.filing_type,
-    applicant_name: data.applicant_name,
-    applicant_address: data.applicant_address,
-    applicant_country: data.applicant_country,
-    applicant_email: data.applicant_email,
-    applicant_phone: data.applicant_phone,
-    applicant_type: data.applicant_type,
-    applicant_tax_id: data.applicant_tax_id,
-    representative_name: data.representative_name,
-    representative_address: data.representative_address,
-    representative_id: data.representative_id,
-    priority_claimed: data.priority_claimed,
-    priority_country: data.priority_country,
-    priority_date: data.priority_date,
-    priority_number: data.priority_number,
-    matter_id: data.matter_id,
-    contact_id: data.contact_id,
-    official_fees: data.calculated_fees?.total,
-    fee_currency: data.calculated_fees?.currency,
-    filing_trademark_data: data.filing_type === 'trademark' ? {
-      mark_name: data.mark_name || '',
-      mark_type: data.mark_type || 'word',
-      mark_description: data.mark_description,
-      mark_image_url: data.mark_image_url,
-      mark_colors: data.mark_colors,
-      mark_disclaimer: data.mark_disclaimer,
-      nice_classes: data.nice_classes,
-      goods_services: data.goods_services,
-      vienna_codes: data.vienna_codes,
-    } : undefined,
-  });
 
   const progress = (currentStep / STEPS.length) * 100;
 

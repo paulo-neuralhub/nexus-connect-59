@@ -263,6 +263,33 @@ export const FILING_TYPE_LABELS: Record<FilingType, string> = {
   response_examination: 'Respuesta examen',
 };
 
+// Array format for select components
+export const FILING_TYPES = [
+  { value: 'new_application', label: 'Nueva solicitud' },
+  { value: 'renewal', label: 'Renovación' },
+  { value: 'assignment', label: 'Cesión' },
+  { value: 'license_recordal', label: 'Inscripción licencia' },
+  { value: 'opposition', label: 'Oposición' },
+  { value: 'cancellation', label: 'Cancelación' },
+  { value: 'response_office_action', label: 'Respuesta requerimiento' },
+  { value: 'appeal', label: 'Recurso' },
+] as const;
+
+export const MARK_TYPES = [
+  { value: 'word', label: 'Denominativa' },
+  { value: 'figurative', label: 'Figurativa' },
+  { value: 'combined', label: 'Mixta' },
+  { value: 'shape_3d', label: 'Tridimensional' },
+  { value: 'sound', label: 'Sonora' },
+  { value: 'motion', label: 'Movimiento' },
+  { value: 'multimedia', label: 'Multimedia' },
+  { value: 'hologram', label: 'Holograma' },
+  { value: 'position', label: 'Posición' },
+  { value: 'pattern', label: 'Patrón' },
+  { value: 'color', label: 'Color' },
+  { value: 'other', label: 'Otro' },
+] as const;
+
 export const MARK_TYPE_CONFIG: Record<MarkType, { label: string; description: string; requiresImage: boolean; requiresText: boolean }> = {
   word: { label: 'Denominativa', description: 'Solo texto, sin diseño', requiresImage: false, requiresText: true },
   figurative: { label: 'Gráfica', description: 'Logo o diseño sin texto', requiresImage: true, requiresText: false },
@@ -302,3 +329,12 @@ export const OFFICE_FILING_INFO: Record<string, { description: string; features:
     features: ['API REST', 'Pago online'],
   },
 };
+
+// IP Types for wizard
+export const IP_TYPES = [
+  { value: 'trademark', label: 'Marca' },
+  { value: 'patent', label: 'Patente' },
+  { value: 'design', label: 'Diseño Industrial' },
+] as const;
+
+export type IPType = 'trademark' | 'patent' | 'design';

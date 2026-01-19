@@ -5,12 +5,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { 
   Building2, User, FileText, Image, List, Upload, DollarSign,
-  CheckCircle, AlertCircle, Edit, MapPin, Mail, Phone
+  CheckCircle, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import type { WizardFormData } from '../FilingWizard';
-import { FILING_TYPES, MARK_TYPES } from '@/types/filing.types';
+import { IP_TYPES, MARK_TYPES } from '@/types/filing.types';
 
 interface Step8Props {
   formData: WizardFormData;
@@ -63,6 +63,9 @@ export function Step8Review({ formData, updateFormData, errors }: Step8Props) {
     </div>
   );
 
+  const ipTypeLabel = IP_TYPES.find(t => t.value === formData.ip_type)?.label || formData.ip_type;
+  const markTypeLabel = MARK_TYPES.find(t => t.value === formData.mark_type)?.label || formData.mark_type;
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -87,7 +90,7 @@ export function Step8Review({ formData, updateFormData, errors }: Step8Props) {
           <InfoRow label="Nombre" value={formData.applicant_name} />
           <InfoRow 
             label="Tipo" 
-            value={formData.applicant_type === 'company' ? 'Persona Jurídica' : 'Persona Física'} 
+            value={formData.applicant_type === 'legal_entity' ? 'Persona Jurídica' : 'Persona Física'} 
           />
           <InfoRow label="País" value={formData.applicant_country} />
           <InfoRow label="Email" value={formData.applicant_email} />
@@ -102,19 +105,19 @@ export function Step8Review({ formData, updateFormData, errors }: Step8Props) {
             label="Tipo" 
             value={
               <Badge variant="outline">
-                {FILING_TYPES.find(t => t.value === formData.filing_type)?.label}
+                {ipTypeLabel}
               </Badge>
             } 
           />
         </SectionCard>
 
         {/* Mark Details (if trademark) */}
-        {formData.filing_type === 'trademark' && (
+        {formData.ip_type === 'trademark' && (
           <SectionCard title="Detalles de la Marca" icon={Image} step={4}>
             <InfoRow label="Nombre" value={formData.mark_name} />
             <InfoRow 
               label="Tipo de marca" 
-              value={MARK_TYPES.find(t => t.value === formData.mark_type)?.label} 
+              value={markTypeLabel} 
             />
             {formData.mark_description && (
               <InfoRow label="Descripción" value="Sí" />
@@ -129,7 +132,7 @@ export function Step8Review({ formData, updateFormData, errors }: Step8Props) {
         )}
 
         {/* Classification */}
-        {formData.filing_type === 'trademark' && (
+        {formData.ip_type === 'trademark' && (
           <SectionCard title="Clasificación" icon={List} step={5}>
             <div className="space-y-2">
               <InfoRow 
