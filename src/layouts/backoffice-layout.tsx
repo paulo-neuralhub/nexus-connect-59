@@ -1,5 +1,5 @@
 // src/layouts/backoffice-layout.tsx
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   Building2,
@@ -15,27 +15,82 @@ import {
   Settings,
   AlertTriangle,
   ChevronLeft,
+  Globe,
+  Flag,
+  Key,
+  ShieldCheck,
+  Scale,
+  MessageSquare,
+  Power,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { useIsSuperadmin } from '@/hooks/use-admin';
+import { Spinner } from '@/components/ui/spinner';
 
-const sidebarItems = [
-  { label: 'Dashboard', path: '/backoffice', icon: LayoutDashboard },
-  { label: 'AI Brain', path: '/backoffice/ai', icon: Brain },
-  { label: 'IPO Registry', path: '/backoffice/ipo', icon: Building2 },
-  { label: 'Tenants', path: '/backoffice/tenants', icon: Users },
-  { label: 'Billing', path: '/backoffice/billing', icon: CreditCard },
-  { label: 'Analytics', path: '/backoffice/analytics', icon: BarChart3 },
-  { label: 'CRM', path: '/backoffice/crm', icon: Target },
-  { label: 'Marketing', path: '/backoffice/marketing', icon: Megaphone },
-  { label: 'Calendar', path: '/backoffice/calendar', icon: Calendar },
-  { label: 'Documentation', path: '/backoffice/docs', icon: FileText },
-  { label: 'Settings', path: '/backoffice/settings', icon: Settings },
-  { label: 'Kill Switch', path: '/backoffice/kill-switch', icon: AlertTriangle, danger: true },
+const sidebarSections = [
+  {
+    label: 'Core',
+    items: [
+      { label: 'Dashboard', path: '/backoffice', icon: LayoutDashboard },
+      { label: 'Tenants', path: '/backoffice/tenants', icon: Building2 },
+      { label: 'Users', path: '/backoffice/users', icon: Users },
+      { label: 'Billing', path: '/backoffice/billing', icon: CreditCard },
+    ],
+  },
+  {
+    label: 'Registry',
+    items: [
+      { label: 'IPO Registry', path: '/backoffice/ipo', icon: Globe },
+      { label: 'AI Brain', path: '/backoffice/ai', icon: Brain },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Feature Flags', path: '/backoffice/feature-flags', icon: Flag },
+      { label: 'API Keys', path: '/backoffice/api-keys', icon: Key },
+      { label: 'Announcements', path: '/backoffice/announcements', icon: Megaphone },
+    ],
+  },
+  {
+    label: 'Compliance',
+    items: [
+      { label: 'KYC Review', path: '/backoffice/kyc-review', icon: ShieldCheck },
+      { label: 'Moderation', path: '/backoffice/moderation', icon: AlertTriangle },
+      { label: 'Compliance', path: '/backoffice/compliance', icon: Scale },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { label: 'Audit Logs', path: '/backoffice/audit-logs', icon: FileText },
+      { label: 'Feedback', path: '/backoffice/feedback', icon: MessageSquare },
+      { label: 'Settings', path: '/backoffice/settings', icon: Settings },
+      { label: 'Kill Switch', path: '/backoffice/kill-switch', icon: Power, danger: true },
+    ],
+  },
 ];
 
 export default function BackofficeLayout() {
   const location = useLocation();
+  const { data: isSuperadmin, isLoading } = useIsSuperadmin();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner className="w-8 h-8" />
+          <p className="text-muted-foreground">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSuperadmin) {
+    return <Navigate to="/app" replace />;
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -54,29 +109,38 @@ export default function BackofficeLayout() {
         </div>
 
         <ScrollArea className="flex-1 py-2">
-          <nav className="space-y-1 px-2">
-            {sidebarItems.map((item) => {
-              const isActive = location.pathname === item.path || 
-                (item.path !== '/backoffice' && location.pathname.startsWith(item.path));
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : item.danger
-                      ? 'text-destructive hover:bg-destructive/10'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
+          <nav className="px-2 space-y-4">
+            {sidebarSections.map((section) => (
+              <div key={section.label}>
+                <p className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {section.label}
+                </p>
+                <div className="space-y-1 mt-1">
+                  {section.items.map((item) => {
+                    const isActive = location.pathname === item.path || 
+                      (item.path !== '/backoffice' && location.pathname.startsWith(item.path));
+                    
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
+                            : item.danger
+                            ? 'text-destructive hover:bg-destructive/10'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </ScrollArea>
 

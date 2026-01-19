@@ -1,3 +1,4 @@
+// src/pages/backoffice/users.tsx
 import { useState } from 'react';
 import { Search, User, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -8,13 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export default function AdminUsersPage() {
+export default function UsersPage() {
   const [search, setSearch] = useState('');
   const { data: users = [], isLoading } = useAdminUsers({ search });
   
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-96 w-full rounded-xl" />
       </div>
@@ -22,7 +23,7 @@ export default function AdminUsersPage() {
   }
   
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Usuarios</h1>

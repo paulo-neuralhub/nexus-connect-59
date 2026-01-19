@@ -1,3 +1,4 @@
+// src/pages/backoffice/billing.tsx
 import { useState } from 'react';
 import { CreditCard, Search, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,11 +11,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SUBSCRIPTION_STATUSES } from '@/lib/constants/backoffice';
 
-export default function AdminSubscriptionsPage() {
+export default function BillingPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   
   const { data: subscriptions = [], isLoading } = useQuery({
-    queryKey: ['admin-subscriptions', statusFilter],
+    queryKey: ['backoffice-subscriptions', statusFilter],
     queryFn: async () => {
       let query = supabase
         .from('subscriptions')
@@ -45,7 +46,7 @@ export default function AdminSubscriptionsPage() {
   
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-96 w-full rounded-xl" />
       </div>
@@ -53,10 +54,10 @@ export default function AdminSubscriptionsPage() {
   }
   
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Suscripciones</h1>
+          <h1 className="text-2xl font-bold text-foreground">Billing</h1>
           <p className="text-muted-foreground">Gestiona las suscripciones de clientes</p>
         </div>
       </div>

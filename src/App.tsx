@@ -99,29 +99,25 @@ import CollabIndexPage from "./pages/app/collab";
 import CollabDetailPage from "./pages/app/collab/[id]";
 import SearchPage from "./pages/app/SearchPage";
 
-// Admin Pages
-import AdminLayout from "./layouts/admin-layout";
-import AdminDashboard from "./pages/admin";
-import AdminOrganizationsPage from "./pages/admin/organizations";
-import AdminUsersPage from "./pages/admin/users";
-import AdminSubscriptionsPage from "./pages/admin/subscriptions";
-import FeatureFlagsPage from "./pages/admin/feature-flags";
-import AnnouncementsPage from "./pages/admin/announcements";
-import AdminFeedbackPage from "./pages/admin/feedback";
-import AdminAuditLogsPage from "./pages/admin/audit-logs";
-import AdminSettingsPage from "./pages/admin/settings";
-import AdminApiKeysPage from "./pages/admin/api-keys";
-import KycReviewPage from "./pages/admin/kyc-review";
-import ModerationPage from "./pages/admin/moderation";
-import ComplianceDashboard from "./pages/admin/compliance";
-
 // Backoffice Pages
 import BackofficeLayout from "./layouts/backoffice-layout";
 import BackofficeDashboard from "./pages/backoffice";
+import TenantsPage from "./pages/backoffice/tenants";
+import BackofficeUsersPage from "./pages/backoffice/users";
+import BillingPage from "./pages/backoffice/billing";
 import IPORegistryPage from "./pages/backoffice/ipo";
 import IPOOfficeDetailPage from "./pages/backoffice/ipo/[officeId]";
 import NewIPOOfficePage from "./pages/backoffice/ipo/new";
 import EditIPOOfficePage from "./pages/backoffice/ipo/edit";
+import FeatureFlagsPage from "./pages/backoffice/feature-flags";
+import BackofficeApiKeysPage from "./pages/backoffice/api-keys";
+import AnnouncementsPage from "./pages/backoffice/announcements";
+import BackofficeFeedbackPage from "./pages/backoffice/feedback";
+import AuditLogsPage from "./pages/backoffice/audit-logs";
+import BackofficeSettingsPage from "./pages/backoffice/settings";
+import KycReviewPage from "./pages/backoffice/kyc-review";
+import ModerationPage from "./pages/backoffice/moderation";
+import ComplianceDashboardPage from "./pages/backoffice/compliance";
 
 // KYC Pages
 import MarketKycPage from "./pages/app/market/kyc";
@@ -252,30 +248,30 @@ const App = () => (
                 <Route path="search" element={<SearchPage />} />
               </Route>
               
-              {/* ADMIN PANEL - Protected */}
-              <Route path="/admin" element={<AuthGuard><AdminLayout /></AuthGuard>}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="organizations" element={<AdminOrganizationsPage />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
-                <Route path="api-keys" element={<AdminApiKeysPage />} />
-                <Route path="feature-flags" element={<FeatureFlagsPage />} />
-                <Route path="announcements" element={<AnnouncementsPage />} />
-                <Route path="feedback" element={<AdminFeedbackPage />} />
-                <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
-                <Route path="kyc-review" element={<KycReviewPage />} />
-                <Route path="moderation" element={<ModerationPage />} />
-                <Route path="compliance" element={<ComplianceDashboard />} />
-              </Route>
-              
-              {/* BACKOFFICE - Protected */}
+              {/* BACKOFFICE - Panel de administración consolidado */}
               <Route path="/backoffice" element={<AuthGuard><BackofficeLayout /></AuthGuard>}>
                 <Route index element={<BackofficeDashboard />} />
+                {/* Core */}
+                <Route path="tenants" element={<TenantsPage />} />
+                <Route path="users" element={<BackofficeUsersPage />} />
+                <Route path="billing" element={<BillingPage />} />
+                {/* IPO Registry */}
                 <Route path="ipo" element={<IPORegistryPage />} />
                 <Route path="ipo/new" element={<NewIPOOfficePage />} />
                 <Route path="ipo/:officeId" element={<IPOOfficeDetailPage />} />
                 <Route path="ipo/:officeId/edit" element={<EditIPOOfficePage />} />
+                {/* Tools */}
+                <Route path="feature-flags" element={<FeatureFlagsPage />} />
+                <Route path="api-keys" element={<BackofficeApiKeysPage />} />
+                <Route path="announcements" element={<AnnouncementsPage />} />
+                {/* Compliance */}
+                <Route path="kyc-review" element={<KycReviewPage />} />
+                <Route path="moderation" element={<ModerationPage />} />
+                <Route path="compliance" element={<ComplianceDashboardPage />} />
+                {/* System */}
+                <Route path="audit-logs" element={<AuditLogsPage />} />
+                <Route path="feedback" element={<BackofficeFeedbackPage />} />
+                <Route path="settings" element={<BackofficeSettingsPage />} />
               </Route>
               
               {/* 404 */}
