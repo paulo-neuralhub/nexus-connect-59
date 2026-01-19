@@ -3,29 +3,25 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, 
   Plus, 
   Grid, 
   List, 
-  Star,
-  Clock,
-  MapPin,
-  Filter,
-  SlidersHorizontal
+  Filter
 } from 'lucide-react';
-import { useMarketListings } from '@/hooks/use-market';
+import { useMarketListings, useToggleFavorite, useMarketFavorites } from '@/hooks/use-market';
 import { 
   ASSET_TYPE_CONFIG, 
   TRANSACTION_TYPE_CONFIG,
-  LISTING_STATUS_CONFIG,
   type AssetType,
   type TransactionType,
   type ListingStatus
 } from '@/types/market.types';
+import { ListingCard } from '@/components/market/listings/ListingCard';
+import { ListingGrid } from '@/components/market/listings/ListingGrid';
 
 export default function ListingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,6 +36,39 @@ export default function ListingsPage() {
     transaction_type: transactionTypeFilter !== 'all' ? transactionTypeFilter as TransactionType : undefined,
     search: searchQuery || undefined,
   });
+
+  const { data: favorites } = useMarketFavorites();
+  const toggleFavorite = useToggleFavorite();
+  
+  const favoriteIds = favorites?.map(f => f.listing_id) || [];
+
+  const handleFavoriteToggle = (listingId: string) => {
+    const isFav = favoriteIds.includes(listingId);
+    toggleFavorite.mutate({ listingId, isFavorite: isFav });
+  };
+
+  // Transform listings to the format expected by ListingCard
+  const transformedListings = listings?.map((listing: any) => ({
+    id: listing.id,
+    title: listing.title,
+    description: listing.description,
+    price: listing.asking_price || 0,
+    currency: listing.currency || 'EUR',
+    is_featured: listing.is_featured,
+    is_negotiable: listing.price_type === 'negotiable',
+    views_count: listing.views_count,
+    created_at: listing.created_at,
+    published_at: listing.published_at,
+    transaction_types: listing.transaction_types || [listing.transaction_type],
+    asset: {
+      type: listing.asset?.asset_type,
+      jurisdiction: listing.asset?.jurisdictions?.[0],
+      images: listing.asset?.images,
+      is_verified: listing.asset?.is_verified,
+      verification_status: listing.asset?.verification_status,
+    },
+    seller: listing.seller,
+  })) || [];
 
   return (
     <div className="space-y-6">
@@ -62,9 +91,7 @@ export default function ListingsPage() {
             <SelectContent>
               <SelectItem value="all">Todos los tipos</SelectItem>
               {Object.entries(ASSET_TYPE_CONFIG).map(([key, config]) => (
-                <SelectItem key={key} value={key}>
-                  {config.icon} {config.label}
-                </SelectItem>
+                <SelectItem key={key} value={key}>{config.labelEs}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -75,9 +102,7 @@ export default function ListingsPage() {
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
               {Object.entries(TRANSACTION_TYPE_CONFIG).map(([key, config]) => (
-                <SelectItem key={key} value={key}>
-                  {config.label}
-                </SelectItem>
+                <SelectItem key={key} value={key}>{config.labelEs}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -110,34 +135,23 @@ export default function ListingsPage() {
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as ListingStatus)}>
         <TabsList>
           <TabsTrigger value="active">Activos</TabsTrigger>
-          <TabsTrigger value="pending">Pendientes</TabsTrigger>
+          <TabsTrigger value="pending_verification">Pendientes</TabsTrigger>
           <TabsTrigger value="sold">Vendidos</TabsTrigger>
           <TabsTrigger value="expired">Expirados</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {/* Results */}
-      {isLoading ? (
-        <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-0">
-                <div className={viewMode === 'grid' ? 'h-48' : 'h-24'}>
-                  <div className="h-full bg-muted animate-pulse rounded-lg" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : listings && listings.length > 0 ? (
-        <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
-          {listings.map((listing) => (
-            viewMode === 'grid' 
-              ? <ListingGridCard key={listing.id} listing={listing} />
-              : <ListingListCard key={listing.id} listing={listing} />
-          ))}
-        </div>
-      ) : (
+      <ListingGrid
+        listings={transformedListings}
+        isLoading={isLoading}
+        favoriteIds={favoriteIds}
+        onFavoriteToggle={handleFavoriteToggle}
+        columns={viewMode === 'grid' ? 3 : 2}
+        variant={viewMode === 'list' ? 'compact' : 'default'}
+      />
+
+      {!isLoading && (!listings || listings.length === 0) && (
         <Card>
           <CardContent className="py-12 text-center">
             <Filter className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -155,129 +169,5 @@ export default function ListingsPage() {
         </Card>
       )}
     </div>
-  );
-}
-
-function ListingGridCard({ listing }: { listing: any }) {
-  const assetConfig = listing.asset?.asset_type 
-    ? ASSET_TYPE_CONFIG[listing.asset.asset_type as AssetType] 
-    : null;
-  const transactionConfig = TRANSACTION_TYPE_CONFIG[listing.transaction_type as TransactionType];
-
-  return (
-    <Link to={`/app/market/listings/${listing.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
-        <div className="h-32 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative">
-          <span className="text-5xl">{assetConfig?.icon || '📦'}</span>
-          {listing.is_featured && (
-            <Badge className="absolute top-2 right-2 bg-yellow-500">
-              <Star className="h-3 w-3 mr-1" />
-              Destacado
-            </Badge>
-          )}
-        </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold truncate mb-1">{listing.title}</h3>
-          <p className="text-sm text-muted-foreground truncate mb-3">
-            {listing.asset?.title || 'Activo de PI'}
-          </p>
-          
-          <div className="flex items-center gap-2 mb-3">
-            <Badge variant="outline" className="text-xs">
-              {transactionConfig?.label || listing.transaction_type}
-            </Badge>
-            {listing.asset?.jurisdictions?.length > 0 && (
-              <span className="text-xs text-muted-foreground flex items-center">
-                <MapPin className="h-3 w-3 mr-1" />
-                {listing.asset.jurisdictions[0]}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <p className="text-lg font-bold text-market">
-              {listing.price_type === 'fixed' && listing.asking_price
-                ? `€${listing.asking_price.toLocaleString()}`
-                : listing.price_type === 'negotiable'
-                ? 'Negociable'
-                : 'Consultar'}
-            </p>
-            <span className="text-xs text-muted-foreground flex items-center">
-              <Clock className="h-3 w-3 mr-1" />
-              {new Date(listing.created_at).toLocaleDateString()}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
-
-function ListingListCard({ listing }: { listing: any }) {
-  const assetConfig = listing.asset?.asset_type 
-    ? ASSET_TYPE_CONFIG[listing.asset.asset_type as AssetType] 
-    : null;
-  const transactionConfig = TRANSACTION_TYPE_CONFIG[listing.transaction_type as TransactionType];
-  const statusConfig = LISTING_STATUS_CONFIG[listing.status as keyof typeof LISTING_STATUS_CONFIG];
-
-  return (
-    <Link to={`/app/market/listings/${listing.id}`}>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center text-2xl flex-shrink-0">
-              {assetConfig?.icon || '📦'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h4 className="font-medium truncate">{listing.title}</h4>
-                {listing.is_featured && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                    <Star className="h-3 w-3 mr-1" />
-                    Destacado
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground truncate">
-                {listing.asset?.title || 'Activo'}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {transactionConfig?.label || listing.transaction_type}
-                </Badge>
-                {listing.asset?.jurisdictions?.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    📍 {listing.asset.jurisdictions.slice(0, 2).join(', ')}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-lg font-bold text-market">
-                {listing.price_type === 'fixed' && listing.asking_price
-                  ? `€${listing.asking_price.toLocaleString()}`
-                  : listing.price_type === 'negotiable'
-                  ? 'Negociable'
-                  : 'Consultar'}
-              </p>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                <Clock className="h-3 w-3" />
-                {new Date(listing.created_at).toLocaleDateString()}
-              </div>
-            </div>
-            <Badge 
-              variant="outline" 
-              style={{ 
-                backgroundColor: statusConfig?.color + '20',
-                borderColor: statusConfig?.color,
-                color: statusConfig?.color 
-              }}
-            >
-              {statusConfig?.label || listing.status}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
   );
 }
