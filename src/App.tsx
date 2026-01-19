@@ -15,9 +15,16 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import Onboarding from "./pages/app/Onboarding";
 import Dashboard from "./pages/app/Dashboard";
 import {
-  MarketPlaceholder,
   HelpPlaceholder
 } from "./pages/app/placeholders";
+import MarketLayout from "./pages/app/market/MarketLayout";
+import MarketDashboard from "./pages/app/market";
+import MarketListings from "./pages/app/market/listings";
+import MarketAssets from "./pages/app/market/assets";
+import MarketTransactions from "./pages/app/market/transactions";
+import MarketFavorites from "./pages/app/market/favorites";
+import MarketAlerts from "./pages/app/market/alerts";
+import MarketProfile from "./pages/app/market/profile";
 import DataHubPage from "./pages/app/data-hub";
 import GeniusPage from "./pages/app/genius";
 import SpiderLayout from "./pages/app/spider/SpiderLayout";
@@ -139,7 +146,15 @@ const App = () => (
                   <Route path="automations/new" element={<AutomationEditor />} />
                   <Route path="automations/:id" element={<AutomationEditor />} />
                 </Route>
-                <Route path="market/*" element={<MarketPlaceholder />} />
+                <Route path="market" element={<MarketLayout />}>
+                  <Route index element={<MarketDashboard />} />
+                  <Route path="listings" element={<MarketListings />} />
+                  <Route path="assets" element={<MarketAssets />} />
+                  <Route path="transactions" element={<MarketTransactions />} />
+                  <Route path="favorites" element={<MarketFavorites />} />
+                  <Route path="alerts" element={<MarketAlerts />} />
+                  <Route path="profile" element={<MarketProfile />} />
+                </Route>
                 <Route path="genius/*" element={<GeniusPage />} />
                 <Route path="finance" element={<FinanceLayout />}>
                   <Route index element={<FinanceDashboard />} />

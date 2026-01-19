@@ -12,7 +12,7 @@ import {
   MapPin,
   Trash2
 } from 'lucide-react';
-import { useMarketFavorites, useDeleteFavorite } from '@/hooks/use-market';
+import { useMarketFavorites, useToggleFavorite } from '@/hooks/use-market';
 import { 
   ASSET_TYPE_CONFIG, 
   TRANSACTION_TYPE_CONFIG,
@@ -23,17 +23,17 @@ import {
 export default function FavoritesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { data: favorites, isLoading } = useMarketFavorites();
-  const removeFavorite = useDeleteFavorite();
+  const removeFavorite = useToggleFavorite();
 
   const filteredFavorites = favorites?.filter(fav => {
     if (!searchQuery) return true;
     return fav.listing?.title?.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const handleRemoveFavorite = (e: React.MouseEvent, favoriteId: string) => {
+  const handleRemoveFavorite = (e: React.MouseEvent, listingId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    removeFavorite.mutate(favoriteId);
+    removeFavorite.mutate({ listingId, isFavorite: true });
   };
 
   return (
@@ -79,7 +79,7 @@ export default function FavoritesPage() {
             <FavoriteCard 
               key={favorite.id} 
               favorite={favorite} 
-              onRemove={(e) => handleRemoveFavorite(e, favorite.id)}
+              onRemove={(e) => handleRemoveFavorite(e, favorite.listing?.id)}
             />
           ))}
         </div>
