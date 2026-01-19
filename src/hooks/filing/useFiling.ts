@@ -117,6 +117,9 @@ export function useFilingStatusHistory(filingId?: string) {
   });
 }
 
+// Alias for backwards compatibility
+export const useFilingHistory = useFilingStatusHistory;
+
 export function useFilingTemplates(filingType?: FilingType, ipType?: string) {
   const { currentOrganization } = useOrganization();
   
@@ -163,17 +166,21 @@ export function useFilingDrafts() {
   });
 }
 
-export function useFilingOffices(ipType: string) {
+export function useFilingOffices(ipType?: string) {
   return useQuery({
     queryKey: ['filing-offices', ipType],
     queryFn: async () => {
-      const { data, error } = await (supabase
+      let query = (supabase
         .from('ipo_offices' as any)
         .select('*') as any)
-        .contains('ip_types', [ipType])
-        .in('code', ['EM', 'ES', 'US', 'WO', 'GB'])
+        .eq('supports_efiling', true)
         .order('tier', { ascending: true });
       
+      if (ipType) {
+        query = query.contains('ip_types', [ipType]);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -305,19 +312,19 @@ export function useValidateFiling() {
 }
 
 export function useCalculateFees() {
-  const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (filingId: string) => {
+    mutationFn: async (params: {
+      officeCode: string;
+      filingType: string;
+      niceClasses: number[];
+      claimsPriority: boolean;
+    }) => {
       const { data, error } = await supabase.functions.invoke('filing-calculate-fees', {
-        body: { filingId },
+        body: params,
       });
       
       if (error) throw error;
       return data;
-    },
-    onSuccess: (_, filingId) => {
-      queryClient.invalidateQueries({ queryKey: ['filing-application', filingId] });
     },
   });
 }

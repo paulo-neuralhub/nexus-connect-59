@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   FileText, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   Send, Eye, Edit, Trash2, Filter, Search, Download,
-  Building2, Calendar, DollarSign, FileCheck
+  Building2, Calendar, DollarSign, FileCheck, MoreHorizontal
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useFilingApplications, useFilingStats, useDeleteFiling } from '@/hooks/filing/useFiling';
-import { FILING_TYPES, FILING_STATUS_CONFIG, type FilingStatus } from '@/types/filing.types';
+import { FILING_TYPES, FILING_STATUS_CONFIG, type FilingStatus, type FilingApplication } from '@/types/filing.types';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 
@@ -51,8 +51,8 @@ export function FilingDashboard() {
   // Filter applications
   const filteredApplications = applications.filter(app => {
     const matchesSearch = !searchQuery || 
-      app.reference_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.applicant_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      app.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.applicant_data?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     const matchesType = typeFilter === 'all' || app.filing_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
@@ -71,6 +71,7 @@ export function FilingDashboard() {
 
   const getStatusBadge = (status: FilingStatus) => {
     const config = FILING_STATUS_CONFIG[status];
+    if (!config) return <Badge variant="outline">{status}</Badge>;
     return (
       <Badge variant="outline" className={`${config.color} border-current`}>
         {config.label}
@@ -143,8 +144,8 @@ export function FilingDashboard() {
           color="bg-slate-500"
         />
         <StatCard
-          title="Pendientes"
-          value={stats?.pending || 0}
+          title="Listas"
+          value={stats?.ready || 0}
           icon={Clock}
           color="bg-amber-500"
         />
@@ -215,7 +216,7 @@ export function FilingDashboard() {
 
         <TabsContent value="pending">
           <ApplicationsTable 
-            applications={filteredApplications.filter(a => ['validating', 'pending_payment', 'ready_to_submit'].includes(a.status))}
+            applications={filteredApplications.filter(a => ['validating', 'payment_pending', 'ready'].includes(a.status))}
             onView={(id) => navigate(`/app/filing/${id}`)}
             onEdit={(id) => navigate(`/app/filing/${id}/edit`)}
             onDelete={handleDelete}
@@ -225,7 +226,7 @@ export function FilingDashboard() {
 
         <TabsContent value="submitted">
           <ApplicationsTable 
-            applications={filteredApplications.filter(a => ['submitted', 'acknowledged', 'registered', 'rejected'].includes(a.status))}
+            applications={filteredApplications.filter(a => ['submitted', 'acknowledged', 'accepted', 'rejected'].includes(a.status))}
             onView={(id) => navigate(`/app/filing/${id}`)}
             onEdit={(id) => navigate(`/app/filing/${id}/edit`)}
             onDelete={handleDelete}
@@ -253,20 +254,20 @@ export function FilingDashboard() {
             >
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${
-                  app.filing_type === 'trademark' ? 'bg-blue-100' :
-                  app.filing_type === 'patent' ? 'bg-purple-100' :
+                  app.ip_type === 'trademark' ? 'bg-blue-100' :
+                  app.ip_type === 'patent' ? 'bg-purple-100' :
                   'bg-green-100'
                 }`}>
                   <FileText className={`h-4 w-4 ${
-                    app.filing_type === 'trademark' ? 'text-blue-600' :
-                    app.filing_type === 'patent' ? 'text-purple-600' :
+                    app.ip_type === 'trademark' ? 'text-blue-600' :
+                    app.ip_type === 'patent' ? 'text-purple-600' :
                     'text-green-600'
                   }`} />
                 </div>
                 <div>
-                  <p className="font-medium">{app.reference_number}</p>
+                  <p className="font-medium">{app.tracking_number}</p>
                   <p className="text-sm text-muted-foreground">
-                    {app.applicant_name} • {app.ipo_offices?.name || 'Sin oficina'}
+                    {app.applicant_data?.name || 'Sin solicitante'} • {app.office?.name_short || app.office_code}
                   </p>
                 </div>
               </div>
@@ -292,7 +293,7 @@ function ApplicationsTable({
   onDelete,
   getStatusBadge
 }: {
-  applications: any[];
+  applications: FilingApplication[];
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -330,7 +331,7 @@ function ApplicationsTable({
           {applications.map(app => (
             <TableRow key={app.id}>
               <TableCell className="font-medium">
-                {app.reference_number}
+                {app.tracking_number}
               </TableCell>
               <TableCell>
                 <Badge variant="outline">
@@ -340,10 +341,10 @@ function ApplicationsTable({
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
-                  {app.ipo_offices?.short_name || app.ipo_offices?.name || '-'}
+                  {app.office?.name_short || app.office_code}
                 </div>
               </TableCell>
-              <TableCell>{app.applicant_name}</TableCell>
+              <TableCell>{app.applicant_data?.name || '-'}</TableCell>
               <TableCell>{getStatusBadge(app.status)}</TableCell>
               <TableCell>
                 {format(new Date(app.created_at), 'dd/MM/yyyy')}
@@ -352,7 +353,7 @@ function ApplicationsTable({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
-                      <Filter className="h-4 w-4" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

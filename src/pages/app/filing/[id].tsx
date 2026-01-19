@@ -11,16 +11,16 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useFilingApplication, useFilingHistory } from '@/hooks/filing/useFiling';
-import { FILING_STATUS_CONFIG, FILING_TYPES, MARK_TYPES } from '@/types/filing.types';
+import { useFilingApplication, useFilingStatusHistory } from '@/hooks/filing/useFiling';
+import { FILING_STATUS_CONFIG, IP_TYPES, MARK_TYPES } from '@/types/filing.types';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function FilingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const { data: application, isLoading } = useFilingApplication(id || '');
-  const { data: history = [] } = useFilingHistory(id || '');
+  const { data: application, isLoading } = useFilingApplication(id);
+  const { data: history = [] } = useFilingStatusHistory(id);
 
   if (isLoading) {
     return (
@@ -46,7 +46,9 @@ export default function FilingDetailPage() {
     );
   }
 
-  const statusConfig = FILING_STATUS_CONFIG[application.status];
+  const statusConfig = FILING_STATUS_CONFIG[application.status] || { label: application.status, color: '' };
+  const trademarkData = application.trademark_data?.[0];
+  const ipTypeLabel = IP_TYPES.find(t => t.value === application.ip_type)?.label || application.ip_type;
 
   return (
     <div className="space-y-6">
@@ -62,7 +64,7 @@ export default function FilingDetailPage() {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">{application.reference_number}</h1>
+              <h1 className="text-2xl font-bold">{application.tracking_number}</h1>
               <Badge 
                 variant="outline" 
                 className={`${statusConfig.color} border-current`}
@@ -71,7 +73,7 @@ export default function FilingDetailPage() {
               </Badge>
             </div>
             <p className="text-muted-foreground">
-              {FILING_TYPES.find(t => t.value === application.filing_type)?.label} • 
+              {ipTypeLabel} • 
               Creada el {format(new Date(application.created_at), 'dd MMMM yyyy', { locale: es })}
             </p>
           </div>
@@ -115,19 +117,19 @@ export default function FilingDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Oficina</span>
                     <span className="font-medium">
-                      {application.ipo_offices?.name || 'No especificada'}
+                      {application.office?.name_official || application.office?.name_short || 'No especificada'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Código</span>
                     <span className="font-medium">
-                      {application.ipo_offices?.code?.toUpperCase()}
+                      {application.office?.code?.toUpperCase() || application.office_code?.toUpperCase()}
                     </span>
                   </div>
-                  {application.official_number && (
+                  {application.official_filing_number && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Nº Oficial</span>
-                      <span className="font-medium">{application.official_number}</span>
+                      <span className="font-medium">{application.official_filing_number}</span>
                     </div>
                   )}
                 </div>
@@ -146,22 +148,22 @@ export default function FilingDetailPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Nombre</span>
-                    <span className="font-medium">{application.applicant_name}</span>
+                    <span className="font-medium">{application.applicant_data?.name || '-'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tipo</span>
                     <span className="font-medium">
-                      {application.applicant_type === 'company' ? 'Persona Jurídica' : 'Persona Física'}
+                      {application.applicant_data?.type === 'legal_entity' ? 'Persona Jurídica' : 'Persona Física'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">País</span>
-                    <span className="font-medium">{application.applicant_country}</span>
+                    <span className="font-medium">{application.applicant_data?.country || '-'}</span>
                   </div>
-                  {application.representative_name && (
+                  {application.representative_data?.name && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Representante</span>
-                      <span className="font-medium">{application.representative_name}</span>
+                      <span className="font-medium">{application.representative_data.name}</span>
                     </div>
                   )}
                 </div>
@@ -169,7 +171,7 @@ export default function FilingDetailPage() {
             </Card>
 
             {/* Trademark Data (if applicable) */}
-            {application.filing_type === 'trademark' && application.filing_trademark_data && (
+            {application.ip_type === 'trademark' && trademarkData && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -182,20 +184,20 @@ export default function FilingDetailPage() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Nombre</span>
                       <span className="font-medium">
-                        {application.filing_trademark_data.mark_name}
+                        {trademarkData.mark_text}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tipo</span>
                       <span className="font-medium">
-                        {MARK_TYPES.find(t => t.value === application.filing_trademark_data?.mark_type)?.label}
+                        {MARK_TYPES.find(t => t.value === trademarkData.mark_type)?.label || trademarkData.mark_type}
                       </span>
                     </div>
-                    {application.filing_trademark_data.nice_classes?.length > 0 && (
+                    {trademarkData.nice_classes?.length > 0 && (
                       <div>
                         <span className="text-muted-foreground text-sm">Clases Nice:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {application.filing_trademark_data.nice_classes.map((cls: number) => (
+                          {trademarkData.nice_classes.map((cls: number) => (
                             <Badge key={cls} variant="secondary">
                               {cls}
                             </Badge>
@@ -221,17 +223,16 @@ export default function FilingDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tasas Oficiales</span>
                     <span className="font-medium">
-                      {application.official_fees 
-                        ? `${application.official_fees} ${application.fee_currency || 'EUR'}`
+                      {application.fees_calculated?.total 
+                        ? `${application.fees_calculated.total} ${application.fees_calculated.currency || 'EUR'}`
                         : 'No calculadas'
                       }
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estado Pago</span>
-                    <Badge variant={application.payment_status === 'paid' ? 'default' : 'secondary'}>
-                      {application.payment_status === 'paid' ? 'Pagado' : 
-                       application.payment_status === 'pending' ? 'Pendiente' : 'No aplicable'}
+                    <Badge variant={application.fees_paid ? 'default' : 'secondary'}>
+                      {application.fees_paid ? 'Pagado' : 'Pendiente'}
                     </Badge>
                   </div>
                 </div>
@@ -240,7 +241,7 @@ export default function FilingDetailPage() {
           </div>
 
           {/* Priority Claim */}
-          {application.priority_claimed && (
+          {application.priority_claims && application.priority_claims.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -252,20 +253,20 @@ export default function FilingDetailPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
                     <span className="text-muted-foreground text-sm">País</span>
-                    <p className="font-medium">{application.priority_country}</p>
+                    <p className="font-medium">{application.priority_claims[0]?.country}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground text-sm">Fecha</span>
                     <p className="font-medium">
-                      {application.priority_date 
-                        ? format(new Date(application.priority_date), 'dd/MM/yyyy')
+                      {application.priority_claims[0]?.date 
+                        ? format(new Date(application.priority_claims[0].date), 'dd/MM/yyyy')
                         : '-'
                       }
                     </p>
                   </div>
                   <div>
                     <span className="text-muted-foreground text-sm">Número</span>
-                    <p className="font-medium">{application.priority_number || '-'}</p>
+                    <p className="font-medium">{application.priority_claims[0]?.number || '-'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -288,7 +289,7 @@ export default function FilingDetailPage() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {history.map((entry, index) => (
+                  {history.map((entry: any, index: number) => (
                     <div key={entry.id} className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="w-3 h-3 rounded-full bg-primary" />
@@ -298,12 +299,16 @@ export default function FilingDetailPage() {
                       </div>
                       <div className="flex-1 pb-4">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            {FILING_STATUS_CONFIG[entry.status_from]?.label || entry.status_from}
-                          </Badge>
-                          <span>→</span>
-                          <Badge variant="outline" className={FILING_STATUS_CONFIG[entry.status_to]?.color}>
-                            {FILING_STATUS_CONFIG[entry.status_to]?.label || entry.status_to}
+                          {entry.status_from && (
+                            <>
+                              <Badge variant="outline">
+                                {FILING_STATUS_CONFIG[entry.status_from as keyof typeof FILING_STATUS_CONFIG]?.label || entry.status_from}
+                              </Badge>
+                              <span>→</span>
+                            </>
+                          )}
+                          <Badge variant="outline" className={FILING_STATUS_CONFIG[entry.status_to as keyof typeof FILING_STATUS_CONFIG]?.color}>
+                            {FILING_STATUS_CONFIG[entry.status_to as keyof typeof FILING_STATUS_CONFIG]?.label || entry.status_to}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
