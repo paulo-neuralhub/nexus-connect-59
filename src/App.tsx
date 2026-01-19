@@ -60,6 +60,8 @@ import FinanceDashboard from "./pages/app/finance/FinanceDashboard";
 import InvoiceListPage from "./pages/app/finance/invoices";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
 import CostsPage from "./pages/app/finance/costs";
+import ValuationDashboardPage from "./pages/app/finance/valuation";
+import PortfolioDetailPage from "./pages/app/finance/valuation/[id]";
 import TeamSettingsPage from "./pages/app/settings/team";
 import BillingSettingsPage from "./pages/app/settings/billing";
 import IntegrationsPage from "./pages/app/settings/integrations";
@@ -178,6 +180,8 @@ const App = () => (
                   <Route path="costs" element={<CostsPage />} />
                   <Route path="invoices" element={<InvoiceListPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
+                  <Route path="valuation" element={<ValuationDashboardPage />} />
+                  <Route path="valuation/:id" element={<PortfolioDetailPage />} />
                 </Route>
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="reports/new" element={<NewReportPage />} />

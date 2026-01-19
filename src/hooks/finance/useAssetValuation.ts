@@ -169,22 +169,36 @@ export function useSaveValuation() {
   });
 }
 
-export function useAssetValuations(assetId: string | undefined) {
+export function useAssetValuations(assetIds: string | string[] | undefined) {
+  const idsArray = Array.isArray(assetIds) ? assetIds : assetIds ? [assetIds] : [];
+  
   return useQuery({
-    queryKey: ['asset-valuations', assetId],
+    queryKey: ['asset-valuations', idsArray],
     queryFn: async () => {
-      if (!assetId) return [];
+      if (!idsArray.length) return [];
 
       const { data, error } = await supabase
         .from('finance_valuations')
         .select('*')
-        .eq('asset_id', assetId)
+        .in('asset_id', idsArray)
         .order('valuation_date', { ascending: false });
 
       if (error) throw error;
-      return data as unknown as Valuation[];
+      
+      // Return only the latest valuation per asset
+      const latestByAsset = new Map<string, any>();
+      data?.forEach(v => {
+        if (!latestByAsset.has(v.asset_id)) {
+          latestByAsset.set(v.asset_id, v);
+        }
+      });
+      
+      return Array.from(latestByAsset.values()).map(v => ({
+        ...v,
+        final_value: v.estimated_value, // Alias for convenience
+      })) as (Valuation & { final_value: number })[];
     },
-    enabled: !!assetId,
+    enabled: idsArray.length > 0,
   });
 }
 

@@ -9,6 +9,8 @@ export type ValuationStatus = 'draft' | 'final' | 'approved';
 
 export type PortfolioAssetStatus = 'active' | 'pending' | 'expired' | 'abandoned';
 
+export type AssetType = 'trademark' | 'patent' | 'design' | 'copyright' | 'trade_secret' | 'domain' | 'software' | 'other';
+
 export interface FinancePortfolio {
   id: string;
   organization_id: string;
