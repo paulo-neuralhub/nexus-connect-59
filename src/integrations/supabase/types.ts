@@ -1558,6 +1558,7 @@ export type Database = {
           owner_type: string
           phone: string | null
           postal_code: string | null
+          search_vector: unknown
           source: string | null
           source_detail: string | null
           state: string | null
@@ -1594,6 +1595,7 @@ export type Database = {
           owner_type?: string
           phone?: string | null
           postal_code?: string | null
+          search_vector?: unknown
           source?: string | null
           source_detail?: string | null
           state?: string | null
@@ -1630,6 +1632,7 @@ export type Database = {
           owner_type?: string
           phone?: string | null
           postal_code?: string | null
+          search_vector?: unknown
           source?: string | null
           source_detail?: string | null
           state?: string | null
@@ -1912,6 +1915,7 @@ export type Database = {
           owner_type: string
           pipeline_id: string
           priority: string | null
+          search_vector: unknown
           stage_id: string
           status: string | null
           tags: string[] | null
@@ -1939,6 +1943,7 @@ export type Database = {
           owner_type?: string
           pipeline_id: string
           priority?: string | null
+          search_vector?: unknown
           stage_id: string
           status?: string | null
           tags?: string[] | null
@@ -1966,6 +1971,7 @@ export type Database = {
           owner_type?: string
           pipeline_id?: string
           priority?: string | null
+          search_vector?: unknown
           stage_id?: string
           status?: string | null
           tags?: string[] | null
@@ -8520,6 +8526,7 @@ export type Database = {
           reference: string
           registration_date: string | null
           registration_number: string | null
+          search_vector: unknown
           status: string
           tags: string[] | null
           title: string
@@ -8553,6 +8560,7 @@ export type Database = {
           reference: string
           registration_date?: string | null
           registration_number?: string | null
+          search_vector?: unknown
           status?: string
           tags?: string[] | null
           title: string
@@ -8586,6 +8594,7 @@ export type Database = {
           reference?: string
           registration_date?: string | null
           registration_number?: string | null
+          search_vector?: unknown
           status?: string
           tags?: string[] | null
           title?: string
@@ -11735,6 +11744,77 @@ export type Database = {
           },
         ]
       }
+      saved_searches: {
+        Row: {
+          alert_enabled: boolean | null
+          alert_frequency: string | null
+          created_at: string | null
+          description: string | null
+          entity_types: string[] | null
+          filters: Json | null
+          id: string
+          is_pinned: boolean | null
+          is_shared: boolean | null
+          last_used_at: string | null
+          name: string
+          organization_id: string
+          query: string | null
+          sort_by: string | null
+          sort_order: string | null
+          updated_at: string | null
+          use_count: number | null
+          user_id: string
+        }
+        Insert: {
+          alert_enabled?: boolean | null
+          alert_frequency?: string | null
+          created_at?: string | null
+          description?: string | null
+          entity_types?: string[] | null
+          filters?: Json | null
+          id?: string
+          is_pinned?: boolean | null
+          is_shared?: boolean | null
+          last_used_at?: string | null
+          name: string
+          organization_id: string
+          query?: string | null
+          sort_by?: string | null
+          sort_order?: string | null
+          updated_at?: string | null
+          use_count?: number | null
+          user_id: string
+        }
+        Update: {
+          alert_enabled?: boolean | null
+          alert_frequency?: string | null
+          created_at?: string | null
+          description?: string | null
+          entity_types?: string[] | null
+          filters?: Json | null
+          id?: string
+          is_pinned?: boolean | null
+          is_shared?: boolean | null
+          last_used_at?: string | null
+          name?: string
+          organization_id?: string
+          query?: string | null
+          sort_by?: string | null
+          sort_order?: string | null
+          updated_at?: string | null
+          use_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_exports: {
         Row: {
           created_at: string | null
@@ -11876,6 +11956,88 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_history: {
+        Row: {
+          created_at: string | null
+          entity_types: string[] | null
+          filters: Json | null
+          id: string
+          organization_id: string
+          query: string
+          source: string | null
+          total_results: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_types?: string[] | null
+          filters?: Json | null
+          id?: string
+          organization_id: string
+          query: string
+          source?: string | null
+          total_results?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_types?: string[] | null
+          filters?: Json | null
+          id?: string
+          organization_id?: string
+          query?: string
+          source?: string | null
+          total_results?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_synonyms: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          synonym_type: string | null
+          synonyms: string[]
+          term: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          synonym_type?: string | null
+          synonyms: string[]
+          term: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          synonym_type?: string | null
+          synonyms?: string[]
+          term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_synonyms_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -14085,6 +14247,32 @@ export type Database = {
         Returns: undefined
       }
       is_member_of_org: { Args: { org_id: string }; Returns: boolean }
+      search_all: {
+        Args: {
+          p_entity_types?: string[]
+          p_filters?: Json
+          p_limit?: number
+          p_offset?: number
+          p_organization_id: string
+          p_query: string
+        }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          highlight: string
+          metadata: Json
+          rank: number
+          subtitle: string
+          title: string
+        }[]
+      }
+      search_facets: {
+        Args: { p_organization_id: string; p_query: string }
+        Returns: {
+          count: number
+          entity_type: string
+        }[]
+      }
       trigger_workflow_manually: {
         Args: { p_trigger_data?: Json; p_workflow_id: string }
         Returns: string
