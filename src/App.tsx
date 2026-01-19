@@ -75,6 +75,8 @@ import IntegrationsPage from "./pages/app/settings/integrations";
 import EmailHistoryPage from "./pages/app/settings/email-history";
 import NotificationSettingsPage from "./pages/app/settings/notifications";
 import ApiKeysPage from "./pages/app/settings/api-keys";
+import AuditSettingsPage from "./pages/app/settings/audit";
+import ComplianceSettingsPage from "./pages/app/settings/compliance";
 import IPChainPage from "./pages/app/ip-chain";
 import TranslatorPage from "./pages/app/genius/translator";
 import ToolsPage from "./pages/app/tools";
@@ -113,7 +115,7 @@ import FeatureFlagsPage from "./pages/backoffice/feature-flags";
 import BackofficeApiKeysPage from "./pages/backoffice/api-keys";
 import AnnouncementsPage from "./pages/backoffice/announcements";
 import BackofficeFeedbackPage from "./pages/backoffice/feedback";
-import AuditLogsPage from "./pages/backoffice/audit-logs";
+import BackofficeAuditPage from "./pages/backoffice/audit";
 import BackofficeSettingsPage from "./pages/backoffice/settings";
 import KycReviewPage from "./pages/backoffice/kyc-review";
 import ModerationPage from "./pages/backoffice/moderation";
@@ -229,6 +231,8 @@ const App = () => (
                 <Route path="settings/emails" element={<EmailHistoryPage />} />
                 <Route path="settings/notifications" element={<NotificationSettingsPage />} />
                 <Route path="settings/api-keys" element={<ApiKeysPage />} />
+                <Route path="settings/audit" element={<AuditSettingsPage />} />
+                <Route path="settings/compliance" element={<ComplianceSettingsPage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />
                 <Route path="tools" element={<ToolsPage />} />
                 <Route path="migrator" element={<MigratorPage />} />
@@ -273,7 +277,7 @@ const App = () => (
                 <Route path="moderation" element={<ModerationPage />} />
                 <Route path="compliance" element={<ComplianceDashboardPage />} />
                 {/* System */}
-                <Route path="audit-logs" element={<AuditLogsPage />} />
+                <Route path="audit" element={<BackofficeAuditPage />} />
                 <Route path="feedback" element={<BackofficeFeedbackPage />} />
                 <Route path="settings" element={<BackofficeSettingsPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
