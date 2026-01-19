@@ -1,3 +1,4 @@
+// src/pages/backoffice/tenants.tsx
 import { useState } from 'react';
 import { Building2, Search, Users, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
@@ -8,13 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SUBSCRIPTION_STATUSES } from '@/lib/constants/backoffice';
 
-export default function AdminOrganizationsPage() {
+export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const { data: organizations = [], isLoading } = useAdminOrganizations({ search });
   
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-96 w-full rounded-xl" />
       </div>
@@ -22,10 +23,10 @@ export default function AdminOrganizationsPage() {
   }
   
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Organizaciones</h1>
+          <h1 className="text-2xl font-bold text-foreground">Tenants</h1>
           <p className="text-muted-foreground">Gestiona todas las organizaciones registradas</p>
         </div>
       </div>
