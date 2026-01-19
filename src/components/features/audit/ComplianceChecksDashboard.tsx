@@ -13,11 +13,8 @@ import {
   FileText,
   Plus,
   Play,
-  Edit,
-  Trash2,
   ChevronRight,
   Filter,
-  RefreshCw,
   Shield,
   AlertTriangle,
 } from 'lucide-react';
@@ -26,11 +23,10 @@ import {
   usePendingReviewChecks,
   useNonCompliantChecks,
   useCreateComplianceCheck,
-  useUpdateComplianceCheck,
-  useDeleteComplianceCheck,
   useRunComplianceCheck,
   useComplianceStats,
   type ComplianceCheck,
+  type ComplianceFramework,
 } from '@/hooks/audit';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +63,7 @@ const STATUS_CONFIG = {
   },
   non_compliant: {
     icon: AlertCircle,
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    color: 'bg-destructive/10 text-destructive',
     badge: 'destructive' as const,
   },
   pending_review: {
@@ -75,26 +71,28 @@ const STATUS_CONFIG = {
     color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
     badge: 'secondary' as const,
   },
-  in_remediation: {
+  partial: {
     icon: AlertTriangle,
     color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
     badge: 'secondary' as const,
   },
   not_applicable: {
     icon: FileText,
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+    color: 'bg-muted text-muted-foreground',
     badge: 'outline' as const,
   },
 };
 
-const FRAMEWORKS = [
+const FRAMEWORKS: { value: ComplianceFramework; label: string }[] = [
   { value: 'gdpr', label: 'GDPR' },
   { value: 'iso27001', label: 'ISO 27001' },
   { value: 'soc2', label: 'SOC 2' },
   { value: 'hipaa', label: 'HIPAA' },
   { value: 'pci_dss', label: 'PCI DSS' },
-  { value: 'custom', label: 'Custom' },
+  { value: 'internal', label: 'Internal' },
 ];
+
+type StatusConfigType = typeof STATUS_CONFIG[keyof typeof STATUS_CONFIG];
 
 export function ComplianceChecksDashboard() {
   const { t } = useTranslation();
@@ -103,45 +101,46 @@ export function ComplianceChecksDashboard() {
   const [frameworkFilter, setFrameworkFilter] = useState<string>('');
 
   const { data: allChecks, isLoading } = useComplianceChecks({
-    framework: frameworkFilter || undefined,
+    framework: frameworkFilter as ComplianceFramework | undefined,
   });
   const { data: pendingChecks } = usePendingReviewChecks();
   const { data: nonCompliantChecks } = useNonCompliantChecks();
   const { data: stats } = useComplianceStats();
 
   const createMutation = useCreateComplianceCheck();
-  const updateMutation = useUpdateComplianceCheck();
-  const deleteMutation = useDeleteComplianceCheck();
   const runMutation = useRunComplianceCheck();
 
   const [newCheck, setNewCheck] = useState({
     check_name: '',
     check_code: '',
     check_description: '',
-    framework: 'gdpr' as const,
+    framework: 'gdpr' as ComplianceFramework,
     category: '',
   });
 
   const handleCreate = async () => {
     await createMutation.mutateAsync({
-      ...newCheck,
-      framework: newCheck.framework as any,
+      framework: newCheck.framework,
+      check_code: newCheck.check_code,
+      check_name: newCheck.check_name,
+      check_description: newCheck.check_description,
+      category: newCheck.category,
     });
     setShowCreateDialog(false);
     setNewCheck({
       check_name: '',
       check_code: '',
       check_description: '',
-      framework: 'gdpr' as const,
+      framework: 'gdpr',
       category: '',
     });
   };
 
   const handleRunCheck = async (check: ComplianceCheck) => {
-    await runMutation.mutateAsync({ id: check.id, status: 'compliant' as any });
+    await runMutation.mutateAsync({ id: check.id, status: 'compliant' });
   };
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: string): StatusConfigType => {
     return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.pending_review;
   };
 
@@ -198,7 +197,7 @@ export function ComplianceChecksDashboard() {
                   <Label>{t('compliance.form.framework', 'Framework')}</Label>
                   <Select
                     value={newCheck.framework}
-                    onValueChange={(value) => setNewCheck({ ...newCheck, framework: value })}
+                    onValueChange={(value) => setNewCheck({ ...newCheck, framework: value as ComplianceFramework })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -476,8 +475,9 @@ function ChecksList({
   isLoading: boolean;
   onSelect: (check: ComplianceCheck) => void;
   onRun: (check: ComplianceCheck) => void;
-  getStatusConfig: (status: string) => (typeof STATUS_CONFIG)[keyof typeof STATUS_CONFIG];
+  getStatusConfig: (status: string) => StatusConfigType;
 }) {
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (

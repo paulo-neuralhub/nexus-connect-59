@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import {
   Shield,
-  UserCheck,
   Download,
   Trash2,
   Edit,
@@ -26,7 +25,6 @@ import {
   useCreateGdprRequest,
   useProcessGdprRequest,
   useGdprStats,
-  useUserConsents,
   useDataExports,
   type GdprRequest,
   type GdprRequestType,
@@ -39,7 +37,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -72,7 +69,7 @@ const REQUEST_TYPE_CONFIG = {
   erasure: {
     icon: Trash2,
     label: 'Erasure',
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    color: 'bg-destructive/10 text-destructive',
   },
   portability: {
     icon: Download,
@@ -87,17 +84,21 @@ const REQUEST_TYPE_CONFIG = {
   objection: {
     icon: XCircle,
     label: 'Objection',
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+    color: 'bg-muted text-muted-foreground',
   },
 };
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-yellow-500', badge: 'secondary' as const },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500', badge: 'default' as const },
+  identity_verification: { label: 'Identity Verification', color: 'bg-orange-500', badge: 'secondary' as const },
+  in_progress: { label: 'In Progress', color: 'bg-primary', badge: 'default' as const },
   completed: { label: 'Completed', color: 'bg-green-500', badge: 'default' as const },
-  rejected: { label: 'Rejected', color: 'bg-red-500', badge: 'destructive' as const },
-  identity_pending: { label: 'Identity Pending', color: 'bg-orange-500', badge: 'secondary' as const },
+  rejected: { label: 'Rejected', color: 'bg-destructive', badge: 'destructive' as const },
+  cancelled: { label: 'Cancelled', color: 'bg-muted-foreground', badge: 'secondary' as const },
 };
+
+type TypeConfigType = typeof REQUEST_TYPE_CONFIG[keyof typeof REQUEST_TYPE_CONFIG];
+type StatusConfigType = typeof STATUS_CONFIG[keyof typeof STATUS_CONFIG];
 
 export function GdprDashboard() {
   const { t } = useTranslation();
@@ -146,11 +147,11 @@ export function GdprDashboard() {
     setSelectedRequest(null);
   };
 
-  const getTypeConfig = (type: string) => {
+  const getTypeConfig = (type: string): TypeConfigType => {
     return REQUEST_TYPE_CONFIG[type as keyof typeof REQUEST_TYPE_CONFIG] || REQUEST_TYPE_CONFIG.access;
   };
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: string): StatusConfigType => {
     return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.pending;
   };
 
@@ -208,28 +209,28 @@ export function GdprDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>{t('gdpr.form.name', 'Data Subject Name')}</Label>
+                  <Label>{t('gdpr.form.name', 'Requester Name')}</Label>
                   <Input
-                    value={newRequest.data_subject_name}
-                    onChange={(e) => setNewRequest({ ...newRequest, data_subject_name: e.target.value })}
+                    value={newRequest.requester_name}
+                    onChange={(e) => setNewRequest({ ...newRequest, requester_name: e.target.value })}
                     placeholder="John Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t('gdpr.form.email', 'Data Subject Email')}</Label>
+                  <Label>{t('gdpr.form.email', 'Requester Email')}</Label>
                   <Input
                     type="email"
-                    value={newRequest.data_subject_email}
-                    onChange={(e) => setNewRequest({ ...newRequest, data_subject_email: e.target.value })}
+                    value={newRequest.requester_email}
+                    onChange={(e) => setNewRequest({ ...newRequest, requester_email: e.target.value })}
                     placeholder="john@example.com"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>{t('gdpr.form.details', 'Request Details')}</Label>
+                <Label>{t('gdpr.form.details', 'Description')}</Label>
                 <Textarea
-                  value={newRequest.request_details}
-                  onChange={(e) => setNewRequest({ ...newRequest, request_details: e.target.value })}
+                  value={newRequest.description}
+                  onChange={(e) => setNewRequest({ ...newRequest, description: e.target.value })}
                   placeholder="Describe the request..."
                   rows={3}
                 />
@@ -256,11 +257,11 @@ export function GdprDashboard() {
                 <p className="text-sm text-muted-foreground">
                   {t('gdpr.stats.pending', 'Pending')}
                 </p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {stats?.pending_count || 0}
+                <p className="text-2xl font-bold text-primary">
+                  {stats?.pending_requests || 0}
                 </p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
+              <Clock className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -270,13 +271,13 @@ export function GdprDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {t('gdpr.stats.inProgress', 'In Progress')}
+                  {t('gdpr.stats.total', 'Total Requests')}
                 </p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {stats?.in_progress_count || 0}
+                <p className="text-2xl font-bold">
+                  {stats?.total_requests || 0}
                 </p>
               </div>
-              <AlertCircle className="h-8 w-8 text-blue-500" />
+              <AlertCircle className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -286,13 +287,13 @@ export function GdprDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {t('gdpr.stats.completed', 'Completed (30d)')}
+                  {t('gdpr.stats.completed', 'Completed')}
                 </p>
-                <p className="text-2xl font-bold text-green-600">
-                  {stats?.completed_last_30_days || 0}
+                <p className="text-2xl font-bold text-primary">
+                  {stats?.completed_requests || 0}
                 </p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-500" />
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -305,10 +306,10 @@ export function GdprDashboard() {
                   {t('gdpr.stats.avgTime', 'Avg. Processing')}
                 </p>
                 <p className="text-2xl font-bold">
-                  {stats?.avg_processing_days ? `${Math.round(stats.avg_processing_days)}d` : '-'}
+                  {stats?.avg_completion_days ? `${Math.round(stats.avg_completion_days)}d` : '-'}
                 </p>
               </div>
-              <FileText className="h-8 w-8 text-purple-500" />
+              <FileText className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -439,43 +440,43 @@ export function GdprDashboard() {
                 <Badge className={getTypeConfig(selectedRequest.request_type).color}>
                   {getTypeConfig(selectedRequest.request_type).label}
                 </Badge>
-                <Badge variant={getStatusConfig(selectedRequest.status).badge}>
-                  {getStatusConfig(selectedRequest.status).label}
+                <Badge variant={getStatusConfig(selectedRequest.status || 'pending').badge}>
+                  {getStatusConfig(selectedRequest.status || 'pending').label}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    {t('gdpr.detail.subjectName', 'Data Subject')}
+                    {t('gdpr.detail.subjectName', 'Requester')}
                   </label>
-                  <p>{selectedRequest.data_subject_name || '-'}</p>
+                  <p>{selectedRequest.requester_name || '-'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     {t('gdpr.detail.subjectEmail', 'Email')}
                   </label>
-                  <p>{selectedRequest.data_subject_email}</p>
+                  <p>{selectedRequest.requester_email}</p>
                 </div>
               </div>
 
-              {selectedRequest.request_details && (
+              {selectedRequest.description && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    {t('gdpr.detail.details', 'Request Details')}
+                    {t('gdpr.detail.details', 'Description')}
                   </label>
-                  <p className="mt-1 p-3 bg-muted rounded-lg">{selectedRequest.request_details}</p>
+                  <p className="mt-1 p-3 bg-muted rounded-lg">{selectedRequest.description}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    {t('gdpr.detail.deadline', 'Deadline')}
+                    {t('gdpr.detail.dueDate', 'Due Date')}
                   </label>
                   <p>
-                    {selectedRequest.deadline
-                      ? format(new Date(selectedRequest.deadline), 'PPp')
+                    {selectedRequest.due_date
+                      ? format(new Date(selectedRequest.due_date), 'PPp')
                       : '-'}
                   </p>
                 </div>
@@ -485,11 +486,11 @@ export function GdprDashboard() {
                   </label>
                   <p>
                     {selectedRequest.identity_verified ? (
-                      <span className="text-green-600 flex items-center gap-1">
+                      <span className="text-primary flex items-center gap-1">
                         <CheckCircle2 className="h-4 w-4" /> Yes
                       </span>
                     ) : (
-                      <span className="text-yellow-600 flex items-center gap-1">
+                      <span className="text-muted-foreground flex items-center gap-1">
                         <AlertCircle className="h-4 w-4" /> Pending
                       </span>
                     )}
@@ -497,12 +498,12 @@ export function GdprDashboard() {
                 </div>
               </div>
 
-              {selectedRequest.completion_notes && (
+              {selectedRequest.processing_notes && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    {t('gdpr.detail.notes', 'Completion Notes')}
+                    {t('gdpr.detail.notes', 'Processing Notes')}
                   </label>
-                  <p className="mt-1 p-3 bg-muted rounded-lg">{selectedRequest.completion_notes}</p>
+                  <p className="mt-1 p-3 bg-muted rounded-lg">{selectedRequest.processing_notes}</p>
                 </div>
               )}
             </div>
@@ -548,8 +549,8 @@ function RequestsList({
   requests: GdprRequest[] | undefined;
   isLoading: boolean;
   onSelect: (request: GdprRequest) => void;
-  getTypeConfig: (type: string) => typeof REQUEST_TYPE_CONFIG.access;
-  getStatusConfig: (status: string) => typeof STATUS_CONFIG.pending;
+  getTypeConfig: (type: string) => TypeConfigType;
+  getStatusConfig: (status: string) => StatusConfigType;
 }) {
   const { t } = useTranslation();
 
@@ -593,7 +594,7 @@ function RequestsList({
         {requests.map((request) => {
           const typeConfig = getTypeConfig(request.request_type);
           const TypeIcon = typeConfig.icon;
-          const statusConfig = getStatusConfig(request.status);
+          const statusConfig = getStatusConfig(request.status || 'pending');
 
           return (
             <Card
@@ -609,23 +610,23 @@ function RequestsList({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium truncate">
-                        {request.data_subject_name || request.data_subject_email}
+                        {request.requester_name || request.requester_email}
                       </span>
                       <Badge className={typeConfig.color}>
                         {typeConfig.label}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
-                      {request.request_details || 'No details provided'}
+                      {request.description || 'No description provided'}
                     </p>
                     <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                       <span>{request.created_at && format(new Date(request.created_at), 'MMM d, yyyy')}</span>
                       <div className={`h-2 w-2 rounded-full ${statusConfig.color}`} />
                       <span>{statusConfig.label}</span>
-                      {request.deadline && (
+                      {request.due_date && (
                         <>
                           <span>•</span>
-                          <span>Due: {format(new Date(request.deadline), 'MMM d')}</span>
+                          <span>Due: {format(new Date(request.due_date), 'MMM d')}</span>
                         </>
                       )}
                     </div>

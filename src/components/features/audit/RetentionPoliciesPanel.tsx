@@ -9,26 +9,21 @@ import {
   Clock,
   Plus,
   Play,
-  Edit,
   Trash2,
   Archive,
-  AlertTriangle,
   CheckCircle2,
   Lock,
   Unlock,
-  Calendar,
   Database,
-  ChevronRight,
 } from 'lucide-react';
 import {
   useRetentionPolicies,
   useCreateRetentionPolicy,
-  useUpdateRetentionPolicy,
   useDeleteRetentionPolicy,
   useSetLegalHold,
   useExecuteRetentionPolicy,
-  useRetentionExecutions,
   type RetentionPolicy,
+  type RetentionAction,
 } from '@/hooks/audit';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +31,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -77,7 +71,7 @@ const DATA_TYPES = [
   { value: 'temp_files', label: 'Temporary Files' },
 ];
 
-const ACTIONS = [
+const ACTIONS: { value: RetentionAction; label: string; icon: typeof Archive }[] = [
   { value: 'archive', label: 'Archive', icon: Archive },
   { value: 'delete', label: 'Delete', icon: Trash2 },
   { value: 'anonymize', label: 'Anonymize', icon: Lock },
@@ -92,10 +86,8 @@ export function RetentionPoliciesPanel() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
   const { data: policies, isLoading } = useRetentionPolicies();
-  const { data: executions } = useRetentionExecutions(selectedPolicy?.id);
 
   const createMutation = useCreateRetentionPolicy();
-  const updateMutation = useUpdateRetentionPolicy();
   const deleteMutation = useDeleteRetentionPolicy();
   const legalHoldMutation = useSetLegalHold();
   const executeMutation = useExecuteRetentionPolicy();
@@ -105,11 +97,17 @@ export function RetentionPoliciesPanel() {
     description: '',
     data_type: 'audit_logs',
     retention_days: 365,
-    action: 'archive',
+    action: 'archive' as RetentionAction,
   });
 
   const handleCreate = async () => {
-    await createMutation.mutateAsync(newPolicy);
+    await createMutation.mutateAsync({
+      name: newPolicy.name,
+      description: newPolicy.description,
+      data_type: newPolicy.data_type,
+      retention_days: newPolicy.retention_days,
+      action: newPolicy.action,
+    });
     setShowCreateDialog(false);
     setNewPolicy({
       name: '',
@@ -123,12 +121,13 @@ export function RetentionPoliciesPanel() {
   const handleSetLegalHold = async (enable: boolean) => {
     if (!selectedPolicy) return;
     await legalHoldMutation.mutateAsync({
-      id: selectedPolicy.id,
-      legal_hold: enable,
+      policyId: selectedPolicy.id,
+      legalHold: enable,
       reason: enable ? legalHoldReason : undefined,
     });
     setShowLegalHoldDialog(false);
     setLegalHoldReason('');
+    setSelectedPolicy(null);
   };
 
   const handleExecute = async (policy: RetentionPolicy) => {
@@ -141,7 +140,6 @@ export function RetentionPoliciesPanel() {
   };
 
   const activePolicies = policies?.filter(p => p.is_active);
-  const inactivePolicies = policies?.filter(p => !p.is_active);
 
   return (
     <div className="space-y-6">
@@ -213,7 +211,7 @@ export function RetentionPoliciesPanel() {
                 <Label>{t('retention.form.action', 'Action')}</Label>
                 <Select
                   value={newPolicy.action}
-                  onValueChange={(value) => setNewPolicy({ ...newPolicy, action: value })}
+                  onValueChange={(value) => setNewPolicy({ ...newPolicy, action: value as RetentionAction })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -265,7 +263,7 @@ export function RetentionPoliciesPanel() {
                   {activePolicies?.length || 0}
                 </p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-500" />
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -277,11 +275,11 @@ export function RetentionPoliciesPanel() {
                 <p className="text-sm text-muted-foreground">
                   {t('retention.stats.legalHold', 'Under Legal Hold')}
                 </p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-destructive">
                   {policies?.filter(p => p.legal_hold).length || 0}
                 </p>
               </div>
-              <Lock className="h-8 w-8 text-orange-500" />
+              <Lock className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -297,7 +295,7 @@ export function RetentionPoliciesPanel() {
                   {new Set(policies?.map(p => p.data_type)).size || 0}
                 </p>
               </div>
-              <Database className="h-8 w-8 text-blue-500" />
+              <Database className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -346,13 +344,13 @@ export function RetentionPoliciesPanel() {
                     <div
                       key={policy.id}
                       className={`flex items-center gap-4 p-4 border rounded-lg transition-colors hover:bg-muted/50 ${
-                        policy.legal_hold ? 'border-orange-300 bg-orange-50 dark:bg-orange-900/10' : ''
+                        policy.legal_hold ? 'border-destructive/30 bg-destructive/5' : ''
                       }`}
                     >
                       <div className={`p-2 rounded-full ${
                         policy.is_active 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted text-muted-foreground'
                       }`}>
                         <ActionIcon className="h-5 w-5" />
                       </div>
@@ -360,7 +358,7 @@ export function RetentionPoliciesPanel() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium truncate">{policy.name}</span>
                           {policy.legal_hold && (
-                            <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
                               <Lock className="h-3 w-3 mr-1" />
                               Legal Hold
                             </Badge>
@@ -400,7 +398,7 @@ export function RetentionPoliciesPanel() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleExecute(policy)}
-                          disabled={executeMutation.isPending || policy.legal_hold}
+                          disabled={executeMutation.isPending || !!policy.legal_hold}
                           title="Execute Now"
                         >
                           <Play className="h-4 w-4" />
