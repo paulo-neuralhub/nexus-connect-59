@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          denial_reason: string | null
+          granted: boolean
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          organization_id: string | null
+          permission_code: string | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          denial_reason?: string | null
+          granted: boolean
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          organization_id?: string | null
+          permission_code?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          denial_reason?: string | null
+          granted?: boolean
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          organization_id?: string | null
+          permission_code?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activities: {
         Row: {
           call_duration: number | null
@@ -8499,6 +8562,7 @@ export type Database = {
           organization_id: string
           permissions: Json | null
           role: string
+          role_id: string | null
           user_id: string
         }
         Insert: {
@@ -8507,6 +8571,7 @@ export type Database = {
           organization_id: string
           permissions?: Json | null
           role?: string
+          role_id?: string | null
           user_id: string
         }
         Update: {
@@ -8515,6 +8580,7 @@ export type Database = {
           organization_id?: string
           permissions?: Json | null
           role?: string
+          role_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -8523,6 +8589,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
             referencedColumns: ["id"]
           },
           {
@@ -9919,6 +9992,39 @@ export type Database = {
           },
         ]
       }
+      permission_definitions: {
+        Row: {
+          action: Database["public"]["Enums"]["permission_action"]
+          code: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          module: string
+          name: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["permission_action"]
+          code: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          module: string
+          name: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["permission_action"]
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          module?: string
+          name?: string
+        }
+        Relationships: []
+      }
       pipeline_stages: {
         Row: {
           auto_actions: Json | null
@@ -11238,6 +11344,169 @@ export type Database = {
           },
         ]
       }
+      resource_permissions: {
+        Row: {
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          grantee_id: string
+          grantee_type: string
+          id: string
+          organization_id: string
+          permission_id: string
+          resource_id: string
+          resource_type: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          grantee_id: string
+          grantee_type: string
+          id?: string
+          organization_id: string
+          permission_id: string
+          resource_id: string
+          resource_type: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          grantee_id?: string
+          grantee_type?: string
+          id?: string
+          organization_id?: string
+          permission_id?: string
+          resource_id?: string
+          resource_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permission_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          conditions: Json | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          permission_id: string
+          role_id: string
+          scope: Database["public"]["Enums"]["permission_scope"] | null
+        }
+        Insert: {
+          conditions?: Json | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission_id: string
+          role_id: string
+          scope?: Database["public"]["Enums"]["permission_scope"] | null
+        }
+        Update: {
+          conditions?: Json | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission_id?: string
+          role_id?: string
+          scope?: Database["public"]["Enums"]["permission_scope"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permission_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          code: string
+          color: string | null
+          created_at: string | null
+          description: string | null
+          hierarchy_level: number | null
+          id: string
+          is_editable: boolean | null
+          is_system: boolean | null
+          name: string
+          organization_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          hierarchy_level?: number | null
+          id?: string
+          is_editable?: boolean | null
+          is_system?: boolean | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          hierarchy_level?: number | null
+          id?: string
+          is_editable?: boolean | null
+          is_system?: boolean | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_exports: {
         Row: {
           created_at: string | null
@@ -12120,6 +12389,109 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          role_in_team: string | null
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          role_in_team?: string | null
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          role_in_team?: string | null
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          leader_id: string | null
+          name: string
+          organization_id: string
+          parent_team_id: string | null
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          leader_id?: string | null
+          name: string
+          organization_id: string
+          parent_team_id?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          leader_id?: string | null
+          name?: string
+          organization_id?: string
+          parent_team_id?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_parent_team_id_fkey"
+            columns: ["parent_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trademark_visuals: {
         Row: {
           color_histogram: Json | null
@@ -12290,6 +12662,63 @@ export type Database = {
           },
           {
             foreignKeyName: "user_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          expires_at: string
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          last_activity_at: string | null
+          organization_id: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          organization_id?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          organization_id?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -13286,6 +13715,14 @@ export type Database = {
     }
     Functions: {
       calculate_kyc_level: { Args: { p_user_id: string }; Returns: number }
+      check_user_permission: {
+        Args: {
+          _organization_id: string
+          _permission_code: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       get_analytics_stats: {
         Args: { p_days?: number; p_organization_id: string }
@@ -13299,6 +13736,24 @@ export type Database = {
         }[]
       }
       get_user_org_ids: { Args: never; Returns: string[] }
+      get_user_permissions: {
+        Args: { _organization_id: string; _user_id: string }
+        Returns: {
+          module: string
+          permission_code: string
+          permission_name: string
+          scope: Database["public"]["Enums"]["permission_scope"]
+        }[]
+      }
+      get_user_role: {
+        Args: { _organization_id: string; _user_id: string }
+        Returns: {
+          legacy_role: string
+          role_code: string
+          role_id: string
+          role_name: string
+        }[]
+      }
       get_user_role_in_org: { Args: { org_id: string }; Returns: string }
       get_workflow_stats: {
         Args: { p_days?: number; p_organization_id: string }
@@ -13402,6 +13857,16 @@ export type Database = {
         | "failed"
         | "expired"
         | "not_required"
+      permission_action:
+        | "view"
+        | "create"
+        | "edit"
+        | "delete"
+        | "export"
+        | "configure"
+        | "manage"
+        | "approve"
+      permission_scope: "all" | "team" | "own" | "assigned"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13605,6 +14070,17 @@ export const Constants = {
         "expired",
         "not_required",
       ],
+      permission_action: [
+        "view",
+        "create",
+        "edit",
+        "delete",
+        "export",
+        "configure",
+        "manage",
+        "approve",
+      ],
+      permission_scope: ["all", "team", "own", "assigned"],
     },
   },
 } as const
