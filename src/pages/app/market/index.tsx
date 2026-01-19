@@ -3,29 +3,25 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, 
-  Filter, 
   Plus, 
   TrendingUp, 
   Package, 
   DollarSign, 
   Users,
   ArrowRight,
-  Star,
-  Shield,
   Clock
 } from 'lucide-react';
-import { useMarketListings } from '@/hooks/use-market';
+import { useMarketListings, useToggleFavorite, useMarketFavorites } from '@/hooks/use-market';
 import { 
   ASSET_TYPE_CONFIG, 
   TRANSACTION_TYPE_CONFIG,
-  LISTING_STATUS_CONFIG,
   type AssetType,
   type TransactionType 
 } from '@/types/market.types';
+import { ListingCard } from '@/components/market/listings/ListingCard';
 
 export default function MarketDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,12 +35,22 @@ export default function MarketDashboard() {
     search: searchQuery || undefined,
   });
 
+  const { data: favorites } = useMarketFavorites();
+  const toggleFavorite = useToggleFavorite();
+  
+  const favoriteIds = favorites?.map(f => f.listing_id) || [];
+
   // Stats simulados por ahora
   const stats = {
     activeListings: listings?.length || 0,
     totalTransactions: 156,
     totalVolume: 2450000,
     activeUsers: 342
+  };
+
+  const handleFavoriteToggle = (listingId: string) => {
+    const isFav = favoriteIds.includes(listingId);
+    toggleFavorite.mutate({ listingId, isFavorite: isFav });
   };
 
   return (
@@ -58,9 +64,7 @@ export default function MarketDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeListings}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% desde el mes pasado
-            </p>
+            <p className="text-xs text-muted-foreground">+12% desde el mes pasado</p>
           </CardContent>
         </Card>
         <Card>
@@ -70,9 +74,7 @@ export default function MarketDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTransactions}</div>
-            <p className="text-xs text-muted-foreground">
-              +8% desde el mes pasado
-            </p>
+            <p className="text-xs text-muted-foreground">+8% desde el mes pasado</p>
           </CardContent>
         </Card>
         <Card>
@@ -81,12 +83,8 @@ export default function MarketDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              €{(stats.totalVolume / 1000000).toFixed(2)}M
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +23% desde el mes pasado
-            </p>
+            <div className="text-2xl font-bold">€{(stats.totalVolume / 1000000).toFixed(2)}M</div>
+            <p className="text-xs text-muted-foreground">+23% desde el mes pasado</p>
           </CardContent>
         </Card>
         <Card>
@@ -96,9 +94,7 @@ export default function MarketDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              +5% desde el mes pasado
-            </p>
+            <p className="text-xs text-muted-foreground">+5% desde el mes pasado</p>
           </CardContent>
         </Card>
       </div>
@@ -121,9 +117,7 @@ export default function MarketDashboard() {
           <SelectContent>
             <SelectItem value="all">Todos los tipos</SelectItem>
             {Object.entries(ASSET_TYPE_CONFIG).map(([key, config]) => (
-              <SelectItem key={key} value={key}>
-                {config.icon} {config.label}
-              </SelectItem>
+              <SelectItem key={key} value={key}>{config.labelEs}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -134,9 +128,7 @@ export default function MarketDashboard() {
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
             {Object.entries(TRANSACTION_TYPE_CONFIG).map(([key, config]) => (
-              <SelectItem key={key} value={key}>
-                {config.label}
-              </SelectItem>
+              <SelectItem key={key} value={key}>{config.labelEs}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -214,18 +206,38 @@ export default function MarketDashboard() {
               ))}
             </div>
           ) : listings && listings.length > 0 ? (
-            <div className="space-y-4">
-              {listings.slice(0, 5).map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {listings.slice(0, 6).map((listing: any) => (
+                <ListingCard 
+                  key={listing.id} 
+                  listing={{
+                    id: listing.id,
+                    title: listing.title,
+                    description: listing.description,
+                    price: listing.asking_price || 0,
+                    currency: listing.currency || 'EUR',
+                    is_featured: listing.is_featured,
+                    is_negotiable: listing.price_type === 'negotiable',
+                    views_count: listing.views_count,
+                    created_at: listing.created_at,
+                    transaction_types: listing.transaction_types || [listing.transaction_type],
+                    asset: {
+                      type: listing.asset?.asset_type,
+                      jurisdiction: listing.asset?.jurisdictions?.[0],
+                      images: listing.asset?.images,
+                      is_verified: listing.asset?.is_verified,
+                    }
+                  }}
+                  isFavorite={favoriteIds.includes(listing.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(listing.id)}
+                />
               ))}
             </div>
           ) : (
             <div className="text-center py-12">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">No hay listings activos</h3>
-              <p className="text-muted-foreground mb-4">
-                Sé el primero en publicar un activo de PI
-              </p>
+              <p className="text-muted-foreground mb-4">Sé el primero en publicar un activo de PI</p>
               <Button asChild>
                 <Link to="/app/market/listings/new">
                   <Plus className="h-4 w-4 mr-2" />
@@ -237,71 +249,5 @@ export default function MarketDashboard() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function ListingCard({ listing }: { listing: any }) {
-  const assetConfig = listing.asset?.asset_type 
-    ? ASSET_TYPE_CONFIG[listing.asset.asset_type as AssetType] 
-    : null;
-  const transactionConfig = TRANSACTION_TYPE_CONFIG[listing.transaction_type as TransactionType];
-  const statusConfig = LISTING_STATUS_CONFIG[listing.status as keyof typeof LISTING_STATUS_CONFIG];
-
-  return (
-    <Link to={`/app/market/listings/${listing.id}`}>
-      <div className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-        <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center text-2xl">
-          {assetConfig?.icon || '📦'}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium truncate">{listing.title}</h4>
-            {listing.is_featured && (
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                <Star className="h-3 w-3 mr-1" />
-                Destacado
-              </Badge>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground truncate">
-            {listing.asset?.title || 'Activo'}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className="text-xs">
-              {transactionConfig?.label || listing.transaction_type}
-            </Badge>
-            {listing.asset?.jurisdictions?.length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                📍 {listing.asset.jurisdictions.slice(0, 2).join(', ')}
-                {listing.asset.jurisdictions.length > 2 && ` +${listing.asset.jurisdictions.length - 2}`}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-bold">
-            {listing.price_type === 'fixed' && listing.asking_price
-              ? `€${listing.asking_price.toLocaleString()}`
-              : listing.price_type === 'negotiable'
-              ? 'Negociable'
-              : 'Consultar'}
-          </p>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {new Date(listing.created_at).toLocaleDateString()}
-          </div>
-        </div>
-        <Badge 
-          variant="outline" 
-          style={{ 
-            backgroundColor: statusConfig?.color + '20',
-            borderColor: statusConfig?.color,
-            color: statusConfig?.color 
-          }}
-        >
-          {statusConfig?.label || listing.status}
-        </Badge>
-      </div>
-    </Link>
   );
 }

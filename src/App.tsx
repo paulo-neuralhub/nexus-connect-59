@@ -21,6 +21,7 @@ import MarketLayout from "./pages/app/market/MarketLayout";
 import MarketDashboard from "./pages/app/market";
 import MarketListings from "./pages/app/market/listings";
 import CreateListingPage from "./pages/app/market/listings/new";
+import ListingDetailPage from "./pages/app/market/listings/[id]";
 import MarketAssets from "./pages/app/market/assets";
 import MarketTransactions from "./pages/app/market/transactions";
 import MarketFavorites from "./pages/app/market/favorites";
@@ -151,6 +152,7 @@ const App = () => (
                   <Route index element={<MarketDashboard />} />
                   <Route path="listings" element={<MarketListings />} />
                   <Route path="listings/new" element={<CreateListingPage />} />
+                  <Route path="listings/:id" element={<ListingDetailPage />} />
                   <Route path="assets" element={<MarketAssets />} />
                   <Route path="transactions" element={<MarketTransactions />} />
                   <Route path="favorites" element={<MarketFavorites />} />
