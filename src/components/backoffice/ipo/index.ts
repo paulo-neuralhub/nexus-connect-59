@@ -2,3 +2,5 @@
 export { IPODashboard } from './IPODashboard';
 export { IPOOfficeDetail } from './IPOOfficeDetail';
 export { IPOOfficeForm } from './IPOOfficeForm';
+export { IPOSeedingPanel } from './IPOSeedingPanel';
+export { AutoMendButton } from './AutoMendButton';

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Select, 
   SelectContent, 
@@ -31,11 +32,13 @@ import {
   Circle,
   Plus,
   Loader2,
+  Database,
 } from 'lucide-react';
 import { useIPOStats, useIPOOffices } from '@/hooks/backoffice/useIPORegistry';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { OFFICE_TIERS, REGIONS, CONNECTION_METHOD_TYPES } from '@/lib/constants/ipo-registry';
+import { IPOSeedingPanel } from './IPOSeedingPanel';
 
 export function IPODashboard() {
   const { data: stats, isLoading: statsLoading } = useIPOStats();
@@ -90,6 +93,21 @@ export function IPODashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Tabs for Registry vs Seeding */}
+      <Tabs defaultValue="registry" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="registry" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Registro
+          </TabsTrigger>
+          <TabsTrigger value="seeding" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Seeding
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="registry" className="space-y-6">
 
       {/* KPIs */}
       {statsLoading ? (
@@ -244,111 +262,117 @@ export function IPODashboard() {
         </CardContent>
       </Card>
 
-      {/* Offices Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Oficinas ({offices?.length || 0})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {officesLoading ? (
-            <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-12 bg-muted animate-pulse rounded" />
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">Estado</TableHead>
-                  <TableHead className="w-[80px]">Código</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead className="w-[80px]">Tier</TableHead>
-                  <TableHead className="w-[100px]">Método</TableHead>
-                  <TableHead>Última Sync</TableHead>
-                  <TableHead className="w-[100px]">Éxito 7d</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {offices?.length === 0 ? (
+        {/* Offices Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Oficinas ({offices?.length || 0})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {officesLoading ? (
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-12 bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No se encontraron oficinas
-                    </TableCell>
+                    <TableHead className="w-[60px]">Estado</TableHead>
+                    <TableHead className="w-[80px]">Código</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead className="w-[80px]">Tier</TableHead>
+                    <TableHead className="w-[100px]">Método</TableHead>
+                    <TableHead>Última Sync</TableHead>
+                    <TableHead className="w-[100px]">Éxito 7d</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
-                ) : (
-                  offices?.map((office) => (
-                    <TableRow key={office.id}>
-                      <TableCell>
-                        <div 
-                          className={`w-3 h-3 rounded-full ${healthColors[office.traffic_light]}`} 
-                          title={office.health_status || 'unknown'}
-                        />
-                      </TableCell>
-                      <TableCell className="font-mono font-medium">
-                        {office.code}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{office.name_short || office.name_official}</p>
-                          {office.name_short && (
-                            <p className="text-xs text-muted-foreground truncate max-w-[300px]">
-                              {office.name_official}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={office.tier === 1 ? 'default' : office.tier === 2 ? 'secondary' : 'outline'}
-                          className={office.tier === 1 ? 'bg-purple-600' : ''}
-                        >
-                          T{office.tier}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {office.method_type ? CONNECTION_METHOD_TYPES[office.method_type]?.label : 'N/A'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {office.last_successful_sync 
-                          ? formatDistanceToNow(new Date(office.last_successful_sync), { 
-                              addSuffix: true, 
-                              locale: es 
-                            })
-                          : 'Nunca'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {office.success_rate_7d !== null && office.success_rate_7d !== undefined ? (
-                          <span className={
-                            office.success_rate_7d >= 95 ? 'text-green-600' :
-                            office.success_rate_7d >= 80 ? 'text-yellow-600' :
-                            'text-red-600'
-                          }>
-                            {office.success_rate_7d.toFixed(0)}%
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/backoffice/ipo/${office.id}`}>
-                            <ChevronRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {offices?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        No se encontraron oficinas
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                  ) : (
+                    offices?.map((office) => (
+                      <TableRow key={office.id}>
+                        <TableCell>
+                          <div 
+                            className={`w-3 h-3 rounded-full ${healthColors[office.traffic_light]}`} 
+                            title={office.health_status || 'unknown'}
+                          />
+                        </TableCell>
+                        <TableCell className="font-mono font-medium">
+                          {office.code}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{office.name_short || office.name_official}</p>
+                            {office.name_short && (
+                              <p className="text-xs text-muted-foreground truncate max-w-[300px]">
+                                {office.name_official}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={office.tier === 1 ? 'default' : office.tier === 2 ? 'secondary' : 'outline'}
+                            className={office.tier === 1 ? 'bg-purple-600' : ''}
+                          >
+                            T{office.tier}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {office.method_type ? CONNECTION_METHOD_TYPES[office.method_type]?.label : 'N/A'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {office.last_successful_sync 
+                            ? formatDistanceToNow(new Date(office.last_successful_sync), { 
+                                addSuffix: true, 
+                                locale: es 
+                              })
+                            : 'Nunca'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {office.success_rate_7d !== null && office.success_rate_7d !== undefined ? (
+                            <span className={
+                              office.success_rate_7d >= 95 ? 'text-green-600' :
+                              office.success_rate_7d >= 80 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }>
+                              {office.success_rate_7d.toFixed(0)}%
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link to={`/backoffice/ipo/${office.id}`}>
+                              <ChevronRight className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+        </TabsContent>
+
+        <TabsContent value="seeding">
+          <IPOSeedingPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
