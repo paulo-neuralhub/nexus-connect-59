@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -118,7 +118,7 @@ export function QuickStats({
       <StatCard
         title="Alertas"
         value={criticalAlerts}
-        icon={require("lucide-react").AlertTriangle}
+        icon={AlertTriangle}
         link="/app/spider"
         badge={criticalAlerts > 0 ? "Críticas" : undefined}
         badgeVariant={criticalAlerts > 0 ? "destructive" : "secondary"}
