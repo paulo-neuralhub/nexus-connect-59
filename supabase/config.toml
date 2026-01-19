@@ -107,3 +107,9 @@ verify_jwt = true
 
 [functions.apply-shadow-import]
 verify_jwt = true
+
+[functions.ipo-auto-mend]
+verify_jwt = true
+
+[functions.ipo-regenerate-scraper]
+verify_jwt = true

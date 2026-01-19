@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 interface AutoMendButtonProps {
   officeId: string;
-  connectionMethodId: string;
+  connectionMethodId?: string;
   officeName: string;
   disabled?: boolean;
 }

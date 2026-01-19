@@ -283,7 +283,7 @@ async function analyzeRecentLogs(supabase: any, connectionMethodId: string): Pro
       .order('started_at', { ascending: false })
       .limit(20);
 
-    const errors = logs?.flatMap(l => (l.errors as unknown[]) || []) || [];
+    const errors = logs?.flatMap((l: any) => (l.errors as unknown[]) || []) || [];
 
     const { data: patterns } = await supabase
       .from('ipo_error_patterns')

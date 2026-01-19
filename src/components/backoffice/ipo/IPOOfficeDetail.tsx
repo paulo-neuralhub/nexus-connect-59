@@ -33,6 +33,7 @@ import { useIPOOffice, useRunHealthCheck, useTriggerSync, useSyncLogs } from '@/
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { OFFICE_TIERS, HEALTH_STATUS_CONFIG, IP_TYPES_CONFIG, CONNECTION_METHOD_TYPES } from '@/lib/constants/ipo-registry';
+import { AutoMendButton } from './AutoMendButton';
 
 export function IPOOfficeDetail() {
   const { officeId } = useParams<{ officeId: string }>();
@@ -94,6 +95,10 @@ export function IPOOfficeDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          <AutoMendButton 
+            officeId={office.id} 
+            officeName={office.name_short || office.code}
+          />
           <Button 
             variant="outline"
             onClick={() => primaryMethod && runHealthCheck.mutate(primaryMethod.id)}
