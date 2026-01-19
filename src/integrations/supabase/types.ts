@@ -330,6 +330,41 @@ export type Database = {
           },
         ]
       }
+      ai_glossary_terms: {
+        Row: {
+          context: string | null
+          created_at: string | null
+          glossary_id: string
+          id: string
+          source_term: string
+          target_term: string
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string | null
+          glossary_id: string
+          id?: string
+          source_term: string
+          target_term: string
+        }
+        Update: {
+          context?: string | null
+          created_at?: string | null
+          glossary_id?: string
+          id?: string
+          source_term?: string
+          target_term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_glossary_terms_glossary_id_fkey"
+            columns: ["glossary_id"]
+            isOneToOne: false
+            referencedRelation: "ai_translation_glossaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_messages: {
         Row: {
           content: string
@@ -427,6 +462,137 @@ export type Database = {
           user_prompt_template?: string | null
         }
         Relationships: []
+      }
+      ai_translation_glossaries: {
+        Row: {
+          created_at: string | null
+          domain: string | null
+          id: string
+          is_official: boolean | null
+          is_public: boolean | null
+          name: string
+          organization_id: string | null
+          source_language: string
+          target_language: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          domain?: string | null
+          id?: string
+          is_official?: boolean | null
+          is_public?: boolean | null
+          name: string
+          organization_id?: string | null
+          source_language: string
+          target_language: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          domain?: string | null
+          id?: string
+          is_official?: boolean | null
+          is_public?: boolean | null
+          name?: string
+          organization_id?: string | null
+          source_language?: string
+          target_language?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_translation_glossaries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_translations: {
+        Row: {
+          character_count: number | null
+          completed_at: string | null
+          confidence_score: number | null
+          created_at: string | null
+          disclaimer_accepted: boolean | null
+          disclaimer_accepted_at: string | null
+          document_type: string
+          glossary_id: string | null
+          id: string
+          organization_id: string
+          processing_time_ms: number | null
+          source_language: string
+          source_text: string
+          status: string | null
+          target_language: string
+          terms_used: Json | null
+          translated_text: string | null
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          character_count?: number | null
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          disclaimer_accepted?: boolean | null
+          disclaimer_accepted_at?: string | null
+          document_type: string
+          glossary_id?: string | null
+          id?: string
+          organization_id: string
+          processing_time_ms?: number | null
+          source_language: string
+          source_text: string
+          status?: string | null
+          target_language: string
+          terms_used?: Json | null
+          translated_text?: string | null
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          character_count?: number | null
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          disclaimer_accepted?: boolean | null
+          disclaimer_accepted_at?: string | null
+          document_type?: string
+          glossary_id?: string | null
+          id?: string
+          organization_id?: string
+          processing_time_ms?: number | null
+          source_language?: string
+          source_text?: string
+          status?: string | null
+          target_language?: string
+          terms_used?: Json | null
+          translated_text?: string | null
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_translations_glossary_id_fkey"
+            columns: ["glossary_id"]
+            isOneToOne: false
+            referencedRelation: "ai_translation_glossaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_translations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_usage: {
         Row: {

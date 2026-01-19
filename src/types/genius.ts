@@ -1,7 +1,7 @@
 import type { Matter } from './matters';
 
 // ===== AGENTES =====
-export type AgentType = 'guide' | 'ops' | 'legal' | 'watch' | 'docs';
+export type AgentType = 'guide' | 'ops' | 'legal' | 'watch' | 'docs' | 'translator';
 
 export interface AgentConfig {
   type: AgentType;
@@ -10,6 +10,29 @@ export interface AgentConfig {
   icon: string;
   color: string;
   capabilities: string[];
+}
+
+// ===== MODOS ESPECIALIZADOS =====
+export type GeniusMode = 
+  | 'general'           // Consultas generales de PI
+  | 'patent_drafting'   // Redacción de patentes
+  | 'trademark_search'  // Búsqueda de marcas similares
+  | 'contract_review'   // Revisión de contratos
+  | 'office_action'     // Respuesta a acciones de oficina
+  | 'valuation'         // Valoración de activos
+  | 'prior_art'         // Búsqueda de estado de la técnica
+  | 'freedom_to_operate' // Análisis FTO
+  | 'portfolio_strategy' // Estrategia de portfolio
+  | 'translator';       // Traducción legal
+
+export interface GeniusModeConfig {
+  id: GeniusMode;
+  name: { en: string; es: string };
+  description: { en: string; es: string };
+  icon: string;
+  systemPrompt: string;
+  suggestedQuestions: string[];
+  requiredContext?: string[];
 }
 
 // ===== CONVERSACIONES =====
