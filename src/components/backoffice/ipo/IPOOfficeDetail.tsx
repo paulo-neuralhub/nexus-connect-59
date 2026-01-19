@@ -28,12 +28,14 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
+  Scale,
 } from 'lucide-react';
 import { useIPOOffice, useRunHealthCheck, useTriggerSync, useSyncLogs } from '@/hooks/backoffice/useIPORegistry';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { OFFICE_TIERS, HEALTH_STATUS_CONFIG, IP_TYPES_CONFIG, CONNECTION_METHOD_TYPES } from '@/lib/constants/ipo-registry';
 import { AutoMendButton } from './AutoMendButton';
+import { LegalLibraryTab } from './LegalLibraryTab';
 
 export function IPOOfficeDetail() {
   const { officeId } = useParams<{ officeId: string }>();
@@ -131,7 +133,7 @@ export function IPOOfficeDetail() {
 
       {/* Tabs */}
       <Tabs defaultValue="identity">
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="identity" className="flex items-center gap-1">
             <Building className="h-4 w-4" />
             <span className="hidden md:inline">Identidad</span>
@@ -155,6 +157,10 @@ export function IPOOfficeDetail() {
           <TabsTrigger value="fees" className="flex items-center gap-1">
             <DollarSign className="h-4 w-4" />
             <span className="hidden md:inline">Tasas</span>
+          </TabsTrigger>
+          <TabsTrigger value="legal" className="flex items-center gap-1">
+            <Scale className="h-4 w-4" />
+            <span className="hidden md:inline">Legal</span>
           </TabsTrigger>
         </TabsList>
 
@@ -635,6 +641,14 @@ export function IPOOfficeDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Tab G: Legal Library */}
+        <TabsContent value="legal">
+          <LegalLibraryTab 
+            officeId={office.id} 
+            officeName={office.name_short || office.code} 
+          />
         </TabsContent>
       </Tabs>
     </div>
