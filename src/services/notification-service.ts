@@ -1,5 +1,6 @@
 // src/services/notification-service.ts
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 // ============================================
 // TYPES
@@ -78,16 +79,14 @@ class NotificationServiceClass {
         title: payload.title,
         body: payload.body || '',
         action_url: payload.actionUrl,
-        action_data: payload.data || {},
+        action_data: (payload.data || {}) as Json,
         sent_via: ['in_app'],
         is_read: false,
-        metadata: {
-          organization_id: payload.organizationId,
-          category: payload.category,
-          priority: payload.priority || 'normal',
-          group_key: payload.groupKey,
-          action_label: payload.actionLabel,
-        },
+        category: payload.category,
+        priority: payload.priority || 'normal',
+        group_key: payload.groupKey,
+        action_label: payload.actionLabel,
+        data: { organization_id: payload.organizationId } as Json,
       })
       .select()
       .single();
