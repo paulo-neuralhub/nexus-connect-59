@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useIPOOffice, useCreateOffice, useUpdateOffice } from '@/hooks/backoffice/useIPORegistry';
 import { REGIONS, TIMEZONES, CURRENCIES, IP_TYPES_CONFIG } from '@/lib/constants/ipo-registry';
-import { IPType } from '@/types/ipo-registry.types';
+import { IPType, OfficeTier, IPOOfficeFormData } from '@/types/ipo-registry.types';
 import { useEffect } from 'react';
 
 const officeSchema = z.object({
@@ -102,8 +102,26 @@ export function IPOOfficeForm() {
   const onSubmit = async (data: OfficeFormData) => {
     try {
       const submitData = {
-        ...data,
+        code: data.code,
+        code_alt: data.code_alt,
+        name_official: data.name_official,
+        name_short: data.name_short,
+        country_code: data.country_code,
+        region: data.region,
+        office_type: data.office_type,
         ip_types: data.ip_types as IPType[],
+        timezone: data.timezone,
+        languages: data.languages,
+        currency: data.currency,
+        address: data.address,
+        website_official: data.website_official || undefined,
+        website_search: data.website_search || undefined,
+        email_general: data.email_general || undefined,
+        phone_general: data.phone_general,
+        tier: Number(data.tier) as OfficeTier,
+        priority_score: data.priority_score,
+        status: data.status,
+        notes: data.notes,
       };
       if (isEdit && officeId) {
         await updateOffice.mutateAsync({ id: officeId, data: submitData });
