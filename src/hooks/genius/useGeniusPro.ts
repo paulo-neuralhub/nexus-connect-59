@@ -6,9 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 import { toast } from 'sonner';
 import { compareTrademarks } from '@/lib/services/trademark-comparator';
+import type { Json } from '@/integrations/supabase/types';
 import type { 
   TrademarkMark, 
-  TrademarkComparison, 
   OppositionInput, 
   GeneratedDocument,
   GeniusGeneratedDocument,
@@ -20,7 +20,7 @@ import type {
 // ============================================
 
 export function useCompareTrademarks() {
-  const { organization } = useOrganization();
+  const { currentOrganization } = useOrganization();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -28,11 +28,11 @@ export function useCompareTrademarks() {
       const comparison = await compareTrademarks(markA, markB);
       
       // Save to database
-      if (organization?.id) {
+      if (currentOrganization?.id) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('genius_trademark_comparisons').insert({
-            organization_id: organization.id,
+          await supabase.from('genius_trademark_comparisons').insert([{
+            organization_id: currentOrganization.id,
             user_id: user.id,
             mark_a_text: markA.text,
             mark_a_image_url: markA.imageUrl,
@@ -46,20 +46,20 @@ export function useCompareTrademarks() {
             visual_analysis: comparison.analysis.visual.analysis,
             phonetic_similarity: comparison.analysis.phonetic.score,
             phonetic_analysis: comparison.analysis.phonetic.analysis,
-            phonetic_details: comparison.analysis.phonetic.algorithms,
+            phonetic_details: comparison.analysis.phonetic.algorithms as unknown as Json,
             conceptual_similarity: comparison.analysis.conceptual.score,
             conceptual_analysis: comparison.analysis.conceptual.analysis,
-            conceptual_details: comparison.analysis.conceptual.concepts,
+            conceptual_details: comparison.analysis.conceptual.concepts as unknown as Json,
             goods_similarity: comparison.analysis.goods.score,
             goods_analysis: comparison.analysis.goods.analysis,
             goods_details: {
               identicalClasses: comparison.analysis.goods.identicalClasses,
               similarClasses: comparison.analysis.goods.similarClasses,
-            },
+            } as unknown as Json,
             overall_risk: comparison.overall.riskLevel,
             overall_score: comparison.overall.score,
             recommendation: comparison.overall.recommendation,
-          });
+          }]);
         }
       }
       
@@ -76,24 +76,24 @@ export function useCompareTrademarks() {
 }
 
 export function useTrademarkComparisons() {
-  const { organization } = useOrganization();
+  const { currentOrganization } = useOrganization();
   
   return useQuery({
-    queryKey: ['trademark-comparisons', organization?.id],
+    queryKey: ['trademark-comparisons', currentOrganization?.id],
     queryFn: async () => {
-      if (!organization?.id) return [];
+      if (!currentOrganization?.id) return [];
       
       const { data, error } = await supabase
         .from('genius_trademark_comparisons')
         .select('*')
-        .eq('organization_id', organization.id)
+        .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false })
         .limit(20);
       
       if (error) throw error;
       return data;
     },
-    enabled: !!organization?.id,
+    enabled: !!currentOrganization?.id,
   });
 }
 
@@ -102,17 +102,17 @@ export function useTrademarkComparisons() {
 // ============================================
 
 export function useGenerateOpposition() {
-  const { organization } = useOrganization();
+  const { currentOrganization } = useOrganization();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: OppositionInput): Promise<GeneratedDocument> => {
-      if (!organization?.id) throw new Error('No organization selected');
+      if (!currentOrganization?.id) throw new Error('No organization selected');
       
       const { data, error } = await supabase.functions.invoke('genius-generate-opposition', {
         body: { 
           input,
-          organizationId: organization.id,
+          organizationId: currentOrganization.id,
         },
       });
       
@@ -134,17 +134,17 @@ export function useGenerateOpposition() {
 // ============================================
 
 export function useGeneratedDocuments(documentType?: string) {
-  const { organization } = useOrganization();
+  const { currentOrganization } = useOrganization();
   
   return useQuery({
-    queryKey: ['generated-documents', organization?.id, documentType],
+    queryKey: ['generated-documents', currentOrganization?.id, documentType],
     queryFn: async () => {
-      if (!organization?.id) return [];
+      if (!currentOrganization?.id) return [];
       
       let query = supabase
         .from('genius_generated_documents')
         .select('*')
-        .eq('organization_id', organization.id)
+        .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false });
       
       if (documentType) {
@@ -154,9 +154,9 @@ export function useGeneratedDocuments(documentType?: string) {
       const { data, error } = await query.limit(50);
       
       if (error) throw error;
-      return data as GeniusGeneratedDocument[];
+      return data as unknown as GeniusGeneratedDocument[];
     },
-    enabled: !!organization?.id,
+    enabled: !!currentOrganization?.id,
   });
 }
 
@@ -171,7 +171,7 @@ export function useGeneratedDocument(id: string) {
         .single();
       
       if (error) throw error;
-      return data as GeniusGeneratedDocument;
+      return data as unknown as GeniusGeneratedDocument;
     },
     enabled: !!id,
   });
@@ -223,7 +223,7 @@ export function useOfficialFees(office?: string, procedureType?: string) {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as GeniusOfficialFee[];
+      return data as unknown as GeniusOfficialFee[];
     },
   });
 }
@@ -241,7 +241,7 @@ export function useOfficialFee(office: string, procedureType: string) {
         .maybeSingle();
       
       if (error) throw error;
-      return data as GeniusOfficialFee | null;
+      return data as unknown as GeniusOfficialFee | null;
     },
     enabled: !!office && !!procedureType,
   });
