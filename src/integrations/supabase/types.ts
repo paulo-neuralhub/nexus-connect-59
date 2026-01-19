@@ -2307,6 +2307,7 @@ export type Database = {
           owner_type: string
           plain_text: string | null
           preview_text: string | null
+          slug: string | null
           subject: string
           thumbnail_url: string | null
           updated_at: string | null
@@ -2327,6 +2328,7 @@ export type Database = {
           owner_type?: string
           plain_text?: string | null
           preview_text?: string | null
+          slug?: string | null
           subject: string
           thumbnail_url?: string | null
           updated_at?: string | null
@@ -2347,6 +2349,7 @@ export type Database = {
           owner_type?: string
           plain_text?: string | null
           preview_text?: string | null
+          slug?: string | null
           subject?: string
           thumbnail_url?: string | null
           updated_at?: string | null
@@ -9436,11 +9439,16 @@ export type Database = {
           created_at: string | null
           deadline_reminder_days: number[] | null
           deadline_reminders: boolean | null
+          digest_day: number | null
+          digest_enabled: boolean | null
+          digest_frequency: string | null
+          digest_time: string | null
           email_enabled: boolean | null
           id: string
           in_app_enabled: boolean | null
           invoice_notifications: boolean | null
           marketing_notifications: boolean | null
+          preferences: Json | null
           push_enabled: boolean | null
           quiet_hours_enabled: boolean | null
           quiet_hours_end: string | null
@@ -9457,11 +9465,16 @@ export type Database = {
           created_at?: string | null
           deadline_reminder_days?: number[] | null
           deadline_reminders?: boolean | null
+          digest_day?: number | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          digest_time?: string | null
           email_enabled?: boolean | null
           id?: string
           in_app_enabled?: boolean | null
           invoice_notifications?: boolean | null
           marketing_notifications?: boolean | null
+          preferences?: Json | null
           push_enabled?: boolean | null
           quiet_hours_enabled?: boolean | null
           quiet_hours_end?: string | null
@@ -9478,11 +9491,16 @@ export type Database = {
           created_at?: string | null
           deadline_reminder_days?: number[] | null
           deadline_reminders?: boolean | null
+          digest_day?: number | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          digest_time?: string | null
           email_enabled?: boolean | null
           id?: string
           in_app_enabled?: boolean | null
           invoice_notifications?: boolean | null
           marketing_notifications?: boolean | null
+          preferences?: Json | null
           push_enabled?: boolean | null
           quiet_hours_enabled?: boolean | null
           quiet_hours_end?: string | null
@@ -9508,16 +9526,24 @@ export type Database = {
       notifications: {
         Row: {
           action_data: Json | null
+          action_label: string | null
           action_url: string | null
+          archived_at: string | null
           body: string
+          category: string | null
+          channels_sent: Json | null
           created_at: string | null
+          data: Json | null
           expires_at: string | null
+          group_key: string | null
           icon: string | null
           id: string
           image_url: string | null
+          is_archived: boolean | null
           is_read: boolean | null
           metadata: Json | null
           organization_id: string | null
+          priority: string | null
           read_at: string | null
           reference_id: string | null
           reference_type: string | null
@@ -9528,16 +9554,24 @@ export type Database = {
         }
         Insert: {
           action_data?: Json | null
+          action_label?: string | null
           action_url?: string | null
+          archived_at?: string | null
           body: string
+          category?: string | null
+          channels_sent?: Json | null
           created_at?: string | null
+          data?: Json | null
           expires_at?: string | null
+          group_key?: string | null
           icon?: string | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
           is_read?: boolean | null
           metadata?: Json | null
           organization_id?: string | null
+          priority?: string | null
           read_at?: string | null
           reference_id?: string | null
           reference_type?: string | null
@@ -9548,16 +9582,24 @@ export type Database = {
         }
         Update: {
           action_data?: Json | null
+          action_label?: string | null
           action_url?: string | null
+          archived_at?: string | null
           body?: string
+          category?: string | null
+          channels_sent?: Json | null
           created_at?: string | null
+          data?: Json | null
           expires_at?: string | null
+          group_key?: string | null
           icon?: string | null
           id?: string
           image_url?: string | null
+          is_archived?: boolean | null
           is_read?: boolean | null
           metadata?: Json | null
           organization_id?: string | null
+          priority?: string | null
           read_at?: string | null
           reference_id?: string | null
           reference_type?: string | null
