@@ -10,23 +10,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { slugify } from "@/lib/utils";
 import { Shield, Building2, Users, Loader2, Ticket, LogOut } from "lucide-react";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useOnboardingProgress, useInitializeOnboarding } from "@/hooks/useOnboarding";
 
 const Onboarding = () => {
-  const [step, setStep] = useState<"choice" | "create" | "invite">("choice");
+  const [step, setStep] = useState<"choice" | "create" | "invite" | "wizard">("choice");
   const [orgName, setOrgName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [createdOrgId, setCreatedOrgId] = useState<string | null>(null);
   const { user, profile, signOut } = useAuth();
   const { refreshMemberships, currentOrganization, needsOnboarding, isLoading: orgLoading } = useOrganization();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Onboarding progress hooks
+  const { data: onboardingProgress, isLoading: progressLoading } = useOnboardingProgress();
+  const initializeOnboarding = useInitializeOnboarding();
 
-  // If the user already has an org, onboarding should not block them.
+  // Check if user already has org with incomplete onboarding
   useEffect(() => {
-    if (orgLoading) return;
+    if (orgLoading || progressLoading) return;
+    
+    // If has org and onboarding is complete, go to dashboard
     if (currentOrganization && !needsOnboarding) {
-      navigate("/app/dashboard", { replace: true });
+      if (onboardingProgress?.status === 'completed') {
+        navigate("/app/dashboard", { replace: true });
+      } else if (onboardingProgress && onboardingProgress.status !== 'completed') {
+        // Has incomplete onboarding, show wizard
+        setCreatedOrgId(currentOrganization.id);
+        setStep("wizard");
+      }
     }
-  }, [orgLoading, currentOrganization?.id, needsOnboarding, navigate]);
+  }, [orgLoading, progressLoading, currentOrganization?.id, needsOnboarding, onboardingProgress, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -128,15 +143,20 @@ const Onboarding = () => {
         console.warn("Organization created but could not be fetched:", orgFetchError);
       }
 
-      // Refresh memberships and navigate
+      // Initialize onboarding progress for the new organization
+      await initializeOnboarding.mutateAsync();
+      
+      // Refresh memberships
       await refreshMemberships();
 
       toast({
         title: "¡Organización creada!",
-        description: `Bienvenido a ${orgName}`,
+        description: `Vamos a configurar ${orgName}`,
       });
 
-      navigate("/app/dashboard", { replace: true });
+      // Set the created org ID and move to wizard step
+      setCreatedOrgId(orgId);
+      setStep("wizard");
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -148,6 +168,21 @@ const Onboarding = () => {
       setIsLoading(false);
     }
   };
+
+  const handleWizardComplete = () => {
+    navigate("/app/dashboard", { replace: true });
+  };
+
+  // Show the wizard if we're in wizard step
+  if (step === "wizard" && createdOrgId) {
+    return (
+      <OnboardingWizard
+        organizationId={createdOrgId}
+        progress={onboardingProgress || null}
+        onComplete={handleWizardComplete}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
