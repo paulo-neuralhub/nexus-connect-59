@@ -1,7 +1,7 @@
 # IP‑NEXUS — Resumen de verificación (módulos + linter)
 
 Fecha: 2026-01-20  
-Alcance: verificación rápida de módulos (LEGAL‑OPS, COLLAB, ONBOARDING, NOTIFICATIONS) + pendientes menores del linter + ajuste de navegación Backoffice.
+Alcance: verificación rápida de módulos (LEGAL‑OPS, COLLAB, ONBOARDING, NOTIFICATIONS) + pendientes menores del linter + ajuste de navegación Backoffice + **CONSOLIDACIÓN IMPORT**.
 
 ---
 
@@ -25,12 +25,6 @@ Alcance: verificación rápida de módulos (LEGAL‑OPS, COLLAB, ONBOARDING, NOT
 
 **Decisión:** Mantener RLS habilitado **sin policies** = deny all desde cliente (comportamiento correcto). Solo accesibles via Edge Functions.
 
-### 1.2 2 tablas con RLS habilitado pero sin políticas (INFO)
-- **¿Causa problemas ahora?** **Puede causar problemas** si se acceden desde el cliente (App) porque con RLS activo y **sin policies**, el resultado típico es **denegar todo** (SELECT/INSERT/UPDATE/DELETE).
-- **Cuándo NO es problema:** si esas tablas están pensadas para uso **interno** vía **Edge Functions** con `service_role` (y nunca desde el cliente).
-
-**Acción sugerida:** confirmar si se usan desde la App. Si sí → crear policies mínimas; si no → mantener sin policies (seguridad por defecto “deny”).
-
 ---
 
 ## 2) Verificación de módulos
@@ -38,7 +32,7 @@ Alcance: verificación rápida de módulos (LEGAL‑OPS, COLLAB, ONBOARDING, NOT
 ### 2.1 LEGAL‑OPS
 - **Estado:** existe (carpetas/páginas/componentes/hooks presentes).
 - **Madurez:** UI bastante completa; **lógica parcial** (hay hooks o flujos aún con comportamiento incompleto/mocks en algunos puntos).
-- **Observación clave:** **solapamiento** importante con CRM por la visión tipo “Cliente 360°”.
+- **Observación clave:** **solapamiento** importante con CRM por la visión tipo "Cliente 360°".
 
 **Recomendación:** definir frontera clara (LEGAL‑OPS vs CRM) o plan de convergencia para evitar duplicación funcional.
 
@@ -74,6 +68,72 @@ Alcance: verificación rápida de módulos (LEGAL‑OPS, COLLAB, ONBOARDING, NOT
 
 ---
 
-## 4) Siguientes decisiones (para cerrar pendientes)
-1) Confirmar si las **2 tablas RLS sin policies** se usan desde cliente o solo Edge.
-2) Priorizar `search_path` en funciones sensibles (SECURITY DEFINER / auth / billing / llaves / auditoría).
+## 4) CONSOLIDACIÓN SISTEMA DE IMPORT (PROMPT-FIX-2) ✅
+
+### Estado: COMPLETADO
+
+Se consolidaron **3 sistemas** de ingesta de datos en el **Data Hub**:
+
+| Sistema Original | Función | Destino |
+|-----------------|---------|---------|
+| `/app/data-hub` | Imports CSV/Excel básicos + Conectores | Hub principal |
+| `/app/import` | Framework universal multi-source | `/app/data-hub?tab=universal` |
+| `/app/migrator` | Migraciones avanzadas PI (Anaqua, PatSnap) | `/app/data-hub?tab=migrator` |
+
+### Tabs Consolidados en Data Hub
+
+| Tab | Función |
+|-----|---------|
+| Vista General | Dashboard rápido + acciones |
+| Importaciones | Historial de imports CSV/Excel |
+| Conectores | APIs externas (EUIPO, WIPO, etc.) |
+| Sincronización | Jobs de sync programados |
+| **Migrator** | Proyectos de migración PI |
+| **Universal** | Import multi-source + Shadow Mode |
+
+### Cambios en Sidebar
+
+- ❌ **Migrator removido** del menú (ahora es tab en Data Hub)
+- ✅ **Collab** visible en menú principal
+
+### Archivos Creados
+
+```
+src/pages/app/data-hub/migrator-tab.tsx   # UI de migraciones PI
+src/pages/app/data-hub/universal-tab.tsx  # UI de import universal
+src/pages/app/migrator/redirect.tsx       # Redirect legacy
+src/pages/app/import/redirect.tsx         # Redirect legacy
+```
+
+### Rutas Actualizadas en App.tsx
+
+```tsx
+// Redirects automáticos:
+/app/migrator     → /app/data-hub?tab=migrator
+/app/migrator/new → /app/data-hub?tab=migrator
+/app/migrator/:id → /app/data-hub?tab=migrator
+```
+
+---
+
+## 5) Rutas Huérfanas - VERIFICADAS ✅
+
+| Ruta | Estado | Acceso |
+|------|--------|--------|
+| `/app/analytics` | ✅ Existe | Via rutas, añadir a sidebar si deseado |
+| `/app/reports` | ✅ Existe | Via rutas |
+| `/app/filing` | ✅ Existe | Via rutas |
+| `/app/workflow` | ✅ Existe | Via rutas |
+
+---
+
+## 6) Siguientes Pasos (Opcionales)
+
+1. ~~Consolidar sistemas de import~~ ✅ HECHO
+2. Añadir Analytics/Reports/Filing/Workflow al sidebar (si se desea visibilidad directa)
+3. Priorizar `search_path` en funciones sensibles (SECURITY DEFINER / auth / billing)
+4. Limpiar archivos legacy de `/app/migrator` y `/app/import` (opcional, redirects activos)
+
+---
+
+Última actualización: 2026-01-20

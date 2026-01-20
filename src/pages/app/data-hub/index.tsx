@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import {
   Database, Upload, Download, RefreshCw, 
   Plus, FileSpreadsheet, FileJson, FileText,
   Clock, CheckCircle, XCircle, Loader2,
-  Settings, Plug, BarChart3
+  Settings, Plug, BarChart3, ArrowRightLeft, Globe
 } from 'lucide-react';
 import { useImports, useDataConnectors, useSyncJobs, useTestConnector, useSyncConnector } from '@/hooks/use-data-hub';
 import { IMPORT_STATUSES, IMPORT_TYPES, CONNECTOR_TYPES, CONNECTION_STATUSES } from '@/lib/constants/data-hub';
@@ -15,11 +16,16 @@ import type { Import, DataConnector, SyncJob, ImportStatus, ConnectionStatus } f
 import { ImportWizardModal } from './components/import-wizard-modal';
 import { ExportModal } from './components/export-modal';
 import { ConnectorModal } from './components/connector-modal';
+import { MigratorTab } from './migrator-tab';
+import { UniversalTab } from './universal-tab';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 export default function DataHubPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
+  
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showConnectorModal, setShowConnectorModal] = useState(false);
@@ -48,7 +54,7 @@ export default function DataHubPage() {
             Data Hub
           </h1>
           <p className="text-muted-foreground mt-1">
-            Centraliza, importa y sincroniza todos tus datos
+            Centraliza, importa, migra y sincroniza todos tus datos
           </p>
         </div>
         
@@ -115,13 +121,21 @@ export default function DataHubPage() {
         </Card>
       </div>
       
-      {/* Tabs */}
+      {/* Tabs - Consolidated */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
           <TabsTrigger value="overview">Vista General</TabsTrigger>
           <TabsTrigger value="imports">Importaciones</TabsTrigger>
           <TabsTrigger value="connectors">Conectores</TabsTrigger>
-          <TabsTrigger value="sync">Sincronizaciones</TabsTrigger>
+          <TabsTrigger value="sync">Sincronización</TabsTrigger>
+          <TabsTrigger value="migrator" className="flex items-center gap-1">
+            <ArrowRightLeft className="h-3 w-3" />
+            Migrator
+          </TabsTrigger>
+          <TabsTrigger value="universal" className="flex items-center gap-1">
+            <Globe className="h-3 w-3" />
+            Universal
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -144,6 +158,14 @@ export default function DataHubPage() {
         
         <TabsContent value="sync">
           <SyncJobsTab syncJobs={syncJobs} />
+        </TabsContent>
+        
+        <TabsContent value="migrator">
+          <MigratorTab />
+        </TabsContent>
+        
+        <TabsContent value="universal">
+          <UniversalTab />
         </TabsContent>
       </Tabs>
       
