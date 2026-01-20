@@ -4,7 +4,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useOrganizationId } from '@/hooks/useOrganizationId';
+import { useOrganization } from '@/contexts/organization-context';
 import { CommChannel } from '@/types/legal-ops';
 
 export interface TimelineFilters {
@@ -39,7 +39,8 @@ export function useClientTimeline(
   clientId: string,
   filters: TimelineFilters = {}
 ) {
-  const organizationId = useOrganizationId();
+  const { currentOrganization } = useOrganization();
+  const organizationId = currentOrganization?.id;
 
   return useInfiniteQuery({
     queryKey: ['client-timeline', clientId, filters],

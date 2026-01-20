@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useOrganizationId } from '@/hooks/useOrganizationId';
+import { useOrganization } from '@/contexts/organization-context';
 import { NEREntityType, DocValidityStatus } from '@/types/legal-ops';
 
 export interface NERExtractionResult {
@@ -28,7 +28,8 @@ export interface ExtractedEntity {
 }
 
 export function useDocumentNER(documentId: string) {
-  const organizationId = useOrganizationId();
+  const { currentOrganization } = useOrganization();
+  const organizationId = currentOrganization?.id;
   const queryClient = useQueryClient();
 
   // Obtener entidades extraídas
@@ -149,7 +150,8 @@ function calculateValidityStatus(validUntil: string): DocValidityStatus {
 
 // Hook para documentos de cliente
 export function useClientDocuments(clientId: string) {
-  const organizationId = useOrganizationId();
+  const { currentOrganization } = useOrganization();
+  const organizationId = currentOrganization?.id;
 
   return useQuery({
     queryKey: ['client-documents', clientId],

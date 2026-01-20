@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useOrganizationId } from '@/hooks/useOrganizationId';
+import { useOrganization } from '@/contexts/organization-context';
 
 interface ClientDetailData {
   client: ClientFull;
@@ -70,7 +70,8 @@ export interface ClientDocumentWithValidity {
 }
 
 export function useClientDetail(clientId: string) {
-  const organizationId = useOrganizationId();
+  const { currentOrganization } = useOrganization();
+  const organizationId = currentOrganization?.id;
 
   return useQuery({
     queryKey: ['client-detail', clientId],
@@ -90,37 +91,28 @@ export function useClientDetail(clientId: string) {
 
       if (clientError) throw clientError;
 
-      // 2. Estadísticas (en paralelo)
-      const [mattersRes, commsRes, docsRes] = await Promise.all([
-        // Asuntos
-        supabase
-          .from('matters')
-          .select('id, status', { count: 'exact' })
-          .eq('client_id', clientId)
-          .eq('organization_id', organizationId),
-        
-        // Comunicaciones sin leer
-        supabase
-          .from('communications')
-          .select('id', { count: 'exact' })
-          .eq('client_id', clientId)
-          .eq('is_read', false)
-          .eq('organization_id', organizationId),
-        
-        // Documentos y alertas de vigencia
-        supabase
-          .from('client_documents')
-          .select(`
-            *,
-            validity_alerts:document_validity_alerts(*)
-          `)
-          .eq('client_id', clientId)
-          .eq('organization_id', organizationId)
-          .is('deleted_at', null)
-      ]);
+      // 2. Estadísticas (en paralelo) - using match() to avoid deep type instantiation
+      const mattersRes = await supabase
+        .from('matters')
+        .select('id, status', { count: 'exact' })
+        .match({ client_id: clientId, organization_id: organizationId });
+      
+      const commsRes = await supabase
+        .from('communications')
+        .select('id', { count: 'exact' })
+        .match({ client_id: clientId, is_read: false, organization_id: organizationId });
+      
+      const docsRes = await supabase
+        .from('client_documents')
+        .select(`
+          *,
+          validity_alerts:document_validity_alerts(*)
+        `)
+        .match({ client_id: clientId, organization_id: organizationId })
+        .is('deleted_at', null);
 
-      const matters = mattersRes.data || [];
-      const docs = docsRes.data || [];
+      const matters = (mattersRes.data || []) as unknown[];
+      const docs = (docsRes.data || []) as unknown[];
       const deadlines: Array<{ id: string; title: string; due_date: string }> = [];
 
       // 3. Construir alertas factuales
@@ -145,7 +137,7 @@ export function useClientDetail(clientId: string) {
       });
 
       // Alertas de documentos por caducar
-      docs.forEach(doc => {
+      (docs as Array<{ id: string; title?: string; file_name: string; validity_status?: string; valid_until?: string }>).forEach(doc => {
         if (doc.validity_status === 'expiring_soon' && doc.valid_until) {
           const daysRemaining = Math.ceil(
             (new Date(doc.valid_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -177,13 +169,14 @@ export function useClientDetail(clientId: string) {
       const criticalDocTypes = [
         'poder_general', 'poder_especial', 'escritura_constitucion', 'certificado_registro'
       ];
-      const criticalDocuments: ClientDocumentWithValidity[] = docs
+      type DocItem = { id: string; title?: string; file_name: string; doc_type?: string; validity_status?: string; valid_until?: string; validity_verified?: boolean };
+      const criticalDocuments: ClientDocumentWithValidity[] = (docs as DocItem[])
         .filter(d => d.doc_type && criticalDocTypes.includes(d.doc_type))
         .map(d => ({
           id: d.id,
           title: d.title || d.file_name,
           doc_type: d.doc_type || 'otro',
-          validity_status: d.validity_status || 'pending_verification',
+          validity_status: (d.validity_status || 'pending_verification') as ClientDocumentWithValidity['validity_status'],
           valid_until: d.valid_until,
           days_remaining: d.valid_until 
             ? Math.ceil((new Date(d.valid_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -209,7 +202,7 @@ export function useClientDetail(clientId: string) {
           responsible_user: responsibleUser || undefined
         } as ClientFull,
         stats: {
-          activeMatters: matters.filter(m => m.status === 'active').length,
+          activeMatters: (matters as Array<{ status?: string }>).filter(m => m.status === 'active').length,
           totalMatters: mattersRes.count || 0,
           unreadMessages: commsRes.count || 0,
           upcomingDeadlines: deadlines.length,
@@ -228,7 +221,8 @@ export function useClientDetail(clientId: string) {
 // Hook para actualizar cliente
 export function useUpdateClient() {
   const queryClient = useQueryClient();
-  const organizationId = useOrganizationId();
+  const { currentOrganization } = useOrganization();
+  const organizationId = currentOrganization?.id;
 
   return useMutation({
     mutationFn: async ({ clientId, updates }: { clientId: string; updates: Partial<ClientFull> }) => {

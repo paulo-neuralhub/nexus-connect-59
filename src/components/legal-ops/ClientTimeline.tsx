@@ -30,6 +30,10 @@ const CHANNEL_FILTERS = [
 export function ClientTimeline({ clientId }: ClientTimelineProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
+  const channelFilters = activeFilters.filter(
+    (f): f is 'email' | 'whatsapp' | 'phone' => ['email', 'whatsapp', 'phone'].includes(f)
+  );
+
   const { 
     data, 
     isLoading, 
@@ -37,7 +41,7 @@ export function ClientTimeline({ clientId }: ClientTimelineProps) {
     hasNextPage,
     isFetchingNextPage 
   } = useClientTimeline(clientId, {
-    channels: activeFilters.filter(f => ['email', 'whatsapp', 'phone'].includes(f))
+    channels: channelFilters.length > 0 ? channelFilters : undefined
   });
 
   const events = useMemo(() => {
