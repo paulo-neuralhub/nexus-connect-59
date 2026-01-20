@@ -10,7 +10,12 @@ export type ModuleCode =
   | 'marketing' 
   | 'market' 
   | 'genius' 
-  | 'finance';
+  | 'finance'
+  | 'datahub'
+  | 'analytics'
+  | 'legalops'
+  | 'migrator'
+  | 'api';
 
 export type TierCode = 'basic' | 'pro' | 'enterprise';
 

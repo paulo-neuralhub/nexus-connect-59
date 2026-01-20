@@ -18848,7 +18848,7 @@ export type Database = {
         }
         Returns: {
           module_code: string
-          status: string
+          result_status: string
           tier_code: string
         }[]
       }
