@@ -16442,6 +16442,84 @@ export type Database = {
           },
         ]
       }
+      subscription_packs: {
+        Row: {
+          badge_text: string | null
+          code: string
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          display_order: number | null
+          features_highlight: string[] | null
+          id: string
+          included_modules: Json
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_public: boolean | null
+          max_organizations: number | null
+          max_users: number | null
+          name: string
+          pack_type: string
+          price_monthly: number
+          price_yearly: number | null
+          stripe_price_id_monthly: string | null
+          stripe_price_id_yearly: string | null
+          stripe_product_id: string | null
+          tagline: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          badge_text?: string | null
+          code: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          display_order?: number | null
+          features_highlight?: string[] | null
+          id?: string
+          included_modules?: Json
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          max_organizations?: number | null
+          max_users?: number | null
+          name: string
+          pack_type?: string
+          price_monthly?: number
+          price_yearly?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          stripe_product_id?: string | null
+          tagline?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          badge_text?: string | null
+          code?: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          display_order?: number | null
+          features_highlight?: string[] | null
+          id?: string
+          included_modules?: Json
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          max_organizations?: number | null
+          max_users?: number | null
+          name?: string
+          pack_type?: string
+          price_monthly?: number
+          price_yearly?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          stripe_product_id?: string | null
+          tagline?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           code: string
@@ -18737,6 +18815,18 @@ export type Database = {
           total_executions: number
         }[]
       }
+      has_feature_access: {
+        Args: {
+          p_feature: string
+          p_module_code: string
+          p_organization_id: string
+        }
+        Returns: boolean
+      }
+      has_module_access: {
+        Args: { p_module_code: string; p_organization_id: string }
+        Returns: boolean
+      }
       increment_article_feedback: {
         Args: { p_article_id: string; p_is_helpful: boolean }
         Returns: undefined
@@ -18750,6 +18840,18 @@ export type Database = {
         Returns: boolean
       }
       is_member_of_org: { Args: { org_id: string }; Returns: boolean }
+      provision_pack_modules: {
+        Args: {
+          p_billing_cycle?: string
+          p_organization_id: string
+          p_pack_code: string
+        }
+        Returns: {
+          module_code: string
+          status: string
+          tier_code: string
+        }[]
+      }
       search_all: {
         Args: {
           p_entity_types?: string[]
