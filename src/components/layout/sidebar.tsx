@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { MODULE_COLORS } from "@/lib/constants";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
-  Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, Lock, Shield, ArrowRightLeft,
+  Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, Lock, Shield,
   Users2
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,7 +26,6 @@ const navItems = [
   { path: "/app/genius", label: "Genius", icon: Brain, module: "genius", addon: "genius" },
   { separator: true },
   { path: "/app/finance", label: "Finance", icon: DollarSign, module: "finance" },
-  { path: "/app/migrator", label: "Migrator", icon: ArrowRightLeft, module: "datahub" },
   { path: "/app/help", label: "Ayuda", icon: HelpCircle, module: "help" },
 ];
 

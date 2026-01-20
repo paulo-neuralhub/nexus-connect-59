@@ -91,9 +91,7 @@ import ToolsPage from "./pages/app/tools";
 import NotFound from "./pages/NotFound";
 import ReportsPage from "./pages/app/reports";
 import NewReportPage from "./pages/app/reports/NewReport";
-import MigratorPage from "./pages/app/migrator";
-import NewMigrationPage from "./pages/app/migrator/new";
-import MigrationDetailPage from "./pages/app/migrator/MigrationDetail";
+// Migrator pages consolidated into Data Hub
 import FilingIndexPage from "./pages/app/filing";
 import NewFilingPage from "./pages/app/filing/new";
 import FilingDetailPage from "./pages/app/filing/[id]";
@@ -260,9 +258,10 @@ const App = () => (
                 <Route path="settings/compliance" element={<ComplianceSettingsPage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />
                 <Route path="tools" element={<ToolsPage />} />
-                <Route path="migrator" element={<MigratorPage />} />
-                <Route path="migrator/new" element={<NewMigrationPage />} />
-                <Route path="migrator/:id" element={<MigrationDetailPage />} />
+                {/* Migrator redirect to Data Hub */}
+                <Route path="migrator" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
+                <Route path="migrator/new" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
+                <Route path="migrator/:id" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
                 <Route path="filing" element={<FilingIndexPage />} />
                 <Route path="filing/new" element={<NewFilingPage />} />
                 <Route path="filing/:id" element={<FilingDetailPage />} />
