@@ -1,17 +1,20 @@
 // src/pages/backoffice/tenants.tsx
 import { useState } from 'react';
-import { Building2, Search, Users, Briefcase } from 'lucide-react';
+import { Building2, Search, Settings, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAdminOrganizations } from '@/hooks/use-admin';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { SUBSCRIPTION_STATUSES } from '@/lib/constants/backoffice';
+import { ChangePlanDialog } from '@/components/backoffice/ChangePlanDialog';
 
 export default function TenantsPage() {
   const [search, setSearch] = useState('');
-  const { data: organizations = [], isLoading } = useAdminOrganizations({ search });
+  const [selectedOrg, setSelectedOrg] = useState<{ id: string; name: string; currentPlan: string } | null>(null);
+  const { data: organizations = [], isLoading, refetch } = useAdminOrganizations({ search });
   
   if (isLoading) {
     return (
@@ -51,12 +54,14 @@ export default function TenantsPage() {
               <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Plan</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Estado</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Creada</th>
+              <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {organizations.map((org: any) => {
               const subscription = Array.isArray(org.subscription) ? org.subscription[0] : org.subscription;
               const plan = subscription?.plan;
+              const currentPlan = org.plan || plan?.code || 'starter';
               const status = subscription?.status || 'active';
               const statusConfig = SUBSCRIPTION_STATUSES[status as keyof typeof SUBSCRIPTION_STATUSES] || SUBSCRIPTION_STATUSES.active;
               
@@ -78,8 +83,15 @@ export default function TenantsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant="outline">
-                      {plan?.name || 'Free'}
+                    <Badge 
+                      variant="outline"
+                      className={
+                        currentPlan === 'enterprise' ? 'border-amber-500 text-amber-600' :
+                        currentPlan === 'professional' ? 'border-primary text-primary' :
+                        ''
+                      }
+                    >
+                      {plan?.name || currentPlan?.charAt(0).toUpperCase() + currentPlan?.slice(1) || 'Starter'}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -96,6 +108,20 @@ export default function TenantsPage() {
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {format(new Date(org.created_at), 'dd/MM/yyyy', { locale: es })}
                   </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedOrg({ 
+                        id: org.id, 
+                        name: org.name, 
+                        currentPlan 
+                      })}
+                    >
+                      <CreditCard className="w-4 h-4 mr-1" />
+                      Cambiar Plan
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
@@ -108,6 +134,17 @@ export default function TenantsPage() {
           </div>
         )}
       </div>
+
+      {/* Change Plan Dialog */}
+      <ChangePlanDialog
+        open={!!selectedOrg}
+        onOpenChange={(open) => !open && setSelectedOrg(null)}
+        organization={selectedOrg}
+        onSuccess={() => {
+          setSelectedOrg(null);
+          refetch();
+        }}
+      />
     </div>
   );
 }
