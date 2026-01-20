@@ -1,0 +1,140 @@
+# IP-NEXUS Network Policies
+# Controls traffic flow between pods
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-default-deny
+  namespace: ipnexus
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Allow ingress from nginx ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-allow-ingress
+  namespace: ipnexus
+spec:
+  podSelector:
+    matchLabels:
+      app: ipnexus
+      component: web
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Allow egress to DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-allow-dns
+  namespace: ipnexus
+spec:
+  podSelector:
+    matchLabels:
+      app: ipnexus
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# Allow egress to external services (Supabase, AI providers, etc.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-allow-external
+  namespace: ipnexus
+spec:
+  podSelector:
+    matchLabels:
+      app: ipnexus
+  policyTypes:
+    - Egress
+  egress:
+    # Allow HTTPS to external services
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Allow pod-to-pod communication within ipnexus namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-allow-internal
+  namespace: ipnexus
+spec:
+  podSelector:
+    matchLabels:
+      app: ipnexus
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ipnexus
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ipnexus
+
+---
+# Allow Prometheus scraping
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ipnexus-allow-prometheus
+  namespace: ipnexus
+spec:
+  podSelector:
+    matchLabels:
+      app: ipnexus
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
