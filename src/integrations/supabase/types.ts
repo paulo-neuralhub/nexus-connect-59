@@ -18709,6 +18709,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_change_organization_plan: {
+        Args: {
+          p_billing_cycle?: string
+          p_organization_id: string
+          p_pack_code: string
+        }
+        Returns: Json
+      }
       apply_docket_rules: { Args: { matter_uuid: string }; Returns: number }
       calculate_deadline: {
         Args: {
