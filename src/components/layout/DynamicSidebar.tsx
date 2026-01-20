@@ -13,7 +13,7 @@ import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
   Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, 
   Lock, Shield, ArrowRightLeft, Store, BarChart3, Scale, Sparkles,
-  Code, Upload, Wallet, Briefcase
+  Code, Upload, Wallet, Briefcase, GitBranch, Rocket
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -142,6 +142,14 @@ const MODULE_NAV: NavItem[] = [
     color: MODULE_REGISTRY.legalops.color,
     requiresLicense: true,
   },
+  {
+    path: "/app/workflow",
+    label: "Workflow",
+    icon: GitBranch,
+    moduleCode: "core",
+    color: "#06B6D4",
+    requiresLicense: false,
+  },
 ];
 
 // Utility items (always visible)
@@ -152,6 +160,14 @@ const UTILITY_NAV: NavItem[] = [
     icon: ArrowRightLeft,
     moduleCode: "migrator",
     color: MODULE_REGISTRY.migrator.color,
+    requiresLicense: false,
+  },
+  {
+    path: "/app/onboarding",
+    label: "Onboarding",
+    icon: Rocket,
+    moduleCode: "core",
+    color: "#10B981",
     requiresLicense: false,
   },
   {
