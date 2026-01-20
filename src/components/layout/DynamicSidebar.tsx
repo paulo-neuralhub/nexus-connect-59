@@ -13,7 +13,7 @@ import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
   Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, 
   Lock, Shield, ArrowRightLeft, Store, BarChart3, Scale, Sparkles,
-  Code, Upload, Wallet, Briefcase, GitBranch, Rocket
+  Code, Upload, Wallet, Briefcase, GitBranch
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -160,14 +160,6 @@ const UTILITY_NAV: NavItem[] = [
     icon: ArrowRightLeft,
     moduleCode: "migrator",
     color: MODULE_REGISTRY.migrator.color,
-    requiresLicense: false,
-  },
-  {
-    path: "/app/onboarding?force=true",
-    label: "Onboarding",
-    icon: Rocket,
-    moduleCode: "core",
-    color: "#10B981",
     requiresLicense: false,
   },
   {
