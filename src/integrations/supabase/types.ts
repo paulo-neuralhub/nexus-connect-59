@@ -2177,6 +2177,87 @@ export type Database = {
           },
         ]
       }
+      calendar_integrations: {
+        Row: {
+          access_token: string
+          calendar_id: string | null
+          calendar_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          organization_id: string
+          provider: string
+          refresh_token: string | null
+          sync_deadlines: boolean | null
+          sync_direction: string | null
+          sync_enabled: boolean | null
+          sync_errors: Json | null
+          sync_hearings: boolean | null
+          sync_tasks: boolean | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string | null
+          calendar_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          organization_id: string
+          provider: string
+          refresh_token?: string | null
+          sync_deadlines?: boolean | null
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          sync_errors?: Json | null
+          sync_hearings?: boolean | null
+          sync_tasks?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string | null
+          calendar_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          organization_id?: string
+          provider?: string
+          refresh_token?: string | null
+          sync_deadlines?: boolean | null
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          sync_errors?: Json | null
+          sync_hearings?: boolean | null
+          sync_tasks?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_integrations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_integrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_history: {
         Row: {
           audit_log_id: string | null
@@ -3402,6 +3483,154 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      deadline_alerts: {
+        Row: {
+          alert_type: string
+          body: string | null
+          channel: string
+          created_at: string | null
+          deadline_id: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          organization_id: string
+          read_at: string | null
+          recipient_email: string | null
+          recipient_id: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          alert_type: string
+          body?: string | null
+          channel: string
+          created_at?: string | null
+          deadline_id: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id: string
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          alert_type?: string
+          body?: string | null
+          channel?: string
+          created_at?: string | null
+          deadline_id?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id?: string
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadline_alerts_deadline_id_fkey"
+            columns: ["deadline_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadlines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deadline_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deadline_alerts_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deadline_rules: {
+        Row: {
+          alert_days: number[] | null
+          auto_create_task: boolean | null
+          calendar_type: string | null
+          code: string
+          conditions: Json | null
+          created_at: string | null
+          creates_deadline: boolean | null
+          days_from_event: number
+          deadline_type: string | null
+          description: string | null
+          event_type: string
+          id: string
+          is_active: boolean | null
+          jurisdiction: string
+          matter_type: string
+          name: string
+          notes: string | null
+          priority: string | null
+          source: string | null
+          task_template_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_days?: number[] | null
+          auto_create_task?: boolean | null
+          calendar_type?: string | null
+          code: string
+          conditions?: Json | null
+          created_at?: string | null
+          creates_deadline?: boolean | null
+          days_from_event: number
+          deadline_type?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          is_active?: boolean | null
+          jurisdiction: string
+          matter_type: string
+          name: string
+          notes?: string | null
+          priority?: string | null
+          source?: string | null
+          task_template_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_days?: number[] | null
+          auto_create_task?: boolean | null
+          calendar_type?: string | null
+          code?: string
+          conditions?: Json | null
+          created_at?: string | null
+          creates_deadline?: boolean | null
+          days_from_event?: number
+          deadline_type?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          is_active?: boolean | null
+          jurisdiction?: string
+          matter_type?: string
+          name?: string
+          notes?: string | null
+          priority?: string | null
+          source?: string | null
+          task_template_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       deals: {
         Row: {
@@ -11314,6 +11543,132 @@ export type Database = {
           },
         ]
       }
+      matter_deadlines: {
+        Row: {
+          alerts_sent: Json | null
+          completed_at: string | null
+          completed_by: string | null
+          completion_notes: string | null
+          created_at: string | null
+          deadline_date: string
+          deadline_type: string
+          description: string | null
+          extended_by: string | null
+          extension_count: number | null
+          extension_reason: string | null
+          google_event_id: string | null
+          id: string
+          matter_id: string
+          metadata: Json | null
+          next_alert_date: string | null
+          organization_id: string
+          original_deadline: string | null
+          outlook_event_id: string | null
+          priority: string | null
+          rule_code: string | null
+          rule_id: string | null
+          status: string | null
+          task_id: string | null
+          title: string
+          trigger_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          alerts_sent?: Json | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_notes?: string | null
+          created_at?: string | null
+          deadline_date: string
+          deadline_type: string
+          description?: string | null
+          extended_by?: string | null
+          extension_count?: number | null
+          extension_reason?: string | null
+          google_event_id?: string | null
+          id?: string
+          matter_id: string
+          metadata?: Json | null
+          next_alert_date?: string | null
+          organization_id: string
+          original_deadline?: string | null
+          outlook_event_id?: string | null
+          priority?: string | null
+          rule_code?: string | null
+          rule_id?: string | null
+          status?: string | null
+          task_id?: string | null
+          title: string
+          trigger_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          alerts_sent?: Json | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_notes?: string | null
+          created_at?: string | null
+          deadline_date?: string
+          deadline_type?: string
+          description?: string | null
+          extended_by?: string | null
+          extension_count?: number | null
+          extension_reason?: string | null
+          google_event_id?: string | null
+          id?: string
+          matter_id?: string
+          metadata?: Json | null
+          next_alert_date?: string | null
+          organization_id?: string
+          original_deadline?: string | null
+          outlook_event_id?: string | null
+          priority?: string | null
+          rule_code?: string | null
+          rule_id?: string | null
+          status?: string | null
+          task_id?: string | null
+          title?: string
+          trigger_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_deadlines_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_deadlines_extended_by_fkey"
+            columns: ["extended_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_deadlines_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_deadlines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_deadlines_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "deadline_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matter_documents: {
         Row: {
           category: string | null
@@ -12972,6 +13327,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      office_holidays: {
+        Row: {
+          created_at: string | null
+          holiday_date: string
+          holiday_type: string | null
+          id: string
+          is_active: boolean | null
+          is_recurring: boolean | null
+          jurisdiction: string
+          name: string
+          office_code: string | null
+          recurrence_pattern: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          holiday_date: string
+          holiday_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_recurring?: boolean | null
+          jurisdiction: string
+          name: string
+          office_code?: string | null
+          recurrence_pattern?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          holiday_date?: string
+          holiday_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_recurring?: boolean | null
+          jurisdiction?: string
+          name?: string
+          office_code?: string | null
+          recurrence_pattern?: string | null
+        }
+        Relationships: []
       }
       official_fees: {
         Row: {
@@ -19112,6 +19506,15 @@ export type Database = {
         }
         Returns: string
       }
+      calculate_deadline_date: {
+        Args: {
+          p_calendar_type: string
+          p_days: number
+          p_jurisdiction?: string
+          p_start_date: string
+        }
+        Returns: string
+      }
       calculate_kyc_level: { Args: { p_user_id: string }; Returns: number }
       calculate_trademark_similarity: {
         Args: { term_a: string; term_b: string }
@@ -19283,6 +19686,7 @@ export type Database = {
         Args: { p_trigger_data?: Json; p_workflow_id: string }
         Returns: string
       }
+      update_deadline_statuses: { Args: never; Returns: number }
       verify_api_key: {
         Args: { p_key: string }
         Returns: {
