@@ -85,11 +85,9 @@ export function useHelpArticle(slug: string) {
 
       if (error) throw error;
 
-      // Increment view count
-      await supabase
-        .from('help_articles')
-        .update({ view_count: (data.view_count || 0) + 1 })
-        .eq('id', data.id);
+      // Increment view count (RLS-safe)
+      // Fire-and-forget to avoid blocking the page render.
+      supabase.rpc('increment_help_view_count', { p_article_id: data.id }).then();
 
       return data as HelpArticle;
     },

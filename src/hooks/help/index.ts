@@ -19,6 +19,9 @@ export {
   useDeleteHelpCategory,
 } from './useHelpArticles';
 
+// FAQs (P77)
+export { useHelpFAQs } from './useHelpFaqs';
+
 // Support Tickets
 export {
   useSupportTickets,

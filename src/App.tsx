@@ -18,6 +18,13 @@ import Dashboard from "./pages/app/Dashboard";
 import HelpLayout from "./pages/app/help/HelpLayout";
 import HelpCenterIndex from "./pages/app/help/index";
 import VideoTutorialsPage from "./pages/app/help/videos";
+import HelpCategoryPage from "./pages/app/help/category/[slug]";
+import HelpArticleDetailPage from "./pages/app/help/articles/[slug]";
+import HelpArticlesListPage from "./pages/app/help/articles/list";
+import MyTicketsPage from "./pages/app/help/tickets";
+import NewTicketPage from "./pages/app/help/tickets/new";
+import TicketDetailPage from "./pages/app/help/tickets/[id]";
+import HelpAnnouncementsPage from "./pages/app/help/announcements";
 import MarketLayout from "./pages/app/market/MarketLayout";
 import MarketDashboard from "./pages/app/market";
 import MarketListings from "./pages/app/market/listings";
@@ -293,9 +300,16 @@ const App = () => (
                 <Route path="reports/new" element={<NewReportPage />} />
                 <Route path="help" element={<HelpLayout />}>
                   <Route index element={<HelpCenterIndex />} />
+                  <Route path="articles" element={<HelpArticlesListPage />} />
+                  <Route path="articles/:slug" element={<HelpArticleDetailPage />} />
+                  <Route path="category/:slug" element={<HelpCategoryPage />} />
                   <Route path="videos" element={<VideoTutorialsPage />} />
                   <Route path="faq" element={<FAQPage />} />
                   <Route path="guides" element={<GuidesPage />} />
+                  <Route path="tickets" element={<MyTicketsPage />} />
+                  <Route path="tickets/new" element={<NewTicketPage />} />
+                  <Route path="tickets/:id" element={<TicketDetailPage />} />
+                  <Route path="announcements" element={<HelpAnnouncementsPage />} />
                 </Route>
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/team" element={<TeamSettingsPage />} />
