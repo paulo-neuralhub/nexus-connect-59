@@ -164,12 +164,12 @@ export function GeniusChatEnhanced({
   const selectedMatter = matters.find(m => m.id === selectedMatterId);
   
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background rounded-xl border shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b flex items-center gap-3 bg-card">
+      <div className="px-4 py-3 border-b flex items-center gap-3 bg-gradient-to-r from-card to-muted/30">
         <div 
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: `${agent.color}20` }}
+          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${agent.color}30, ${agent.color}10)` }}
         >
           <Sparkles className="w-5 h-5" style={{ color: agent.color }} />
         </div>
@@ -256,17 +256,22 @@ export function GeniusChatEnhanced({
           
           {/* Loading */}
           {isLoading && (
-            <div className="flex gap-3">
+            <div className="flex gap-3 animate-fade-in">
               <div 
                 className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${agent.color}20` }}
+                style={{ background: `linear-gradient(135deg, ${agent.color}30, ${agent.color}10)` }}
               >
-                <Bot className="w-4 h-4" style={{ color: agent.color }} />
+                <Bot className="w-4 h-4 animate-pulse" style={{ color: agent.color }} />
               </div>
               <div className="bg-card rounded-xl p-4 border shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: agent.color }} />
                   <span className="text-sm text-muted-foreground">Pensando...</span>
+                  <span className="flex gap-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
                 </div>
               </div>
             </div>
@@ -278,36 +283,36 @@ export function GeniusChatEnhanced({
       
       {/* Quick prompts bar */}
       {messages.length > 0 && (
-        <div className="px-4 py-2 border-t bg-muted/30 flex gap-2 overflow-x-auto">
+        <div className="px-4 py-2 border-t bg-gradient-to-r from-muted/50 to-muted/20 flex gap-2 overflow-x-auto animate-fade-in">
           <Button
             variant="outline"
             size="sm"
-            className="text-xs whitespace-nowrap"
+            className="text-xs whitespace-nowrap hover:border-primary hover:text-primary transition-colors"
             onClick={() => handleQuickAction('¿Cuáles son los próximos plazos?')}
           >
-            Plazos
+            📅 Plazos
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="text-xs whitespace-nowrap"
+            className="text-xs whitespace-nowrap hover:border-primary hover:text-primary transition-colors"
             onClick={() => handleQuickAction('Resume el estado actual')}
           >
-            Resumen
+            📋 Resumen
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="text-xs whitespace-nowrap"
+            className="text-xs whitespace-nowrap hover:border-primary hover:text-primary transition-colors"
             onClick={() => handleQuickAction('¿Qué tareas están pendientes?')}
           >
-            Tareas
+            ✅ Tareas
           </Button>
         </div>
       )}
       
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t bg-card">
+      <form onSubmit={handleSubmit} className="p-4 border-t bg-gradient-to-t from-card to-transparent">
         <div className="flex gap-2 max-w-3xl mx-auto">
           <textarea
             ref={inputRef}
@@ -354,14 +359,14 @@ function EmptyState({
   onSelectAction: (prompt: string) => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
       <div 
-        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
-        style={{ backgroundColor: `${agent.color}20` }}
+        className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform hover:scale-105"
+        style={{ background: `linear-gradient(135deg, ${agent.color}40, ${agent.color}10)` }}
       >
-        <Sparkles className="w-10 h-10" style={{ color: agent.color }} />
+        <Sparkles className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
       </div>
-      <h3 className="text-2xl font-semibold text-foreground mb-2">
+      <h3 className="text-2xl font-bold text-foreground mb-2">
         ¡Hola! Soy {agent.name}
       </h3>
       <p className="text-muted-foreground mb-8 max-w-md">
@@ -374,11 +379,12 @@ function EmptyState({
           <Button
             key={i}
             variant="outline"
-            className="h-auto py-4 flex flex-col items-center gap-2 hover:border-primary hover:bg-primary/5"
+            className="h-auto py-4 flex flex-col items-center gap-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-[1.02] hover:shadow-md"
+            style={{ animationDelay: `${i * 100}ms` }}
             onClick={() => onSelectAction(action.prompt)}
           >
-            <action.icon className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm">{action.label}</span>
+            <action.icon className="w-5 h-5" style={{ color: agent.color }} />
+            <span className="text-sm font-medium">{action.label}</span>
           </Button>
         ))}
       </div>
@@ -389,7 +395,7 @@ function EmptyState({
         <ul className="space-y-1">
           {agent.capabilities.map((cap, i) => (
             <li key={i} className="flex items-center gap-2">
-              <span className="text-green-500">✓</span>
+              <span className="text-primary">✓</span>
               {cap}
             </li>
           ))}
@@ -414,7 +420,7 @@ function MessageBubble({
   const isUser = message.role === 'user';
   
   return (
-    <div className={cn("flex gap-3", isUser && "flex-row-reverse")}>
+    <div className={cn("flex gap-3 animate-fade-in", isUser && "flex-row-reverse")}>
       {/* Avatar */}
       <div 
         className={cn(
@@ -487,7 +493,7 @@ function MessageBubble({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 hover:text-green-600"
+                  className="h-7 w-7 hover:text-primary"
                   onClick={() => onFeedback(message.id, 'positive')}
                   title="Útil"
                 >
@@ -496,7 +502,7 @@ function MessageBubble({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 hover:text-red-600"
+                  className="h-7 w-7 hover:text-destructive"
                   onClick={() => onFeedback(message.id, 'negative')}
                   title="No útil"
                 >
@@ -505,10 +511,10 @@ function MessageBubble({
               </>
             )}
             {message.feedback === 'positive' && (
-              <ThumbsUp className="w-4 h-4 text-green-500" />
+              <ThumbsUp className="w-4 h-4 text-primary" />
             )}
             {message.feedback === 'negative' && (
-              <ThumbsDown className="w-4 h-4 text-red-500" />
+              <ThumbsDown className="w-4 h-4 text-destructive" />
             )}
             {message.response_time_ms && (
               <span className="text-xs text-muted-foreground ml-2">

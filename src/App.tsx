@@ -33,7 +33,7 @@ import MarketProfile from "./pages/app/market/profile";
 import DataHubPage from "./pages/app/data-hub";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
-import GeniusChatPage from "./pages/app/genius/chat";
+import GeniusChatPage from "./pages/app/genius";
 import GeniusComparatorPage from "./pages/app/genius/comparator";
 import GeniusOppositionPage from "./pages/app/genius/opposition";
 import GeniusDocumentsPage from "./pages/app/genius/documents";
