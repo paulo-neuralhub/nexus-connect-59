@@ -45,6 +45,9 @@ serve(async (req) => {
     // Test connection based on system type
     let result;
     switch (connection.system_type) {
+      case 'web_portal':
+        result = await testWebPortalConnection(credentials, config);
+        break;
       case 'patsnap':
         result = await testPatSnapConnection(credentials, config);
         break;
@@ -265,6 +268,34 @@ async function testGenericConnection(credentials: any, config: any, systemType: 
       total_matters: Math.floor(Math.random() * 3000) + 300,
       available_entities: ['matters', 'contacts'],
       rate_limit: { requests_per_minute: 30 }
+    }
+  };
+}
+
+async function testWebPortalConnection(credentials: any, config: any) {
+  // NOTE: We cannot truly log in/scrape from Edge Functions (no headless browser).
+  // This "test" validates that the minimum fields are present so the connection can be used
+  // in a manual, assisted extraction workflow.
+  const username = credentials.username;
+  const password = credentials.password;
+  const baseUrl = credentials.base_url || credentials.login_url || config.base_url || config.login_url;
+
+  if (!username || !password || !baseUrl) {
+    return {
+      success: false,
+      message: 'Faltan credenciales: username, password y URL del portal/login',
+    };
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 700));
+
+  return {
+    success: true,
+    message: 'Conexión registrada (modo manual). Listo para extracción asistida.',
+    metadata: {
+      system: 'web_portal',
+      available_entities: ['matters', 'contacts', 'deadlines', 'documents', 'custom'],
+      note: 'Este conector no automatiza login/scraping. Se usa para procesos manuales + evidencias (PDF/HTML/capturas) y reporte final.'
     }
   };
 }

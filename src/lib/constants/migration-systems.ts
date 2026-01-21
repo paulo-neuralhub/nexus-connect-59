@@ -26,6 +26,20 @@ export interface SystemDefinition {
 }
 
 export const MIGRATION_SYSTEMS: Record<string, SystemDefinition> = {
+  web_portal: {
+    id: 'web_portal',
+    name: 'Portal Web (Login)',
+    vendor: 'Cliente / Tercero',
+    description: 'Extracción asistida desde una app web sin API ni exportaciones',
+    color: '#0EA5E9',
+    supportedAuthTypes: ['basic_auth', 'session_cookie'],
+    supportedEntities: ['matters', 'contacts', 'deadlines', 'documents', 'custom'],
+    hasApi: false,
+    supportsWebhooks: false,
+    supportsRealtime: false,
+    estimatedSetupTime: '5-10 min (manual)',
+    popularity: 10
+  },
   patsnap: {
     id: 'patsnap',
     name: 'PatSnap',
