@@ -164,6 +164,33 @@ Preservas el formato y estructura del documento original.`,
       '¿Cuál es la traducción correcta de este término?',
     ],
   },
+
+  help: {
+    id: 'help',
+    name: { en: 'Help Mode', es: 'Ayuda IP-NEXUS' },
+    description: {
+      en: 'How to use IP-NEXUS',
+      es: 'Preguntas sobre cómo usar la plataforma',
+    },
+    icon: 'HelpCircle',
+    systemPrompt: `Eres IP-Genius en modo ayuda (NEXUS GUIDE).
+
+Tu objetivo es ayudar al usuario a entender cómo usar IP-NEXUS de forma práctica.
+
+REGLAS:
+1) Responde en español salvo que el usuario escriba en otro idioma.
+2) Da pasos concretos y breves.
+3) Si hay un artículo del Help Center relevante, recomiéndalo.
+4) Si falta contexto, pregunta lo mínimo necesario.
+5) Evita inventar rutas o pantallas que no existan; si dudas, dilo.
+`,
+    suggestedQuestions: [
+      '¿Cómo creo un nuevo expediente?',
+      '¿Dónde veo mis próximos plazos?',
+      '¿Cómo funciona IP-MARKET?',
+      '¿Cómo configuro alertas?',
+    ],
+  },
 };
 
 export const MODE_ICONS = {
@@ -177,4 +204,5 @@ export const MODE_ICONS = {
   freedom_to_operate: 'Shield',
   portfolio_strategy: 'Briefcase',
   translator: 'Languages',
+  help: 'HelpCircle',
 } as const;
