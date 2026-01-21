@@ -85,12 +85,12 @@ export function CrmAiTipCallout() {
   if (!tipRow.data?.id) return null;
 
   return (
-    <Card>
-      <CardContent className="p-4 flex items-start justify-between gap-4">
+    <Card className="bg-background-warm border-warning/30 max-w-2xl">
+      <CardContent className="p-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground">Tip rápido</p>
+            <Sparkles className="h-4 w-4 text-warning" />
+            <p className="text-xs font-semibold text-foreground">Tip rápido</p>
           </div>
           <div className="mt-2">
             {aiTip.isLoading ? (
@@ -99,21 +99,22 @@ export function CrmAiTipCallout() {
                 <Skeleton className="h-4 w-[220px]" />
               </div>
             ) : aiTip.data?.tip ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">{aiTip.data.tip}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{aiTip.data.tip}</p>
             ) : (
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Puedes configurar etapas y pipelines en Configuración.
               </p>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
+              className="h-7 px-2 text-xs"
               onClick={() => navigate('/app/settings')}
             >
               Ir a configuración CRM
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
