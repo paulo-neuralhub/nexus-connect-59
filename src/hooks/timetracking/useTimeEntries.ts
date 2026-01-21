@@ -38,7 +38,7 @@ export interface TimeEntry {
     title: string;
     contact?: {
       id: string;
-      full_name: string;
+      name: string;
     };
   };
   user?: {
@@ -57,9 +57,22 @@ export interface TimeEntryFilters {
 }
 
 // Get time entries with filters
+// Transform data from Supabase format to TimeEntry format
+function transformTimeEntries(data: any[]): TimeEntry[] {
+  return data.map(entry => ({
+    ...entry,
+    matter: entry.matter ? {
+      id: entry.matter.id,
+      reference: entry.matter.reference,
+      title: entry.matter.title,
+      contact: entry.matter.contact?.[0] || undefined, // Take first contact from array
+    } : undefined,
+    user: entry.user || undefined,
+  }));
+}
+
 export function useTimeEntries(filters: TimeEntryFilters = {}) {
   const { currentOrganization } = useOrganization();
-  const { user } = useAuth();
 
   return useQuery({
     queryKey: ['time-entries', currentOrganization?.id, filters],
@@ -70,7 +83,7 @@ export function useTimeEntries(filters: TimeEntryFilters = {}) {
         .from('time_entries')
         .select(`
           *,
-          matter:matters(id, reference, title, contact:contacts(id, full_name)),
+          matter:matters(id, reference, title, contact:contacts(id, name)),
           user:users(id, full_name)
         `)
         .eq('organization_id', currentOrganization.id)
@@ -97,7 +110,7 @@ export function useTimeEntries(filters: TimeEntryFilters = {}) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as TimeEntry[];
+      return transformTimeEntries(data || []);
     },
     enabled: !!currentOrganization?.id,
   });
@@ -118,7 +131,7 @@ export function useWeeklyTimeEntries(weekStart: Date) {
         .from('time_entries')
         .select(`
           *,
-          matter:matters(id, reference, title, contact:contacts(id, full_name))
+          matter:matters(id, reference, title, contact:contacts(id, name))
         `)
         .eq('organization_id', currentOrganization.id)
         .eq('user_id', user.id)
@@ -127,7 +140,7 @@ export function useWeeklyTimeEntries(weekStart: Date) {
         .order('date', { ascending: true });
 
       if (error) throw error;
-      return data as TimeEntry[];
+      return transformTimeEntries(data || []);
     },
     enabled: !!currentOrganization?.id && !!user?.id,
   });
@@ -371,7 +384,7 @@ export function useUnbilledTimeEntries(matterId?: string) {
         .from('time_entries')
         .select(`
           *,
-          matter:matters(id, reference, title, contact:contacts(id, full_name)),
+          matter:matters(id, reference, title, contact:contacts(id, name)),
           user:users(id, full_name)
         `)
         .eq('organization_id', currentOrganization.id)
@@ -385,7 +398,7 @@ export function useUnbilledTimeEntries(matterId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as TimeEntry[];
+      return transformTimeEntries(data || []);
     },
     enabled: !!currentOrganization?.id,
   });

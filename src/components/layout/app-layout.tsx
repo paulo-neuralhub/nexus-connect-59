@@ -9,6 +9,7 @@ import { BottomNavigation, MobileHeader, OfflineBanner, PWAInstallPrompt } from 
 import { ContextualHelpProvider } from "@/components/help/ContextualHelpProvider";
 import { TrialBanner } from "@/components/upgrade/TrialBanner";
 import { NexusGuideButton } from "@/components/nexus-guide";
+import { GlobalTimer } from "@/components/timetracking";
 
 export function AppLayout() {
   const isMobile = useIsMobile();
@@ -47,6 +48,7 @@ export function AppLayout() {
                     <Outlet />
                   </main>
                 </div>
+                <GlobalTimer />
                 <NexusGuideButton />
               </div>
             )}

@@ -28,7 +28,7 @@ export interface BillingRate {
   updated_at: string;
   // Joined data
   user?: { id: string; full_name: string };
-  contact?: { id: string; full_name: string };
+  contact?: { id: string; name: string };
 }
 
 // Get all billing rates
@@ -45,7 +45,7 @@ export function useBillingRates() {
         .select(`
           *,
           user:users(id, full_name),
-          contact:contacts(id, full_name)
+          contact:contacts(id, name)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('rate_type', { ascending: true })

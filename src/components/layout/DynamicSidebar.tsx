@@ -14,7 +14,7 @@ import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
   Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, 
   Lock, Shield, ArrowRightLeft, Store, BarChart3, Scale, Sparkles,
-  Code, Upload, Wallet, Briefcase, GitBranch, PenTool
+  Code, Upload, Wallet, Briefcase, GitBranch, PenTool, Clock
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -47,6 +47,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Code,
   HelpCircle,
   PenTool,
+  Clock,
 };
 
 interface NavItem {
@@ -135,6 +136,14 @@ const MODULE_NAV: NavItem[] = [
     icon: Wallet,
     moduleCode: "finance",
     color: MODULE_REGISTRY.finance.color,
+    requiresLicense: true,
+  },
+  {
+    path: "/app/timetracking",
+    label: "Tiempo",
+    icon: Clock,
+    moduleCode: "finance", // Uses finance module access
+    color: "#06B6D4",
     requiresLicense: true,
   },
   {
