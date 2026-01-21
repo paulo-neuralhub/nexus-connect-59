@@ -2094,6 +2094,128 @@ export type Database = {
           },
         ]
       }
+      availability_exceptions: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          exception_date: string
+          id: string
+          is_available: boolean | null
+          organization_id: string
+          reason: string | null
+          start_time: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          exception_date: string
+          id?: string
+          is_available?: boolean | null
+          organization_id: string
+          reason?: string | null
+          start_time?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          exception_date?: string
+          id?: string
+          is_available?: boolean | null
+          organization_id?: string
+          reason?: string | null
+          start_time?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_exceptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "availability_exceptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_exceptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_slots: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          end_time: string
+          id: string
+          is_recurring: boolean | null
+          organization_id: string
+          slot_type: string | null
+          start_time: string
+          user_id: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_recurring?: boolean | null
+          organization_id: string
+          slot_type?: string | null
+          start_time: string
+          user_id: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_recurring?: boolean | null
+          organization_id?: string
+          slot_type?: string | null
+          start_time?: string
+          user_id?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_slots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "availability_slots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_slots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_clients: {
         Row: {
           billing_address: string | null
@@ -2427,6 +2549,141 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_connections: {
+        Row: {
+          access_token: string
+          calendar_color: string | null
+          calendar_id: string
+          calendar_name: string | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          organization_id: string
+          provider: string
+          refresh_token: string | null
+          sync_deadlines: boolean | null
+          sync_direction: string | null
+          sync_enabled: boolean | null
+          sync_meetings: boolean | null
+          sync_status: string | null
+          sync_tasks: boolean | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          calendar_color?: string | null
+          calendar_id: string
+          calendar_name?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          organization_id: string
+          provider: string
+          refresh_token?: string | null
+          sync_deadlines?: boolean | null
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          sync_meetings?: boolean | null
+          sync_status?: string | null
+          sync_tasks?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          calendar_color?: string | null
+          calendar_id?: string
+          calendar_name?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          organization_id?: string
+          provider?: string
+          refresh_token?: string | null
+          sync_deadlines?: boolean | null
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          sync_meetings?: boolean | null
+          sync_status?: string | null
+          sync_tasks?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "calendar_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_event_mappings: {
+        Row: {
+          calendar_connection_id: string
+          created_at: string | null
+          external_calendar_id: string
+          external_event_id: string
+          id: string
+          last_synced_at: string | null
+          source_id: string
+          source_type: string
+          sync_hash: string | null
+        }
+        Insert: {
+          calendar_connection_id: string
+          created_at?: string | null
+          external_calendar_id: string
+          external_event_id: string
+          id?: string
+          last_synced_at?: string | null
+          source_id: string
+          source_type: string
+          sync_hash?: string | null
+        }
+        Update: {
+          calendar_connection_id?: string
+          created_at?: string | null
+          external_calendar_id?: string
+          external_event_id?: string
+          id?: string
+          last_synced_at?: string | null
+          source_id?: string
+          source_type?: string
+          sync_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_event_mappings_calendar_connection_id_fkey"
+            columns: ["calendar_connection_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_connections"
             referencedColumns: ["id"]
           },
         ]
@@ -21236,6 +21493,37 @@ export type Database = {
       dmetaphone: { Args: { "": string }; Returns: string }
       dmetaphone_alt: { Args: { "": string }; Returns: string }
       expire_trials: { Args: never; Returns: number }
+      get_active_calendar_connections: {
+        Args: never
+        Returns: {
+          access_token: string
+          calendar_color: string | null
+          calendar_id: string
+          calendar_name: string | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          organization_id: string
+          provider: string
+          refresh_token: string | null
+          sync_deadlines: boolean | null
+          sync_direction: string | null
+          sync_enabled: boolean | null
+          sync_meetings: boolean | null
+          sync_status: string | null
+          sync_tasks: boolean | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "calendar_connections"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_analytics_stats: {
         Args: { p_days?: number; p_organization_id: string }
         Returns: Json
