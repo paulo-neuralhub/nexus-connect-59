@@ -156,6 +156,7 @@ import ComplianceDashboardPage from "./pages/backoffice/compliance";
 import AIBrainPage from "./pages/backoffice/ai-brain";
 import KillSwitchPage from "./pages/backoffice/kill-switch";
 import BackofficeCalendarPage from "./pages/backoffice/calendar";
+import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics";
 
 // KYC Pages
 import MarketKycPage from "./pages/app/market/kyc";
@@ -366,6 +367,7 @@ const App = () => (
                 <Route path="feedback" element={<BackofficeFeedbackPage />} />
                 <Route path="settings" element={<BackofficeSettingsPage />} />
                 <Route path="calendar" element={<BackofficeCalendarPage />} />
+                <Route path="product-analytics" element={<BackofficeProductAnalyticsPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
               </Route>
               
