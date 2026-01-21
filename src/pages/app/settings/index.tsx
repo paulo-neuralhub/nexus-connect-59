@@ -16,6 +16,7 @@ import {
   Laptop,
   Users,
   KeyRound,
+  Code,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission } from '@/components/auth/RequirePermission';
@@ -34,6 +35,7 @@ import BillingSettings from './sections/BillingSettings';
 import TeamSettings from './sections/TeamSettings';
 import NotificationsSettings from './sections/NotificationsSettings';
 import SSOSettings from './sections/SSOSettings';
+import ApiWebhooksSettings from './sections/ApiWebhooksSettings';
 
 // Tabs for organization settings
 const ORG_TABS = [
@@ -42,6 +44,7 @@ const ORG_TABS = [
   { id: 'regional', label: 'Regional', icon: Globe, permission: 'settings.view' },
   { id: 'security', label: 'Seguridad', icon: Shield, permission: 'settings.update' },
   { id: 'sso', label: 'SSO Enterprise', icon: KeyRound, permission: 'settings.update' },
+  { id: 'api', label: 'API & Webhooks', icon: Code, permission: 'settings.update' },
   { id: 'integrations', label: 'Integraciones', icon: Link, permission: 'settings.view' },
   { id: 'email', label: 'Email', icon: Mail, permission: 'settings.update' },
   { id: 'billing', label: 'Facturación', icon: CreditCard, permission: 'billing.view' },
@@ -169,6 +172,11 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
       {activeTab === 'sso' && (
         <RequirePermission permission="settings.update">
           <SSOSettings />
+        </RequirePermission>
+      )}
+      {activeTab === 'api' && (
+        <RequirePermission permission="settings.update">
+          <ApiWebhooksSettings />
         </RequirePermission>
       )}
       {activeTab === 'integrations' && (
