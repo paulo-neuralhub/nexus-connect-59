@@ -297,5 +297,343 @@
     "orgNamePlaceholder": "Name Ihres Unternehmens oder Ihrer Kanzlei",
     "createOrg": "Organisation erstellen",
     "skip": "Vorerst überspringen"
+  },
+
+  "portal": {
+    "login": {
+      "title": "Portal-Zugang",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein, um einen Zugangslink zu erhalten",
+      "email_placeholder": "ihre@email.com",
+      "submit": "Zum Portal",
+      "sending": "Wird gesendet...",
+      "check_email": "Überprüfen Sie Ihre E-Mail",
+      "link_sent": "Wir haben einen Zugangslink gesendet an",
+      "link_expires": "Der Link läuft in 15 Minuten ab",
+      "use_another": "Andere E-Mail verwenden",
+      "secure_link": "Wir senden Ihnen einen sicheren Link für den Zugang",
+      "authorized_only": "Exklusiver Zugang für autorisierte Kunden",
+      "contact_rep": "Wenn Sie keinen Zugang haben, kontaktieren Sie Ihren Ansprechpartner",
+      "verifying": "Zugang wird überprüft...",
+      "validating": "Wir validieren Ihren Zugangslink",
+      "not_available": "Portal nicht verfügbar",
+      "not_available_desc": "Dieses Portal existiert nicht oder wurde deaktiviert. Bitte kontaktieren Sie Ihren Ansprechpartner.",
+      "error": {
+        "invalid_email": "Ungültige E-Mail",
+        "user_not_found": "Benutzer nicht gefunden oder kein Zugang zu diesem Portal",
+        "link_expired": "Link ungültig oder abgelaufen",
+        "verify_error": "Fehler bei der Linkverifizierung"
+      }
+    },
+    "layout": {
+      "logout": "Abmelden",
+      "footer": "Kundenportal"
+    },
+    "nav": {
+      "dashboard": "Startseite",
+      "matters": "Meine Vorgänge",
+      "documents": "Dokumente",
+      "invoices": "Rechnungen",
+      "messages": "Nachrichten"
+    },
+    "dashboard": {
+      "welcome": "Willkommen",
+      "subtitle": "Hier können Sie den Status Ihrer Vorgänge einsehen und mit uns kommunizieren",
+      "active_matters": "Aktive Vorgänge",
+      "pending_deadlines": "Anstehende Fristen",
+      "new_documents": "Neue Dokumente",
+      "unread_messages": "Ungelesene Nachrichten",
+      "upcoming_deadlines": "Kommende Fristen",
+      "recent_activity": "Letzte Aktivitäten",
+      "days": "Tage",
+      "no_deadlines": "Keine anstehenden Fristen",
+      "no_activity": "Keine aktuellen Aktivitäten",
+      "pending_approvals": "Sie haben {{count}} Dokument(e) zur Genehmigung ausstehend",
+      "view_documents": "Dokumente ansehen"
+    },
+    "matters": {
+      "title": "Meine Vorgänge",
+      "subtitle": "Aktueller Status aller Ihrer Vorgänge",
+      "view_details": "Details anzeigen",
+      "progress": "Fortschritt",
+      "next_deadline": "Nächste Frist",
+      "no_matters": "Keine Vorgänge gefunden",
+      "info": {
+        "type": "Typ",
+        "jurisdiction": "Gerichtsbarkeit",
+        "start_date": "Startdatum",
+        "responsible": "Zuständig"
+      },
+      "tabs": {
+        "overview": "Übersicht",
+        "documents": "Dokumente",
+        "timeline": "Verlauf",
+        "deadlines": "Fristen"
+      },
+      "status": {
+        "active": "Aktiv",
+        "pending": "Ausstehend",
+        "completed": "Abgeschlossen",
+        "on_hold": "Pausiert"
+      }
+    },
+    "documents": {
+      "title": "Dokumente",
+      "subtitle": "Dokumente zu Ihren Vorgängen",
+      "download": "Herunterladen",
+      "no_documents": "Keine Dokumente verfügbar",
+      "filter_pending": "Genehmigung ausstehend"
+    },
+    "invoices": {
+      "title": "Rechnungen",
+      "number": "Rechnung #",
+      "download_pdf": "PDF",
+      "pay": "Bezahlen",
+      "no_invoices": "Keine Rechnungen gefunden",
+      "status": {
+        "paid": "Bezahlt",
+        "pending": "Ausstehend",
+        "overdue": "Überfällig"
+      }
+    },
+    "messages": {
+      "title": "Nachrichten",
+      "conversations": "Konversationen",
+      "general_inquiry": "Allgemeine Anfrage",
+      "placeholder": "Schreiben Sie Ihre Nachricht...",
+      "send": "Senden",
+      "select_conversation": "Wählen Sie eine Konversation",
+      "no_messages": "Noch keine Nachrichten"
+    },
+    "sign": {
+      "title": "Dokument unterschreiben",
+      "document_to_sign": "Zu unterschreibendes Dokument",
+      "requested_by": "Angefordert von",
+      "signer": "Unterzeichner",
+      "expires": "Läuft ab",
+      "preview": "Dokumentvorschau",
+      "download_document": "Dokument herunterladen",
+      "your_signature": "Ihre Unterschrift",
+      "signature_instructions": "Zeichnen Sie Ihre Unterschrift im Bereich unten mit Ihrer Maus oder Ihrem Finger (auf Touchscreens).",
+      "clear": "Löschen",
+      "accept_terms": "Ich bestätige, dass ich das Dokument gelesen und verstanden habe. Ich akzeptiere, dass meine elektronische Unterschrift rechtlich bindend ist und nach geltendem Recht die gleiche Wirkung wie eine handschriftliche Unterschrift hat.",
+      "decline": "Ablehnen",
+      "sign_document": "Dokument unterschreiben",
+      "signing": "Wird unterschrieben...",
+      "signed_success": "Dokument unterschrieben!",
+      "signed_message": "Ihre Unterschrift wurde erfolgreich aufgezeichnet. Sie erhalten eine Kopie des unterschriebenen Dokuments per E-Mail.",
+      "close_window": "Dieses Fenster schließen",
+      "already_signed": "Bereits unterschrieben",
+      "already_signed_message": "Dieses Dokument wurde bereits am {{date}} unterschrieben.",
+      "decline_title": "Unterschrift ablehnen",
+      "decline_message": "Sind Sie sicher, dass Sie die Unterschrift dieses Dokuments ablehnen möchten? Diese Aktion benachrichtigt den Absender.",
+      "decline_reason": "Ablehnungsgrund (optional)",
+      "decline_reason_placeholder": "Geben Sie an, warum Sie die Unterschrift ablehnen...",
+      "confirm_decline": "Ablehnung bestätigen",
+      "error": "Fehler",
+      "draw_signature": "Bitte zeichnen Sie Ihre Unterschrift",
+      "accept_required": "Sie müssen die Bedingungen akzeptieren, um zu unterschreiben"
+    }
+  },
+
+  "signatures": {
+    "title": "Elektronische Unterschriften",
+    "subtitle": "Verwalten Sie Dokumentunterschriftsanfragen",
+    "new_request": "Neue Anfrage",
+    "request_signature": "Unterschrift anfordern",
+    "document": "Dokument",
+    "signers": "Unterzeichner",
+    "add_signer": "Unterzeichner hinzufügen",
+    "signer_email": "E-Mail des Unterzeichners",
+    "signer_name": "Vollständiger Name",
+    "role": {
+      "signer": "Unterzeichner",
+      "approver": "Genehmiger",
+      "cc": "Nur Kopie"
+    },
+    "email_subject": "E-Mail-Betreff",
+    "email_message": "Nachricht für Unterzeichner (optional)",
+    "expires_in": "Läuft ab in",
+    "days": "Tagen",
+    "send_request": "Anfrage senden",
+    "cancel": "Abbrechen",
+    "status": {
+      "draft": "Entwurf",
+      "sent": "Gesendet",
+      "viewed": "Angesehen",
+      "partially_signed": "Teilweise unterschrieben",
+      "completed": "Abgeschlossen",
+      "declined": "Abgelehnt",
+      "expired": "Abgelaufen",
+      "voided": "Annulliert"
+    },
+    "actions": {
+      "view_details": "Details anzeigen",
+      "download_signed": "Unterschrieben herunterladen",
+      "send_reminder": "Erinnerung senden",
+      "void_request": "Anfrage annullieren"
+    },
+    "signed_count": "{{signed}}/{{total}} Unterzeichner",
+    "created": "Erstellt",
+    "expires": "Läuft ab",
+    "reminder_sent": "Erinnerung gesendet",
+    "request_voided": "Anfrage annulliert"
+  },
+
+  "timetracking": {
+    "title": "Zeiterfassung",
+    "subtitle": "Woche vom {{start}} bis {{end}}",
+    "new_entry": "Manuellen Eintrag hinzufügen",
+    "timer": {
+      "start": "Timer starten",
+      "stop": "Stopp",
+      "pause": "Pause",
+      "recording": "Aufzeichnung",
+      "new_record": "Neue Aufzeichnung",
+      "matter_required": "Wählen Sie einen Vorgang",
+      "description_placeholder": "Was machen Sie gerade?",
+      "billable": "Abrechenbar"
+    },
+    "stats": {
+      "total_hours": "Gesamtstunden",
+      "billable": "Abrechenbar",
+      "non_billable": "Nicht abrechenbar",
+      "amount": "Betrag"
+    },
+    "entry": {
+      "matter": "Vorgang",
+      "date": "Datum",
+      "duration": "Dauer",
+      "hours": "Stunden",
+      "minutes": "Minuten",
+      "description": "Arbeitsbeschreibung",
+      "activity_type": "Aktivitätstyp",
+      "save": "Speichern"
+    },
+    "activity_types": {
+      "research": "Recherche",
+      "drafting": "Entwurf",
+      "review": "Überprüfung",
+      "meeting": "Meeting",
+      "call": "Anruf",
+      "email": "E-Mail/Korrespondenz",
+      "filing": "Einreichung",
+      "court": "Gericht/Verhandlung",
+      "travel": "Reise",
+      "admin": "Verwaltung",
+      "other": "Sonstiges"
+    },
+    "invoice": {
+      "generate": "Rechnung erstellen",
+      "from_time": "Rechnung aus Zeit erstellen",
+      "select_entries": "Wählen Sie Zeiteinträge aus",
+      "entries": "Einträge",
+      "unbilled": "Nicht abgerechnet",
+      "no_unbilled": "Keine nicht abgerechnete Zeit"
+    },
+    "widget": {
+      "title": "Erfasste Zeit",
+      "total": "Gesamt",
+      "unbilled_amount": "Nicht abgerechnet"
+    }
+  },
+
+  "finance": {
+    "title": "Finanzen",
+    "dashboard": "Dashboard",
+    "invoices": "Rechnungen",
+    "payments": "Zahlungen",
+    "reports": "Berichte",
+    "invoice": {
+      "new": "Neue Rechnung",
+      "number": "Rechnung #",
+      "date": "Datum",
+      "due_date": "Fälligkeitsdatum",
+      "client": "Kunde",
+      "matter": "Vorgang",
+      "subtotal": "Zwischensumme",
+      "tax": "MwSt.",
+      "total": "Gesamt",
+      "notes": "Notizen",
+      "status": {
+        "draft": "Entwurf",
+        "sent": "Gesendet",
+        "paid": "Bezahlt",
+        "overdue": "Überfällig",
+        "cancelled": "Storniert"
+      },
+      "actions": {
+        "send": "Senden",
+        "download": "PDF herunterladen",
+        "mark_paid": "Als bezahlt markieren",
+        "void": "Stornieren"
+      }
+    },
+    "stats": {
+      "revenue": "Umsatz",
+      "pending": "Ausstehend",
+      "overdue": "Überfällig",
+      "this_month": "Diesen Monat"
+    }
+  },
+
+  "api": {
+    "title": "API & Webhooks",
+    "keys": {
+      "title": "API-Schlüssel",
+      "subtitle": "Erstellen Sie Schlüssel zur Integration externer Anwendungen mit IP-NEXUS",
+      "new": "Neuer API-Schlüssel",
+      "create_title": "Neuer API-Schlüssel",
+      "create_description": "Der Schlüssel wird nur einmal angezeigt. Bewahren Sie ihn sicher auf.",
+      "name": "Name",
+      "name_placeholder": "z.B.: Zapier-Integration",
+      "description": "Beschreibung",
+      "description_placeholder": "Wofür wird dieser API-Schlüssel verwendet",
+      "permissions": "Berechtigungen",
+      "expiration": "Ablauf",
+      "never": "Nie",
+      "days_30": "30 Tage",
+      "days_90": "90 Tage",
+      "months_6": "6 Monate",
+      "year_1": "1 Jahr",
+      "created": "API-Schlüssel erstellt",
+      "copy_now": "Kopieren Sie diesen Schlüssel jetzt. Sie können ihn nicht erneut sehen.",
+      "copied": "Schlüssel kopiert, schließen",
+      "revoke": "Widerrufen",
+      "revoke_confirm": "Diesen API-Schlüssel widerrufen? Er funktioniert dann nicht mehr.",
+      "last_used": "Letzte Verwendung",
+      "no_keys": "Keine API-Schlüssel",
+      "no_keys_desc": "Erstellen Sie einen API-Schlüssel zur Integration mit externen Systemen"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "subtitle": "Erhalten Sie Echtzeit-Benachrichtigungen wenn Ereignisse eintreten",
+      "new": "Neuer Webhook",
+      "create_title": "Neuer Webhook",
+      "name": "Name",
+      "url": "Ziel-URL",
+      "events": "Ereignisse",
+      "test": "Testen",
+      "test_sent": "Test-Webhook gesendet",
+      "no_webhooks": "Keine Webhooks konfiguriert",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "docs": {
+      "title": "API-Dokumentation",
+      "subtitle": "Erkunden Sie alle verfügbaren Endpoints zur Integration mit IP-NEXUS",
+      "base_url": "Basis-URL",
+      "authentication": "Authentifizierung",
+      "auth_description": "Fügen Sie Ihren API-Schlüssel in den Header jeder Anfrage ein",
+      "endpoints": "Verfügbare Endpoints",
+      "response_codes": "Antwortcodes"
+    },
+    "logs": {
+      "title": "Aktivitätsprotokolle",
+      "subtitle": "Letzte API-Anfragen",
+      "all": "Alle",
+      "success": "Erfolgreich",
+      "errors": "Fehler",
+      "no_logs": "Keine Aktivitätsprotokolle"
+    }
   }
 }

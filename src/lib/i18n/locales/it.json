@@ -297,5 +297,343 @@
     "orgNamePlaceholder": "Nome della tua azienda o studio",
     "createOrg": "Crea Organizzazione",
     "skip": "Salta per ora"
+  },
+
+  "portal": {
+    "login": {
+      "title": "Accesso al Portale",
+      "subtitle": "Inserisci la tua email per ricevere un link di accesso",
+      "email_placeholder": "tua@email.com",
+      "submit": "Accedi al portale",
+      "sending": "Invio...",
+      "check_email": "Controlla la tua email",
+      "link_sent": "Abbiamo inviato un link di accesso a",
+      "link_expires": "Il link scade in 15 minuti",
+      "use_another": "Usa un'altra email",
+      "secure_link": "Ti invieremo un link sicuro per accedere",
+      "authorized_only": "Accesso esclusivo per clienti autorizzati",
+      "contact_rep": "Se non hai accesso, contatta il tuo rappresentante",
+      "verifying": "Verifica accesso...",
+      "validating": "Stiamo validando il tuo link di accesso",
+      "not_available": "Portale non disponibile",
+      "not_available_desc": "Questo portale non esiste o è stato disattivato. Per favore contatta il tuo rappresentante.",
+      "error": {
+        "invalid_email": "Email non valida",
+        "user_not_found": "Utente non trovato o senza accesso a questo portale",
+        "link_expired": "Link non valido o scaduto",
+        "verify_error": "Errore nella verifica del link"
+      }
+    },
+    "layout": {
+      "logout": "Esci",
+      "footer": "Portale Clienti"
+    },
+    "nav": {
+      "dashboard": "Home",
+      "matters": "Le mie Pratiche",
+      "documents": "Documenti",
+      "invoices": "Fatture",
+      "messages": "Messaggi"
+    },
+    "dashboard": {
+      "welcome": "Benvenuto",
+      "subtitle": "Qui puoi controllare lo stato delle tue pratiche e comunicare con noi",
+      "active_matters": "Pratiche attive",
+      "pending_deadlines": "Scadenze imminenti",
+      "new_documents": "Nuovi documenti",
+      "unread_messages": "Messaggi non letti",
+      "upcoming_deadlines": "Prossime scadenze",
+      "recent_activity": "Attività recente",
+      "days": "giorni",
+      "no_deadlines": "Nessuna scadenza imminente",
+      "no_activity": "Nessuna attività recente",
+      "pending_approvals": "Hai {{count}} documento/i in attesa di approvazione",
+      "view_documents": "Visualizza documenti"
+    },
+    "matters": {
+      "title": "Le mie Pratiche",
+      "subtitle": "Stato attuale di tutte le tue pratiche",
+      "view_details": "Visualizza dettagli",
+      "progress": "Progresso",
+      "next_deadline": "Prossima scadenza",
+      "no_matters": "Nessuna pratica trovata",
+      "info": {
+        "type": "Tipo",
+        "jurisdiction": "Giurisdizione",
+        "start_date": "Data di inizio",
+        "responsible": "Responsabile"
+      },
+      "tabs": {
+        "overview": "Panoramica",
+        "documents": "Documenti",
+        "timeline": "Storico",
+        "deadlines": "Scadenze"
+      },
+      "status": {
+        "active": "Attivo",
+        "pending": "In attesa",
+        "completed": "Completato",
+        "on_hold": "In pausa"
+      }
+    },
+    "documents": {
+      "title": "Documenti",
+      "subtitle": "Documenti associati alle tue pratiche",
+      "download": "Scarica",
+      "no_documents": "Nessun documento disponibile",
+      "filter_pending": "In attesa di approvazione"
+    },
+    "invoices": {
+      "title": "Fatture",
+      "number": "Fattura #",
+      "download_pdf": "PDF",
+      "pay": "Paga",
+      "no_invoices": "Nessuna fattura trovata",
+      "status": {
+        "paid": "Pagata",
+        "pending": "In attesa",
+        "overdue": "Scaduta"
+      }
+    },
+    "messages": {
+      "title": "Messaggi",
+      "conversations": "Conversazioni",
+      "general_inquiry": "Richiesta generale",
+      "placeholder": "Scrivi il tuo messaggio...",
+      "send": "Invia",
+      "select_conversation": "Seleziona una conversazione",
+      "no_messages": "Nessun messaggio ancora"
+    },
+    "sign": {
+      "title": "Firma Documento",
+      "document_to_sign": "Documento da firmare",
+      "requested_by": "Richiesto da",
+      "signer": "Firmatario",
+      "expires": "Scade",
+      "preview": "Anteprima documento",
+      "download_document": "Scarica documento",
+      "your_signature": "La tua firma",
+      "signature_instructions": "Disegna la tua firma nell'area sottostante usando il mouse o il dito (su schermi touch).",
+      "clear": "Cancella",
+      "accept_terms": "Confermo di aver letto e compreso il documento. Accetto che la mia firma elettronica è giuridicamente vincolante e ha lo stesso effetto di una firma autografa secondo la legge applicabile.",
+      "decline": "Rifiuta",
+      "sign_document": "Firma documento",
+      "signing": "Firma in corso...",
+      "signed_success": "Documento firmato!",
+      "signed_message": "La tua firma è stata registrata con successo. Riceverai una copia del documento firmato via email.",
+      "close_window": "Chiudi questa finestra",
+      "already_signed": "Già firmato",
+      "already_signed_message": "Questo documento è già stato firmato il {{date}}.",
+      "decline_title": "Rifiuta firma",
+      "decline_message": "Sei sicuro di voler rifiutare di firmare questo documento? Questa azione notificherà il mittente.",
+      "decline_reason": "Motivo del rifiuto (opzionale)",
+      "decline_reason_placeholder": "Indica perché stai rifiutando di firmare...",
+      "confirm_decline": "Conferma rifiuto",
+      "error": "Errore",
+      "draw_signature": "Per favore disegna la tua firma",
+      "accept_required": "Devi accettare i termini per firmare"
+    }
+  },
+
+  "signatures": {
+    "title": "Firme Elettroniche",
+    "subtitle": "Gestisci le richieste di firma documenti",
+    "new_request": "Nuova richiesta",
+    "request_signature": "Richiedi firma",
+    "document": "Documento",
+    "signers": "Firmatari",
+    "add_signer": "Aggiungi firmatario",
+    "signer_email": "Email del firmatario",
+    "signer_name": "Nome completo",
+    "role": {
+      "signer": "Firmatario",
+      "approver": "Approvatore",
+      "cc": "Solo copia"
+    },
+    "email_subject": "Oggetto email",
+    "email_message": "Messaggio per i firmatari (opzionale)",
+    "expires_in": "Scade tra",
+    "days": "giorni",
+    "send_request": "Invia richiesta",
+    "cancel": "Annulla",
+    "status": {
+      "draft": "Bozza",
+      "sent": "Inviata",
+      "viewed": "Visualizzata",
+      "partially_signed": "Parzialmente firmata",
+      "completed": "Completata",
+      "declined": "Rifiutata",
+      "expired": "Scaduta",
+      "voided": "Annullata"
+    },
+    "actions": {
+      "view_details": "Visualizza dettagli",
+      "download_signed": "Scarica firmato",
+      "send_reminder": "Invia promemoria",
+      "void_request": "Annulla richiesta"
+    },
+    "signed_count": "{{signed}}/{{total}} firmatari",
+    "created": "Creata",
+    "expires": "Scade",
+    "reminder_sent": "Promemoria inviato",
+    "request_voided": "Richiesta annullata"
+  },
+
+  "timetracking": {
+    "title": "Tracciamento Tempo",
+    "subtitle": "Settimana dal {{start}} al {{end}}",
+    "new_entry": "Aggiungi voce manuale",
+    "timer": {
+      "start": "Avvia timer",
+      "stop": "Stop",
+      "pause": "Pausa",
+      "recording": "Registrazione",
+      "new_record": "Nuova registrazione",
+      "matter_required": "Seleziona una pratica",
+      "description_placeholder": "Cosa stai facendo?",
+      "billable": "Fatturabile"
+    },
+    "stats": {
+      "total_hours": "Ore totali",
+      "billable": "Fatturabili",
+      "non_billable": "Non fatturabili",
+      "amount": "Importo"
+    },
+    "entry": {
+      "matter": "Pratica",
+      "date": "Data",
+      "duration": "Durata",
+      "hours": "Ore",
+      "minutes": "Minuti",
+      "description": "Descrizione lavoro",
+      "activity_type": "Tipo di attività",
+      "save": "Salva"
+    },
+    "activity_types": {
+      "research": "Ricerca",
+      "drafting": "Redazione",
+      "review": "Revisione",
+      "meeting": "Riunione",
+      "call": "Chiamata",
+      "email": "Email/Corrispondenza",
+      "filing": "Deposito",
+      "court": "Tribunale/Udienza",
+      "travel": "Viaggio",
+      "admin": "Amministrativo",
+      "other": "Altro"
+    },
+    "invoice": {
+      "generate": "Genera fattura",
+      "from_time": "Genera fattura dal tempo",
+      "select_entries": "Seleziona le voci di tempo da includere",
+      "entries": "Voci",
+      "unbilled": "Non fatturato",
+      "no_unbilled": "Nessun tempo non fatturato"
+    },
+    "widget": {
+      "title": "Tempo registrato",
+      "total": "Totale",
+      "unbilled_amount": "Non fatturato"
+    }
+  },
+
+  "finance": {
+    "title": "Finanza",
+    "dashboard": "Dashboard",
+    "invoices": "Fatture",
+    "payments": "Pagamenti",
+    "reports": "Report",
+    "invoice": {
+      "new": "Nuova fattura",
+      "number": "Fattura #",
+      "date": "Data",
+      "due_date": "Data scadenza",
+      "client": "Cliente",
+      "matter": "Pratica",
+      "subtotal": "Subtotale",
+      "tax": "IVA",
+      "total": "Totale",
+      "notes": "Note",
+      "status": {
+        "draft": "Bozza",
+        "sent": "Inviata",
+        "paid": "Pagata",
+        "overdue": "Scaduta",
+        "cancelled": "Annullata"
+      },
+      "actions": {
+        "send": "Invia",
+        "download": "Scarica PDF",
+        "mark_paid": "Segna come pagata",
+        "void": "Annulla"
+      }
+    },
+    "stats": {
+      "revenue": "Fatturato",
+      "pending": "In attesa",
+      "overdue": "Scaduto",
+      "this_month": "Questo mese"
+    }
+  },
+
+  "api": {
+    "title": "API & Webhooks",
+    "keys": {
+      "title": "Chiavi API",
+      "subtitle": "Crea chiavi per integrare applicazioni esterne con IP-NEXUS",
+      "new": "Nuova chiave API",
+      "create_title": "Nuova chiave API",
+      "create_description": "La chiave sarà mostrata solo una volta. Conservala in un luogo sicuro.",
+      "name": "Nome",
+      "name_placeholder": "Es: Integrazione Zapier",
+      "description": "Descrizione",
+      "description_placeholder": "A cosa servirà questa chiave API",
+      "permissions": "Permessi",
+      "expiration": "Scadenza",
+      "never": "Mai",
+      "days_30": "30 giorni",
+      "days_90": "90 giorni",
+      "months_6": "6 mesi",
+      "year_1": "1 anno",
+      "created": "Chiave API creata",
+      "copy_now": "Copia questa chiave adesso. Non potrai vederla di nuovo.",
+      "copied": "Ho copiato la chiave, chiudi",
+      "revoke": "Revoca",
+      "revoke_confirm": "Revocare questa chiave API? Non funzionerà più.",
+      "last_used": "Ultimo utilizzo",
+      "no_keys": "Nessuna chiave API",
+      "no_keys_desc": "Crea una chiave API per integrare con sistemi esterni"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "subtitle": "Ricevi notifiche in tempo reale quando si verificano eventi",
+      "new": "Nuovo webhook",
+      "create_title": "Nuovo webhook",
+      "name": "Nome",
+      "url": "URL di destinazione",
+      "events": "Eventi",
+      "test": "Test",
+      "test_sent": "Webhook di test inviato",
+      "no_webhooks": "Nessun webhook configurato",
+      "active": "Attivo",
+      "inactive": "Inattivo"
+    },
+    "docs": {
+      "title": "Documentazione API",
+      "subtitle": "Esplora tutti gli endpoint disponibili per integrarti con IP-NEXUS",
+      "base_url": "URL Base",
+      "authentication": "Autenticazione",
+      "auth_description": "Includi la tua chiave API nell'header di ogni richiesta",
+      "endpoints": "Endpoint disponibili",
+      "response_codes": "Codici di risposta"
+    },
+    "logs": {
+      "title": "Log di attività",
+      "subtitle": "Ultime richieste API",
+      "all": "Tutte",
+      "success": "Riuscite",
+      "errors": "Errori",
+      "no_logs": "Nessun log di attività"
+    }
   }
 }

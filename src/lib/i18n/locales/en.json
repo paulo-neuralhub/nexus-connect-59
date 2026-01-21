@@ -297,5 +297,343 @@
     "orgNamePlaceholder": "Your company or firm name",
     "createOrg": "Create Organization",
     "skip": "Skip for now"
+  },
+
+  "portal": {
+    "login": {
+      "title": "Access Portal",
+      "subtitle": "Enter your email to receive an access link",
+      "email_placeholder": "your@email.com",
+      "submit": "Access portal",
+      "sending": "Sending...",
+      "check_email": "Check your email",
+      "link_sent": "We have sent an access link to",
+      "link_expires": "The link expires in 15 minutes",
+      "use_another": "Use another email",
+      "secure_link": "We will send you a secure link to access",
+      "authorized_only": "Exclusive access for authorized clients",
+      "contact_rep": "If you don't have access, contact your representative",
+      "verifying": "Verifying access...",
+      "validating": "We are validating your access link",
+      "not_available": "Portal not available",
+      "not_available_desc": "This portal does not exist or has been deactivated. Please contact your representative.",
+      "error": {
+        "invalid_email": "Invalid email",
+        "user_not_found": "User not found or no access to this portal",
+        "link_expired": "Link invalid or expired",
+        "verify_error": "Error verifying link"
+      }
+    },
+    "layout": {
+      "logout": "Log out",
+      "footer": "Client Portal"
+    },
+    "nav": {
+      "dashboard": "Home",
+      "matters": "My Cases",
+      "documents": "Documents",
+      "invoices": "Invoices",
+      "messages": "Messages"
+    },
+    "dashboard": {
+      "welcome": "Welcome",
+      "subtitle": "Here you can check the status of your cases and communicate with us",
+      "active_matters": "Active cases",
+      "pending_deadlines": "Upcoming deadlines",
+      "new_documents": "New documents",
+      "unread_messages": "Unread messages",
+      "upcoming_deadlines": "Upcoming deadlines",
+      "recent_activity": "Recent activity",
+      "days": "days",
+      "no_deadlines": "No upcoming deadlines",
+      "no_activity": "No recent activity",
+      "pending_approvals": "You have {{count}} document(s) pending approval",
+      "view_documents": "View documents"
+    },
+    "matters": {
+      "title": "My Cases",
+      "subtitle": "Current status of all your cases",
+      "view_details": "View details",
+      "progress": "Progress",
+      "next_deadline": "Next deadline",
+      "no_matters": "No cases found",
+      "info": {
+        "type": "Type",
+        "jurisdiction": "Jurisdiction",
+        "start_date": "Start date",
+        "responsible": "Responsible"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "documents": "Documents",
+        "timeline": "History",
+        "deadlines": "Deadlines"
+      },
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "completed": "Completed",
+        "on_hold": "On Hold"
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "subtitle": "Documents associated with your cases",
+      "download": "Download",
+      "no_documents": "No documents available",
+      "filter_pending": "Pending approval"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "number": "Invoice #",
+      "download_pdf": "PDF",
+      "pay": "Pay",
+      "no_invoices": "No invoices found",
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "overdue": "Overdue"
+      }
+    },
+    "messages": {
+      "title": "Messages",
+      "conversations": "Conversations",
+      "general_inquiry": "General inquiry",
+      "placeholder": "Write your message...",
+      "send": "Send",
+      "select_conversation": "Select a conversation",
+      "no_messages": "No messages yet"
+    },
+    "sign": {
+      "title": "Sign Document",
+      "document_to_sign": "Document to sign",
+      "requested_by": "Requested by",
+      "signer": "Signer",
+      "expires": "Expires",
+      "preview": "Document preview",
+      "download_document": "Download document",
+      "your_signature": "Your signature",
+      "signature_instructions": "Draw your signature in the area below using your mouse or finger (on touch screens).",
+      "clear": "Clear",
+      "accept_terms": "I confirm that I have read and understood the document. I accept that my electronic signature is legally binding and has the same effect as a handwritten signature under applicable law.",
+      "decline": "Decline",
+      "sign_document": "Sign document",
+      "signing": "Signing...",
+      "signed_success": "Document signed!",
+      "signed_message": "Your signature has been recorded successfully. You will receive a copy of the signed document by email.",
+      "close_window": "Close this window",
+      "already_signed": "Already signed",
+      "already_signed_message": "This document was already signed on {{date}}.",
+      "decline_title": "Decline signature",
+      "decline_message": "Are you sure you want to decline signing this document? This action will notify the sender.",
+      "decline_reason": "Reason for declining (optional)",
+      "decline_reason_placeholder": "Indicate why you are declining to sign...",
+      "confirm_decline": "Confirm decline",
+      "error": "Error",
+      "draw_signature": "Please draw your signature",
+      "accept_required": "You must accept the terms to sign"
+    }
+  },
+
+  "signatures": {
+    "title": "Electronic Signatures",
+    "subtitle": "Manage document signature requests",
+    "new_request": "New request",
+    "request_signature": "Request signature",
+    "document": "Document",
+    "signers": "Signers",
+    "add_signer": "Add signer",
+    "signer_email": "Signer email",
+    "signer_name": "Full name",
+    "role": {
+      "signer": "Signer",
+      "approver": "Approver",
+      "cc": "Copy only"
+    },
+    "email_subject": "Email subject",
+    "email_message": "Message for signers (optional)",
+    "expires_in": "Expires in",
+    "days": "days",
+    "send_request": "Send request",
+    "cancel": "Cancel",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "viewed": "Viewed",
+      "partially_signed": "Partially signed",
+      "completed": "Completed",
+      "declined": "Declined",
+      "expired": "Expired",
+      "voided": "Voided"
+    },
+    "actions": {
+      "view_details": "View details",
+      "download_signed": "Download signed",
+      "send_reminder": "Send reminder",
+      "void_request": "Void request"
+    },
+    "signed_count": "{{signed}}/{{total}} signers",
+    "created": "Created",
+    "expires": "Expires",
+    "reminder_sent": "Reminder sent",
+    "request_voided": "Request voided"
+  },
+
+  "timetracking": {
+    "title": "Time Tracking",
+    "subtitle": "Week of {{start}} to {{end}}",
+    "new_entry": "Add manual entry",
+    "timer": {
+      "start": "Start timer",
+      "stop": "Stop",
+      "pause": "Pause",
+      "recording": "Recording",
+      "new_record": "New record",
+      "matter_required": "Select a case",
+      "description_placeholder": "What are you doing?",
+      "billable": "Billable"
+    },
+    "stats": {
+      "total_hours": "Total hours",
+      "billable": "Billable",
+      "non_billable": "Non-billable",
+      "amount": "Amount"
+    },
+    "entry": {
+      "matter": "Case",
+      "date": "Date",
+      "duration": "Duration",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "description": "Work description",
+      "activity_type": "Activity type",
+      "save": "Save"
+    },
+    "activity_types": {
+      "research": "Research",
+      "drafting": "Drafting",
+      "review": "Review",
+      "meeting": "Meeting",
+      "call": "Call",
+      "email": "Email/Correspondence",
+      "filing": "Filing",
+      "court": "Court/Hearing",
+      "travel": "Travel",
+      "admin": "Administrative",
+      "other": "Other"
+    },
+    "invoice": {
+      "generate": "Generate invoice",
+      "from_time": "Generate invoice from time",
+      "select_entries": "Select time entries to include",
+      "entries": "Entries",
+      "unbilled": "Unbilled",
+      "no_unbilled": "No unbilled time"
+    },
+    "widget": {
+      "title": "Recorded time",
+      "total": "Total",
+      "unbilled_amount": "Unbilled"
+    }
+  },
+
+  "finance": {
+    "title": "Finance",
+    "dashboard": "Dashboard",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "reports": "Reports",
+    "invoice": {
+      "new": "New invoice",
+      "number": "Invoice #",
+      "date": "Date",
+      "due_date": "Due date",
+      "client": "Client",
+      "matter": "Case",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total",
+      "notes": "Notes",
+      "status": {
+        "draft": "Draft",
+        "sent": "Sent",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "cancelled": "Cancelled"
+      },
+      "actions": {
+        "send": "Send",
+        "download": "Download PDF",
+        "mark_paid": "Mark as paid",
+        "void": "Void"
+      }
+    },
+    "stats": {
+      "revenue": "Revenue",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "this_month": "This month"
+    }
+  },
+
+  "api": {
+    "title": "API & Webhooks",
+    "keys": {
+      "title": "API Keys",
+      "subtitle": "Create keys to integrate external applications with IP-NEXUS",
+      "new": "New API Key",
+      "create_title": "New API Key",
+      "create_description": "The key will only be shown once. Save it in a secure place.",
+      "name": "Name",
+      "name_placeholder": "E.g: Zapier integration",
+      "description": "Description",
+      "description_placeholder": "What will this API Key be used for",
+      "permissions": "Permissions",
+      "expiration": "Expiration",
+      "never": "Never",
+      "days_30": "30 days",
+      "days_90": "90 days",
+      "months_6": "6 months",
+      "year_1": "1 year",
+      "created": "API Key created",
+      "copy_now": "Copy this key now. You won't be able to see it again.",
+      "copied": "I have copied the key, close",
+      "revoke": "Revoke",
+      "revoke_confirm": "Revoke this API Key? It will no longer work.",
+      "last_used": "Last used",
+      "no_keys": "No API Keys",
+      "no_keys_desc": "Create an API Key to integrate with external systems"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "subtitle": "Receive real-time notifications when events occur",
+      "new": "New Webhook",
+      "create_title": "New Webhook",
+      "name": "Name",
+      "url": "Destination URL",
+      "events": "Events",
+      "test": "Test",
+      "test_sent": "Test webhook sent",
+      "no_webhooks": "No webhooks configured",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "docs": {
+      "title": "API Documentation",
+      "subtitle": "Explore all available endpoints to integrate with IP-NEXUS",
+      "base_url": "Base URL",
+      "authentication": "Authentication",
+      "auth_description": "Include your API key in the header of each request",
+      "endpoints": "Available endpoints",
+      "response_codes": "Response codes"
+    },
+    "logs": {
+      "title": "Activity logs",
+      "subtitle": "Latest API requests",
+      "all": "All",
+      "success": "Successful",
+      "errors": "Errors",
+      "no_logs": "No activity logs"
+    }
   }
 }
