@@ -41,7 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 
 interface Props {
-  agentType: AgentType;
+  agentType?: AgentType;
   initialMatterId?: string;
   initialConversationId?: string;
   onConversationChange?: (id: string) => void;
@@ -56,7 +56,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function GeniusChatEnhanced({ 
-  agentType, 
+  agentType = 'legal',
   initialMatterId,
   initialConversationId,
   onConversationChange 
