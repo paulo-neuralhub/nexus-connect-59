@@ -96,7 +96,7 @@ export default function AlertsPage() {
             <RefreshCw className={cn("h-4 w-4 mr-2", analysisMutation.isPending && "animate-spin")} />
             Analizar
           </Button>
-          <Link to="/app/settings">
+          <Link to="/app/alerts/settings">
             <Button variant="outline">
               <Settings className="h-4 w-4 mr-2" />
               Configurar
