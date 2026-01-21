@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter
@@ -63,6 +64,7 @@ export function RequestSignatureDialog({
   onOpenChange,
   onSuccess
 }: Props) {
+  const { t } = useTranslation();
   const createRequest = useCreateSignatureRequest();
 
   // Build initial signers with proper types
@@ -75,7 +77,7 @@ export function RequestSignatureDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       signers: initialSigners,
-      emailSubject: `Documento pendiente de firma: ${document.name}`,
+      emailSubject: `${t('signatures.document')}: ${document.name}`,
       emailMessage: '',
       expiresInDays: 7,
     },
@@ -119,9 +121,9 @@ export function RequestSignatureDialog({
   };
 
   const roleLabels = {
-    signer: 'Firmante',
-    approver: 'Aprobador',
-    cc: 'Solo copia',
+    signer: t('signatures.role.signer'),
+    approver: t('signatures.role.approver'),
+    cc: t('signatures.role.cc'),
   };
 
   return (
@@ -133,10 +135,10 @@ export function RequestSignatureDialog({
               <FileSignature className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <DialogTitle>Solicitar firma electrónica</DialogTitle>
+              <DialogTitle>{t('signatures.request_signature')}</DialogTitle>
               <DialogDescription>
-                Documento: <strong>{document.name}</strong>
-                {matter && <> • Expediente: {matter.reference}</>}
+                {t('signatures.document')}: <strong>{document.name}</strong>
+                {matter && <> • {t('docket.reference')}: {matter.reference}</>}
               </DialogDescription>
             </div>
           </div>
@@ -146,7 +148,7 @@ export function RequestSignatureDialog({
           {/* Firmantes */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label className="text-base font-medium">Firmantes</Label>
+              <Label className="text-base font-medium">{t('signatures.signers')}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -154,7 +156,7 @@ export function RequestSignatureDialog({
                 onClick={() => append({ email: '', name: '', role: 'signer' })}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Añadir
+                {t('signatures.add_signer')}
               </Button>
             </div>
 
@@ -172,7 +174,7 @@ export function RequestSignatureDialog({
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
                       <Input
-                        placeholder="Email"
+                        placeholder={t('common.email')}
                         type="email"
                         {...form.register(`signers.${index}.email`)}
                         className={cn(
@@ -187,7 +189,7 @@ export function RequestSignatureDialog({
                     </div>
                     <div>
                       <Input
-                        placeholder="Nombre completo"
+                        placeholder={t('signatures.signer_name')}
                         {...form.register(`signers.${index}.name`)}
                         className={cn(
                           form.formState.errors.signers?.[index]?.name && "border-destructive"
@@ -231,23 +233,22 @@ export function RequestSignatureDialog({
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Los firmantes recibirán el documento en el orden indicado.
-              "Solo copia" recibirá una copia cuando se complete.
+              {t('signatures.role.cc')} - {t('common.preview')}
             </p>
           </div>
 
           {/* Mensaje personalizado */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Asunto del email</Label>
+              <Label>{t('signatures.email_subject')}</Label>
               <Input {...form.register('emailSubject')} />
             </div>
 
             <div className="space-y-2">
-              <Label>Mensaje para los firmantes (opcional)</Label>
+              <Label>{t('signatures.email_message')}</Label>
               <Textarea
                 {...form.register('emailMessage')}
-                placeholder="Escriba un mensaje que acompañará la solicitud de firma..."
+                placeholder={t('signatures.email_message')}
                 rows={3}
               />
             </div>
@@ -255,7 +256,7 @@ export function RequestSignatureDialog({
 
           {/* Expiración */}
           <div className="space-y-2">
-            <Label>La solicitud expira en</Label>
+            <Label>{t('signatures.expires_in')}</Label>
             <Select
               value={String(form.watch('expiresInDays'))}
               onValueChange={(v) => form.setValue('expiresInDays', Number(v))}
@@ -264,11 +265,11 @@ export function RequestSignatureDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3">3 días</SelectItem>
-                <SelectItem value="7">7 días</SelectItem>
-                <SelectItem value="14">14 días</SelectItem>
-                <SelectItem value="30">30 días</SelectItem>
-                <SelectItem value="60">60 días</SelectItem>
+                <SelectItem value="3">3 {t('signatures.days')}</SelectItem>
+                <SelectItem value="7">7 {t('signatures.days')}</SelectItem>
+                <SelectItem value="14">14 {t('signatures.days')}</SelectItem>
+                <SelectItem value="30">30 {t('signatures.days')}</SelectItem>
+                <SelectItem value="60">60 {t('signatures.days')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -279,7 +280,7 @@ export function RequestSignatureDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancelar
+              {t('signatures.cancel')}
             </Button>
             <Button
               type="submit"
@@ -288,12 +289,12 @@ export function RequestSignatureDialog({
               {createRequest.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
+                  {t('common.loading')}
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4 mr-2" />
-                  Enviar solicitud
+                  {t('signatures.send_request')}
                 </>
               )}
             </Button>

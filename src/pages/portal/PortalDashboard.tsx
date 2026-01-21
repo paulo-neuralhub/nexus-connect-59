@@ -3,6 +3,7 @@
  * Vista principal del cliente en el portal
  */
 
+import { useTranslation } from 'react-i18next';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import {
 
 export default function PortalDashboard() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const { user } = usePortalAuth();
 
   // Mock data for demo - en producción vendría de hooks con Supabase
@@ -53,9 +55,9 @@ export default function PortalDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-700 border-green-200">Activo</Badge>;
+        return <Badge className="bg-green-100 text-green-700 border-green-200">{t('portal.matters.status.active')}</Badge>;
       case 'pending':
-        return <Badge className="bg-amber-100 text-amber-700 border-amber-200">Pendiente</Badge>;
+        return <Badge className="bg-amber-100 text-amber-700 border-amber-200">{t('portal.matters.status.pending')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -66,10 +68,10 @@ export default function PortalDashboard() {
       {/* Bienvenida */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Bienvenido, {user?.name || 'Cliente'}
+          {t('portal.dashboard.welcome')}, {user?.name || 'Cliente'}
         </h1>
         <p className="text-muted-foreground">
-          Resumen de tu cartera de propiedad intelectual
+          {t('portal.dashboard.subtitle')}
         </p>
       </div>
 
@@ -83,7 +85,7 @@ export default function PortalDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.activeMatters}</p>
-                <p className="text-xs text-muted-foreground">Expedientes</p>
+                <p className="text-xs text-muted-foreground">{t('portal.dashboard.active_matters')}</p>
               </div>
             </div>
           </CardContent>
@@ -97,7 +99,7 @@ export default function PortalDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.pendingDocuments}</p>
-                <p className="text-xs text-muted-foreground">Docs pendientes</p>
+                <p className="text-xs text-muted-foreground">{t('portal.dashboard.new_documents')}</p>
               </div>
             </div>
           </CardContent>
@@ -111,7 +113,7 @@ export default function PortalDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.pendingInvoices}</p>
-                <p className="text-xs text-muted-foreground">Facturas</p>
+                <p className="text-xs text-muted-foreground">{t('portal.nav.invoices')}</p>
               </div>
             </div>
           </CardContent>
@@ -125,7 +127,7 @@ export default function PortalDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.unreadMessages}</p>
-                <p className="text-xs text-muted-foreground">Mensajes</p>
+                <p className="text-xs text-muted-foreground">{t('portal.dashboard.unread_messages')}</p>
               </div>
             </div>
           </CardContent>
@@ -139,7 +141,7 @@ export default function PortalDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.upcomingDeadlines}</p>
-                <p className="text-xs text-muted-foreground">Plazos</p>
+                <p className="text-xs text-muted-foreground">{t('portal.dashboard.pending_deadlines')}</p>
               </div>
             </div>
           </CardContent>
@@ -154,9 +156,9 @@ export default function PortalDashboard() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
-                Acciones Pendientes
+                {t('portal.dashboard.pending_approvals', { count: pendingActions.length })}
               </CardTitle>
-              <CardDescription>Requieren tu atención</CardDescription>
+              <CardDescription>{t('portal.dashboard.view_documents')}</CardDescription>
             </div>
             <Badge variant="outline">{pendingActions.length}</Badge>
           </CardHeader>
@@ -178,7 +180,7 @@ export default function PortalDashboard() {
                     </div>
                   </div>
                   <Button size="sm" variant="outline">
-                    Ver <ArrowRight className="w-3 h-3 ml-1" />
+                    {t('common.view')} <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
               ))}
@@ -191,9 +193,9 @@ export default function PortalDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Próximos Plazos
+              {t('portal.dashboard.upcoming_deadlines')}
             </CardTitle>
-            <CardDescription>Vencimientos importantes</CardDescription>
+            <CardDescription>{t('portal.dashboard.pending_deadlines')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -215,7 +217,7 @@ export default function PortalDashboard() {
               ))}
             </div>
             <Button variant="link" className="w-full mt-4" asChild>
-              <Link to={`/portal/${slug}/matters`}>Ver todos los plazos</Link>
+              <Link to={`/portal/${slug}/matters`}>{t('portal.dashboard.upcoming_deadlines')}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -227,12 +229,12 @@ export default function PortalDashboard() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Expedientes Recientes
+              {t('portal.dashboard.recent_activity')}
             </CardTitle>
-            <CardDescription>Últimos expedientes activos</CardDescription>
+            <CardDescription>{t('portal.matters.subtitle')}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/portal/${slug}/matters`}>Ver todos</Link>
+            <Link to={`/portal/${slug}/matters`}>{t('common.all')}</Link>
           </Button>
         </CardHeader>
         <CardContent>

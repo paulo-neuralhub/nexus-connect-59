@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -111,6 +111,7 @@ const mockMessages = [
 
 export default function PortalMessages() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const { user } = usePortalAuth();
   const [search, setSearch] = useState('');
   const [selectedConversation, setSelectedConversation] = useState<string | null>('1');
@@ -155,44 +156,44 @@ export default function PortalMessages() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Mensajes</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('portal.messages.title')}</h1>
           <p className="text-muted-foreground">
-            Comunicación directa con tu asesor
+            {t('portal.messages.conversations')}
           </p>
         </div>
         <Dialog open={newConversationOpen} onOpenChange={setNewConversationOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              Nueva conversación
+              {t('common.new')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Nueva conversación</DialogTitle>
+              <DialogTitle>{t('portal.messages.general_inquiry')}</DialogTitle>
               <DialogDescription>
-                Inicia una nueva conversación con tu asesor
+                {t('portal.messages.conversations')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Asunto</label>
-                <Input placeholder="Escribe el asunto de tu consulta" />
+                <label className="text-sm font-medium">{t('marketing.subject')}</label>
+                <Input placeholder={t('portal.messages.general_inquiry')} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Mensaje</label>
+                <label className="text-sm font-medium">{t('portal.messages.placeholder')}</label>
                 <Textarea 
-                  placeholder="Escribe tu mensaje aquí..." 
+                  placeholder={t('portal.messages.placeholder')} 
                   rows={4}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setNewConversationOpen(false)}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button onClick={() => setNewConversationOpen(false)}>
-                Enviar
+                {t('portal.messages.send')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -207,7 +208,7 @@ export default function PortalMessages() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar conversaciones..."
+                placeholder={t('common.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -256,7 +257,7 @@ export default function PortalMessages() {
               <CardHeader className="border-b">
                 <CardTitle className="text-lg">{currentConversation.subject}</CardTitle>
                 <CardDescription>
-                  Con: {currentConversation.participants.join(', ')}
+                  {currentConversation.participants.join(', ')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 p-0 flex flex-col">
@@ -310,7 +311,7 @@ export default function PortalMessages() {
                       <Paperclip className="w-4 h-4" />
                     </Button>
                     <Input
-                      placeholder="Escribe un mensaje..."
+                      placeholder={t('portal.messages.placeholder')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
@@ -331,7 +332,7 @@ export default function PortalMessages() {
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Selecciona una conversación para ver los mensajes</p>
+                <p>{t('portal.messages.select_conversation')}</p>
               </div>
             </div>
           )}

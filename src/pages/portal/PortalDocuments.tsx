@@ -5,7 +5,8 @@
 
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -93,6 +94,7 @@ const mockDocuments = [
 
 export default function PortalDocuments() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
@@ -115,24 +117,25 @@ export default function PortalDocuments() {
     }
   };
 
+  const categoryLabels: Record<string, string> = {
+    application: t('portal.documents.filter_pending'),
+    power: 'Poder',
+    receipt: 'Acuse',
+    drawings: 'Dibujos',
+    report: 'Informe',
+  };
+
   const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      application: 'Solicitud',
-      power: 'Poder',
-      receipt: 'Acuse',
-      drawings: 'Dibujos',
-      report: 'Informe',
-    };
-    return labels[category] || category;
+    return categoryLabels[category] || category;
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Documentos</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('portal.documents.title')}</h1>
         <p className="text-muted-foreground">
-          Documentos compartidos contigo por tu asesor
+          {t('portal.documents.subtitle')}
         </p>
       </div>
 
@@ -143,7 +146,7 @@ export default function PortalDocuments() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar documentos..."
+                placeholder={t('common.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -152,10 +155,10 @@ export default function PortalDocuments() {
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Categoría" />
+                <SelectValue placeholder={t('common.filter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
                 <SelectItem value="application">Solicitudes</SelectItem>
                 <SelectItem value="power">Poderes</SelectItem>
                 <SelectItem value="receipt">Acuses</SelectItem>
@@ -170,7 +173,7 @@ export default function PortalDocuments() {
           <div className="space-y-3">
             {filteredDocs.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No se encontraron documentos
+                {t('portal.documents.no_documents')}
               </div>
             ) : (
               filteredDocs.map((doc) => (
