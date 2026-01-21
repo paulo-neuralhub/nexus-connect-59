@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ export default function PortalLogin() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { login, verifyMagicLink, isAuthenticated } = usePortalAuth();
   
   const [email, setEmail] = useState('');
@@ -97,7 +99,7 @@ export default function PortalLogin() {
       await verifyMagicLink(token);
       navigate(`/portal/${slug}/dashboard`, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al verificar enlace');
+      setError(err instanceof Error ? err.message : t('portal.login.error.verify_error'));
       // Limpiar el token de la URL
       navigate(`/portal/${slug}`, { replace: true });
     } finally {
@@ -114,7 +116,7 @@ export default function PortalLogin() {
       await login(email, slug!);
       setEmailSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al enviar enlace');
+      setError(err instanceof Error ? err.message : t('portal.login.error.verify_error'));
     } finally {
       setIsLoading(false);
     }
@@ -130,10 +132,9 @@ export default function PortalLogin() {
               <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
                 <AlertCircle className="w-8 h-8 text-destructive" />
               </div>
-              <h2 className="text-xl font-semibold">Portal no disponible</h2>
+              <h2 className="text-xl font-semibold">{t('portal.login.not_available')}</h2>
               <p className="text-muted-foreground">
-                Este portal no existe o ha sido desactivado.
-                Por favor, contacte con su representante.
+                {t('portal.login.not_available_desc')}
               </p>
             </div>
           </CardContent>
@@ -150,9 +151,9 @@ export default function PortalLogin() {
           <CardContent className="pt-8 pb-6">
             <div className="text-center space-y-4">
               <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
-              <h2 className="text-xl font-semibold">Verificando acceso...</h2>
+              <h2 className="text-xl font-semibold">{t('portal.login.verifying')}</h2>
               <p className="text-muted-foreground">
-                Estamos validando su enlace de acceso
+                {t('portal.login.validating')}
               </p>
             </div>
           </CardContent>
@@ -171,13 +172,13 @@ export default function PortalLogin() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-semibold">Revise su email</h2>
+              <h2 className="text-xl font-semibold">{t('portal.login.check_email')}</h2>
               <p className="text-muted-foreground">
-                Hemos enviado un enlace de acceso a
+                {t('portal.login.link_sent')}
               </p>
               <p className="font-medium text-foreground">{email}</p>
               <p className="text-sm text-muted-foreground">
-                El enlace expira en 15 minutos
+                {t('portal.login.link_expires')}
               </p>
             </div>
           </CardContent>
@@ -187,7 +188,7 @@ export default function PortalLogin() {
               className="w-full"
               onClick={() => setEmailSent(false)}
             >
-              Usar otro email
+              {t('portal.login.use_another')}
             </Button>
           </CardFooter>
         </Card>
@@ -220,7 +221,7 @@ export default function PortalLogin() {
           
           <div>
             <CardTitle className="text-2xl">
-              {portalInfo?.name || 'Portal de Cliente'}
+              {portalInfo?.name || t('portal.login.title')}
             </CardTitle>
             {portalInfo?.organization_name && (
               <CardDescription className="mt-1">
@@ -244,7 +245,7 @@ export default function PortalLogin() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="su@email.com"
+                  placeholder={t('portal.login.email_placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -253,7 +254,7 @@ export default function PortalLogin() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Le enviaremos un enlace seguro para acceder
+                {t('portal.login.secure_link')}
               </p>
             </div>
             
@@ -261,11 +262,11 @@ export default function PortalLogin() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
+                  {t('portal.login.sending')}
                 </>
               ) : (
                 <>
-                  Acceder al portal
+                  {t('portal.login.submit')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}
@@ -274,8 +275,8 @@ export default function PortalLogin() {
         </CardContent>
 
         <CardFooter className="flex-col gap-2 text-center text-xs text-muted-foreground">
-          <p>Acceso exclusivo para clientes autorizados</p>
-          <p>Si no tiene acceso, contacte con su representante</p>
+          <p>{t('portal.login.authorized_only')}</p>
+          <p>{t('portal.login.contact_rep')}</p>
         </CardFooter>
       </Card>
     </div>
