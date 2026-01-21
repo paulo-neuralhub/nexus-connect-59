@@ -69,6 +69,10 @@ import NewAutomationPage from "./pages/app/marketing/automations/new";
 import FAQPage from "./pages/app/help/faq";
 import GuidesPage from "./pages/app/help/guides";
 import FinanceLayout from "./pages/app/finance/FinanceLayout";
+import TimetrackingLayout from "./pages/app/timetracking/TimetrackingLayout";
+import TimesheetPage from "./pages/app/timetracking";
+import TimeReportsPage from "./pages/app/timetracking/reports";
+import BillingRatesPage from "./pages/app/timetracking/rates";
 import FinanceDashboard from "./pages/app/finance/FinanceDashboard";
 import InvoiceListPage from "./pages/app/finance/invoices";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
@@ -252,6 +256,11 @@ const App = () => (
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
                   <Route path="valuation/:id" element={<PortfolioDetailPage />} />
+                </Route>
+                <Route path="timetracking" element={<TimetrackingLayout />}>
+                  <Route index element={<TimesheetPage />} />
+                  <Route path="reports" element={<TimeReportsPage />} />
+                  <Route path="rates" element={<BillingRatesPage />} />
                 </Route>
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="reports/new" element={<NewReportPage />} />
