@@ -7,3 +7,5 @@ export * from './useStripeConnect';
 export * from './useKyc';
 export * from './useCompliance';
 export * from './useModeration';
+export * from './useMarketUsers';
+export * from './useMarketUserReviews';

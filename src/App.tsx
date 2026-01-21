@@ -31,6 +31,7 @@ import MarketMessages from "./pages/app/market/messages";
 import MarketFavorites from "./pages/app/market/favorites";
 import MarketAlerts from "./pages/app/market/alerts";
 import MarketProfile from "./pages/app/market/profile";
+import AgentListPage from "./pages/market/AgentListPage";
 import DataHubPage from "./pages/app/data-hub";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
@@ -250,6 +251,7 @@ const App = () => (
                   <Route path="profile" element={<MarketProfile />} />
                   <Route path="kyc" element={<MarketKycPage />} />
                   <Route path="kyc/:type" element={<KycVerificationPage />} />
+                  <Route path="agents" element={<AgentListPage />} />
                 </Route>
                 <Route path="genius" element={<GeniusLayout />}>
                   <Route index element={<GeniusChatPage />} />
