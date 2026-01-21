@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # =====================================================
+  # IP-NEXUS DEVELOPMENT
+  # =====================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: ip-nexus-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_APP_URL=http://localhost:5173
+    networks:
+      - ip-nexus-dev-network
+
+networks:
+  ip-nexus-dev-network:
+    driver: bridge
