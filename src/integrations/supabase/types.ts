@@ -12681,6 +12681,175 @@ export type Database = {
         }
         Relationships: []
       }
+      matter_activity: {
+        Row: {
+          activity_type: string
+          changes: Json | null
+          created_at: string | null
+          description: string
+          id: string
+          matter_id: string | null
+          organization_id: string | null
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          changes?: Json | null
+          created_at?: string | null
+          description: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          changes?: Json | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_activity_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_activity_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_activity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_activity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_activity_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_comments: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string | null
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          matter_id: string | null
+          mentions: string[] | null
+          organization_id: string | null
+          parent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          matter_id?: string | null
+          mentions?: string[] | null
+          organization_id?: string | null
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          matter_id?: string | null
+          mentions?: string[] | null
+          organization_id?: string | null
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_comments_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_comments_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "matter_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matter_costs: {
         Row: {
           amount: number
@@ -20649,6 +20818,75 @@ export type Database = {
             foreignKeyName: "user_feedback_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_presence: {
+        Row: {
+          current_matter_id: string | null
+          current_page: string | null
+          device_type: string | null
+          id: string
+          last_seen_at: string | null
+          organization_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          current_matter_id?: string | null
+          current_page?: string | null
+          device_type?: string | null
+          id?: string
+          last_seen_at?: string | null
+          organization_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          current_matter_id?: string | null
+          current_page?: string | null
+          device_type?: string | null
+          id?: string
+          last_seen_at?: string | null
+          organization_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_presence_current_matter_id_fkey"
+            columns: ["current_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "user_presence_current_matter_id_fkey"
+            columns: ["current_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_presence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "user_presence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_presence_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
