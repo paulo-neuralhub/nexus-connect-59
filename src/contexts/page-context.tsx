@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface PageContextType {
   title: string;
@@ -22,10 +22,14 @@ export function usePageTitle(newTitle?: string) {
   if (context === undefined) {
     throw new Error("usePageTitle must be used within a PageProvider");
   }
-  
-  if (newTitle !== undefined && context.title !== newTitle) {
-    context.setTitle(newTitle);
-  }
+
+  // Avoid setState during render (causes React warnings / render loops)
+  useEffect(() => {
+    if (newTitle !== undefined && context.title !== newTitle) {
+      context.setTitle(newTitle);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newTitle]);
   
   return context;
 }
