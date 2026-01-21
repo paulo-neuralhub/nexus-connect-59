@@ -98,8 +98,31 @@ export const CONTEXTUAL_HELP: Record<string, ContextualGuide> = {
 // Tooltips por campo
 export const FIELD_TOOLTIPS: Record<string, string> = {
   "matter.reference": "Número de referencia único para identificar este expediente internamente.",
+  "matter.title": "Título descriptivo para identificar el expediente (por ejemplo, nombre de marca + jurisdicción).",
+  "matter.status": "Estado operativo del expediente. Úsalo para reflejar su situación real (borrador, en trámite, concedido, etc.).",
+  "matter.jurisdiction": "Jurisdicción/Oficina donde se tramita (por ejemplo, ES, EUIPO, WIPO).",
+
+  "trademark.markName": "Denominación o signo principal de la marca. Si es figurativa/mixta, indica el nombre comercialmente usado.",
+  "trademark.markType": "Tipo de marca (denominativa, figurativa, mixta, etc.).",
+  "trademark.applicationNumber": "Número asignado por la oficina al presentar la solicitud.",
+  "trademark.registrationNumber": "Número de registro si ya está concedida.",
   "matter.niceClasses":
     "Clases de la Clasificación de Niza para marcas. Selecciona las clases que cubren tus productos/servicios.",
+  "trademark.goodsServices":
+    "Listado de productos/servicios. Debe ser coherente con las clases Niza seleccionadas.",
+
+  "matter.filingDate": "Fecha de presentación de la solicitud ante la oficina.",
+  "matter.registrationDate": "Fecha de concesión/registro (si aplica).",
+  "matter.expiryDate": "Fecha de vencimiento del derecho. Ayuda a disparar renovaciones y alertas.",
+  "matter.nextRenewalDate": "Próxima fecha prevista para iniciar la renovación.",
+
+  "matter.ownerName": "Titular del derecho (persona o empresa).",
+  "finance.officialFees": "Tasas oficiales pagadas a la oficina. Se usa para reporting de costes.",
+  "finance.professionalFees": "Honorarios profesionales (despacho/agente).",
+
+  "matter.tags": "Etiquetas libres para segmentar y filtrar expedientes.",
+  "matter.notes": "Notas internas del equipo (no sustituyen documentos oficiales).",
+
   "matter.priority":
     "Reclamo de prioridad basado en una solicitud anterior. Tienes 6 meses desde la primera solicitud.",
   "trademark.distinctiveness":

@@ -6,6 +6,7 @@
 import { useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { CONTEXTUAL_HELP, FIELD_TOOLTIPS, type ContextualGuide } from "@/lib/contextualHelp";
+import { useGuideProgress } from "@/hooks/help/useGuideProgress";
 
 const ROUTE_ALIASES: Record<string, string> = {
   docket: "matters",
@@ -34,9 +35,13 @@ export function useContextualHelp() {
     return CONTEXTUAL_HELP[featureKey];
   }, [featureKey]);
 
+  const { status: guideStatus } = useGuideProgress(featureKey);
+
   const getFieldTooltip = (fieldKey: string): string | undefined => FIELD_TOOLTIPS[fieldKey];
 
   const shouldShowGuide = (key: string): boolean => {
+    // DB-backed for the current featureKey; fallback localStorage for others.
+    if (key === featureKey) return !guideStatus;
     return (
       localStorage.getItem(`guide_completed_${key}`) !== "true" &&
       localStorage.getItem(`guide_skipped_${key}`) !== "true"
@@ -50,3 +55,4 @@ export function useContextualHelp() {
     shouldShowGuide,
   };
 }
+

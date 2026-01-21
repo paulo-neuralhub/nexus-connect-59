@@ -222,6 +222,13 @@ export default function MatterForm() {
   }
   
   const totalCost = (form.watch('official_fees') || 0) + (form.watch('professional_fees') || 0);
+
+  const LabelWithTip = ({ label, tipKey }: { label: string; tipKey: string }) => (
+    <span className="inline-flex items-center gap-2">
+      {label}
+      {getFieldTooltip(tipKey) ? <InfoTooltip content={getFieldTooltip(tipKey)!} /> : null}
+    </span>
+  );
   
   return (
     <div className="p-6 space-y-6">
@@ -288,12 +295,7 @@ export default function MatterForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <span className="inline-flex items-center gap-2">
-                        Referencia *
-                        {getFieldTooltip('matter.reference') ? (
-                          <InfoTooltip content={getFieldTooltip('matter.reference')!} />
-                        ) : null}
-                      </span>
+                      <LabelWithTip label="Referencia *" tipKey="matter.reference" />
                     </FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="TM-2026-001" />
@@ -308,7 +310,9 @@ export default function MatterForm() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Título *</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Título *" tipKey="matter.title" />
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="Nombre descriptivo del expediente" />
                     </FormControl>
@@ -322,7 +326,9 @@ export default function MatterForm() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Estado" tipKey="matter.status" />
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -345,7 +351,9 @@ export default function MatterForm() {
                 name="jurisdiction_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jurisdicción</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Jurisdicción" tipKey="matter.jurisdiction" />
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -378,7 +386,9 @@ export default function MatterForm() {
                     name="mark_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre de marca</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Nombre de marca" tipKey="trademark.markName" />
+                    </FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="ACME" />
                         </FormControl>
@@ -391,7 +401,9 @@ export default function MatterForm() {
                     name="mark_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo de marca</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Tipo de marca" tipKey="trademark.markType" />
+                    </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -413,7 +425,9 @@ export default function MatterForm() {
                     name="application_number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nº Solicitud</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Nº Solicitud" tipKey="trademark.applicationNumber" />
+                    </FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="4123456" />
                         </FormControl>
@@ -426,7 +440,9 @@ export default function MatterForm() {
                     name="registration_number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nº Registro</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Nº Registro" tipKey="trademark.registrationNumber" />
+                    </FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="M4123456" />
                         </FormControl>
@@ -441,12 +457,7 @@ export default function MatterForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        <span className="inline-flex items-center gap-2">
-                          Clases Niza
-                          {getFieldTooltip('matter.niceClasses') ? (
-                            <InfoTooltip content={getFieldTooltip('matter.niceClasses')!} />
-                          ) : null}
-                        </span>
+                      <LabelWithTip label="Clases Niza" tipKey="matter.niceClasses" />
                       </FormLabel>
                       <FormControl>
                         <NiceClassSelector 
@@ -463,7 +474,9 @@ export default function MatterForm() {
                   name="goods_services"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Productos/Servicios</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Productos/Servicios" tipKey="trademark.goodsServices" />
+                    </FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
@@ -497,7 +510,9 @@ export default function MatterForm() {
                 name="filing_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Presentación</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Presentación" tipKey="matter.filingDate" />
+                    </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -510,7 +525,9 @@ export default function MatterForm() {
                 name="registration_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Registro</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Registro" tipKey="matter.registrationDate" />
+                    </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -523,7 +540,9 @@ export default function MatterForm() {
                 name="expiry_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Vencimiento</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Vencimiento" tipKey="matter.expiryDate" />
+                    </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -536,7 +555,9 @@ export default function MatterForm() {
                 name="next_renewal_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Próx. renovación</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Próx. renovación" tipKey="matter.nextRenewalDate" />
+                    </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -557,7 +578,9 @@ export default function MatterForm() {
                 name="owner_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre del titular</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Nombre del titular" tipKey="matter.ownerName" />
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="ACME Corporation S.L." />
                     </FormControl>
@@ -578,7 +601,9 @@ export default function MatterForm() {
                 name="official_fees"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tasas oficiales (€)</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Tasas oficiales (€)" tipKey="finance.officialFees" />
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -596,7 +621,9 @@ export default function MatterForm() {
                 name="professional_fees"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Honorarios (€)</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Honorarios (€)" tipKey="finance.professionalFees" />
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -629,7 +656,9 @@ export default function MatterForm() {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Tags" tipKey="matter.tags" />
+                    </FormLabel>
                     <FormControl>
                       <TagInput 
                         value={field.value || []} 
@@ -645,7 +674,9 @@ export default function MatterForm() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas</FormLabel>
+                    <FormLabel>
+                      <LabelWithTip label="Notas" tipKey="matter.notes" />
+                    </FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 

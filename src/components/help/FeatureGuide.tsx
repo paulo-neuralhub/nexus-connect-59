@@ -3,11 +3,12 @@
 // Prompt P78: Contextual Help System
 // ============================================================
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useGuideProgress } from "@/hooks/help/useGuideProgress";
 
 export interface FeatureGuideStep {
   title: string;
@@ -30,27 +31,46 @@ export function FeatureGuide({
   onComplete,
   className,
 }: FeatureGuideProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+
   const completedKey = `guide_completed_${featureKey}`;
   const skippedKey = `guide_skipped_${featureKey}`;
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(() => localStorage.getItem(completedKey) === "true");
-  const [isVisible, setIsVisible] = useState(() => localStorage.getItem(skippedKey) !== "true");
+  const { status, enabled: dbEnabled, markCompleted, markSkipped } = useGuideProgress(featureKey);
+
+  // Local fallback (also keeps UX snappy even if offline)
+  const [localStatus, setLocalStatus] = useState<"completed" | "skipped" | undefined>(() => {
+    if (localStorage.getItem(completedKey) === "true") return "completed";
+    if (localStorage.getItem(skippedKey) === "true") return "skipped";
+    return undefined;
+  });
+
+  const effectiveStatus = dbEnabled ? status : localStatus;
+
+  // If DB says completed/skipped, reflect it locally too.
+  useEffect(() => {
+    if (!dbEnabled || !status) return;
+    if (status === "completed") localStorage.setItem(completedKey, "true");
+    if (status === "skipped") localStorage.setItem(skippedKey, "true");
+    setLocalStatus(status);
+  }, [dbEnabled, status, completedKey, skippedKey]);
 
   const step = useMemo(() => steps[currentStep], [steps, currentStep]);
   const isLastStep = currentStep === Math.max(0, steps.length - 1);
 
-  if (!isVisible || isCompleted || steps.length === 0) return null;
+  if (effectiveStatus || steps.length === 0) return null;
 
   const handleComplete = () => {
-    setIsCompleted(true);
     localStorage.setItem(completedKey, "true");
+    setLocalStatus("completed");
+    if (dbEnabled) markCompleted();
     onComplete?.();
   };
 
   const handleSkip = () => {
-    setIsVisible(false);
     localStorage.setItem(skippedKey, "true");
+    setLocalStatus("skipped");
+    if (dbEnabled) markSkipped();
   };
 
   return (
