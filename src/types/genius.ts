@@ -23,7 +23,29 @@ export type GeniusMode =
   | 'prior_art'         // Búsqueda de estado de la técnica
   | 'freedom_to_operate' // Análisis FTO
   | 'portfolio_strategy' // Estrategia de portfolio
-  | 'translator';       // Traducción legal
+  | 'translator'        // Traducción legal
+  | 'help';             // Ayuda sobre el uso de IP-NEXUS
+
+export interface GeniusHelpContext {
+  currentPage: string;
+  recentActions: string[];
+  userLevel: 'beginner' | 'intermediate' | 'advanced';
+}
+
+export interface GeniusHelpResponse {
+  answer: string;
+  relatedArticles?: {
+    id: string;
+    title: string;
+    slug: string;
+  }[];
+  suggestedActions?: {
+    label: string;
+    action: string;
+    params?: Record<string, unknown>;
+  }[];
+  videoTutorial?: string;
+}
 
 export interface GeniusModeConfig {
   id: GeniusMode;
@@ -64,7 +86,12 @@ export interface AIConversation {
 
 // ===== MENSAJES =====
 export interface AIActionTaken {
-  type: 'search_matters' | 'create_task' | 'get_deadlines' | 'search_contacts';
+  type:
+    | 'search_matters'
+    | 'create_task'
+    | 'get_deadlines'
+    | 'search_contacts'
+    | 'navigate';
   results?: number;
   title?: string;
   data?: Record<string, unknown>;
@@ -88,7 +115,7 @@ export interface AIMessage {
 }
 
 export interface AISource {
-  type: 'knowledge_base' | 'matter' | 'document' | 'web';
+  type: 'knowledge_base' | 'matter' | 'document' | 'web' | 'help_article';
   id: string;
   title: string;
   excerpt?: string;
