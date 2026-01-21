@@ -3,7 +3,7 @@
  * Frequently Asked Questions with search and categories
  */
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, ChevronDown, ChevronRight, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FAQ_ITEMS, HELP_CATEGORIES } from '@/lib/constants/help-content';
 import { useDebounce } from '@/hooks/use-debounce';
 import ReactMarkdown from 'react-markdown';
+import { useHelpFAQs } from '@/hooks/help';
 
 export default function FAQPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,26 +28,31 @@ export default function FAQPage() {
   
   const debouncedSearch = useDebounce(searchQuery, 300);
 
+  const { data: faqs = [], isLoading } = useHelpFAQs(activeCategory);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    faqs.forEach((f) => set.add(f.category || 'general'));
+    return Array.from(set).sort();
+  }, [faqs]);
+
   const filteredFAQs = useMemo(() => {
-    let items = FAQ_ITEMS;
+    // Server-side already filtered by category (except 'all')
+    let items = faqs;
 
-    // Filter by category
-    if (activeCategory !== 'all') {
-      items = items.filter(faq => faq.categoryId === activeCategory);
-    }
-
-    // Filter by search
     if (debouncedSearch.length >= 2) {
-      const query = debouncedSearch.toLowerCase();
-      items = items.filter(faq => 
-        faq.question.toLowerCase().includes(query) ||
-        faq.answer.toLowerCase().includes(query) ||
-        faq.tags.some(tag => tag.toLowerCase().includes(query))
+      const q = debouncedSearch.toLowerCase();
+      items = items.filter(
+        (faq) =>
+          faq.question_es.toLowerCase().includes(q) ||
+          faq.answer_es.toLowerCase().includes(q) ||
+          faq.question.toLowerCase().includes(q) ||
+          faq.answer.toLowerCase().includes(q)
       );
     }
 
     return items;
-  }, [activeCategory, debouncedSearch]);
+  }, [faqs, debouncedSearch]);
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
@@ -59,9 +64,7 @@ export default function FAQPage() {
     setSearchParams(searchParams);
   };
 
-  const getCategoryName = (categoryId: string) => {
-    return HELP_CATEGORIES.find(c => c.id === categoryId)?.name || categoryId;
-  };
+  const getCategoryName = (categoryId: string) => categoryId;
 
   return (
     <div className="space-y-6">
@@ -93,13 +96,13 @@ export default function FAQPage() {
           >
             Todas
           </TabsTrigger>
-          {HELP_CATEGORIES.slice(0, 6).map((category) => (
+          {categories.slice(0, 6).map((category) => (
             <TabsTrigger
-              key={category.id}
-              value={category.id}
+              key={category}
+              value={category}
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              {category.name}
+              {getCategoryName(category)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -114,7 +117,9 @@ export default function FAQPage() {
       )}
 
       {/* FAQ Accordion */}
-      {filteredFAQs.length > 0 ? (
+      {isLoading ? (
+        <div className="py-12 text-center text-muted-foreground">Cargando FAQs…</div>
+      ) : filteredFAQs.length > 0 ? (
         <Accordion type="multiple" className="space-y-3">
           {filteredFAQs.map((faq) => (
             <AccordionItem 
@@ -127,10 +132,10 @@ export default function FAQPage() {
                   <div className="flex items-start gap-3">
                     <ChevronRight className="w-5 h-5 shrink-0 text-primary mt-0.5 transition-transform group-data-[state=open]:rotate-90" />
                     <div>
-                      <p className="font-medium">{faq.question}</p>
+                      <p className="font-medium">{faq.question_es}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">
-                          {getCategoryName(faq.categoryId)}
+                          {getCategoryName(faq.category)}
                         </Badge>
                       </div>
                     </div>
@@ -139,20 +144,17 @@ export default function FAQPage() {
               </AccordionTrigger>
               <AccordionContent className="pb-4 pl-8">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown>{faq.answer}</ReactMarkdown>
+                  <ReactMarkdown>{faq.answer_es}</ReactMarkdown>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-4 pt-3 border-t">
-                  {faq.tags.map((tag) => (
-                    <Badge 
-                      key={tag} 
-                      variant="secondary" 
-                      className="text-xs cursor-pointer hover:bg-secondary/80"
-                      onClick={() => setSearchQuery(tag)}
-                    >
-                      <Tag className="w-3 h-3 mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
+                  <Badge
+                    variant="secondary"
+                    className="text-xs cursor-pointer hover:bg-secondary/80"
+                    onClick={() => setSearchQuery(faq.category)}
+                  >
+                    <Tag className="w-3 h-3 mr-1" />
+                    {faq.category}
+                  </Badge>
                 </div>
               </AccordionContent>
             </AccordionItem>
