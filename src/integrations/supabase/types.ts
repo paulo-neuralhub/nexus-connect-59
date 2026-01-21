@@ -12568,6 +12568,283 @@ export type Database = {
         }
         Relationships: []
       }
+      market_user_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          flag_reason: string | null
+          id: string
+          is_flagged: boolean | null
+          is_verified: boolean | null
+          is_visible: boolean | null
+          moderated_at: string | null
+          moderated_by: string | null
+          rating_communication: number | null
+          rating_overall: number
+          rating_quality: number | null
+          rating_timeliness: number | null
+          rating_value: number | null
+          response: string | null
+          response_at: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          title: string | null
+          transaction_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          flag_reason?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rating_communication?: number | null
+          rating_overall: number
+          rating_quality?: number | null
+          rating_timeliness?: number | null
+          rating_value?: number | null
+          response?: string | null
+          response_at?: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          title?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          flag_reason?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rating_communication?: number | null
+          rating_overall?: number
+          rating_quality?: number | null
+          rating_timeliness?: number | null
+          rating_value?: number | null
+          response?: string | null
+          response_at?: string | null
+          reviewed_user_id?: string
+          reviewer_id?: string
+          title?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_user_reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
+            referencedRelation: "market_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_user_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "market_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_user_reviews_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "market_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_users: {
+        Row: {
+          accepts_new_clients: boolean | null
+          agent_type: string | null
+          agent_verification_notes: string | null
+          agent_verified_at: string | null
+          auth_user_id: string | null
+          avatar_url: string | null
+          badges: string[] | null
+          bar_association: string | null
+          bio: string | null
+          city: string | null
+          communication_score: number | null
+          company_logo_url: string | null
+          company_name: string | null
+          company_type: string | null
+          company_website: string | null
+          country: string
+          created_at: string | null
+          display_name: string
+          email: string
+          hourly_rate: number | null
+          id: string
+          is_active: boolean | null
+          is_agent: boolean | null
+          is_public_profile: boolean | null
+          is_verified_agent: boolean | null
+          jurisdictions: string[] | null
+          kyc_documents: Json | null
+          kyc_expires_at: string | null
+          kyc_level: number | null
+          kyc_status: string | null
+          kyc_verified_at: string | null
+          languages: string[] | null
+          last_active_at: string | null
+          license_number: string | null
+          notification_preferences: Json | null
+          organization_id: string | null
+          phone: string | null
+          rank_percentile: number | null
+          rank_position: number | null
+          rate_currency: string | null
+          rating_avg: number | null
+          ratings_count: number | null
+          reputation_score: number | null
+          response_time_avg: number | null
+          specializations: string[] | null
+          success_rate: number | null
+          successful_transactions: number | null
+          timezone: string | null
+          total_transactions: number | null
+          total_volume: number | null
+          updated_at: string | null
+          user_type: string
+          years_experience: number | null
+        }
+        Insert: {
+          accepts_new_clients?: boolean | null
+          agent_type?: string | null
+          agent_verification_notes?: string | null
+          agent_verified_at?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          badges?: string[] | null
+          bar_association?: string | null
+          bio?: string | null
+          city?: string | null
+          communication_score?: number | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          company_website?: string | null
+          country: string
+          created_at?: string | null
+          display_name: string
+          email: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_agent?: boolean | null
+          is_public_profile?: boolean | null
+          is_verified_agent?: boolean | null
+          jurisdictions?: string[] | null
+          kyc_documents?: Json | null
+          kyc_expires_at?: string | null
+          kyc_level?: number | null
+          kyc_status?: string | null
+          kyc_verified_at?: string | null
+          languages?: string[] | null
+          last_active_at?: string | null
+          license_number?: string | null
+          notification_preferences?: Json | null
+          organization_id?: string | null
+          phone?: string | null
+          rank_percentile?: number | null
+          rank_position?: number | null
+          rate_currency?: string | null
+          rating_avg?: number | null
+          ratings_count?: number | null
+          reputation_score?: number | null
+          response_time_avg?: number | null
+          specializations?: string[] | null
+          success_rate?: number | null
+          successful_transactions?: number | null
+          timezone?: string | null
+          total_transactions?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_type: string
+          years_experience?: number | null
+        }
+        Update: {
+          accepts_new_clients?: boolean | null
+          agent_type?: string | null
+          agent_verification_notes?: string | null
+          agent_verified_at?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          badges?: string[] | null
+          bar_association?: string | null
+          bio?: string | null
+          city?: string | null
+          communication_score?: number | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          company_website?: string | null
+          country?: string
+          created_at?: string | null
+          display_name?: string
+          email?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_agent?: boolean | null
+          is_public_profile?: boolean | null
+          is_verified_agent?: boolean | null
+          jurisdictions?: string[] | null
+          kyc_documents?: Json | null
+          kyc_expires_at?: string | null
+          kyc_level?: number | null
+          kyc_status?: string | null
+          kyc_verified_at?: string | null
+          languages?: string[] | null
+          last_active_at?: string | null
+          license_number?: string | null
+          notification_preferences?: Json | null
+          organization_id?: string | null
+          phone?: string | null
+          rank_percentile?: number | null
+          rank_position?: number | null
+          rate_currency?: string | null
+          rating_avg?: number | null
+          ratings_count?: number | null
+          reputation_score?: number | null
+          response_time_avg?: number | null
+          specializations?: string[] | null
+          success_rate?: number | null
+          successful_transactions?: number | null
+          timezone?: string | null
+          total_transactions?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_type?: string
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "market_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_verification_documents: {
         Row: {
           document_type: string
@@ -22770,6 +23047,10 @@ export type Database = {
       start_module_trial: {
         Args: { p_pack_code: string; p_trial_days?: number }
         Returns: undefined
+      }
+      sync_market_user_from_nexus: {
+        Args: { p_auth_user_id: string; p_organization_id: string }
+        Returns: string
       }
       text_soundex: { Args: { "": string }; Returns: string }
       trigger_workflow_manually: {
