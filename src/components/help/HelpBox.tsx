@@ -40,8 +40,8 @@ export function HelpBox({
 
   const config = useMemo(() => {
     const base = {
-      // Keep vertical rhythm (less intrusive via softer tone), but make it narrower.
-      wrapper: "rounded-xl border p-4",
+      // Full-width banner-like help, but visually light and not tall.
+      wrapper: "w-full rounded-xl border px-4 py-2.5",
       iconClass: "h-5 w-5 flex-shrink-0",
     };
 
@@ -82,16 +82,13 @@ export function HelpBox({
   const isInternal = learnMoreUrl?.startsWith("/");
 
   return (
-    <div
-      className={cn(config.wrapper, className, "mx-auto")}
-      style={{ width: 360, maxWidth: "92vw" }}
-    >
-      <div className="flex items-start gap-2">
+    <div className={cn(config.wrapper, className)}>
+      <div className="flex items-start gap-3">
         <config.Icon className={cn(config.iconClass, config.iconColor)} />
 
-        <div className="min-w-0 flex-1 space-y-2">
-          {title ? <p className="font-medium leading-tight">{title}</p> : null}
-          <div className="text-sm text-muted-foreground leading-relaxed">{children}</div>
+        <div className="min-w-0 flex-1 space-y-1">
+          {title ? <p className="text-sm font-medium leading-tight">{title}</p> : null}
+          <div className="text-xs text-muted-foreground leading-snug">{children}</div>
 
           {learnMoreUrl ? (
             <div>
