@@ -9,7 +9,8 @@
 export type SystemType = 
   | 'patsnap' | 'anaqua' | 'cpa_global' | 'dennemeyer' | 'ipan'
   | 'thomson_compumark' | 'corsearch' | 'orbit' | 'darts_ip' 
-  | 'clarivate' | 'ipfolio' | 'filemaker' | 'custom_api' | 'custom_db';
+  | 'clarivate' | 'ipfolio' | 'filemaker' | 'custom_api' | 'custom_db'
+  | 'web_portal';
 
 export type AuthType = 
   | 'oauth2' | 'api_key' | 'api_key_secret' | 'basic_auth' 

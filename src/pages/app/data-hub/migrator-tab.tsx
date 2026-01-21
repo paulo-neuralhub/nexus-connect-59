@@ -46,6 +46,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 };
 
 const SOURCE_SYSTEMS: Record<string, { name: string; color: string }> = {
+  web_portal: { name: 'Portal Web (Login)', color: 'bg-primary' },
   patsnap: { name: 'PatSnap', color: 'bg-blue-500' },
   anaqua: { name: 'Anaqua', color: 'bg-purple-500' },
   cpa_global: { name: 'CPA Global', color: 'bg-green-500' },
