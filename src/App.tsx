@@ -62,11 +62,14 @@ import MatterDetail from "./pages/app/docket/MatterDetail";
 import MatterForm from "./pages/app/docket/MatterForm";
 import DeadlinesPage from "./pages/app/docket/DeadlinesPage";
 import CRMLayout from "./pages/app/crm/CRMLayout";
-import CRMDashboard from "./pages/app/crm/CRMDashboard";
-import ContactList from "./pages/app/crm/contacts";
-import ContactDetail from "./pages/app/crm/contacts/ContactDetail";
-import DealList from "./pages/app/crm/deals";
-import PipelineList from "./pages/app/crm/pipelines";
+import CRMV2Dashboard from "./pages/app/crm/v2/Dashboard";
+import CRMV2AccountsList from "./pages/app/crm/v2/accounts";
+import CRMV2AccountDetail from "./pages/app/crm/v2/accounts/AccountDetail";
+import CRMV2ContactsList from "./pages/app/crm/v2/contacts";
+import CRMV2ContactDetail from "./pages/app/crm/v2/contacts/ContactDetail";
+import CRMV2DealsList from "./pages/app/crm/v2/deals";
+import CRMV2InteractionsList from "./pages/app/crm/v2/interactions";
+import CRMV2TasksList from "./pages/app/crm/v2/tasks";
 import MarketingLayout from "./pages/app/marketing/MarketingLayout";
 import MarketingDashboard from "./pages/app/marketing/MarketingDashboard";
 import TemplateList from "./pages/app/marketing/templates";
@@ -232,11 +235,14 @@ const App = () => (
                   <Route path="analyze" element={<AnalyzePage />} />
                 </Route>
                 <Route path="crm" element={<CRMLayout />}>
-                  <Route index element={<CRMDashboard />} />
-                  <Route path="contacts" element={<ContactList />} />
-                  <Route path="contacts/:id" element={<ContactDetail />} />
-                  <Route path="deals" element={<DealList />} />
-                  <Route path="pipelines" element={<PipelineList />} />
+                  <Route index element={<CRMV2Dashboard />} />
+                  <Route path="accounts" element={<CRMV2AccountsList />} />
+                  <Route path="accounts/:id" element={<CRMV2AccountDetail />} />
+                  <Route path="contacts" element={<CRMV2ContactsList />} />
+                  <Route path="contacts/:id" element={<CRMV2ContactDetail />} />
+                  <Route path="deals" element={<CRMV2DealsList />} />
+                  <Route path="interactions" element={<CRMV2InteractionsList />} />
+                  <Route path="tasks" element={<CRMV2TasksList />} />
                 </Route>
                 <Route path="marketing" element={<MarketingLayout />}>
                   <Route index element={<MarketingDashboard />} />
