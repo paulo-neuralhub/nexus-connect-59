@@ -5779,6 +5779,420 @@ export type Database = {
           },
         ]
       }
+      crm_automation_action_types: {
+        Row: {
+          available_in_plans: string[] | null
+          category: string
+          code: string
+          color: string
+          config_schema: Json
+          created_at: string | null
+          description: string | null
+          description_es: string | null
+          icon: string
+          id: string
+          is_active: boolean | null
+          name: string
+          name_es: string
+          requires_integration: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          available_in_plans?: string[] | null
+          category: string
+          code: string
+          color?: string
+          config_schema?: Json
+          created_at?: string | null
+          description?: string | null
+          description_es?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          name_es: string
+          requires_integration?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          available_in_plans?: string[] | null
+          category?: string
+          code?: string
+          color?: string
+          config_schema?: Json
+          created_at?: string | null
+          description?: string | null
+          description_es?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          name_es?: string
+          requires_integration?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      crm_automation_approvals: {
+        Row: {
+          approval_type: string
+          assigned_role: string | null
+          assigned_to: string | null
+          context_data: Json
+          created_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          description: string | null
+          execution_id: string
+          expires_at: string | null
+          id: string
+          on_approve_actions: Json | null
+          on_reject_actions: Json | null
+          organization_id: string
+          status: string | null
+          title: string
+        }
+        Insert: {
+          approval_type: string
+          assigned_role?: string | null
+          assigned_to?: string | null
+          context_data: Json
+          created_at?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          execution_id: string
+          expires_at?: string | null
+          id?: string
+          on_approve_actions?: Json | null
+          on_reject_actions?: Json | null
+          organization_id: string
+          status?: string | null
+          title: string
+        }
+        Update: {
+          approval_type?: string
+          assigned_role?: string | null
+          assigned_to?: string | null
+          context_data?: Json
+          created_at?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          execution_id?: string
+          expires_at?: string | null
+          id?: string
+          on_approve_actions?: Json | null
+          on_reject_actions?: Json | null
+          organization_id?: string
+          status?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_automation_approvals_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_approvals_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_approvals_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "crm_automation_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "crm_automation_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_automation_executions: {
+        Row: {
+          actions_executed: Json | null
+          automation_id: string
+          completed_at: string | null
+          context_data: Json | null
+          current_action_index: number | null
+          entity_id: string | null
+          entity_type: string | null
+          error_action_index: number | null
+          error_message: string | null
+          id: string
+          next_action_at: string | null
+          organization_id: string
+          started_at: string | null
+          status: string
+          trigger_event: Json
+        }
+        Insert: {
+          actions_executed?: Json | null
+          automation_id: string
+          completed_at?: string | null
+          context_data?: Json | null
+          current_action_index?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_action_index?: number | null
+          error_message?: string | null
+          id?: string
+          next_action_at?: string | null
+          organization_id: string
+          started_at?: string | null
+          status?: string
+          trigger_event: Json
+        }
+        Update: {
+          actions_executed?: Json | null
+          automation_id?: string
+          completed_at?: string | null
+          context_data?: Json | null
+          current_action_index?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_action_index?: number | null
+          error_message?: string | null
+          id?: string
+          next_action_at?: string | null
+          organization_id?: string
+          started_at?: string | null
+          status?: string
+          trigger_event?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_automation_executions_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_automations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_automation_templates: {
+        Row: {
+          category: string
+          code: string
+          color: string | null
+          complexity: string | null
+          created_at: string | null
+          definition: Json
+          description: string | null
+          description_es: string | null
+          estimated_impact: string | null
+          icon: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          name_es: string
+          recommended_for: string[] | null
+          sort_order: number | null
+        }
+        Insert: {
+          category: string
+          code: string
+          color?: string | null
+          complexity?: string | null
+          created_at?: string | null
+          definition: Json
+          description?: string | null
+          description_es?: string | null
+          estimated_impact?: string | null
+          icon?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          name_es: string
+          recommended_for?: string[] | null
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          color?: string | null
+          complexity?: string | null
+          created_at?: string | null
+          definition?: Json
+          description?: string | null
+          description_es?: string | null
+          estimated_impact?: string | null
+          icon?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          name_es?: string
+          recommended_for?: string[] | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      crm_automations: {
+        Row: {
+          actions: Json
+          category: string
+          color: string | null
+          conditions: Json | null
+          cooldown_hours: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          failed_runs: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_paused: boolean | null
+          last_run_at: string | null
+          max_runs_per_day: number | null
+          max_runs_per_entity: number | null
+          name: string
+          organization_id: string
+          successful_runs: number | null
+          template_id: string | null
+          total_runs: number | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json
+          category: string
+          color?: string | null
+          conditions?: Json | null
+          cooldown_hours?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          failed_runs?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_paused?: boolean | null
+          last_run_at?: string | null
+          max_runs_per_day?: number | null
+          max_runs_per_entity?: number | null
+          name: string
+          organization_id: string
+          successful_runs?: number | null
+          template_id?: string | null
+          total_runs?: number | null
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json
+          category?: string
+          color?: string | null
+          conditions?: Json | null
+          cooldown_hours?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          failed_runs?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_paused?: boolean | null
+          last_run_at?: string | null
+          max_runs_per_day?: number | null
+          max_runs_per_entity?: number | null
+          name?: string
+          organization_id?: string
+          successful_runs?: number | null
+          template_id?: string | null
+          total_runs?: number | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_automations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "crm_automations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "crm_automation_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_contacts: {
         Row: {
           account_id: string | null
@@ -6475,6 +6889,116 @@ export type Database = {
           },
           {
             foreignKeyName: "crm_lead_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_message_templates: {
+        Row: {
+          available_variables: Json | null
+          category: string | null
+          channel: string
+          code: string | null
+          created_at: string | null
+          created_by: string | null
+          email_body_html: string | null
+          email_body_text: string | null
+          email_subject: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          notification_action_url: string | null
+          notification_body: string | null
+          notification_title: string | null
+          organization_id: string
+          sms_body: string | null
+          updated_at: string | null
+          usage_count: number | null
+          whatsapp_components: Json | null
+          whatsapp_language: string | null
+          whatsapp_status: string | null
+          whatsapp_template_id: string | null
+          whatsapp_template_name: string | null
+        }
+        Insert: {
+          available_variables?: Json | null
+          category?: string | null
+          channel: string
+          code?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email_body_html?: string | null
+          email_body_text?: string | null
+          email_subject?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          notification_action_url?: string | null
+          notification_body?: string | null
+          notification_title?: string | null
+          organization_id: string
+          sms_body?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          whatsapp_components?: Json | null
+          whatsapp_language?: string | null
+          whatsapp_status?: string | null
+          whatsapp_template_id?: string | null
+          whatsapp_template_name?: string | null
+        }
+        Update: {
+          available_variables?: Json | null
+          category?: string | null
+          channel?: string
+          code?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email_body_html?: string | null
+          email_body_text?: string | null
+          email_subject?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          notification_action_url?: string | null
+          notification_body?: string | null
+          notification_title?: string | null
+          organization_id?: string
+          sms_body?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          whatsapp_components?: Json | null
+          whatsapp_language?: string | null
+          whatsapp_status?: string | null
+          whatsapp_template_id?: string | null
+          whatsapp_template_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_message_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_message_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_message_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "crm_message_templates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -28335,6 +28859,22 @@ export type Database = {
         Returns: boolean
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      crm_activate_automation_template: {
+        Args: { p_organization_id: string; p_template_code: string }
+        Returns: string
+      }
+      crm_get_automation_executions: {
+        Args: { p_automation_id: string; p_limit?: number; p_status?: string }
+        Returns: Json
+      }
+      crm_get_automations: {
+        Args: {
+          p_active_only?: boolean
+          p_category?: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
       crm_get_client_360: { Args: { p_account_id: string }; Returns: Json }
       crm_get_contact_communications: {
         Args: { p_contact_id: string; p_limit?: number }
@@ -28348,6 +28888,7 @@ export type Database = {
         }
         Returns: Json
       }
+      crm_get_pending_approvals: { Args: { p_user_id?: string }; Returns: Json }
       crm_get_pipeline_summary: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -28409,6 +28950,10 @@ export type Database = {
       }
       crm_reorder_pipeline_stages: {
         Args: { p_pipeline_id: string; p_stage_ids: string[] }
+        Returns: boolean
+      }
+      crm_resolve_approval: {
+        Args: { p_approval_id: string; p_decision: string; p_notes?: string }
         Returns: boolean
       }
       daitch_mokotoff: { Args: { "": string }; Returns: string[] }
