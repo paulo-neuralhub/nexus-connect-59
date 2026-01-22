@@ -23,6 +23,7 @@ import {
   Scale,
   MessageSquare,
   Power,
+  Database,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,6 +57,10 @@ const sidebarSections = [
       { label: 'API Keys', path: '/backoffice/api-keys', icon: Key },
       { label: 'Announcements', path: '/backoffice/announcements', icon: Megaphone },
     ],
+  },
+  {
+    label: 'Demo',
+    items: [{ label: 'Demo Data', path: '/backoffice/demo-data', icon: Database }],
   },
   {
     label: 'Compliance',

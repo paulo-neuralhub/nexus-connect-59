@@ -1,0 +1,40 @@
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export type SeedDemoDataResponse =
+  | { ok: true; run_id: string }
+  | { ok: false; error: string };
+
+export type CleanupDemoDataResponse =
+  | { ok: true; run_id: string; deleted: Record<string, number> }
+  | { ok: false; error: string };
+
+export function useSeedDemoData() {
+  return useMutation({
+    mutationFn: async (organizationId: string): Promise<SeedDemoDataResponse> => {
+      const { data, error } = await supabase.functions.invoke("seed-demo-data", {
+        body: { organization_id: organizationId },
+      });
+      if (error) throw error;
+      return data as SeedDemoDataResponse;
+    },
+  });
+}
+
+export function useCleanupDemoData() {
+  return useMutation({
+    mutationFn: async (params: {
+      organizationId: string;
+      runId?: string;
+    }): Promise<CleanupDemoDataResponse> => {
+      const { data, error } = await supabase.functions.invoke("cleanup-demo-data", {
+        body: {
+          organization_id: params.organizationId,
+          run_id: params.runId,
+        },
+      });
+      if (error) throw error;
+      return data as CleanupDemoDataResponse;
+    },
+  });
+}

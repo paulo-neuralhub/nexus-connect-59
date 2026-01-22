@@ -165,6 +165,7 @@ import KillSwitchPage from "./pages/backoffice/kill-switch";
 import BackofficeCalendarPage from "./pages/backoffice/calendar";
 import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics";
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
+import DemoDataPage from "./pages/backoffice/demo-data";
 
 // KYC Pages
 import MarketKycPage from "./pages/app/market/kyc";
@@ -384,6 +385,7 @@ const App = () => (
                 <Route path="calendar" element={<BackofficeCalendarPage />} />
                 <Route path="product-analytics" element={<BackofficeProductAnalyticsPage />} />
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
+                <Route path="demo-data" element={<DemoDataPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
               </Route>
               
