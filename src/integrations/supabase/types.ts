@@ -1865,6 +1865,88 @@ export type Database = {
           },
         ]
       }
+      ai_usage_events: {
+        Row: {
+          conversation_id: string | null
+          cost_usd: number | null
+          created_at: string | null
+          id: string
+          input_tokens: number
+          jurisdiction_code: string | null
+          kb_chunks_used: string[] | null
+          matter_id: string | null
+          model_used: string | null
+          module: string | null
+          operation_type: string
+          organization_id: string
+          output_tokens: number
+          query_hash: string | null
+          response_quality: number | null
+          total_tokens: number | null
+          user_id: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          id?: string
+          input_tokens?: number
+          jurisdiction_code?: string | null
+          kb_chunks_used?: string[] | null
+          matter_id?: string | null
+          model_used?: string | null
+          module?: string | null
+          operation_type: string
+          organization_id: string
+          output_tokens?: number
+          query_hash?: string | null
+          response_quality?: number | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          id?: string
+          input_tokens?: number
+          jurisdiction_code?: string | null
+          kb_chunks_used?: string[] | null
+          matter_id?: string | null
+          model_used?: string | null
+          module?: string | null
+          operation_type?: string
+          organization_id?: string
+          output_tokens?: number
+          query_hash?: string | null
+          response_quality?: number | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ai_usage_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_configurations: {
         Row: {
           alert_type: string
@@ -3372,6 +3454,111 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capabilities: {
+        Row: {
+          capability_type: string | null
+          category: string
+          code: string
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_metered: boolean | null
+          module_code: string | null
+          name: string
+          sort_order: number | null
+          unit_name: string | null
+          unit_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          capability_type?: string | null
+          category: string
+          code: string
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_metered?: boolean | null
+          module_code?: string | null
+          name: string
+          sort_order?: number | null
+          unit_name?: string | null
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          capability_type?: string | null
+          category?: string
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_metered?: boolean | null
+          module_code?: string | null
+          name?: string
+          sort_order?: number | null
+          unit_name?: string | null
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      capability_usage: {
+        Row: {
+          capability_code: string
+          id: string
+          limit_value: number | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          updated_at: string | null
+          usage_cost: number | null
+          usage_count: number | null
+        }
+        Insert: {
+          capability_code: string
+          id?: string
+          limit_value?: number | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          updated_at?: string | null
+          usage_cost?: number | null
+          usage_count?: number | null
+        }
+        Update: {
+          capability_code?: string
+          id?: string
+          limit_value?: number | null
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          updated_at?: string | null
+          usage_cost?: number | null
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capability_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "capability_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -11737,6 +11924,75 @@ export type Database = {
           },
         ]
       }
+      jurisdiction_knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          effective_date: string | null
+          embedding: string | null
+          expiry_date: string | null
+          id: string
+          is_active: boolean | null
+          jurisdiction_code: string
+          last_verified_at: string | null
+          previous_version_id: string | null
+          source_date: string | null
+          source_name: string | null
+          source_url: string | null
+          subcategory: string | null
+          summary: string | null
+          title: string
+          updated_at: string | null
+          verified_by: string | null
+          version: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          effective_date?: string | null
+          embedding?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code: string
+          last_verified_at?: string | null
+          previous_version_id?: string | null
+          source_date?: string | null
+          source_name?: string | null
+          source_url?: string | null
+          subcategory?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string | null
+          verified_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          effective_date?: string | null
+          embedding?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string
+          last_verified_at?: string | null
+          previous_version_id?: string | null
+          source_date?: string | null
+          source_name?: string | null
+          source_url?: string | null
+          subcategory?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string | null
+          verified_by?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       jurisdiction_rules: {
         Row: {
           actions: Json | null
@@ -11817,6 +12073,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      jurisdictions: {
+        Row: {
+          code: string
+          created_at: string | null
+          flag_emoji: string | null
+          has_api_integration: boolean | null
+          has_deadline_rules: boolean | null
+          has_knowledge_base: boolean | null
+          has_official_forms: boolean | null
+          has_spider_monitoring: boolean | null
+          icon: string | null
+          id: string
+          ipo_api_url: string | null
+          ipo_name: string | null
+          ipo_url: string | null
+          is_active: boolean | null
+          kb_last_updated: string | null
+          name: string
+          name_local: string | null
+          price_monthly: number
+          price_yearly: number | null
+          region: string
+          sort_order: number | null
+          stripe_price_id_monthly: string | null
+          stripe_price_id_yearly: string | null
+          tier: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          flag_emoji?: string | null
+          has_api_integration?: boolean | null
+          has_deadline_rules?: boolean | null
+          has_knowledge_base?: boolean | null
+          has_official_forms?: boolean | null
+          has_spider_monitoring?: boolean | null
+          icon?: string | null
+          id?: string
+          ipo_api_url?: string | null
+          ipo_name?: string | null
+          ipo_url?: string | null
+          is_active?: boolean | null
+          kb_last_updated?: string | null
+          name: string
+          name_local?: string | null
+          price_monthly: number
+          price_yearly?: number | null
+          region: string
+          sort_order?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          tier?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          flag_emoji?: string | null
+          has_api_integration?: boolean | null
+          has_deadline_rules?: boolean | null
+          has_knowledge_base?: boolean | null
+          has_official_forms?: boolean | null
+          has_spider_monitoring?: boolean | null
+          icon?: string | null
+          id?: string
+          ipo_api_url?: string | null
+          ipo_name?: string | null
+          ipo_url?: string | null
+          is_active?: boolean | null
+          kb_last_updated?: string | null
+          name?: string
+          name_local?: string | null
+          price_monthly?: number
+          price_yearly?: number | null
+          region?: string
+          sort_order?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          tier?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       knowledge_base: {
         Row: {
@@ -16301,6 +16641,117 @@ export type Database = {
           },
         ]
       }
+      organization_capabilities: {
+        Row: {
+          capability_code: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_unlimited: boolean | null
+          limit_override: number | null
+          organization_id: string
+          purchased_at: string | null
+          stripe_subscription_item_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          capability_code: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_unlimited?: boolean | null
+          limit_override?: number | null
+          organization_id: string
+          purchased_at?: string | null
+          stripe_subscription_item_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          capability_code?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_unlimited?: boolean | null
+          limit_override?: number | null
+          organization_id?: string
+          purchased_at?: string | null
+          stripe_subscription_item_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_capabilities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_capabilities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_jurisdictions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_base: boolean | null
+          is_favorite: boolean | null
+          is_from_plan: boolean | null
+          jurisdiction_code: string
+          organization_id: string
+          purchased_at: string | null
+          sort_order: number | null
+          stripe_subscription_item_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_base?: boolean | null
+          is_favorite?: boolean | null
+          is_from_plan?: boolean | null
+          jurisdiction_code: string
+          organization_id: string
+          purchased_at?: string | null
+          sort_order?: number | null
+          stripe_subscription_item_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_base?: boolean | null
+          is_favorite?: boolean | null
+          is_from_plan?: boolean | null
+          jurisdiction_code?: string
+          organization_id?: string
+          purchased_at?: string | null
+          sort_order?: number | null
+          stripe_subscription_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_jurisdictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_jurisdictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_module_licenses: {
         Row: {
           billing_cycle: string | null
@@ -16505,6 +16956,94 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: true
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_subscriptions: {
+        Row: {
+          auto_recharge: boolean | null
+          auto_recharge_amount: number | null
+          auto_recharge_threshold: number | null
+          billing_cycle: string | null
+          cancel_reason: string | null
+          canceled_at: string | null
+          created_at: string | null
+          credit_balance: number | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          organization_id: string
+          plan_id: string
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_recharge?: boolean | null
+          auto_recharge_amount?: number | null
+          auto_recharge_threshold?: number | null
+          billing_cycle?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          credit_balance?: number | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          organization_id: string
+          plan_id: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_recharge?: boolean | null
+          auto_recharge_amount?: number | null
+          auto_recharge_threshold?: number | null
+          billing_cycle?: string | null
+          cancel_reason?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          credit_balance?: number | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          organization_id?: string
+          plan_id?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -16771,8 +17310,79 @@ export type Database = {
           },
         ]
       }
+      plan_capabilities: {
+        Row: {
+          capability_code: string
+          config_override: Json | null
+          created_at: string | null
+          id: string
+          limit_period: string | null
+          limit_value: number | null
+          plan_id: string
+        }
+        Insert: {
+          capability_code: string
+          config_override?: Json | null
+          created_at?: string | null
+          id?: string
+          limit_period?: string | null
+          limit_value?: number | null
+          plan_id: string
+        }
+        Update: {
+          capability_code?: string
+          config_override?: Json | null
+          created_at?: string | null
+          id?: string
+          limit_period?: string | null
+          limit_value?: number | null
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_capabilities_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_jurisdictions: {
+        Row: {
+          created_at: string | null
+          id: string
+          inclusion_type: string | null
+          jurisdiction_code: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          inclusion_type?: string | null
+          jurisdiction_code: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          inclusion_type?: string | null
+          jurisdiction_code?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_jurisdictions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_modules: {
         Row: {
+          badge_text: string | null
           base_price_monthly: number | null
           base_price_yearly: number | null
           category: string
@@ -16786,6 +17396,7 @@ export type Database = {
           is_active: boolean | null
           is_addon_available: boolean | null
           is_beta: boolean | null
+          is_core: boolean | null
           is_standalone_available: boolean | null
           landing_url: string | null
           launch_date: string | null
@@ -16793,11 +17404,14 @@ export type Database = {
           pricing_model: string | null
           recommended_modules: string[] | null
           required_modules: string[] | null
+          show_in_sidebar: boolean | null
+          sort_order: number | null
           tagline: string | null
           tiers: Json | null
           updated_at: string | null
         }
         Insert: {
+          badge_text?: string | null
           base_price_monthly?: number | null
           base_price_yearly?: number | null
           category: string
@@ -16811,6 +17425,7 @@ export type Database = {
           is_active?: boolean | null
           is_addon_available?: boolean | null
           is_beta?: boolean | null
+          is_core?: boolean | null
           is_standalone_available?: boolean | null
           landing_url?: string | null
           launch_date?: string | null
@@ -16818,11 +17433,14 @@ export type Database = {
           pricing_model?: string | null
           recommended_modules?: string[] | null
           required_modules?: string[] | null
+          show_in_sidebar?: boolean | null
+          sort_order?: number | null
           tagline?: string | null
           tiers?: Json | null
           updated_at?: string | null
         }
         Update: {
+          badge_text?: string | null
           base_price_monthly?: number | null
           base_price_yearly?: number | null
           category?: string
@@ -16836,6 +17454,7 @@ export type Database = {
           is_active?: boolean | null
           is_addon_available?: boolean | null
           is_beta?: boolean | null
+          is_core?: boolean | null
           is_standalone_available?: boolean | null
           landing_url?: string | null
           launch_date?: string | null
@@ -16843,6 +17462,8 @@ export type Database = {
           pricing_model?: string | null
           recommended_modules?: string[] | null
           required_modules?: string[] | null
+          show_in_sidebar?: boolean | null
+          sort_order?: number | null
           tagline?: string | null
           tiers?: Json | null
           updated_at?: string | null
@@ -21153,54 +21774,93 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          badge_color: string | null
+          badge_text: string | null
           code: string
           created_at: string | null
           currency: string | null
           description: string | null
           features: Json
+          highlight: boolean | null
           id: string
           is_active: boolean | null
           is_enterprise: boolean | null
           is_popular: boolean | null
+          is_public: boolean | null
           limits: Json
+          max_storage_gb: number | null
+          max_users: number | null
           name: string
+          plan_type: string | null
           price_monthly: number
           price_yearly: number
           sort_order: number | null
+          stripe_price_id_monthly: string | null
+          stripe_price_id_yearly: string | null
+          stripe_product_id: string | null
+          trial_days: number | null
+          trial_includes_all: boolean | null
+          ui_config: Json | null
           updated_at: string | null
         }
         Insert: {
+          badge_color?: string | null
+          badge_text?: string | null
           code: string
           created_at?: string | null
           currency?: string | null
           description?: string | null
           features?: Json
+          highlight?: boolean | null
           id?: string
           is_active?: boolean | null
           is_enterprise?: boolean | null
           is_popular?: boolean | null
+          is_public?: boolean | null
           limits?: Json
+          max_storage_gb?: number | null
+          max_users?: number | null
           name: string
+          plan_type?: string | null
           price_monthly?: number
           price_yearly?: number
           sort_order?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          stripe_product_id?: string | null
+          trial_days?: number | null
+          trial_includes_all?: boolean | null
+          ui_config?: Json | null
           updated_at?: string | null
         }
         Update: {
+          badge_color?: string | null
+          badge_text?: string | null
           code?: string
           created_at?: string | null
           currency?: string | null
           description?: string | null
           features?: Json
+          highlight?: boolean | null
           id?: string
           is_active?: boolean | null
           is_enterprise?: boolean | null
           is_popular?: boolean | null
+          is_public?: boolean | null
           limits?: Json
+          max_storage_gb?: number | null
+          max_users?: number | null
           name?: string
+          plan_type?: string | null
           price_monthly?: number
           price_yearly?: number
           sort_order?: number | null
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          stripe_product_id?: string | null
+          trial_days?: number | null
+          trial_includes_all?: boolean | null
+          ui_config?: Json | null
           updated_at?: string | null
         }
         Relationships: []
@@ -23745,6 +24405,69 @@ export type Database = {
       }
     }
     Views: {
+      ai_usage_monthly: {
+        Row: {
+          id: string | null
+          organization_id: string | null
+          period_end: string | null
+          period_start: string | null
+          total_agent_runs: number | null
+          total_analyses: number | null
+          total_cost_usd: number | null
+          total_generations: number | null
+          total_input_tokens: number | null
+          total_output_tokens: number | null
+          total_queries: number | null
+          total_tokens: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string | null
+          organization_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          total_agent_runs?: never
+          total_analyses?: never
+          total_cost_usd?: never
+          total_generations?: never
+          total_input_tokens?: never
+          total_output_tokens?: never
+          total_queries?: never
+          total_tokens?: never
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string | null
+          organization_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          total_agent_runs?: never
+          total_analyses?: never
+          total_cost_usd?: never
+          total_generations?: never
+          total_input_tokens?: never
+          total_output_tokens?: never
+          total_queries?: never
+          total_tokens?: never
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ai_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ipo_expiring_credentials: {
         Row: {
           code: string | null
@@ -23886,6 +24609,18 @@ export type Database = {
         Args: { valid_until: string }
         Returns: Database["public"]["Enums"]["doc_validity_status"]
       }
+      check_capability: {
+        Args: {
+          p_capability_code: string
+          p_increment?: boolean
+          p_organization_id: string
+        }
+        Returns: Json
+      }
+      check_jurisdiction: {
+        Args: { p_jurisdiction_code: string; p_organization_id: string }
+        Returns: Json
+      }
       check_module_access: {
         Args: {
           p_module_code: string
@@ -23981,6 +24716,11 @@ export type Database = {
         }
         Returns: number
       }
+      get_organization_jurisdictions: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      get_ui_config: { Args: { p_organization_id: string }; Returns: Json }
       get_user_org_ids: { Args: never; Returns: string[] }
       get_user_permissions: {
         Args: { _organization_id: string; _user_id: string }
@@ -24101,6 +24841,18 @@ export type Database = {
         Returns: string
       }
       update_deadline_statuses: { Args: never; Returns: number }
+      use_ai_query: {
+        Args: {
+          p_input_tokens?: number
+          p_jurisdiction_code?: string
+          p_model?: string
+          p_operation_type?: string
+          p_organization_id: string
+          p_output_tokens?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
       verify_api_key: {
         Args: { p_key: string }
         Returns: {
