@@ -8,6 +8,8 @@ import { ArrowLeft, Mail, Phone, Building2, MessageSquareText } from "lucide-rea
 import { useCRMContact } from "@/hooks/crm/v2/contacts";
 import { useCRMDeals } from "@/hooks/crm/v2/deals";
 import { useCRMInteractions } from "@/hooks/crm/v2/interactions";
+import { useOrganization } from "@/contexts/organization-context";
+import { CommunicationHistory, ContactActionButtons } from "@/components/features/crm/v2";
 
 type Contact = {
   id: string;
@@ -27,6 +29,7 @@ type InteractionRow = { id: string; created_at?: string | null; subject?: string
 export default function CRMV2ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentOrganization } = useOrganization();
 
   const { data: contactData, isLoading: loadingContact } = useCRMContact(id);
   const contact = useMemo(() => (contactData as Contact | null) ?? null, [contactData]);
@@ -168,6 +171,15 @@ export default function CRMV2ContactDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
+              <ContactActionButtons
+                contact={{
+                  id: contact.id,
+                  full_name: contact.full_name || contact.id,
+                  email: contact.email,
+                  phone: contact.phone,
+                }}
+              />
+
               {contact.account_id ? (
                 <Button className="w-full" variant="outline" onClick={() => navigate(`/app/crm/accounts/${contact.account_id}`)}>
                   Ver cuenta
@@ -180,6 +192,10 @@ export default function CRMV2ContactDetail() {
               ) : null}
             </CardContent>
           </Card>
+
+          {currentOrganization?.id ? (
+            <CommunicationHistory contactId={contact.id} organizationId={currentOrganization.id} maxHeight="520px" />
+          ) : null}
         </div>
       </div>
     </div>
