@@ -6,6 +6,20 @@ export function useVoipCall(device: Device | null) {
   const { currentOrganization } = useOrganization();
   const [currentCall, setCurrentCall] = useState<Call | null>(null);
 
+  // Keep currentCall in sync for incoming calls
+  useEffect(() => {
+    if (!device) return;
+    const onIncoming = (call: Call) => setCurrentCall(call);
+    device.on('incoming', onIncoming);
+    return () => {
+      try {
+        device.off('incoming', onIncoming);
+      } catch {
+        // ignore
+      }
+    };
+  }, [device]);
+
   const makeCall = useCallback(
     async (phoneNumber: string, contactId?: string) => {
       if (!device) throw new Error('Dispositivo VoIP no disponible');
