@@ -26888,6 +26888,216 @@ export type Database = {
           },
         ]
       }
+      stripe_invoices: {
+        Row: {
+          amount_due_cents: number | null
+          amount_paid_cents: number | null
+          attempt_count: number | null
+          billing_reason: string | null
+          created_at: string | null
+          currency: string | null
+          due_date: string | null
+          hosted_invoice_url: string | null
+          id: string
+          invoice_number: string | null
+          invoice_pdf_url: string | null
+          last_error_message: string | null
+          next_payment_attempt: string | null
+          organization_id: string
+          paid_at: string | null
+          period_end: string | null
+          period_start: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_invoice_id: string
+          stripe_payment_intent_id: string | null
+          stripe_subscription_record_id: string | null
+          subtotal_cents: number
+          tax_cents: number | null
+          total_cents: number
+        }
+        Insert: {
+          amount_due_cents?: number | null
+          amount_paid_cents?: number | null
+          attempt_count?: number | null
+          billing_reason?: string | null
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string | null
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          last_error_message?: string | null
+          next_payment_attempt?: string | null
+          organization_id: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_record_id?: string | null
+          subtotal_cents: number
+          tax_cents?: number | null
+          total_cents: number
+        }
+        Update: {
+          amount_due_cents?: number | null
+          amount_paid_cents?: number | null
+          attempt_count?: number | null
+          billing_reason?: string | null
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string | null
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          last_error_message?: string | null
+          next_payment_attempt?: string | null
+          organization_id?: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_record_id?: string | null
+          subtotal_cents?: number
+          tax_cents?: number | null
+          total_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_invoices_stripe_subscription_record_id_fkey"
+            columns: ["stripe_subscription_record_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_payment_attempts: {
+        Row: {
+          amount_cents: number
+          card_brand: string | null
+          card_last4: string | null
+          created_at: string | null
+          currency: string | null
+          error_code: string | null
+          error_decline_code: string | null
+          error_message: string | null
+          id: string
+          organization_id: string | null
+          payment_method_type: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_invoice_record_id: string | null
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string | null
+          currency?: string | null
+          error_code?: string | null
+          error_decline_code?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id?: string | null
+          payment_method_type?: string | null
+          status: string
+          stripe_charge_id?: string | null
+          stripe_invoice_record_id?: string | null
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string | null
+          currency?: string | null
+          error_code?: string | null
+          error_decline_code?: string | null
+          error_message?: string | null
+          id?: string
+          organization_id?: string | null
+          payment_method_type?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_invoice_record_id?: string | null
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_payment_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_payment_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_payment_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_payment_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_payment_attempts_stripe_invoice_record_id_fkey"
+            columns: ["stripe_invoice_record_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_prices: {
         Row: {
           active: boolean | null
@@ -26960,6 +27170,7 @@ export type Database = {
           name: string
           stripe_product_id: string
           updated_at: string | null
+          voip_plan_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -26972,6 +27183,7 @@ export type Database = {
           name: string
           stripe_product_id: string
           updated_at?: string | null
+          voip_plan_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -26984,8 +27196,118 @@ export type Database = {
           name?: string
           stripe_product_id?: string
           updated_at?: string | null
+          voip_plan_id?: string | null
         }
         Relationships: []
+      }
+      stripe_subscriptions: {
+        Row: {
+          amount_cents: number
+          cancel_at_period_end: boolean | null
+          canceled_at: string | null
+          cancellation_reason: string | null
+          created_at: string | null
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          organization_id: string
+          status: string
+          stripe_customer_record_id: string
+          stripe_metadata: Json | null
+          stripe_price_id: string
+          stripe_subscription_id: string
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string | null
+          voip_subscription_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          cancellation_reason?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          organization_id: string
+          status: string
+          stripe_customer_record_id: string
+          stripe_metadata?: Json | null
+          stripe_price_id: string
+          stripe_subscription_id: string
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string | null
+          voip_subscription_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          cancellation_reason?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          organization_id?: string
+          status?: string
+          stripe_customer_record_id?: string
+          stripe_metadata?: Json | null
+          stripe_price_id?: string
+          stripe_subscription_id?: string
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string | null
+          voip_subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "stripe_subscriptions_stripe_customer_record_id_fkey"
+            columns: ["stripe_customer_record_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_subscriptions_voip_subscription_id_fkey"
+            columns: ["voip_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "voip_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_history: {
         Row: {
