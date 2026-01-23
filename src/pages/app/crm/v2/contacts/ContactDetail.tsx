@@ -109,7 +109,11 @@ export default function CRMV2ContactDetail() {
         {/* Right */}
         <div className="xl:col-span-4">
           {currentOrganization?.id ? (
-            <ContactTimelinePanel contactId={contact.id} organizationId={currentOrganization.id} />
+            <ContactTimelinePanel
+              contactId={contact.id}
+              organizationId={currentOrganization.id}
+              accountId={(contact as any)?.account_id}
+            />
           ) : null}
         </div>
       </div>
