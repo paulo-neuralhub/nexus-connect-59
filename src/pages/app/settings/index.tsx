@@ -18,6 +18,7 @@ import {
   KeyRound,
   Code,
   TrendingUp,
+  PhoneCall,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
@@ -39,6 +40,7 @@ import SSOSettings from './sections/SSOSettings';
 import ApiWebhooksSettings from './sections/ApiWebhooksSettings';
 import CrmSettings from './sections/CrmSettings';
 import EmailSettings from './sections/EmailSettings';
+import VoipSettings from './sections/VoipSettings';
 
 // Tabs for organization settings
 const ORG_TABS = [
@@ -54,6 +56,7 @@ const ORG_TABS = [
   { id: 'modules', label: 'Módulos', icon: Boxes, permission: 'settings.update' },
   { id: 'team', label: 'Equipo', icon: Users, permission: 'team.view' },
   { id: 'crm', label: 'CRM', icon: TrendingUp, permission: 'settings.view' },
+  { id: 'voip', label: 'Telefonía', icon: PhoneCall, permission: 'settings.view' },
 ];
 
 // Tabs for user settings
@@ -210,6 +213,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
         <RequireRole roles={["owner", "admin", "manager"]}>
           <CrmSettings />
         </RequireRole>
+      )}
+
+      {activeTab === 'voip' && (
+        <RequirePermission permission="settings.view">
+          <VoipSettings />
+        </RequirePermission>
       )}
     </>
   );
