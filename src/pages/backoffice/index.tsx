@@ -12,11 +12,13 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAdminStats } from '@/hooks/use-admin';
+import { usePendingEventsCount } from '@/hooks/useSystemEvents';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function BackofficeDashboard() {
   const { data: stats, isLoading } = useAdminStats();
+  const { data: pendingEventsCount = 0 } = usePendingEventsCount();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-ES', { 
@@ -169,6 +171,12 @@ export default function BackofficeDashboard() {
             <CardTitle className="text-lg">Acciones Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
+              <QuickActionCard
+                title="Event Log pendientes"
+                count={pendingEventsCount}
+                href="/backoffice/events"
+                color="hsl(var(--warning))"
+              />
             <QuickActionCard
               title="Feedback pendiente"
               count={15}

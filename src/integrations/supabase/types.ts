@@ -10181,6 +10181,45 @@ export type Database = {
           },
         ]
       }
+      event_type_catalog: {
+        Row: {
+          auto_alert: boolean | null
+          category: string
+          code: string
+          created_at: string | null
+          default_severity: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          retention_days: number | null
+        }
+        Insert: {
+          auto_alert?: boolean | null
+          category: string
+          code: string
+          created_at?: string | null
+          default_severity?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          retention_days?: number | null
+        }
+        Update: {
+          auto_alert?: boolean | null
+          category?: string
+          code?: string
+          created_at?: string | null
+          default_severity?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          retention_days?: number | null
+        }
+        Relationships: []
+      }
       exports: {
         Row: {
           columns: Json | null
@@ -27632,6 +27671,113 @@ export type Database = {
           },
         ]
       }
+      system_events: {
+        Row: {
+          action_status: string | null
+          created_at: string | null
+          description: string | null
+          event_category: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown
+          organization_id: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          request_id: string | null
+          requires_action: boolean | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          search_vector: unknown
+          severity: string | null
+          source: string
+          tags: string[] | null
+          title: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_status?: string | null
+          created_at?: string | null
+          description?: string | null
+          event_category: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          request_id?: string | null
+          requires_action?: boolean | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          search_vector?: unknown
+          severity?: string | null
+          source?: string
+          tags?: string[] | null
+          title: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_status?: string | null
+          created_at?: string | null
+          description?: string | null
+          event_category?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          request_id?: string | null
+          requires_action?: boolean | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          search_vector?: unknown
+          severity?: string | null
+          source?: string
+          tags?: string[] | null
+          title?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           category: string
@@ -31014,6 +31160,77 @@ export type Database = {
           },
         ]
       }
+      v_event_stats: {
+        Row: {
+          action_required_count: number | null
+          event_category: string | null
+          event_count: number | null
+          event_date: string | null
+          resolved_count: number | null
+          severity: string | null
+        }
+        Relationships: []
+      }
+      v_pending_events: {
+        Row: {
+          action_status: string | null
+          created_at: string | null
+          description: string | null
+          event_category: string | null
+          event_data: Json | null
+          event_type: string | null
+          event_type_description: string | null
+          event_type_name: string | null
+          id: string | null
+          ip_address: unknown
+          organization_id: string | null
+          organization_name: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          request_id: string | null
+          requires_action: boolean | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          search_vector: unknown
+          severity: string | null
+          source: string | null
+          tags: string[] | null
+          title: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       v_voip_billing_summary: {
         Row: {
           current_minutes_included: number | null
@@ -31676,6 +31893,24 @@ export type Database = {
       is_member_of_org: { Args: { org_id: string }; Returns: boolean }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      log_event: {
+        Args: {
+          p_description?: string
+          p_event_data?: Json
+          p_event_type: string
+          p_ip_address?: unknown
+          p_organization_id?: string
+          p_related_entity_id?: string
+          p_related_entity_type?: string
+          p_request_id?: string
+          p_source?: string
+          p_tags?: string[]
+          p_title: string
+          p_user_agent?: string
+          p_user_id?: string
+        }
+        Returns: string
+      }
       provision_pack_modules: {
         Args: {
           p_billing_cycle?: string
@@ -31689,6 +31924,10 @@ export type Database = {
         }[]
       }
       register_voip_usage: { Args: { p_call_id: string }; Returns: undefined }
+      resolve_event: {
+        Args: { p_event_id: string; p_resolution_notes?: string }
+        Returns: boolean
+      }
       search_all: {
         Args: {
           p_entity_types?: string[]
