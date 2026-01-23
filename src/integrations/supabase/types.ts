@@ -515,6 +515,128 @@ export type Database = {
           },
         ]
       }
+      ai_agent_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          referenced_events: string[]
+          referenced_organizations: string[]
+          response_time_ms: number | null
+          role: string
+          session_id: string
+          tokens_used: number | null
+          tools_used: Json
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          referenced_events?: string[]
+          referenced_organizations?: string[]
+          response_time_ms?: number | null
+          role: string
+          session_id: string
+          tokens_used?: number | null
+          tools_used?: Json
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          referenced_events?: string[]
+          referenced_organizations?: string[]
+          response_time_ms?: number | null
+          role?: string
+          session_id?: string
+          tokens_used?: number | null
+          tools_used?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_sessions: {
+        Row: {
+          context_data: Json
+          context_organization_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          status: string
+          total_messages: number
+          total_tokens: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_data?: Json
+          context_organization_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          status?: string
+          total_messages?: number
+          total_tokens?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_data?: Json
+          context_organization_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          status?: string
+          total_messages?: number
+          total_tokens?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_sessions_context_organization_id_fkey"
+            columns: ["context_organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_sessions_context_organization_id_fkey"
+            columns: ["context_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ai_agent_sessions_context_organization_id_fkey"
+            columns: ["context_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_sessions_context_organization_id_fkey"
+            columns: ["context_organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ai_agent_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_budget_alerts: {
         Row: {
           acknowledged: boolean
@@ -1258,6 +1380,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ai_knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          keywords: string[]
+          search_vector: unknown
+          source: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          search_vector?: unknown
+          source?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          search_vector?: unknown
+          source?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
       }
       ai_messages: {
         Row: {
@@ -32071,7 +32235,9 @@ export type Database = {
         }
         Returns: Json
       }
+      ai_get_global_metrics: { Args: never; Returns: Json }
       ai_get_models: { Args: { p_include_inactive?: boolean }; Returns: Json }
+      ai_get_organization_context: { Args: { p_org_id: string }; Returns: Json }
       ai_get_routing_rules: {
         Args: { p_include_inactive?: boolean }
         Returns: Json
@@ -32125,6 +32291,16 @@ export type Database = {
           p_task_code: string
         }
         Returns: Json
+      }
+      ai_search_knowledge: {
+        Args: { p_category?: string; p_limit?: number; p_query: string }
+        Returns: {
+          category: string
+          content: string
+          id: string
+          relevance: number
+          title: string
+        }[]
       }
       apply_docket_rules: { Args: { matter_uuid: string }; Returns: number }
       assign_automatic_badges: { Args: never; Returns: undefined }
@@ -32492,6 +32668,7 @@ export type Database = {
         Returns: undefined
       }
       is_backoffice_admin: { Args: never; Returns: boolean }
+      is_backoffice_staff: { Args: never; Returns: boolean }
       is_holiday: {
         Args: { check_date: string; country: string; region?: string }
         Returns: boolean
