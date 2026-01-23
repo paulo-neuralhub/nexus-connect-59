@@ -170,9 +170,9 @@ const MODULE_NAV: NavItem[] = [
     path: "/app/communications",
     label: "Comunicaciones",
     icon: MessageSquare,
-    moduleCode: "communications",
+    moduleCode: "core",
     color: MODULE_REGISTRY.communications.color,
-    requiresLicense: true,
+    requiresLicense: false,
   },
   {
     path: "/app/workflow",
