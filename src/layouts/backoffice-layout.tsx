@@ -25,11 +25,13 @@ import {
   Power,
   Database,
   PhoneCall,
+  ScrollText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useIsSuperadmin } from '@/hooks/use-admin';
+import { usePendingEventsCount } from '@/hooks/useSystemEvents';
 import { Spinner } from '@/components/ui/spinner';
 import { SoftphoneWidget } from '@/components/voip/SoftphoneWidget';
 
@@ -78,6 +80,7 @@ const sidebarSections = [
     label: 'System',
     items: [
       { label: 'Audit Logs', path: '/backoffice/audit', icon: FileText },
+      { label: 'Event Log', path: '/backoffice/events', icon: ScrollText },
       { label: 'Feedback', path: '/backoffice/feedback', icon: MessageSquare },
       { label: 'Settings', path: '/backoffice/settings', icon: Settings },
       { label: 'Kill Switch', path: '/backoffice/kill-switch', icon: Power, danger: true },
@@ -88,6 +91,7 @@ const sidebarSections = [
 export default function BackofficeLayout() {
   const location = useLocation();
   const { data: isSuperadmin, isLoading } = useIsSuperadmin();
+  const { data: pendingEventsCount = 0 } = usePendingEventsCount();
 
   if (isLoading) {
     return (
@@ -146,7 +150,12 @@ export default function BackofficeLayout() {
                         )}
                       >
                         <item.icon className="h-4 w-4" />
-                        {item.label}
+                        <span className="flex-1">{item.label}</span>
+                        {item.path === '/backoffice/events' && pendingEventsCount > 0 ? (
+                          <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-[hsl(var(--warning))/0.12] px-2 py-0.5 text-xs font-medium text-[hsl(var(--warning))]">
+                            {pendingEventsCount}
+                          </span>
+                        ) : null}
                       </Link>
                     );
                   })}
