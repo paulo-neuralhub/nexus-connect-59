@@ -31523,6 +31523,12 @@ export type Database = {
       dmetaphone: { Args: { "": string }; Returns: string }
       dmetaphone_alt: { Args: { "": string }; Returns: string }
       expire_trials: { Args: never; Returns: number }
+      generate_voip_invoices_superadmin: {
+        Args: { p_period_start: string; p_tax_rate?: number }
+        Returns: {
+          invoice_id: string
+        }[]
+      }
       get_active_calendar_connections: {
         Args: never
         Returns: {
@@ -31735,6 +31741,10 @@ export type Database = {
         }[]
       }
       seed_voip_pricing_plans_if_empty: { Args: never; Returns: undefined }
+      seed_voip_pricing_plans_if_empty_superadmin: {
+        Args: never
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       soundex: { Args: { "": string }; Returns: string }
