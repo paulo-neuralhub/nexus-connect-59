@@ -4561,6 +4561,45 @@ export type Database = {
           },
         ]
       }
+      communication_attachments: {
+        Row: {
+          bucket_id: string
+          communication_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          object_path: string
+          organization_id: string
+        }
+        Insert: {
+          bucket_id?: string
+          communication_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          object_path: string
+          organization_id: string
+        }
+        Update: {
+          bucket_id?: string
+          communication_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          object_path?: string
+          organization_id?: string
+        }
+        Relationships: []
+      }
       communication_channels: {
         Row: {
           channel: Database["public"]["Enums"]["comm_channel"]
