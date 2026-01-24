@@ -25763,6 +25763,101 @@ export type Database = {
           },
         ]
       }
+      rfq_payments: {
+        Row: {
+          agent_id: string
+          agent_payout: number | null
+          amount: number
+          client_id: string
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          paid_at: string | null
+          platform_fee: number | null
+          quote_id: string | null
+          refund_reason: string | null
+          refunded_at: string | null
+          request_id: string
+          status: string | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          agent_payout?: number | null
+          amount: number
+          client_id: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          platform_fee?: number | null
+          quote_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          request_id: string
+          status?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          agent_payout?: number | null
+          amount?: number
+          client_id?: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          platform_fee?: number | null
+          quote_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          request_id?: string
+          status?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_payments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_payments_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_payments_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfq_quotes: {
         Row: {
           agent_id: string
@@ -25882,6 +25977,8 @@ export type Database = {
       }
       rfq_requests: {
         Row: {
+          agent_id: string | null
+          agreed_price: number | null
           allow_counter_questions: boolean | null
           attachments: Json | null
           auto_match: boolean | null
@@ -25906,6 +26003,7 @@ export type Database = {
           max_quotes: number | null
           nice_classes: number[] | null
           organization_id: string | null
+          paid_at: string | null
           published_at: string | null
           quotes_received: number | null
           reference_number: string
@@ -25919,8 +26017,14 @@ export type Database = {
           updated_at: string | null
           urgency: string | null
           views_count: number | null
+          work_completed_at: string | null
+          work_started_at: string | null
+          work_status: string | null
+          work_summary: string | null
         }
         Insert: {
+          agent_id?: string | null
+          agreed_price?: number | null
           allow_counter_questions?: boolean | null
           attachments?: Json | null
           auto_match?: boolean | null
@@ -25945,6 +26049,7 @@ export type Database = {
           max_quotes?: number | null
           nice_classes?: number[] | null
           organization_id?: string | null
+          paid_at?: string | null
           published_at?: string | null
           quotes_received?: number | null
           reference_number?: string
@@ -25958,8 +26063,14 @@ export type Database = {
           updated_at?: string | null
           urgency?: string | null
           views_count?: number | null
+          work_completed_at?: string | null
+          work_started_at?: string | null
+          work_status?: string | null
+          work_summary?: string | null
         }
         Update: {
+          agent_id?: string | null
+          agreed_price?: number | null
           allow_counter_questions?: boolean | null
           attachments?: Json | null
           auto_match?: boolean | null
@@ -25984,6 +26095,7 @@ export type Database = {
           max_quotes?: number | null
           nice_classes?: number[] | null
           organization_id?: string | null
+          paid_at?: string | null
           published_at?: string | null
           quotes_received?: number | null
           reference_number?: string
@@ -25997,8 +26109,19 @@ export type Database = {
           updated_at?: string | null
           urgency?: string | null
           views_count?: number | null
+          work_completed_at?: string | null
+          work_started_at?: string | null
+          work_status?: string | null
+          work_summary?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rfq_requests_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rfq_requests_organization_id_fkey"
             columns: ["organization_id"]
@@ -26039,6 +26162,181 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "market_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_reviews: {
+        Row: {
+          agent_id: string
+          comment: string | null
+          communication_rating: number | null
+          created_at: string | null
+          id: string
+          is_public: boolean | null
+          overall_rating: number
+          quality_rating: number | null
+          request_id: string
+          reviewer_id: string
+          timeliness_rating: number | null
+          title: string | null
+        }
+        Insert: {
+          agent_id: string
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          overall_rating: number
+          quality_rating?: number | null
+          request_id: string
+          reviewer_id: string
+          timeliness_rating?: number | null
+          title?: string | null
+        }
+        Update: {
+          agent_id?: string
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          overall_rating?: number
+          quality_rating?: number | null
+          request_id?: string
+          reviewer_id?: string
+          timeliness_rating?: number | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_reviews_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_work_files: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_deliverable: boolean | null
+          request_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_deliverable?: boolean | null
+          request_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_deliverable?: boolean | null
+          request_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_work_files_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_work_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_work_messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_type: string | null
+          attachment_url: string | null
+          created_at: string | null
+          id: string
+          is_system: boolean | null
+          message: string
+          read_at: string | null
+          request_id: string
+          sender_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_system?: boolean | null
+          message: string
+          read_at?: string | null
+          request_id: string
+          sender_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_system?: boolean | null
+          message?: string
+          read_at?: string | null
+          request_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_work_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_work_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
