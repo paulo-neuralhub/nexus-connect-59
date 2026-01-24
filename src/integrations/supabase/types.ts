@@ -26548,6 +26548,80 @@ export type Database = {
           },
         ]
       }
+      service_catalog: {
+        Row: {
+          base_price: number
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          stripe_price_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       service_fees: {
         Row: {
           amount: number

@@ -11,6 +11,7 @@ import {
   Briefcase, 
   FileText, 
   Receipt, 
+  ShoppingBag,
   MessageSquare,
   LogOut,
   Loader2,
@@ -46,6 +47,7 @@ export default function PortalLayout() {
     { href: 'matters', label: 'Expedientes', icon: Briefcase },
     { href: 'documents', label: 'Documentos', icon: FileText },
     { href: 'invoices', label: 'Facturas', icon: Receipt },
+    { href: 'catalog', label: 'Servicios', icon: ShoppingBag },
     { href: 'messages', label: 'Mensajes', icon: MessageSquare },
   ];
 

@@ -3,8 +3,12 @@
  * Lista de facturas del cliente
  */
 
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { usePortalAuth } from '@/hooks/usePortalAuth';
+import { usePortalInvoices } from '@/hooks/use-portal-invoices';
+import { usePaymentLinkByInvoice, useCreatePaymentLink } from '@/hooks/use-invoice-payment-links';
+import { formatCurrency, INVOICE_STATUSES } from '@/lib/constants/finance';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,87 +32,43 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-// Mock data
-const mockInvoices = [
-  {
-    id: '1',
-    number: 'INV-2025-0042',
-    date: '2025-01-20',
-    dueDate: '2025-02-20',
-    amount: 1250.00,
-    status: 'paid',
-    concept: 'Registro marca NEXUS + Tasas OEPM',
-  },
-  {
-    id: '2',
-    number: 'INV-2025-0067',
-    date: '2025-02-25',
-    dueDate: '2025-03-25',
-    amount: 3500.00,
-    status: 'pending',
-    concept: 'Solicitud patente IoT Device + Búsqueda anterioridades',
-  },
-  {
-    id: '3',
-    number: 'INV-2024-0312',
-    date: '2024-11-15',
-    dueDate: '2024-12-15',
-    amount: 850.00,
-    status: 'paid',
-    concept: 'Renovación marca ACME Corp',
-  },
-  {
-    id: '4',
-    number: 'INV-2024-0298',
-    date: '2024-10-05',
-    dueDate: '2024-11-05',
-    amount: 2100.00,
-    status: 'paid',
-    concept: 'Registro diseño industrial Widget',
-  },
-  {
-    id: '5',
-    number: 'INV-2025-0089',
-    date: '2025-03-10',
-    dueDate: '2025-04-10',
-    amount: 450.00,
-    status: 'overdue',
-    concept: 'Vigilancia de marca mensual',
-  },
-];
-
 export default function PortalInvoices() {
-  const { slug } = useParams<{ slug: string }>();
+  const { user } = usePortalAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const invoicesQuery = usePortalInvoices(statusFilter === 'all' ? undefined : statusFilter);
+  const invoices = invoicesQuery.data ?? [];
 
-  const filteredInvoices = mockInvoices.filter((inv) => {
-    const matchesSearch = 
-      inv.number.toLowerCase().includes(search.toLowerCase()) ||
-      inv.concept.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      return (
+        !search ||
+        inv.invoice_number.toLowerCase().includes(search.toLowerCase()) ||
+        (inv.client_name || '').toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [invoices, search]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
         return (
-          <Badge className="bg-green-100 text-green-700 border-green-200">
+          <Badge variant="outline" className="text-green-700">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Pagada
           </Badge>
         );
-      case 'pending':
+      case 'sent':
+      case 'viewed':
         return (
-          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+          <Badge variant="outline" className="text-amber-700">
             <Clock className="w-3 h-3 mr-1" />
             Pendiente
           </Badge>
         );
       case 'overdue':
         return (
-          <Badge className="bg-red-100 text-red-700 border-red-200">
+          <Badge variant="outline" className="text-red-700">
             <AlertCircle className="w-3 h-3 mr-1" />
             Vencida
           </Badge>
@@ -118,18 +78,27 @@ export default function PortalInvoices() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
-
   // Stats
-  const stats = {
-    total: mockInvoices.reduce((sum, inv) => sum + inv.amount, 0),
-    pending: mockInvoices.filter(inv => inv.status === 'pending').reduce((sum, inv) => sum + inv.amount, 0),
-    overdue: mockInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0),
+  const stats = useMemo(() => ({
+    total: invoices.reduce((sum, inv) => sum + inv.total, 0),
+    pending: invoices.filter(i => ['sent', 'viewed'].includes(i.status)).reduce((s, i) => s + (i.total - (i.paid_amount || 0)), 0),
+    overdue: invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.total - (i.paid_amount || 0)), 0),
+  }), [invoices]);
+
+  const createPaymentLinkMutation = useCreatePaymentLink();
+
+  const handlePayNow = async (invoiceId: string) => {
+    try {
+      const result = await createPaymentLinkMutation.mutateAsync({ invoiceId });
+      if (result?.url) {
+        window.open(result.url, '_blank', 'noopener,noreferrer');
+      } else {
+        toast.error('No se pudo obtener el enlace de pago');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al generar link de pago';
+      toast.error(message);
+    }
   };
 
   return (
@@ -185,7 +154,7 @@ export default function PortalInvoices() {
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="paid">Pagadas</SelectItem>
-                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="sent">Pendientes</SelectItem>
                 <SelectItem value="overdue">Vencidas</SelectItem>
               </SelectContent>
             </Select>
@@ -210,18 +179,18 @@ export default function PortalInvoices() {
                     </div>
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium">{inv.number}</p>
+                          <p className="font-medium">{inv.invoice_number}</p>
                         {getStatusBadge(inv.status)}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{inv.concept}</p>
+                        <p className="text-sm text-muted-foreground truncate">{inv.client_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        Fecha: {new Date(inv.date).toLocaleDateString('es')} • 
-                        Vence: {new Date(inv.dueDate).toLocaleDateString('es')}
+                          Fecha: {new Date(inv.invoice_date).toLocaleDateString('es')}
+                          {inv.due_date ? ` • Vence: ${new Date(inv.due_date).toLocaleDateString('es')}` : ''}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 sm:ml-auto">
-                    <p className="text-lg font-semibold">{formatCurrency(inv.amount)}</p>
+                      <p className="text-lg font-semibold">{formatCurrency(inv.total, inv.currency)}</p>
                     <div className="flex items-center gap-1">
                       <Button size="sm" variant="ghost">
                         <Eye className="w-4 h-4" />
@@ -230,7 +199,7 @@ export default function PortalInvoices() {
                         <Download className="w-4 h-4" />
                       </Button>
                       {inv.status !== 'paid' && (
-                        <Button size="sm" variant="default">
+                          <Button size="sm" variant="default" onClick={() => handlePayNow(inv.id)}>
                           <CreditCard className="w-4 h-4 mr-1" />
                           Pagar
                         </Button>

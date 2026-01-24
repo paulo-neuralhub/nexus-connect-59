@@ -28,6 +28,7 @@ export interface PortalUser {
   role: string;
   permissions: Record<string, boolean>;
   portal: PortalBranding;
+  contactId?: string;
 }
 
 interface PortalSession {
@@ -76,7 +77,7 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
           id, email, name, role, permissions, status,
           portal:client_portals!portal_id(
             id, portal_slug, portal_name, branding_config, 
-            organization_id, is_active
+            organization_id, is_active, client_id
           )
         `)
         .eq('id', sessionData.odisplayP)
@@ -95,6 +96,7 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
         branding_config: Json;
         organization_id: string;
         is_active: boolean;
+        client_id: string;
       };
 
       if (!portal.is_active) {
@@ -117,7 +119,8 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
           logo_url: branding.logo_url as string | undefined,
           primary_color: branding.primary_color as string | undefined,
           organization_id: portal.organization_id
-        }
+        },
+        contactId: portal.client_id,
       };
     } catch {
       localStorage.removeItem('portal_session');
