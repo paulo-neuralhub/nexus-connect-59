@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { TimelineItem } from "@/components/ui/timeline-item";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useUpdateCRMDeal, useDeleteCRMDeal } from "@/hooks/crm/v2/deals";
 import { useCreateCRMInteraction, useCRMInteractions } from "@/hooks/crm/v2/interactions";
@@ -101,6 +112,7 @@ export function DealDetailPanel({
                   if ((deal.name ?? "") !== titleDraft.trim()) commitInline({ name: titleDraft.trim() || null });
                 }}
                 className="text-lg font-semibold"
+                disabled={updateDeal.isPending}
               />
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -119,17 +131,33 @@ export function DealDetailPanel({
               <Button variant="outline" disabled title="Próximamente">
                 Convertir a Expediente
               </Button>
-              <Button
-                variant="outline"
-                className="text-destructive"
-                onClick={async () => {
-                  await deleteDeal.mutateAsync(deal.id);
-                  onClose();
-                }}
-                disabled={deleteDeal.isPending}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-destructive" disabled={deleteDeal.isPending}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Eliminar deal</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer. Se eliminará el deal y quedará fuera del pipeline.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        await deleteDeal.mutateAsync(deal.id);
+                        onClose();
+                      }}
+                    >
+                      Eliminar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
 
@@ -145,6 +173,7 @@ export function DealDetailPanel({
                   if ((deal.amount ?? null) !== (parsed as any)) commitInline({ amount: parsed as any });
                 }}
                 placeholder={formatEUR(deal.amount)}
+                disabled={updateDeal.isPending}
               />
             </div>
 
@@ -160,6 +189,7 @@ export function DealDetailPanel({
                   if ((deal.probability ?? null) !== clamped) commitInline({ probability: clamped as any });
                 }}
                 placeholder={deal.probability != null ? String(deal.probability) : "—"}
+                disabled={updateDeal.isPending}
               />
             </div>
           </div>

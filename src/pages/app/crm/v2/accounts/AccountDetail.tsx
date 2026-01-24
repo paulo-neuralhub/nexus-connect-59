@@ -9,6 +9,8 @@ import { ArrowLeft, Building2, MessageSquareText } from "lucide-react";
 import { useCRMAccount } from "@/hooks/crm/v2/accounts";
 import { useClient360 } from "@/hooks/crm/v2/client360";
 import { useCRMInteractions } from "@/hooks/crm/v2/interactions";
+import { useCRMDeals } from "@/hooks/crm/v2/deals";
+import { DealMiniListWithPanel } from "@/components/features/crm/v2/deal-panel";
 
 type Account = {
   id: string;
@@ -37,6 +39,7 @@ export default function CRMV2AccountDetail() {
   const { data: accountData, isLoading: loadingAccount } = useCRMAccount(id);
   const { data: client360, isLoading: loading360 } = useClient360(id);
   const { data: timelineData, isLoading: loadingTimeline } = useCRMInteractions({ account_id: id });
+  const { data: dealsData, isLoading: loadingDeals } = useCRMDeals(id ? { account_id: id } : undefined);
 
   const account = useMemo(() => (accountData as Account | null) ?? null, [accountData]);
   const timeline = useMemo(() => (timelineData as TimelineItem[]) ?? [], [timelineData]);
@@ -142,6 +145,23 @@ export default function CRMV2AccountDetail() {
                     </div>
                   ))}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Deals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingDeals ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <DealMiniListWithPanel deals={(dealsData ?? []) as any} emptyLabel="Sin deals para esta cuenta." />
               )}
             </CardContent>
           </Card>

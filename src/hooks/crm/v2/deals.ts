@@ -28,6 +28,7 @@ export function useCRMDeals(filters?: DealFilters) {
       if (filters?.stage_id?.length) query = query.in("stage_id", filters.stage_id);
       if (filters?.owner_id) query = query.eq("owner_id", filters.owner_id);
       if (filters?.account_id) query = query.eq("account_id", filters.account_id);
+      if (filters?.contact_id) query = query.eq("contact_id", filters.contact_id);
       if (filters?.pipeline_id) query = query.eq("pipeline_id", filters.pipeline_id);
       if (filters?.opportunity_type?.length) query = query.in("opportunity_type", filters.opportunity_type);
       if (filters?.amount_min !== undefined) query = query.gte("amount", filters.amount_min);
