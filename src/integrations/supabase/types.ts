@@ -19484,6 +19484,309 @@ export type Database = {
           },
         ]
       }
+      matter_jurisdiction_ep: {
+        Row: {
+          appeal_pending: boolean | null
+          created_at: string
+          designated_states: string[] | null
+          matter_id: string
+          opposition_deadline: string | null
+          opposition_filed: boolean | null
+          procedure_language:
+            | Database["public"]["Enums"]["epo_procedure_language_enum"]
+            | null
+          unitary_patent: boolean | null
+          updated_at: string
+          validated_countries: string[] | null
+          validation_deadline: string | null
+        }
+        Insert: {
+          appeal_pending?: boolean | null
+          created_at?: string
+          designated_states?: string[] | null
+          matter_id: string
+          opposition_deadline?: string | null
+          opposition_filed?: boolean | null
+          procedure_language?:
+            | Database["public"]["Enums"]["epo_procedure_language_enum"]
+            | null
+          unitary_patent?: boolean | null
+          updated_at?: string
+          validated_countries?: string[] | null
+          validation_deadline?: string | null
+        }
+        Update: {
+          appeal_pending?: boolean | null
+          created_at?: string
+          designated_states?: string[] | null
+          matter_id?: string
+          opposition_deadline?: string | null
+          opposition_filed?: boolean | null
+          procedure_language?:
+            | Database["public"]["Enums"]["epo_procedure_language_enum"]
+            | null
+          unitary_patent?: boolean | null
+          updated_at?: string
+          validated_countries?: string[] | null
+          validation_deadline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_jurisdiction_ep_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_jurisdiction_ep_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_jurisdiction_es: {
+        Row: {
+          bopi_publicacion: string | null
+          created_at: string
+          examen_fondo_fecha: string | null
+          examen_fondo_solicitado: boolean | null
+          matter_id: string
+          modalidad: Database["public"]["Enums"]["es_modalidad_enum"] | null
+          oposicion_fecha_limite: string | null
+          tasa_pyme_aplicada: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          bopi_publicacion?: string | null
+          created_at?: string
+          examen_fondo_fecha?: string | null
+          examen_fondo_solicitado?: boolean | null
+          matter_id: string
+          modalidad?: Database["public"]["Enums"]["es_modalidad_enum"] | null
+          oposicion_fecha_limite?: string | null
+          tasa_pyme_aplicada?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          bopi_publicacion?: string | null
+          created_at?: string
+          examen_fondo_fecha?: string | null
+          examen_fondo_solicitado?: boolean | null
+          matter_id?: string
+          modalidad?: Database["public"]["Enums"]["es_modalidad_enum"] | null
+          oposicion_fecha_limite?: string | null
+          tasa_pyme_aplicada?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_jurisdiction_es_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_jurisdiction_es_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_jurisdiction_euipo: {
+        Row: {
+          created_at: string
+          fast_track: boolean | null
+          matter_id: string
+          proof_of_use_deadline: string | null
+          second_language:
+            | Database["public"]["Enums"]["euipo_second_language_enum"]
+            | null
+          seniority_date: string | null
+          seniority_member_state: string | null
+          seniority_registration_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fast_track?: boolean | null
+          matter_id: string
+          proof_of_use_deadline?: string | null
+          second_language?:
+            | Database["public"]["Enums"]["euipo_second_language_enum"]
+            | null
+          seniority_date?: string | null
+          seniority_member_state?: string | null
+          seniority_registration_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fast_track?: boolean | null
+          matter_id?: string
+          proof_of_use_deadline?: string | null
+          second_language?:
+            | Database["public"]["Enums"]["euipo_second_language_enum"]
+            | null
+          seniority_date?: string | null
+          seniority_member_state?: string | null
+          seniority_registration_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_jurisdiction_euipo_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_jurisdiction_euipo_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_jurisdiction_us: {
+        Row: {
+          allegation_of_use_date: string | null
+          application_type:
+            | Database["public"]["Enums"]["us_application_type_enum"]
+            | null
+          created_at: string
+          intent_to_use: boolean | null
+          matter_id: string
+          office_action_deadline: string | null
+          section_15_deadline: string | null
+          section_15_filed: boolean | null
+          section_8_deadline: string | null
+          section_8_filed: boolean | null
+          section_9_deadline: string | null
+          specimen_filed: boolean | null
+          specimen_url: string | null
+          suspension_letter: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          allegation_of_use_date?: string | null
+          application_type?:
+            | Database["public"]["Enums"]["us_application_type_enum"]
+            | null
+          created_at?: string
+          intent_to_use?: boolean | null
+          matter_id: string
+          office_action_deadline?: string | null
+          section_15_deadline?: string | null
+          section_15_filed?: boolean | null
+          section_8_deadline?: string | null
+          section_8_filed?: boolean | null
+          section_9_deadline?: string | null
+          specimen_filed?: boolean | null
+          specimen_url?: string | null
+          suspension_letter?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          allegation_of_use_date?: string | null
+          application_type?:
+            | Database["public"]["Enums"]["us_application_type_enum"]
+            | null
+          created_at?: string
+          intent_to_use?: boolean | null
+          matter_id?: string
+          office_action_deadline?: string | null
+          section_15_deadline?: string | null
+          section_15_filed?: boolean | null
+          section_8_deadline?: string | null
+          section_8_filed?: boolean | null
+          section_9_deadline?: string | null
+          specimen_filed?: boolean | null
+          specimen_url?: string | null
+          suspension_letter?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_jurisdiction_us_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_jurisdiction_us_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_jurisdiction_wipo: {
+        Row: {
+          basic_mark_number: string | null
+          basic_mark_office: string | null
+          central_attack_risk: boolean | null
+          created_at: string
+          dependency_period_end: string | null
+          designations: Json[] | null
+          limitation_applied: boolean | null
+          matter_id: string
+          subsequent_designations: Json[] | null
+          transformation_to_national: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          basic_mark_number?: string | null
+          basic_mark_office?: string | null
+          central_attack_risk?: boolean | null
+          created_at?: string
+          dependency_period_end?: string | null
+          designations?: Json[] | null
+          limitation_applied?: boolean | null
+          matter_id: string
+          subsequent_designations?: Json[] | null
+          transformation_to_national?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          basic_mark_number?: string | null
+          basic_mark_office?: string | null
+          central_attack_risk?: boolean | null
+          created_at?: string
+          dependency_period_end?: string | null
+          designations?: Json[] | null
+          limitation_applied?: boolean | null
+          matter_id?: string
+          subsequent_designations?: Json[] | null
+          transformation_to_national?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_jurisdiction_wipo_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_jurisdiction_wipo_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matter_patent_details: {
         Row: {
           abstract: string | null
@@ -33455,6 +33758,9 @@ export type Database = {
         | "expired"
         | "pending_verification"
         | "revoked"
+      epo_procedure_language_enum: "en" | "de" | "fr"
+      es_modalidad_enum: "normal" | "urgente"
+      euipo_second_language_enum: "en" | "de" | "fr" | "es" | "it"
       ip_type_enum:
         | "trademark"
         | "patent"
@@ -33608,6 +33914,7 @@ export type Database = {
         | "pattern"
         | "other"
       trademark_opposition_status_enum: "none" | "pending" | "filed" | "decided"
+      us_application_type_enum: "1a" | "1b" | "44d" | "44e" | "66a"
       whatsapp_tier: "tier1_api" | "tier2_sync" | "tier3_basic"
     }
     CompositeTypes: {
@@ -33775,6 +34082,9 @@ export const Constants = {
         "pending_verification",
         "revoked",
       ],
+      epo_procedure_language_enum: ["en", "de", "fr"],
+      es_modalidad_enum: ["normal", "urgente"],
+      euipo_second_language_enum: ["en", "de", "fr", "es", "it"],
       ip_type_enum: [
         "trademark",
         "patent",
@@ -33943,6 +34253,7 @@ export const Constants = {
         "other",
       ],
       trademark_opposition_status_enum: ["none", "pending", "filed", "decided"],
+      us_application_type_enum: ["1a", "1b", "44d", "44e", "66a"],
       whatsapp_tier: ["tier1_api", "tier2_sync", "tier3_basic"],
     },
   },
