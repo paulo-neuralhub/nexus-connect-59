@@ -56,6 +56,10 @@ export type SeedDemoPortalConfigResponse =
   | { ok: true; results: Array<{ slug: string; run_id: string }> }
   | { ok: false; error: string };
 
+export type SeedDemoTasksWorkflowsResponse =
+  | { ok: true; results: Array<{ slug: string; run_id: string }> }
+  | { ok: false; error: string };
+
 export function useSeedDemoData() {
   return useMutation({
     mutationFn: async (organizationId: string): Promise<SeedDemoDataResponse> => {
@@ -178,6 +182,18 @@ export function useSeedDemoPortalConfig() {
       });
       if (error) throw error;
       return data as SeedDemoPortalConfigResponse;
+    },
+  });
+}
+
+export function useSeedDemoTasksWorkflows() {
+  return useMutation({
+    mutationFn: async (): Promise<SeedDemoTasksWorkflowsResponse> => {
+      const { data, error } = await supabase.functions.invoke("seed-demo-tasks-workflows", {
+        body: {},
+      });
+      if (error) throw error;
+      return data as SeedDemoTasksWorkflowsResponse;
     },
   });
 }
