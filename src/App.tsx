@@ -99,6 +99,9 @@ import InvoiceListPage from "./pages/app/finance/invoices";
 import InvoiceDetailPage from "./pages/app/finance/invoices/InvoiceDetailPage";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
 import CostsPage from "./pages/app/finance/costs";
+import QuotesPage from "./pages/app/finance/quotes";
+import BillingClientsPage from "./pages/app/finance/clients";
+import FinanceSettingsPage from "./pages/app/finance/settings";
 import ValuationDashboardPage from "./pages/app/finance/valuation";
 import PortfolioDetailPage from "./pages/app/finance/valuation/[id]";
 import SettingsPage from "./pages/app/settings";
@@ -327,11 +330,14 @@ const App = () => (
                 <Route path="finance" element={<FinanceLayout />}>
                   <Route index element={<FinanceDashboard />} />
                   <Route path="costs" element={<CostsPage />} />
+                  <Route path="quotes" element={<QuotesPage />} />
                   <Route path="invoices" element={<InvoiceListPage />} />
                   <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+                  <Route path="clients" element={<BillingClientsPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
                   <Route path="valuation/:id" element={<PortfolioDetailPage />} />
+                  <Route path="settings" element={<FinanceSettingsPage />} />
                 </Route>
                 <Route path="timetracking" element={<TimetrackingLayout />}>
                   <Route index element={<TimesheetPage />} />
