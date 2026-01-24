@@ -132,4 +132,49 @@ async function handleCheckoutCompleted(supabase: any, session: any) {
       updated_at: new Date().toISOString()
     }, { onConflict: 'organization_id' });
   }
+
+  // L33-PAGOS: Invoice checkout flow
+  // We expect `invoice_id` in metadata, and a corresponding row in `payment_links`.
+  if (session.metadata?.invoice_id) {
+    const invoiceId = session.metadata.invoice_id.toString();
+
+    // 1) Mark payment link as completed
+    const { data: pl } = await supabase
+      .from('payment_links')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('stripe_checkout_session_id', session.id)
+      .select('*')
+      .maybeSingle();
+
+    const amount = pl?.amount ?? null;
+    const currency = pl?.currency ?? 'EUR';
+    const organizationId = pl?.organization_id ?? session.metadata?.organization_id;
+
+    // 2) Mark invoice as paid
+    await supabase
+      .from('invoices')
+      .update({
+        status: 'paid',
+        paid_amount: amount ?? undefined,
+        paid_date: new Date().toISOString().split('T')[0],
+        payment_method: 'stripe',
+        payment_reference: session.payment_intent?.toString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', invoiceId);
+
+    // 3) Insert payment ledger row
+    if (organizationId && amount !== null) {
+      await supabase.from('invoice_payments').insert({
+        organization_id: organizationId,
+        invoice_id: invoiceId,
+        payment_link_id: pl?.id ?? null,
+        amount,
+        currency,
+        method: 'stripe',
+        stripe_payment_intent_id: session.payment_intent?.toString(),
+        paid_at: new Date().toISOString(),
+      });
+    }
+  }
 }

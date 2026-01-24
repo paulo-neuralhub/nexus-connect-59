@@ -15,6 +15,7 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useInvoices, useSendInvoice, useMarkInvoicePaid } from '@/hooks/use-finance';
+import { usePaymentLinksForInvoices } from '@/hooks/use-invoice-payment-links';
 import { INVOICE_STATUSES, formatCurrency } from '@/lib/constants/finance';
 import type { Invoice, InvoiceStatus } from '@/types/finance';
 import { cn } from '@/lib/utils';
@@ -60,8 +61,9 @@ function StatCard({ label, value, icon: Icon, color }: {
   );
 }
 
-function InvoiceRow({ invoice, onSend, onMarkPaid }: {
+function InvoiceRow({ invoice, paymentLabel, onSend, onMarkPaid }: {
   invoice: Invoice;
+  paymentLabel?: string;
   onSend: () => void;
   onMarkPaid: (payment: { amount: number; date: string }) => void;
 }) {
@@ -115,6 +117,9 @@ function InvoiceRow({ invoice, onSend, onMarkPaid }: {
         >
           {statusConfig.label}
         </span>
+      </TableCell>
+      <TableCell className="text-center">
+        <span className="text-xs text-muted-foreground">{paymentLabel || '—'}</span>
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -171,6 +176,10 @@ export default function InvoiceListPage() {
     inv.invoice_number.toLowerCase().includes(search.toLowerCase()) ||
     inv.client_name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const invoiceIds = filteredInvoices.map((i) => i.id);
+  const paymentLinksQuery = usePaymentLinksForInvoices(invoiceIds);
+  const paymentLinksByInvoice = new Map(paymentLinksQuery.data?.map((pl) => [pl.invoice_id, pl]) ?? []);
   
   // Stats
   const thisMonth = new Date().toISOString().slice(0, 7) + '-01';
@@ -297,18 +306,34 @@ export default function InvoiceListPage() {
               <TableHead>Vencimiento</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead className="text-center">Estado</TableHead>
+              <TableHead className="text-center">Pago</TableHead>
               <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredInvoices.map(invoice => (
-              <InvoiceRow 
-                key={invoice.id} 
-                invoice={invoice}
-                onSend={() => handleSend(invoice.id)}
-                onMarkPaid={(payment) => handleMarkPaid(invoice.id, payment)}
-              />
-            ))}
+            {filteredInvoices.map(invoice => {
+              const pl = paymentLinksByInvoice.get(invoice.id);
+              const paymentLabel =
+                pl?.status === 'completed'
+                  ? 'Pagado'
+                  : pl?.status === 'active'
+                    ? 'Link activo'
+                    : pl?.status === 'expired'
+                      ? 'Expirado'
+                      : pl?.status === 'cancelled'
+                        ? 'Cancelado'
+                        : '—';
+
+              return (
+                <InvoiceRow
+                  key={invoice.id}
+                  invoice={invoice}
+                  paymentLabel={paymentLabel}
+                  onSend={() => handleSend(invoice.id)}
+                  onMarkPaid={(payment) => handleMarkPaid(invoice.id, payment)}
+                />
+              );
+            })}
           </TableBody>
         </Table>
         
