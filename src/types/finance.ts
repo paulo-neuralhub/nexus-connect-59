@@ -262,6 +262,38 @@ export interface ReminderSent {
   to: string;
 }
 
+// ===== PAGOS (Stripe) =====
+export type PaymentLinkStatus = 'active' | 'completed' | 'expired' | 'cancelled';
+
+export interface PaymentLink {
+  id: string;
+  organization_id: string;
+  invoice_id: string;
+  stripe_checkout_session_id?: string | null;
+  stripe_url?: string | null;
+  amount: number;
+  currency: string;
+  status: PaymentLinkStatus;
+  expires_at?: string | null;
+  qr_code_url?: string | null;
+  created_at: string;
+  completed_at?: string | null;
+}
+
+export interface InvoicePayment {
+  id: string;
+  organization_id: string;
+  invoice_id: string;
+  payment_link_id?: string | null;
+  amount: number;
+  currency: string;
+  method?: string | null;
+  stripe_payment_intent_id?: string | null;
+  stripe_charge_id?: string | null;
+  paid_at?: string | null;
+  created_at: string;
+}
+
 // ===== VALORACIÓN =====
 export interface PortfolioValuation {
   id: string;

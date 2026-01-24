@@ -95,6 +95,7 @@ import TimeReportsPage from "./pages/app/timetracking/reports";
 import BillingRatesPage from "./pages/app/timetracking/rates";
 import FinanceDashboard from "./pages/app/finance/FinanceDashboard";
 import InvoiceListPage from "./pages/app/finance/invoices";
+import InvoiceDetailPage from "./pages/app/finance/invoices/InvoiceDetailPage";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
 import CostsPage from "./pages/app/finance/costs";
 import ValuationDashboardPage from "./pages/app/finance/valuation";
@@ -324,6 +325,7 @@ const App = () => (
                   <Route index element={<FinanceDashboard />} />
                   <Route path="costs" element={<CostsPage />} />
                   <Route path="invoices" element={<InvoiceListPage />} />
+                  <Route path="invoices/:id" element={<InvoiceDetailPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
                   <Route path="valuation/:id" element={<PortfolioDetailPage />} />
