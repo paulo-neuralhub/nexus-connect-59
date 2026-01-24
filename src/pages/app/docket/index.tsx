@@ -47,6 +47,7 @@ import { useToast } from '@/hooks/use-toast';
 import { CommandCenter } from '@/components/docket/god-mode';
 import { FeatureGuide, HelpBox } from '@/components/help';
 import { useContextualHelp } from '@/hooks/useContextualHelp';
+import { usePageTitle } from '@/contexts/page-context';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -54,25 +55,22 @@ export default function DocketPage() {
   const [activeView, setActiveView] = useState<'command' | 'matters'>('command');
   const { featureKey, currentGuide, shouldShowGuide } = useContextualHelp();
 
+  usePageTitle(activeView === 'command' ? 'Docket · Command Center' : 'Docket · Expedientes');
+
   return (
     <div className="p-6 space-y-6">
       {currentGuide && shouldShowGuide(featureKey) ? (
         <FeatureGuide featureKey={featureKey} title={currentGuide.title} steps={currentGuide.steps} />
       ) : null}
 
-      <HelpBox
-        title="Tip rápido"
-        variant="tip"
-        dismissible
-        dismissKey="docket_command_toggle_tip"
-      >
-        Alterna entre <span className="font-medium">Command Center</span> y{' '}
-        <span className="font-medium">Expedientes</span> según lo que necesites hacer.
-      </HelpBox>
-
       {/* View Toggle */}
       <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'command' | 'matters')}>
-        <TabsList className="grid w-[400px] grid-cols-2">
+        <TabsContent value="command" className="mt-0">
+          <CommandCenter />
+        </TabsContent>
+
+        {/* Tabs debajo de las cajas (Command Center) */}
+        <TabsList className="grid w-[400px] grid-cols-2 mt-3">
           <TabsTrigger value="command" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             Command Center
@@ -82,10 +80,6 @@ export default function DocketPage() {
             Expedientes
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="command" className="mt-6">
-          <CommandCenter />
-        </TabsContent>
 
         <TabsContent value="matters" className="mt-6">
           <MatterListView />
