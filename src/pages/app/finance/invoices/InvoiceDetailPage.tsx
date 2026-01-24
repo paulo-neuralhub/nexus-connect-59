@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Copy, ExternalLink, QrCode } from 'lucide-react';
-import { useInvoice } from '@/hooks/use-finance';
+import { ArrowLeft, Copy, ExternalLink, QrCode, FileDown, Mail, Loader2 } from 'lucide-react';
+import { useInvoice, useGenerateInvoicePDF } from '@/hooks/use-finance';
 import { formatCurrency, INVOICE_STATUSES } from '@/lib/constants/finance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useCreatePaymentLink, usePaymentLinkByInvoice } from '@/hooks/use-invoice-payment-links';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function StatusBadge({ status }: { status: keyof typeof INVOICE_STATUSES }) {
   const cfg = INVOICE_STATUSES[status];
@@ -39,9 +49,13 @@ export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const invoiceId = id || '';
 
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
+
   const invoice = useInvoice(invoiceId);
   const paymentLink = usePaymentLinkByInvoice(invoiceId);
   const createPaymentLink = useCreatePaymentLink();
+  const generatePDF = useGenerateInvoicePDF();
 
   const totals = useMemo(() => {
     const items = invoice.data?.items ?? [];
@@ -62,6 +76,42 @@ export default function InvoiceDetailPage() {
     } catch {
       toast.error('No se pudo copiar');
     }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const result = await generatePDF.mutateAsync({ invoiceId });
+      if (result.pdfUrl) {
+        window.open(result.pdfUrl, '_blank');
+        toast.success('PDF generado correctamente');
+      }
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Error al generar el PDF');
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailTo) {
+      toast.error('Introduce un email válido');
+      return;
+    }
+    try {
+      await generatePDF.mutateAsync({ invoiceId, sendEmail: true, emailTo });
+      toast.success(`Factura enviada a ${emailTo}`);
+      setEmailDialogOpen(false);
+      setEmailTo('');
+    } catch (error) {
+      console.error('Email send error:', error);
+      toast.error('Error al enviar el email');
+    }
+  };
+
+  const openEmailDialog = () => {
+    // Try to get client email from billing_client relationship or fallback
+    const clientEmail = (invoice.data as any)?.billing_client?.email || '';
+    setEmailTo(clientEmail);
+    setEmailDialogOpen(true);
   };
 
   if (invoice.isLoading) {
@@ -106,11 +156,44 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">Total</p>
-          <p className="text-2xl font-bold text-foreground">{formatCurrency(inv.total, inv.currency)}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleDownloadPDF}
+            disabled={generatePDF.isPending}
+          >
+            {generatePDF.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileDown className="h-4 w-4 mr-2" />
+            )}
+            Descargar PDF
+          </Button>
+          <Button
+            variant="outline"
+            onClick={openEmailDialog}
+            disabled={generatePDF.isPending}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Enviar por email
+          </Button>
         </div>
       </div>
+
+      {/* Existing PDF link if available */}
+      {inv.pdf_url && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>PDF generado:</span>
+          <a 
+            href={inv.pdf_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Ver PDF <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
@@ -206,6 +289,51 @@ export default function InvoiceDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enviar factura por email</DialogTitle>
+            <DialogDescription>
+              Se generará el PDF y se enviará al email indicado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailTo">Email del destinatario</Label>
+              <Input
+                id="emailTo"
+                type="email"
+                placeholder="cliente@ejemplo.com"
+                value={emailTo}
+                onChange={(e) => setEmailTo(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSendEmail} 
+              disabled={generatePDF.isPending || !emailTo}
+            >
+              {generatePDF.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Enviar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
