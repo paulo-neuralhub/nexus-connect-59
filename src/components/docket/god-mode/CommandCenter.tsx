@@ -60,66 +60,66 @@ export function CommandCenter() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Zap className="h-6 w-6 text-amber-500" />
+            <Zap className="h-6 w-6 text-warning" />
             Command Center
           </h1>
           <p className="text-muted-foreground">
             Control centralizado de tu cartera de PI
           </p>
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={() => setActiveTab('rules')}>
           <Settings className="h-4 w-4 mr-2" />
           Configurar
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Tareas Totales"
           value={stats.totalTasks}
           icon={ListTodo}
-          color="text-blue-500"
+          color="text-primary"
         />
         <StatsCard
           title="Pendientes"
           value={stats.pendingTasks}
           icon={Clock}
-          color="text-amber-500"
+          color="text-warning"
         />
         <StatsCard
           title="Vencidas"
           value={stats.overdueTasks}
           icon={AlertTriangle}
-          color="text-red-500"
+          color="text-destructive"
           highlight={stats.overdueTasks > 0}
         />
         <StatsCard
           title="Completadas Hoy"
           value={stats.completedToday}
           icon={CheckCircle2}
-          color="text-green-500"
+          color="text-success"
         />
         <StatsCard
           title="Esta Semana"
           value={stats.upcomingThisWeek}
           icon={Calendar}
-          color="text-purple-500"
+          color="text-info"
         />
       </div>
 
       {/* Urgent Alerts */}
       {stats.overdueTasks > 0 && (
-        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <Card className="border-destructive/30 bg-destructive/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2 text-base">
+            <CardTitle className="text-destructive flex items-center gap-2 text-base">
               <AlertTriangle className="h-5 w-5" />
               Alertas Urgentes
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-red-600 dark:text-red-400">
+              <p className="text-sm text-destructive/90">
                 Tienes <strong>{stats.overdueTasks}</strong> tarea(s) vencida(s) que requieren atención inmediata
               </p>
               <Button 
@@ -200,15 +200,21 @@ interface StatsCardProps {
 
 function StatsCard({ title, value, icon: Icon, color, highlight }: StatsCardProps) {
   return (
-    <Card className={highlight ? 'border-red-300 bg-red-50/30 dark:bg-red-950/10' : ''}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+    <Card
+      className={
+        highlight
+          ? 'border-destructive/30 bg-destructive/5'
+          : 'bg-muted/20'
+      }
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3">
+        <CardTitle className="text-xs font-medium text-muted-foreground">
           {title}
         </CardTitle>
         <Icon className={`h-4 w-4 ${color}`} />
       </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${highlight ? 'text-red-600' : ''}`}>
+      <CardContent className="pt-0 pb-3">
+        <div className={`text-xl font-semibold tracking-tight ${highlight ? 'text-destructive' : ''}`}>
           {value}
         </div>
       </CardContent>
