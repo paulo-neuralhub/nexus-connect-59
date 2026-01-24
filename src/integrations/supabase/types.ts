@@ -9762,6 +9762,48 @@ export type Database = {
         }
         Relationships: []
       }
+      deadline_types: {
+        Row: {
+          category: string
+          code: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          matter_types: string[]
+          name_en: string | null
+          name_es: string
+          sort_order: number | null
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          matter_types?: string[]
+          name_en?: string | null
+          name_es: string
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          matter_types?: string[]
+          name_en?: string | null
+          name_es?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       deals: {
         Row: {
           actual_close_date: string | null
@@ -14002,6 +14044,39 @@ export type Database = {
           tour_key?: string
           trigger_conditions?: Json | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      holiday_calendars: {
+        Row: {
+          country_code: string
+          created_at: string | null
+          date: string
+          id: string
+          is_national: boolean | null
+          name: string | null
+          region: string | null
+          year: number
+        }
+        Insert: {
+          country_code: string
+          created_at?: string | null
+          date: string
+          id?: string
+          is_national?: boolean | null
+          name?: string | null
+          region?: string | null
+          year: number
+        }
+        Update: {
+          country_code?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          is_national?: boolean | null
+          name?: string | null
+          region?: string | null
+          year?: number
         }
         Relationships: []
       }
