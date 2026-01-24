@@ -128,31 +128,30 @@ export default function PortalLogin() {
     setError('');
 
     try {
-      // Find first active user for this portal
+      // First get the portal ID for this slug
+      const { data: portal, error: portalError } = await supabase
+        .from('client_portals')
+        .select('id, portal_name, branding_config, organization_id')
+        .eq('portal_slug', slug)
+        .eq('is_active', true)
+        .single();
+
+      if (portalError || !portal) {
+        throw new Error('Portal no encontrado');
+      }
+
+      // Find first active user for this specific portal
       const { data: portalUser, error } = await supabase
         .from('portal_users')
-        .select(`
-          id, email, name, role, permissions,
-          portal:client_portals!portal_id(
-            id, portal_slug, portal_name, branding_config, 
-            organization_id, is_active
-          )
-        `)
+        .select('id, email, name, role, permissions')
+        .eq('portal_id', portal.id)
         .eq('status', 'active')
+        .limit(1)
         .single();
 
       if (error || !portalUser) {
-        throw new Error('No hay usuarios demo disponibles');
+        throw new Error('No hay usuarios demo disponibles para este portal');
       }
-
-      const portal = portalUser.portal as {
-        id: string;
-        portal_slug: string;
-        portal_name: string;
-        branding_config: Record<string, unknown>;
-        organization_id: string;
-        is_active: boolean;
-      };
 
       // Create demo session directly
       const sessionToken = crypto.randomUUID();
