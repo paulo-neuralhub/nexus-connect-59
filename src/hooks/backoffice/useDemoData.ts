@@ -40,6 +40,10 @@ export type SeedDemoDeadlinesCoverageResponse =
     }
   | { ok: false; error: string };
 
+export type SeedDemoClientCommunicationsResponse =
+  | { ok: true; results: Array<{ slug: string; run_id: string }> }
+  | { ok: false; error: string };
+
 export function useSeedDemoData() {
   return useMutation({
     mutationFn: async (organizationId: string): Promise<SeedDemoDataResponse> => {
@@ -114,6 +118,18 @@ export function useSeedDemoDeadlinesCoverage() {
       });
       if (error) throw error;
       return data as SeedDemoDeadlinesCoverageResponse;
+    },
+  });
+}
+
+export function useSeedDemoClientCommunications() {
+  return useMutation({
+    mutationFn: async (): Promise<SeedDemoClientCommunicationsResponse> => {
+      const { data, error } = await supabase.functions.invoke("seed-demo-client-communications", {
+        body: {},
+      });
+      if (error) throw error;
+      return data as SeedDemoClientCommunicationsResponse;
     },
   });
 }
