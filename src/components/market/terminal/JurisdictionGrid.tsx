@@ -43,16 +43,16 @@ export function JurisdictionGrid({
 }: JurisdictionGridProps) {
   if (isLoading) {
     return (
-      <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+      <Card className={cn('terminal-card', className)}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="terminal-text flex items-center gap-2">
             <Globe className="h-5 w-5 text-blue-400" />
             Por Jurisdicción
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-12 bg-white/5 animate-pulse rounded" />
+            <div key={i} className="h-12 terminal-skeleton animate-pulse rounded" />
           ))}
         </CardContent>
       </Card>
@@ -60,9 +60,9 @@ export function JurisdictionGrid({
   }
 
   return (
-    <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+    <Card className={cn('terminal-card', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="terminal-text flex items-center gap-2">
           <Globe className="h-5 w-5 text-blue-400" />
           Por Jurisdicción
         </CardTitle>
@@ -72,12 +72,12 @@ export function JurisdictionGrid({
           <Link
             key={j.code}
             to={`/app/market?jurisdiction=${j.code}`}
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded terminal-hover transition-colors"
           >
             <span className="text-lg">{j.flag}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <span className="text-white font-mono text-sm">{j.code}</span>
+                <span className="terminal-text font-mono text-sm">{j.code}</span>
                 {j.change !== undefined && j.change !== 0 && (
                   <span className={cn(
                     'text-[10px] flex items-center',
@@ -87,11 +87,11 @@ export function JurisdictionGrid({
                   </span>
                 )}
               </div>
-              <p className="text-white/50 text-[10px] truncate">{j.name}</p>
+              <p className="terminal-text-muted text-[10px] truncate">{j.name}</p>
             </div>
             <div className="text-right">
-              <p className="text-white font-mono text-sm">{j.agentCount}</p>
-              <p className="text-white/30 text-[10px]">agentes</p>
+              <p className="terminal-text font-mono text-sm">{j.agentCount}</p>
+              <p className="terminal-text-dim text-[10px]">agentes</p>
             </div>
           </Link>
         ))}

@@ -106,11 +106,11 @@ export function MarketTicker({
         <span className={cn('font-mono text-sm font-medium', typeConfig.color)}>
           {typeConfig.label}
         </span>
-        <span className="text-white/90 font-medium text-sm truncate max-w-[150px]">
+        <span className="terminal-text font-medium text-sm truncate max-w-[150px]">
           {item.title}
         </span>
-        <span className="text-white/60 text-xs font-mono">{item.jurisdiction}</span>
-        <span className="text-white/40 text-xs">
+        <span className="terminal-text-muted text-xs font-mono">{item.jurisdiction}</span>
+        <span className="terminal-text-dim text-xs">
           {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true, locale: es })}
         </span>
       </Link>
@@ -123,7 +123,7 @@ export function MarketTicker({
     <div 
       ref={containerRef}
       className={cn(
-        'bg-[#0a0a0f] border-y border-white/10 overflow-hidden',
+        'terminal-bg border-y terminal-border overflow-hidden',
         className
       )}
     >

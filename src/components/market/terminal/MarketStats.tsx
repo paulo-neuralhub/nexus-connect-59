@@ -92,9 +92,9 @@ export function MarketStats({
     return (
       <div className={cn('grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3', className)}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Card key={i} className="bg-[#0d0d12] border-white/10">
+          <Card key={i} className="terminal-card">
             <CardContent className="p-4">
-              <div className="h-16 bg-white/5 animate-pulse rounded" />
+              <div className="h-16 terminal-skeleton animate-pulse rounded" />
             </CardContent>
           </Card>
         ))}
@@ -115,7 +115,7 @@ export function MarketStats({
         return (
           <Card 
             key={index} 
-            className="bg-[#0d0d12] border-white/10 hover:border-white/20 transition-colors"
+            className="terminal-card transition-colors"
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
@@ -135,14 +135,14 @@ export function MarketStats({
                 )}
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-white font-mono">
+                <p className="text-2xl font-bold terminal-text font-mono">
                   {stat.value}
                 </p>
-                <p className="text-xs text-white/50">
+                <p className="text-xs terminal-text-muted">
                   {stat.label}
                 </p>
                 {stat.changeLabel && (
-                  <p className="text-[10px] text-white/30">
+                  <p className="text-[10px] terminal-text-dim">
                     {stat.changeLabel}
                   </p>
                 )}

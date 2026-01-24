@@ -116,16 +116,16 @@ export function RecentRequests({
 }: RecentRequestsProps) {
   if (isLoading) {
     return (
-      <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+      <Card className={cn('terminal-card', className)}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="terminal-text flex items-center gap-2">
             <Activity className="h-5 w-5 text-emerald-400" />
             Solicitudes Recientes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 bg-white/5 animate-pulse rounded" />
+            <div key={i} className="h-16 terminal-skeleton animate-pulse rounded" />
           ))}
         </CardContent>
       </Card>
@@ -133,14 +133,14 @@ export function RecentRequests({
   }
 
   return (
-    <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+    <Card className={cn('terminal-card', className)}>
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="terminal-text flex items-center gap-2">
           <Activity className="h-5 w-5 text-emerald-400 animate-pulse" />
           Solicitudes Recientes
         </CardTitle>
         <Link to="/app/market/rfq">
-          <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
+          <Button variant="ghost" size="sm" className="terminal-text-muted hover:terminal-text">
             Ver todas <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </Link>
@@ -154,10 +154,10 @@ export function RecentRequests({
             <Link
               key={request.id}
               to={`/app/market/rfq/${request.id}`}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors group"
+              className="flex items-center gap-3 px-4 py-3 terminal-hover transition-colors group"
             >
               {/* Type Icon */}
-              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-lg shrink-0">
+              <div className="w-10 h-10 rounded-lg terminal-skeleton flex items-center justify-center text-lg shrink-0">
                 {typeConfig.icon}
               </div>
 
@@ -167,15 +167,15 @@ export function RecentRequests({
                   <span className={cn('font-mono text-xs', typeConfig.color)}>
                     {typeConfig.label}
                   </span>
-                  <span className="text-white/30">•</span>
-                  <span className="text-white/50 text-xs font-mono">
+                  <span className="terminal-text-dim">•</span>
+                  <span className="terminal-text-muted text-xs font-mono">
                     {request.request_number}
                   </span>
                 </div>
-                <p className="text-white font-medium text-sm truncate mt-0.5">
+                <p className="terminal-text font-medium text-sm truncate mt-0.5">
                   {request.title}
                 </p>
-                <div className="flex items-center gap-3 mt-1 text-xs text-white/50">
+                <div className="flex items-center gap-3 mt-1 text-xs terminal-text-muted">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     {request.jurisdiction}
@@ -198,7 +198,7 @@ export function RecentRequests({
                     {statusConfig.label}
                   </Badge>
                   {request.bids_count > 0 && (
-                    <span className="text-white/40 text-xs">
+                    <span className="terminal-text-dim text-xs">
                       {request.bids_count} ofertas
                     </span>
                   )}
