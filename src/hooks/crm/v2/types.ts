@@ -32,6 +32,7 @@ export interface DealFilters {
   stage_id?: UUID[];
   owner_id?: UUID;
   account_id?: UUID;
+  contact_id?: UUID;
   opportunity_type?: string[];
   amount_min?: number;
   amount_max?: number;
