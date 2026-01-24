@@ -19484,6 +19484,102 @@ export type Database = {
           },
         ]
       }
+      matter_trademark_details: {
+        Row: {
+          acquired_distinctiveness: boolean | null
+          certification_mark: boolean | null
+          coexistence_agreements: Json | null
+          collective_mark: boolean | null
+          colors: string[] | null
+          convention_priority: boolean | null
+          disclaimers: string[] | null
+          goods_services: Json | null
+          logo_embedding: string | null
+          logo_url: string | null
+          mark_description: string | null
+          mark_text: string | null
+          mark_type:
+            | Database["public"]["Enums"]["trademark_mark_type_enum"]
+            | null
+          matter_id: string
+          nice_classes: number[] | null
+          opposition_deadline: string | null
+          opposition_notes: string | null
+          opposition_status: Database["public"]["Enums"]["trademark_opposition_status_enum"]
+          renewal_history: Json[] | null
+          seniority_claimed: boolean | null
+          seniority_details: Json | null
+          series_mark: boolean | null
+        }
+        Insert: {
+          acquired_distinctiveness?: boolean | null
+          certification_mark?: boolean | null
+          coexistence_agreements?: Json | null
+          collective_mark?: boolean | null
+          colors?: string[] | null
+          convention_priority?: boolean | null
+          disclaimers?: string[] | null
+          goods_services?: Json | null
+          logo_embedding?: string | null
+          logo_url?: string | null
+          mark_description?: string | null
+          mark_text?: string | null
+          mark_type?:
+            | Database["public"]["Enums"]["trademark_mark_type_enum"]
+            | null
+          matter_id: string
+          nice_classes?: number[] | null
+          opposition_deadline?: string | null
+          opposition_notes?: string | null
+          opposition_status?: Database["public"]["Enums"]["trademark_opposition_status_enum"]
+          renewal_history?: Json[] | null
+          seniority_claimed?: boolean | null
+          seniority_details?: Json | null
+          series_mark?: boolean | null
+        }
+        Update: {
+          acquired_distinctiveness?: boolean | null
+          certification_mark?: boolean | null
+          coexistence_agreements?: Json | null
+          collective_mark?: boolean | null
+          colors?: string[] | null
+          convention_priority?: boolean | null
+          disclaimers?: string[] | null
+          goods_services?: Json | null
+          logo_embedding?: string | null
+          logo_url?: string | null
+          mark_description?: string | null
+          mark_text?: string | null
+          mark_type?:
+            | Database["public"]["Enums"]["trademark_mark_type_enum"]
+            | null
+          matter_id?: string
+          nice_classes?: number[] | null
+          opposition_deadline?: string | null
+          opposition_notes?: string | null
+          opposition_status?: Database["public"]["Enums"]["trademark_opposition_status_enum"]
+          renewal_history?: Json[] | null
+          seniority_claimed?: boolean | null
+          seniority_details?: Json | null
+          series_mark?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_trademark_details_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_trademark_details_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matter_valuations: {
         Row: {
           calculation_notes: string | null
@@ -33364,6 +33460,19 @@ export type Database = {
         | "manage"
         | "approve"
       permission_scope: "all" | "team" | "own" | "assigned"
+      trademark_mark_type_enum:
+        | "word"
+        | "figurative"
+        | "combined"
+        | "3d"
+        | "sound"
+        | "motion"
+        | "hologram"
+        | "color"
+        | "position"
+        | "pattern"
+        | "other"
+      trademark_opposition_status_enum: "none" | "pending" | "filed" | "decided"
       whatsapp_tier: "tier1_api" | "tier2_sync" | "tier3_basic"
     }
     CompositeTypes: {
@@ -33671,6 +33780,20 @@ export const Constants = {
         "approve",
       ],
       permission_scope: ["all", "team", "own", "assigned"],
+      trademark_mark_type_enum: [
+        "word",
+        "figurative",
+        "combined",
+        "3d",
+        "sound",
+        "motion",
+        "hologram",
+        "color",
+        "position",
+        "pattern",
+        "other",
+      ],
+      trademark_opposition_status_enum: ["none", "pending", "filed", "decided"],
       whatsapp_tier: ["tier1_api", "tier2_sync", "tier3_basic"],
     },
   },
