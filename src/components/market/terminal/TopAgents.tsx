@@ -92,16 +92,16 @@ export function TopAgents({
 }: TopAgentsProps) {
   if (isLoading) {
     return (
-      <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+      <Card className={cn('terminal-card', className)}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="terminal-text flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-400" />
             Top Agentes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-12 bg-white/5 animate-pulse rounded" />
+            <div key={i} className="h-12 terminal-skeleton animate-pulse rounded" />
           ))}
         </CardContent>
       </Card>
@@ -109,9 +109,9 @@ export function TopAgents({
   }
 
   return (
-    <Card className={cn('bg-[#0d0d12] border-white/10', className)}>
+    <Card className={cn('terminal-card', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="terminal-text flex items-center gap-2">
           <Trophy className="h-5 w-5 text-amber-400" />
           Top Agentes
         </CardTitle>
@@ -121,7 +121,7 @@ export function TopAgents({
           <Link
             key={agent.id}
             to={`/app/market/agents/${agent.id}`}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 terminal-hover transition-colors"
           >
             {/* Rank */}
             <div className="w-6 flex justify-center">
@@ -141,7 +141,7 @@ export function TopAgents({
             </div>
 
             {/* Avatar */}
-            <Avatar className="h-8 w-8 border border-white/10">
+            <Avatar className="h-8 w-8 terminal-border border">
               <AvatarImage src={agent.avatar_url} />
               <AvatarFallback className="bg-primary/20 text-primary text-xs">
                 {agent.display_name.substring(0, 2).toUpperCase()}
@@ -151,7 +151,7 @@ export function TopAgents({
             {/* Name & Badges */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-white font-medium text-sm truncate">
+                <span className="terminal-text font-medium text-sm truncate">
                   {agent.display_name}
                 </span>
                 {agent.is_verified_agent && (
@@ -160,7 +160,7 @@ export function TopAgents({
               </div>
               <div className="flex items-center gap-1 mt-0.5">
                 {agent.jurisdictions.slice(0, 3).map((j) => (
-                  <span key={j} className="text-[10px] font-mono text-white/50 bg-white/5 px-1 rounded">
+                  <span key={j} className="text-[10px] font-mono terminal-text-muted terminal-skeleton px-1 rounded">
                     {j}
                   </span>
                 ))}
@@ -172,17 +172,17 @@ export function TopAgents({
               {/* Rating */}
               <div className="flex items-center gap-1">
                 <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-white font-mono">{agent.rating_avg.toFixed(1)}</span>
+                <span className="terminal-text font-mono">{agent.rating_avg.toFixed(1)}</span>
               </div>
 
               {/* Transactions */}
-              <div className="hidden sm:flex items-center gap-1 text-white/60">
+              <div className="hidden sm:flex items-center gap-1 terminal-text-muted">
                 <TrendingUp className="h-3.5 w-3.5" />
                 <span className="font-mono text-xs">{agent.total_transactions}</span>
               </div>
 
               {/* Response time */}
-              <div className="hidden md:flex items-center gap-1 text-white/60">
+              <div className="hidden md:flex items-center gap-1 terminal-text-muted">
                 <Clock className="h-3.5 w-3.5" />
                 <span className="font-mono text-xs">{agent.response_time_avg}m</span>
               </div>

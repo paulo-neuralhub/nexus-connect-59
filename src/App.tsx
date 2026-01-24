@@ -37,11 +37,13 @@ import MarketMessages from "./pages/app/market/messages";
 import MarketFavorites from "./pages/app/market/favorites";
 import MarketAlerts from "./pages/app/market/alerts";
 import MarketProfile from "./pages/app/market/profile";
-import AgentListPage from "./pages/market/AgentListPage";
+import AgentListPage from "./pages/app/market/agents";
+import AgentDetailPage from "./pages/app/market/agents/[id]";
 import MarketLandingPage from "./pages/market/MarketLandingPage";
 import RfqListPage from "./pages/app/market/rfq";
 import CreateRfqRequestPage from "./pages/app/market/rfq/new";
 import RfqRequestDetailPage from "./pages/app/market/rfq/[id]";
+import WorkDetailPage from "./pages/app/market/work/[id]";
 import RankingsPage from "./pages/app/market/RankingsPage";
 import DataHubPage from "./pages/app/data-hub";
 import ImportExportPage from "./pages/app/data-hub/import-export";
@@ -310,9 +312,11 @@ const App = () => (
                   <Route path="kyc" element={<MarketKycPage />} />
                   <Route path="kyc/:type" element={<KycVerificationPage />} />
                   <Route path="agents" element={<AgentListPage />} />
+                  <Route path="agents/:id" element={<AgentDetailPage />} />
                   <Route path="rfq" element={<RfqListPage />} />
                   <Route path="rfq/new" element={<CreateRfqRequestPage />} />
                   <Route path="rfq/:id" element={<RfqRequestDetailPage />} />
+                  <Route path="work/:id" element={<WorkDetailPage />} />
                   <Route path="rankings" element={<RankingsPage />} />
                 </Route>
                 <Route path="genius" element={<GeniusLayout />}>
