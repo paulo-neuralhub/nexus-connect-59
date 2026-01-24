@@ -21,6 +21,7 @@ import {
 
 import {
   useCleanupDemoData,
+  useSeedDemoClientCommunications,
   useSeedDemoData,
   useSeedDemoDeadlinesCoverage,
   useSeedDemoTenantsClients,
@@ -41,6 +42,7 @@ export default function DemoDataPage() {
   const seedTenantsClientsMutation = useSeedDemoTenantsClients();
   const seedMattersCoverageMutation = useSeedDemoMattersCoverage();
   const seedDeadlinesCoverageMutation = useSeedDemoDeadlinesCoverage();
+  const seedClientCommsMutation = useSeedDemoClientCommunications();
 
   const canRun = !!organizationId;
 
@@ -150,6 +152,20 @@ export default function DemoDataPage() {
     }
   };
 
+  const handleSeedClientComms = async () => {
+    try {
+      const res = await seedClientCommsMutation.mutateAsync();
+      if (res.ok === false) {
+        toast.error(res.error);
+        return;
+      }
+      const summary = res.results.map((r) => `${r.slug} (run ${r.run_id})`).join(" · ");
+      toast.success(`Comunicaciones demo creadas. ${summary}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error creando comunicaciones demo");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -187,6 +203,25 @@ export default function DemoDataPage() {
             <Button onClick={handleSeed} disabled={!canRun || seedMutation.isPending} className="w-full">
               <Wand2 className="h-4 w-4 mr-2" />
               {seedMutation.isPending ? "Creando…" : "Seed demo data"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Crear comunicaciones (top 10 clientes)
+            </CardTitle>
+            <CardDescription>
+              Genera emails (con PDFs simulados), llamadas, WhatsApp, reuniones y tareas para los 10 clientes principales
+              de cada tenant demo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={handleSeedClientComms} disabled={seedClientCommsMutation.isPending} className="w-full">
+              <Database className="h-4 w-4 mr-2" />
+              {seedClientCommsMutation.isPending ? "Creando…" : "Seed client communications (all tenants)"}
             </Button>
           </CardContent>
         </Card>
