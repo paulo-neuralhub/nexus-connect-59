@@ -14,6 +14,7 @@ import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SoftphoneWidget } from "@/components/voip/SoftphoneWidget";
+import { AssistantWidget } from "@/components/assistant";
 
 export function AppLayout() {
   const isMobile = useIsMobile();
@@ -80,6 +81,9 @@ export function AppLayout() {
 
                 {/* Softphone Widget (VoIP) */}
                 <SoftphoneWidget />
+
+                {/* Assistant IP-NEXUS Widget */}
+                <AssistantWidget />
               </div>
             ) : (
               // Desktop Layout
@@ -103,6 +107,9 @@ export function AppLayout() {
 
                 {/* Softphone Widget (VoIP) */}
                 <SoftphoneWidget />
+
+                {/* Assistant IP-NEXUS Widget */}
+                <AssistantWidget />
               </div>
             )}
           </ContextualHelpProvider>
