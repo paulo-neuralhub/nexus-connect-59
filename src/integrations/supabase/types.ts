@@ -1586,6 +1586,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_module_usage: {
+        Row: {
+          created_at: string
+          id: string
+          module_code: string
+          organization_id: string | null
+          period_start: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_code: string
+          organization_id?: string | null
+          period_start: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_code?: string
+          organization_id?: string | null
+          period_start?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_prompt_templates: {
         Row: {
           agent_type: string
