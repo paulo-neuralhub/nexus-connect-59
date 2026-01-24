@@ -816,3 +816,32 @@ export function calculateFeeWithClasses(fee: OfficialFee, numClasses: number): n
   const extraClasses = Math.max(0, numClasses - fee.base_classes);
   return fee.amount + (extraClasses * (fee.extra_class_fee || 0));
 }
+
+// ===== GENERATE INVOICE PDF =====
+export function useGenerateInvoicePDF() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      invoiceId, 
+      sendEmail, 
+      emailTo 
+    }: { 
+      invoiceId: string; 
+      sendEmail?: boolean; 
+      emailTo?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('generate-invoice-pdf', {
+        body: { invoiceId, sendEmail, emailTo },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      return data as { success: boolean; pdfUrl: string; filePath: string };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
+}
