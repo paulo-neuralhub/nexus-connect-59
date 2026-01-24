@@ -9690,6 +9690,60 @@ export type Database = {
           },
         ]
       }
+      deadline_reminders: {
+        Row: {
+          channel: string | null
+          created_at: string | null
+          days_before: number
+          deadline_id: string
+          error_message: string | null
+          id: string
+          reminder_date: string
+          sent_at: string | null
+          sent_to: string[] | null
+          status: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string | null
+          days_before: number
+          deadline_id: string
+          error_message?: string | null
+          id?: string
+          reminder_date: string
+          sent_at?: string | null
+          sent_to?: string[] | null
+          status?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string | null
+          days_before?: number
+          deadline_id?: string
+          error_message?: string | null
+          id?: string
+          reminder_date?: string
+          sent_at?: string | null
+          sent_to?: string[] | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadline_reminders_deadline_id_fkey"
+            columns: ["deadline_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["deadline_id"]
+          },
+          {
+            foreignKeyName: "deadline_reminders_deadline_id_fkey"
+            columns: ["deadline_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadlines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deadline_rules: {
         Row: {
           alert_days: number[] | null
@@ -20147,6 +20201,7 @@ export type Database = {
       matter_deadlines: {
         Row: {
           alerts_sent: Json | null
+          auto_generated: boolean | null
           completed_at: string | null
           completed_by: string | null
           completion_notes: string | null
@@ -20168,6 +20223,7 @@ export type Database = {
           priority: string | null
           rule_code: string | null
           rule_id: string | null
+          source: string | null
           status: string | null
           task_id: string | null
           title: string
@@ -20176,6 +20232,7 @@ export type Database = {
         }
         Insert: {
           alerts_sent?: Json | null
+          auto_generated?: boolean | null
           completed_at?: string | null
           completed_by?: string | null
           completion_notes?: string | null
@@ -20197,6 +20254,7 @@ export type Database = {
           priority?: string | null
           rule_code?: string | null
           rule_id?: string | null
+          source?: string | null
           status?: string | null
           task_id?: string | null
           title: string
@@ -20205,6 +20263,7 @@ export type Database = {
         }
         Update: {
           alerts_sent?: Json | null
+          auto_generated?: boolean | null
           completed_at?: string | null
           completed_by?: string | null
           completion_notes?: string | null
@@ -20226,6 +20285,7 @@ export type Database = {
           priority?: string | null
           rule_code?: string | null
           rule_id?: string | null
+          source?: string | null
           status?: string | null
           task_id?: string | null
           title?: string

@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface DeadlineType {
   id: string;
@@ -20,27 +21,29 @@ export interface DeadlineType {
   sort_order: number;
 }
 
+// Interface que coincide con el schema actual de deadline_rules
 export interface DeadlineRule {
   id: string;
-  organization_id?: string;
-  deadline_type_id: string;
   jurisdiction: string;
-  trigger_event: string;
-  days_offset: number;
-  months_offset: number;
-  years_offset: number;
-  business_days_only: boolean;
-  adjust_to_next_business_day: boolean;
-  exclude_holidays: boolean;
-  holiday_calendar: string;
-  reminder_days: number[];
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  is_fatal: boolean;
+  matter_type: string;
+  event_type: string;
+  code: string;
+  name: string;
+  description?: string;
+  days_from_event: number;
+  calendar_type: string;
+  conditions?: Json;
+  creates_deadline: boolean;
+  deadline_type?: string;
+  priority: string;
   auto_create_task: boolean;
-  notify_roles: string[];
+  task_template_id?: string;
+  alert_days?: number[];
   is_active: boolean;
-  is_system: boolean;
-  deadline_type?: DeadlineType;
+  source?: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface DeadlineRuleFilters {
@@ -61,74 +64,72 @@ export function useDeadlineTypes() {
         .order('sort_order');
       
       if (error) throw error;
-      return data as DeadlineType[];
+      return (data || []) as unknown as DeadlineType[];
     },
   });
 }
 
 // Obtener reglas de deadline
 export function useDeadlineRules(filters?: DeadlineRuleFilters) {
-  const { currentOrganization } = useOrganization();
-  
   return useQuery({
-    queryKey: ['deadline-rules', currentOrganization?.id, filters],
+    queryKey: ['deadline-rules', filters],
     queryFn: async () => {
       let query = supabase
         .from('deadline_rules')
-        .select(`
-          *,
-          deadline_type:deadline_types(*)
-        `)
-        .or(`organization_id.is.null,organization_id.eq.${currentOrganization?.id}`)
+        .select('*')
         .eq('is_active', true);
       
       if (filters?.jurisdiction) {
         query = query.eq('jurisdiction', filters.jurisdiction);
       }
       
+      if (filters?.matterType) {
+        query = query.eq('matter_type', filters.matterType);
+      }
+      
       const { data, error } = await query;
       if (error) throw error;
       
-      let rules = data as DeadlineRule[];
-      
-      // Filtrar por tipo de matter si se especifica
-      if (filters?.matterType) {
-        rules = rules.filter(rule => 
-          rule.deadline_type?.matter_types?.includes(filters.matterType!)
-        );
-      }
-      
-      if (filters?.category) {
-        rules = rules.filter(rule => 
-          rule.deadline_type?.category === filters.category
-        );
-      }
-      
-      return rules;
+      return (data || []) as DeadlineRule[];
     },
-    enabled: !!currentOrganization?.id,
   });
 }
 
 // Crear regla personalizada
 export function useCreateDeadlineRule() {
   const queryClient = useQueryClient();
-  const { currentOrganization } = useOrganization();
   
   return useMutation({
-    mutationFn: async (data: Partial<DeadlineRule>) => {
+    mutationFn: async (data: Omit<DeadlineRule, 'id' | 'created_at' | 'updated_at'>) => {
+      const insertData = {
+        jurisdiction: data.jurisdiction,
+        matter_type: data.matter_type,
+        event_type: data.event_type,
+        code: data.code,
+        name: data.name,
+        description: data.description,
+        days_from_event: data.days_from_event,
+        calendar_type: data.calendar_type || 'calendar',
+        conditions: data.conditions,
+        creates_deadline: data.creates_deadline ?? true,
+        deadline_type: data.deadline_type,
+        priority: data.priority || 'medium',
+        auto_create_task: data.auto_create_task ?? false,
+        task_template_id: data.task_template_id,
+        alert_days: data.alert_days || [30, 15, 7, 1],
+        is_active: data.is_active ?? true,
+        source: data.source || 'custom',
+        notes: data.notes,
+      };
+      
       const { data: rule, error } = await supabase
         .from('deadline_rules')
-        .insert({
-          ...data,
-          organization_id: currentOrganization!.id,
-          is_system: false,
-        })
+        .insert(insertData)
         .select()
         .single();
       
       if (error) throw error;
-      return rule;
+      return rule as DeadlineRule;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadline-rules'] });
@@ -141,16 +142,30 @@ export function useUpdateDeadlineRule() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<DeadlineRule> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<DeadlineRule, 'id'>> }) => {
+      const updateData: Record<string, unknown> = {};
+      
+      if (data.jurisdiction !== undefined) updateData.jurisdiction = data.jurisdiction;
+      if (data.matter_type !== undefined) updateData.matter_type = data.matter_type;
+      if (data.event_type !== undefined) updateData.event_type = data.event_type;
+      if (data.code !== undefined) updateData.code = data.code;
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.days_from_event !== undefined) updateData.days_from_event = data.days_from_event;
+      if (data.calendar_type !== undefined) updateData.calendar_type = data.calendar_type;
+      if (data.priority !== undefined) updateData.priority = data.priority;
+      if (data.alert_days !== undefined) updateData.alert_days = data.alert_days;
+      if (data.is_active !== undefined) updateData.is_active = data.is_active;
+      
       const { data: rule, error } = await supabase
         .from('deadline_rules')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
       
       if (error) throw error;
-      return rule;
+      return rule as DeadlineRule;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadline-rules'] });
@@ -168,7 +183,7 @@ export function useDeleteDeadlineRule() {
         .from('deadline_rules')
         .delete()
         .eq('id', id)
-        .eq('is_system', false);
+        .eq('source', 'custom');
       
       if (error) throw error;
     },
@@ -193,7 +208,7 @@ export function useHolidayCalendar(countryCode: string, year?: number) {
         .order('date');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!countryCode,
   });
