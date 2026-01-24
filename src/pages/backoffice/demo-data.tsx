@@ -25,6 +25,7 @@ import {
   useSeedDemoData,
   useSeedDemoDeadlinesCoverage,
   useSeedDemoFinanceFull,
+  useSeedDemoSpiderVigilance,
   useSeedDemoTenantsClients,
   useSeedDemoMattersCoverage,
   useSeedDemoUsers,
@@ -45,6 +46,7 @@ export default function DemoDataPage() {
   const seedDeadlinesCoverageMutation = useSeedDemoDeadlinesCoverage();
   const seedClientCommsMutation = useSeedDemoClientCommunications();
   const seedFinanceFullMutation = useSeedDemoFinanceFull();
+  const seedSpiderVigilanceMutation = useSeedDemoSpiderVigilance();
 
   const canRun = !!organizationId;
 
@@ -182,6 +184,20 @@ export default function DemoDataPage() {
     }
   };
 
+  const handleSeedSpiderVigilance = async () => {
+    try {
+      const res = await seedSpiderVigilanceMutation.mutateAsync();
+      if (res.ok === false) {
+        toast.error(res.error);
+        return;
+      }
+      const summary = res.results.map((r) => `${r.slug} (run ${r.run_id})`).join(" · ");
+      toast.success(`Vigilancias y resultados Spider creados. ${summary}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error creando vigilancias Spider demo");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -194,6 +210,25 @@ export default function DemoDataPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Crear vigilancias Spider + resultados
+            </CardTitle>
+            <CardDescription>
+              Genera 20 vigilancias activas (marca propia/competidores/mercado) con 200 resultados y alertas (new/dismissed/threat/actioned)
+              y screenshots simulados en todos los tenants demo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={handleSeedSpiderVigilance} disabled={seedSpiderVigilanceMutation.isPending} className="w-full">
+              <Database className="h-4 w-4 mr-2" />
+              {seedSpiderVigilanceMutation.isPending ? "Creando…" : "Seed Spider vigilance + results (all tenants)"}
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
