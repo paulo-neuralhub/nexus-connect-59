@@ -5099,6 +5099,94 @@ export type Database = {
           },
         ]
       }
+      client_relationships: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          organization_id: string
+          related_client_id: string
+          relationship_label: string | null
+          relationship_type: string
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          organization_id: string
+          related_client_id: string
+          relationship_label?: string | null
+          relationship_type: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          organization_id?: string
+          related_client_id?: string
+          relationship_label?: string | null
+          relationship_type?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_relationships_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "client_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "client_relationships_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_attachments: {
         Row: {
           bucket_id: string
@@ -5739,6 +5827,7 @@ export type Database = {
           assigned_to: string | null
           avatar_url: string | null
           city: string | null
+          client_type: string | null
           company_name: string | null
           country: string | null
           created_at: string | null
@@ -5750,6 +5839,7 @@ export type Database = {
           employee_count: string | null
           id: string
           industry: string | null
+          is_billing_contact: boolean | null
           is_decision_maker: boolean | null
           is_primary_contact: boolean | null
           job_title: string | null
@@ -5767,6 +5857,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           owner_type: string
+          parent_client_id: string | null
           phone: string | null
           portal_access_enabled: boolean | null
           portal_last_login: string | null
@@ -5795,6 +5886,7 @@ export type Database = {
           assigned_to?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_type?: string | null
           company_name?: string | null
           country?: string | null
           created_at?: string | null
@@ -5806,6 +5898,7 @@ export type Database = {
           employee_count?: string | null
           id?: string
           industry?: string | null
+          is_billing_contact?: boolean | null
           is_decision_maker?: boolean | null
           is_primary_contact?: boolean | null
           job_title?: string | null
@@ -5823,6 +5916,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           owner_type?: string
+          parent_client_id?: string | null
           phone?: string | null
           portal_access_enabled?: boolean | null
           portal_last_login?: string | null
@@ -5851,6 +5945,7 @@ export type Database = {
           assigned_to?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_type?: string | null
           company_name?: string | null
           country?: string | null
           created_at?: string | null
@@ -5862,6 +5957,7 @@ export type Database = {
           employee_count?: string | null
           id?: string
           industry?: string | null
+          is_billing_contact?: boolean | null
           is_decision_maker?: boolean | null
           is_primary_contact?: boolean | null
           job_title?: string | null
@@ -5879,6 +5975,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           owner_type?: string
+          parent_client_id?: string | null
           phone?: string | null
           portal_access_enabled?: boolean | null
           portal_last_login?: string | null
@@ -5949,6 +6046,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_voip_billing_summary"
             referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "contacts_parent_client_id_fkey"
+            columns: ["parent_client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -33913,6 +34017,10 @@ export type Database = {
           label: string
           value: number
         }[]
+      }
+      get_inverse_relationship_type: {
+        Args: { rel_type: string }
+        Returns: string
       }
       get_matter_family_tree: {
         Args: { matter_uuid: string }
