@@ -9190,13 +9190,18 @@ export type Database = {
           owner_type: string
           pipeline_id: string
           priority: string | null
+          probability: number | null
           search_vector: unknown
+          source: Database["public"]["Enums"]["crm_deal_source_enum"] | null
+          stage_entered_at: string | null
           stage_id: string
+          stale_days: number | null
           status: string | null
           tags: string[] | null
           title: string
           updated_at: string | null
           value: number | null
+          won: boolean | null
           won_reason: string | null
         }
         Insert: {
@@ -9218,13 +9223,18 @@ export type Database = {
           owner_type?: string
           pipeline_id: string
           priority?: string | null
+          probability?: number | null
           search_vector?: unknown
+          source?: Database["public"]["Enums"]["crm_deal_source_enum"] | null
+          stage_entered_at?: string | null
           stage_id: string
+          stale_days?: number | null
           status?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
           value?: number | null
+          won?: boolean | null
           won_reason?: string | null
         }
         Update: {
@@ -9246,13 +9256,18 @@ export type Database = {
           owner_type?: string
           pipeline_id?: string
           priority?: string | null
+          probability?: number | null
           search_vector?: unknown
+          source?: Database["public"]["Enums"]["crm_deal_source_enum"] | null
+          stage_entered_at?: string | null
           stage_id?: string
+          stale_days?: number | null
           status?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
           value?: number | null
+          won?: boolean | null
           won_reason?: string | null
         }
         Relationships: [
@@ -33405,6 +33420,7 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: number
       }
+      crm_seed_default_pipeline: { Args: { p_org_id: string }; Returns: string }
       crm_seed_default_whatsapp_templates: {
         Args: { p_organization_id: string }
         Returns: number
@@ -33752,6 +33768,12 @@ export type Database = {
         | "rejected"
         | "revoked"
         | "expired"
+      crm_deal_source_enum:
+        | "referral"
+        | "website"
+        | "cold_call"
+        | "event"
+        | "other"
       doc_validity_status:
         | "valid"
         | "expiring_soon"
@@ -34075,6 +34097,13 @@ export const Constants = {
       ],
       comm_direction: ["inbound", "outbound", "internal"],
       consent_status: ["pending", "accepted", "rejected", "revoked", "expired"],
+      crm_deal_source_enum: [
+        "referral",
+        "website",
+        "cold_call",
+        "event",
+        "other",
+      ],
       doc_validity_status: [
         "valid",
         "expiring_soon",
