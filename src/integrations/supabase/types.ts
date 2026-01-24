@@ -9901,6 +9901,139 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          document_type:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size: number | null
+          id: string
+          is_current_version: boolean | null
+          matter_id: string | null
+          mime_type: string | null
+          organization_id: string
+          original_filename: string
+          previous_version_id: string | null
+          storage_bucket: string
+          storage_path: string
+          title: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          version: number | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type?:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size?: number | null
+          id?: string
+          is_current_version?: boolean | null
+          matter_id?: string | null
+          mime_type?: string | null
+          organization_id: string
+          original_filename: string
+          previous_version_id?: string | null
+          storage_bucket: string
+          storage_path: string
+          title?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type?:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size?: number | null
+          id?: string
+          is_current_version?: boolean | null
+          matter_id?: string | null
+          mime_type?: string | null
+          organization_id?: string
+          original_filename?: string
+          previous_version_id?: string | null
+          storage_bucket?: string
+          storage_path?: string
+          title?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "documents_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_campaigns: {
         Row: {
           ab_test_config: Json | null
@@ -34017,6 +34150,10 @@ export type Database = {
         }
         Returns: Json
       }
+      user_has_org_access_from_path: {
+        Args: { bucket_path: string }
+        Returns: boolean
+      }
       verify_api_key: {
         Args: { p_key: string }
         Returns: {
@@ -34075,6 +34212,18 @@ export type Database = {
         | "expired"
         | "pending_verification"
         | "revoked"
+      document_type_enum:
+        | "application"
+        | "certificate"
+        | "logo"
+        | "correspondence"
+        | "invoice"
+        | "contract"
+        | "power_of_attorney"
+        | "search_report"
+        | "office_action"
+        | "response"
+        | "other"
       epo_procedure_language_enum: "en" | "de" | "fr"
       es_modalidad_enum: "normal" | "urgente"
       euipo_second_language_enum: "en" | "de" | "fr" | "es" | "it"
@@ -34406,6 +34555,19 @@ export const Constants = {
         "expired",
         "pending_verification",
         "revoked",
+      ],
+      document_type_enum: [
+        "application",
+        "certificate",
+        "logo",
+        "correspondence",
+        "invoice",
+        "contract",
+        "power_of_attorney",
+        "search_report",
+        "office_action",
+        "response",
+        "other",
       ],
       epo_procedure_language_enum: ["en", "de", "fr"],
       es_modalidad_enum: ["normal", "urgente"],
