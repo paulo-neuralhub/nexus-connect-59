@@ -52,6 +52,7 @@ import { useCreateJurisdictionRule, useJurisdictionRules, useDeleteJurisdictionR
 import { RULE_TYPES } from '@/lib/constants/docket-god-mode';
 import type { CreateJurisdictionRuleDTO, JurisdictionRule } from '@/types/docket-god-mode';
 import { TRIGGER_EVENTS } from '@/lib/constants/docket-god-mode';
+import { JURISDICTIONS } from '@/lib/constants/matters';
 import { cn } from '@/lib/utils';
 
 export function RulesConfigPanel() {
@@ -59,6 +60,7 @@ export function RulesConfigPanel() {
   const [jurisdictionFilter, setJurisdictionFilter] = useState<string>('all');
   const [ruleTypeFilter, setRuleTypeFilter] = useState<string>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [customJurisdictionOpen, setCustomJurisdictionOpen] = useState(false);
 
   const [draft, setDraft] = useState({
     jurisdiction_code: 'ES',
@@ -92,12 +94,25 @@ export function RulesConfigPanel() {
     }
   };
 
-  // Get unique jurisdictions for filter
-  const jurisdictions = [...new Set(rules.map(r => r.jurisdiction_code))].sort();
+  const jurisdictionOptions = useMemo(() => {
+    const fromConstants = (JURISDICTIONS || []).map((j) => ({ code: j.code, name: j.name }));
+    // Si hay reglas en DB con códigos no contemplados en constants, las añadimos al final.
+    const fromRules = [...new Set(rules.map((r) => r.jurisdiction_code))]
+      .filter((code) => !fromConstants.some((j) => j.code === code))
+      .sort()
+      .map((code) => ({ code, name: code }));
+
+    return [...fromConstants, ...fromRules];
+  }, [rules]);
 
   const canCreate = useMemo(() => {
-    return draft.rule_name.trim().length > 1 && Number.isFinite(draft.base_days) && draft.base_days > 0;
-  }, [draft.base_days, draft.rule_name]);
+    return (
+      draft.rule_name.trim().length > 1 &&
+      draft.jurisdiction_code.trim().length >= 2 &&
+      Number.isFinite(draft.base_days) &&
+      draft.base_days > 0
+    );
+  }, [draft.base_days, draft.jurisdiction_code, draft.rule_name]);
 
   return (
     <Card>
@@ -140,8 +155,8 @@ export function RulesConfigPanel() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
-              {jurisdictions.map((j) => (
-                <SelectItem key={j} value={j}>{j}</SelectItem>
+              {jurisdictionOptions.map((j) => (
+                <SelectItem key={j.code} value={j.code}>{j.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -234,11 +249,50 @@ export function RulesConfigPanel() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="grid gap-2">
                 <Label>Jurisdicción</Label>
-                <Input
-                  value={draft.jurisdiction_code}
-                  onChange={(e) => setDraft((d) => ({ ...d, jurisdiction_code: e.target.value.toUpperCase() }))}
-                  placeholder="ES, EU, US..."
-                />
+                {!customJurisdictionOpen ? (
+                  <Select
+                    value={draft.jurisdiction_code}
+                    onValueChange={(v) => {
+                      if (v === '__custom__') {
+                        setCustomJurisdictionOpen(true);
+                        setDraft((d) => ({ ...d, jurisdiction_code: '' }));
+                        return;
+                      }
+                      setDraft((d) => ({ ...d, jurisdiction_code: v }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {jurisdictionOptions.map((j) => (
+                        <SelectItem key={j.code} value={j.code}>
+                          {j.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">Crear nueva…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={draft.jurisdiction_code}
+                      onChange={(e) => setDraft((d) => ({ ...d, jurisdiction_code: e.target.value.toUpperCase() }))}
+                      placeholder="ES, EU, US…"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCustomJurisdictionOpen(false);
+                        setDraft((d) => ({ ...d, jurisdiction_code: 'ES' }));
+                      }}
+                    >
+                      Usar lista
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label>Tipo PI</Label>
@@ -347,6 +401,7 @@ export function RulesConfigPanel() {
                 await createRule.mutateAsync(payload);
                 setCreateOpen(false);
                 setDraft((d) => ({ ...d, rule_name: '', description: '' }));
+                setCustomJurisdictionOpen(false);
               }}
             >
               {createRule.isPending ? (
