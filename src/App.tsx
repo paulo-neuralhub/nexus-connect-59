@@ -204,6 +204,7 @@ import PortalMatters from "./pages/portal/PortalMatters";
 import PortalMatterDetail from "./pages/portal/PortalMatterDetail";
 import PortalDocuments from "./pages/portal/PortalDocuments";
 import PortalInvoices from "./pages/portal/PortalInvoices";
+import PortalCatalog from "./pages/portal/PortalCatalog";
 import PortalMessages from "./pages/portal/PortalMessages";
 
 // Layout
@@ -454,6 +455,7 @@ const App = () => (
                 <Route path="matters/:id" element={<PortalMatterDetail />} />
                 <Route path="documents" element={<PortalDocuments />} />
                 <Route path="invoices" element={<PortalInvoices />} />
+                <Route path="catalog" element={<PortalCatalog />} />
                 <Route path="messages" element={<PortalMessages />} />
               </Route>
               
