@@ -26,6 +26,13 @@ export type SeedDemoTenantsClientsResponse =
     }
   | { ok: false; error: string };
 
+export type SeedDemoMattersCoverageResponse =
+  | {
+      ok: true;
+      results: Array<{ slug: string; run_id: string; matters_created: number }>;
+    }
+  | { ok: false; error: string };
+
 export function useSeedDemoData() {
   return useMutation({
     mutationFn: async (organizationId: string): Promise<SeedDemoDataResponse> => {
@@ -76,6 +83,18 @@ export function useSeedDemoTenantsClients() {
       });
       if (error) throw error;
       return data as SeedDemoTenantsClientsResponse;
+    },
+  });
+}
+
+export function useSeedDemoMattersCoverage() {
+  return useMutation({
+    mutationFn: async (): Promise<SeedDemoMattersCoverageResponse> => {
+      const { data, error } = await supabase.functions.invoke("seed-demo-matters-coverage", {
+        body: {},
+      });
+      if (error) throw error;
+      return data as SeedDemoMattersCoverageResponse;
     },
   });
 }
