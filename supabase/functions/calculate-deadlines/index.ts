@@ -13,25 +13,24 @@ const corsHeaders = {
 
 interface DeadlineRule {
   id: string;
-  deadline_type_id: string;
   jurisdiction: string;
-  trigger_event: string;
-  days_offset: number;
-  months_offset: number;
-  years_offset: number;
-  business_days_only: boolean;
-  adjust_to_next_business_day: boolean;
-  exclude_holidays: boolean;
-  holiday_calendar: string;
-  reminder_days: number[];
+  matter_type: string;
+  event_type: string;
+  code: string;
+  name: string;
+  days_from_event: number;
+  calendar_type: string;
+  creates_deadline: boolean;
+  deadline_type?: string;
   priority: string;
-  is_fatal: boolean;
-  deadline_type?: {
-    id: string;
-    code: string;
-    name_es: string;
-    matter_types: string[];
-  };
+  auto_create_task: boolean;
+  alert_days?: number[];
+  is_active: boolean;
+}
+
+interface Holiday {
+  date: string;
+  name: string;
 }
 
 // Función para añadir días hábiles
@@ -52,37 +51,20 @@ function addBusinessDays(date: Date, days: number): Date {
 }
 
 // Verificar si es festivo
-async function isHoliday(
-  supabase: ReturnType<typeof createClient>,
-  date: Date,
-  calendarCode: string
-): Promise<boolean> {
+function isHoliday(date: Date, holidays: Holiday[]): boolean {
   const dateStr = date.toISOString().split('T')[0];
-  
-  const { data } = await supabase
-    .from('holiday_calendars')
-    .select('id')
-    .eq('country_code', calendarCode)
-    .eq('date', dateStr)
-    .maybeSingle();
-  
-  return !!data;
+  return holidays.some(h => h.date === dateStr);
 }
 
 // Ajustar a siguiente día hábil
-async function adjustToNextBusinessDay(
-  supabase: ReturnType<typeof createClient>,
-  date: Date,
-  excludeHolidays: boolean,
-  calendarCode: string
-): Promise<Date> {
+function adjustToNextBusinessDay(date: Date, holidays: Holiday[]): Date {
   const result = new Date(date);
-  let maxIterations = 30; // Prevenir loops infinitos
+  let maxIterations = 30;
   
   while (maxIterations > 0) {
     const dayOfWeek = result.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const isHolidayDate = excludeHolidays && await isHoliday(supabase, result, calendarCode);
+    const isHolidayDate = isHoliday(result, holidays);
     
     if (!isWeekend && !isHolidayDate) {
       break;
@@ -96,56 +78,46 @@ async function adjustToNextBusinessDay(
 }
 
 // Calcular fecha de vencimiento según regla
-async function calculateDueDate(
-  supabase: ReturnType<typeof createClient>,
+function calculateDueDate(
   baseDate: Date,
-  rule: DeadlineRule
-): Promise<Date> {
+  rule: DeadlineRule,
+  holidays: Holiday[]
+): Date {
   let result = new Date(baseDate);
   
-  // Aplicar offsets
-  if (rule.years_offset !== 0) {
-    result.setFullYear(result.getFullYear() + rule.years_offset);
+  // Aplicar offset de días
+  if (rule.calendar_type === 'business') {
+    result = addBusinessDays(result, rule.days_from_event);
+  } else {
+    result.setDate(result.getDate() + rule.days_from_event);
   }
   
-  if (rule.months_offset !== 0) {
-    result.setMonth(result.getMonth() + rule.months_offset);
-  }
-  
-  if (rule.days_offset !== 0) {
-    if (rule.business_days_only) {
-      result = addBusinessDays(result, rule.days_offset);
-    } else {
-      result.setDate(result.getDate() + rule.days_offset);
-    }
-  }
-  
-  // Ajustar a día hábil si es necesario
-  if (rule.adjust_to_next_business_day) {
-    result = await adjustToNextBusinessDay(
-      supabase,
-      result,
-      rule.exclude_holidays,
-      rule.holiday_calendar
-    );
-  }
+  // Ajustar a día hábil si cae en fin de semana o festivo
+  result = adjustToNextBusinessDay(result, holidays);
   
   return result;
 }
 
-// Obtener fecha base del expediente según trigger_event
-function getTriggerDate(matter: Record<string, unknown>, triggerEvent: string): Date | null {
+// Obtener fecha base del expediente según event_type
+function getTriggerDate(matter: Record<string, unknown>, eventType: string): Date | null {
   const dateFields: Record<string, string> = {
+    'filing': 'filing_date',
     'filing_date': 'filing_date',
+    'publication': 'publication_date',
     'publication_date': 'publication_date',
+    'registration': 'registration_date',
     'registration_date': 'registration_date',
+    'expiry': 'expiry_date',
     'expiry_date': 'expiry_date',
+    'priority': 'priority_date',
     'priority_date': 'priority_date',
+    'notification': 'notification_date',
     'notification_date': 'notification_date',
+    'grant': 'grant_date',
     'grant_date': 'grant_date',
   };
   
-  const field = dateFields[triggerEvent];
+  const field = dateFields[eventType];
   if (!field || !matter[field]) return null;
   
   return new Date(matter[field] as string);
@@ -197,46 +169,57 @@ serve(async (req) => {
     // Obtener reglas aplicables
     const { data: rules, error: rulesError } = await supabase
       .from('deadline_rules')
-      .select(`
-        *,
-        deadline_type:deadline_types(*)
-      `)
+      .select('*')
       .eq('jurisdiction', matter.jurisdiction_code)
-      .eq('is_active', true);
+      .eq('matter_type', matter.type)
+      .eq('is_active', true)
+      .eq('creates_deadline', true);
 
-    if (rulesError) throw rulesError;
+    if (rulesError) {
+      console.error('Error fetching rules:', rulesError);
+      throw rulesError;
+    }
 
-    // Filtrar reglas por tipo de expediente
-    const applicableRules = (rules || []).filter((rule: DeadlineRule) => {
-      return rule.deadline_type?.matter_types?.includes(matter.type);
-    });
+    // Obtener festivos para la jurisdicción
+    const currentYear = new Date().getFullYear();
+    const { data: holidays } = await supabase
+      .from('holiday_calendars')
+      .select('date, name')
+      .eq('country_code', matter.jurisdiction_code)
+      .gte('year', currentYear - 1)
+      .lte('year', currentYear + 2);
+
+    const holidayList: Holiday[] = (holidays || []).map(h => ({
+      date: h.date,
+      name: h.name || '',
+    }));
 
     const createdDeadlines: unknown[] = [];
     const errors: string[] = [];
 
     // Procesar cada regla
-    for (const rule of applicableRules) {
+    for (const rule of (rules || []) as DeadlineRule[]) {
       try {
         // Obtener fecha trigger
         let baseDateValue: Date | null = null;
         
-        if (triggerEvent === rule.trigger_event && triggerDate) {
+        if (triggerEvent === rule.event_type && triggerDate) {
           baseDateValue = new Date(triggerDate);
         } else {
-          baseDateValue = getTriggerDate(matter, rule.trigger_event);
+          baseDateValue = getTriggerDate(matter, rule.event_type);
         }
 
         if (!baseDateValue) continue;
 
         // Calcular fecha de vencimiento
-        const dueDate = await calculateDueDate(supabase, baseDateValue, rule);
+        const dueDate = calculateDueDate(baseDateValue, rule, holidayList);
 
         // Verificar si ya existe este plazo
         const { data: existing } = await supabase
           .from('matter_deadlines')
           .select('id')
           .eq('matter_id', matterId)
-          .eq('deadline_type_id', rule.deadline_type_id)
+          .eq('rule_code', rule.code)
           .maybeSingle();
 
         if (existing && !recalculate) continue;
@@ -245,16 +228,16 @@ serve(async (req) => {
         const deadlineData = {
           organization_id: matter.organization_id,
           matter_id: matterId,
-          deadline_type_id: rule.deadline_type_id,
-          deadline_rule_id: rule.id,
-          rule_code: rule.deadline_type?.code,
-          deadline_type: rule.deadline_type?.code,
-          title: rule.deadline_type?.name_es || 'Plazo',
+          rule_id: rule.id,
+          rule_code: rule.code,
+          deadline_type: rule.deadline_type || rule.code,
+          title: rule.name,
+          description: `Generado automáticamente desde regla: ${rule.code}`,
           trigger_date: baseDateValue.toISOString().split('T')[0],
           deadline_date: dueDate.toISOString().split('T')[0],
           original_deadline: dueDate.toISOString().split('T')[0],
           status: 'pending',
-          priority: rule.priority,
+          priority: rule.priority || 'medium',
           auto_generated: true,
           source: 'system',
         };
@@ -266,15 +249,15 @@ serve(async (req) => {
           .single();
 
         if (deadlineError) {
-          errors.push(`Error creating deadline: ${deadlineError.message}`);
+          errors.push(`Error creating deadline for rule ${rule.code}: ${deadlineError.message}`);
           continue;
         }
 
         createdDeadlines.push(deadline);
 
-        // Crear recordatorios
-        if (rule.reminder_days && rule.reminder_days.length > 0) {
-          const reminders = rule.reminder_days.map((daysBefore: number) => {
+        // Crear recordatorios si existen alert_days
+        if (rule.alert_days && rule.alert_days.length > 0) {
+          const reminders = rule.alert_days.map((daysBefore: number) => {
             const reminderDate = new Date(dueDate);
             reminderDate.setDate(reminderDate.getDate() - daysBefore);
             
@@ -287,10 +270,32 @@ serve(async (req) => {
             };
           });
 
-          await supabase.from('deadline_reminders').insert(reminders);
+          const { error: reminderError } = await supabase
+            .from('deadline_reminders')
+            .insert(reminders);
+          
+          if (reminderError) {
+            console.error('Error creating reminders:', reminderError);
+          }
+        }
+
+        // Crear tarea automática si está configurado
+        if (rule.auto_create_task) {
+          const taskData = {
+            organization_id: matter.organization_id,
+            matter_id: matterId,
+            title: `[AUTO] ${rule.name}`,
+            description: `Tarea generada automáticamente para: ${rule.name}`,
+            due_date: dueDate.toISOString().split('T')[0],
+            priority: rule.priority || 'medium',
+            status: 'pending',
+            source: 'deadline_rule',
+          };
+
+          await supabase.from('tasks').insert(taskData);
         }
       } catch (e) {
-        errors.push(`Rule ${rule.id}: ${(e as Error).message}`);
+        errors.push(`Rule ${rule.code}: ${(e as Error).message}`);
       }
     }
 
@@ -298,6 +303,9 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         matterId,
+        jurisdiction: matter.jurisdiction_code,
+        matterType: matter.type,
+        rulesEvaluated: (rules || []).length,
         deadlinesCreated: createdDeadlines.length,
         deadlines: createdDeadlines,
         errors: errors.length > 0 ? errors : undefined,
