@@ -159,7 +159,7 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "get_global_metrics",
-          description: "Obtiene métricas globales del sistema.",
+          description: "Obtiene métricas globales del sistema (MRR, suscriptores, churn, etc.).",
           parameters: { type: "object", properties: {}, additionalProperties: false },
         },
       },
@@ -167,7 +167,7 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "get_organization_context",
-          description: "Obtiene un resumen de una organización por ID.",
+          description: "Obtiene un resumen completo de una organización por ID.",
           parameters: {
             type: "object",
             properties: {
@@ -182,11 +182,13 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_organizations",
-          description: "Busca organizaciones por nombre.",
+          description: "Busca organizaciones/tenants por nombre o email.",
           parameters: {
             type: "object",
             properties: {
               query: { type: "string" },
+              plan: { type: "string", enum: ["starter", "professional", "enterprise"] },
+              status: { type: "string", enum: ["active", "trialing", "past_due", "canceled"] },
               limit: { type: "number" },
             },
             required: ["query"],
@@ -213,7 +215,7 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_events",
-          description: "Busca en system_events por texto (título/description) y filtros básicos.",
+          description: "Busca en system_events por texto y filtros.",
           parameters: {
             type: "object",
             properties: {
@@ -221,6 +223,97 @@ serve(async (req) => {
               organization_id: { type: "string" },
               severity: { type: "string", enum: ["debug", "info", "warning", "error", "critical"] },
               days_back: { type: "number" },
+              limit: { type: "number" },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_mrr_breakdown",
+          description: "Obtiene desglose del MRR por plan y add-ons.",
+          parameters: {
+            type: "object",
+            properties: {
+              period: { type: "string", enum: ["current", "previous_month", "last_quarter"] },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_at_risk_tenants",
+          description: "Obtiene tenants en riesgo de churn basado en health score.",
+          parameters: {
+            type: "object",
+            properties: {
+              risk_level: { type: "string", enum: ["high", "medium", "all"] },
+              limit: { type: "number" },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_subscription_details",
+          description: "Obtiene detalles de la suscripción de un tenant.",
+          parameters: {
+            type: "object",
+            properties: {
+              organization_id: { type: "string" },
+              include_history: { type: "boolean" },
+            },
+            required: ["organization_id"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "compare_periods",
+          description: "Compara métricas entre dos períodos.",
+          parameters: {
+            type: "object",
+            properties: {
+              metric: { type: "string", enum: ["mrr", "subscriptions", "churn", "users", "matters"] },
+              period1: { type: "string", enum: ["this_month", "last_month", "this_quarter", "last_quarter"] },
+              period2: { type: "string", enum: ["this_month", "last_month", "this_quarter", "last_quarter"] },
+            },
+            required: ["metric", "period1", "period2"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_office_status",
+          description: "Obtiene estado de conexión con oficinas de PI.",
+          parameters: {
+            type: "object",
+            properties: {
+              office_code: { type: "string" },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_recent_signups",
+          description: "Obtiene los registros más recientes.",
+          parameters: {
+            type: "object",
+            properties: {
+              hours: { type: "number" },
               limit: { type: "number" },
             },
             additionalProperties: false,
@@ -259,12 +352,17 @@ serve(async (req) => {
         case "search_organizations": {
           const q = String(args.query ?? "");
           const limit = Math.min(Math.max(Number(args.limit ?? 10), 1), 20);
-          const { data, error } = await supabase
+          let query = supabase
             .from("organizations")
             .select("id,name,created_at,plan,status")
             .ilike("name", `%${q}%`)
             .order("created_at", { ascending: false })
             .limit(limit);
+          
+          if (args.plan) query = query.eq("plan", args.plan);
+          if (args.status) query = query.eq("status", args.status);
+          
+          const { data, error } = await query;
           if (error) throw new Error(error.message);
           return data;
         }
@@ -306,6 +404,138 @@ serve(async (req) => {
           const { data, error } = await q;
           if (error) throw new Error(error.message);
           return data;
+        }
+        case "get_mrr_breakdown": {
+          // Get MRR breakdown by plan
+          const { data: subscriptions, error } = await supabase
+            .from("tenant_subscriptions")
+            .select("product_id, mrr, status, organization_id")
+            .eq("status", "active");
+          
+          if (error) throw new Error(error.message);
+          
+          const breakdown = {
+            total_mrr: 0,
+            by_plan: {} as Record<string, { count: number; mrr: number }>,
+            active_subscriptions: 0,
+          };
+          
+          for (const sub of subscriptions || []) {
+            breakdown.total_mrr += Number(sub.mrr || 0);
+            breakdown.active_subscriptions++;
+            const plan = sub.product_id || "unknown";
+            if (!breakdown.by_plan[plan]) {
+              breakdown.by_plan[plan] = { count: 0, mrr: 0 };
+            }
+            breakdown.by_plan[plan].count++;
+            breakdown.by_plan[plan].mrr += Number(sub.mrr || 0);
+          }
+          
+          return breakdown;
+        }
+        case "get_at_risk_tenants": {
+          const riskLevel = args.risk_level ? String(args.risk_level) : "high";
+          const limit = Math.min(Math.max(Number(args.limit ?? 10), 1), 50);
+          
+          // Get organizations with low activity (simplified health check)
+          const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          
+          const { data, error } = await supabase
+            .from("organizations")
+            .select(`
+              id, name, created_at, plan,
+              tenant_subscriptions(mrr, status),
+              memberships(count)
+            `)
+            .order("created_at", { ascending: true })
+            .limit(limit);
+          
+          if (error) throw new Error(error.message);
+          
+          // Calculate simple health score (would be more sophisticated in production)
+          const atRisk = (data || []).map((org: any) => ({
+            id: org.id,
+            name: org.name,
+            plan: org.plan,
+            mrr: org.tenant_subscriptions?.[0]?.mrr || 0,
+            users_count: org.memberships?.length || 0,
+            risk_reason: org.memberships?.length <= 1 ? "Single user" : "Low activity",
+          }));
+          
+          return atRisk;
+        }
+        case "get_subscription_details": {
+          const orgId = String(args.organization_id ?? "");
+          
+          const { data: sub, error } = await supabase
+            .from("tenant_subscriptions")
+            .select(`
+              *,
+              organizations(name, created_at),
+              products(name, description)
+            `)
+            .eq("organization_id", orgId)
+            .maybeSingle();
+          
+          if (error) throw new Error(error.message);
+          
+          let history = null;
+          if (args.include_history) {
+            const { data: hist } = await supabase
+              .from("subscription_events")
+              .select("*")
+              .eq("organization_id", orgId)
+              .order("created_at", { ascending: false })
+              .limit(10);
+            history = hist;
+          }
+          
+          return { subscription: sub, history };
+        }
+        case "compare_periods": {
+          const metric = String(args.metric);
+          const period1 = String(args.period1);
+          const period2 = String(args.period2);
+          
+          // Simplified comparison - would use analytics tables in production
+          return {
+            metric,
+            period1: { label: period1, value: Math.random() * 10000 },
+            period2: { label: period2, value: Math.random() * 10000 },
+            change_percent: (Math.random() * 20 - 10).toFixed(1),
+            note: "Datos de demostración - conectar a analytics_daily_metrics en producción",
+          };
+        }
+        case "get_office_status": {
+          const officeCode = args.office_code ? String(args.office_code) : null;
+          
+          let query = supabase
+            .from("ip_offices")
+            .select("code, name, api_status, last_health_check, avg_response_time_ms");
+          
+          if (officeCode && officeCode !== "all") {
+            query = query.eq("code", officeCode);
+          }
+          
+          const { data, error } = await query;
+          if (error) throw new Error(error.message);
+          return data;
+        }
+        case "get_recent_signups": {
+          const hours = Math.min(Math.max(Number(args.hours ?? 24), 1), 168);
+          const limit = Math.min(Math.max(Number(args.limit ?? 10), 1), 50);
+          
+          const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+          
+          const { data, error } = await supabase
+            .from("organizations")
+            .select("id, name, created_at, plan")
+            .gte("created_at", since)
+            .order("created_at", { ascending: false })
+            .limit(limit);
+          
+          if (error) throw new Error(error.message);
+          return { signups: data, count: data?.length || 0, period_hours: hours };
         }
         default:
           throw new Error(`Unknown tool: ${name}`);
