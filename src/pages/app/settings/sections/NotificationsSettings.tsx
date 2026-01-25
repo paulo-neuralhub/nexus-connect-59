@@ -11,7 +11,7 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences 
 } from '@/hooks/use-notifications';
-import { usePushNotifications } from '@/hooks/use-push-notifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 

@@ -126,8 +126,8 @@ export default function AgentListPage() {
               <AgentCard 
                 key={agent.id} 
                 agent={agent}
-                onContact={() => console.log('Contact', agent.id)}
-                onRequestQuote={() => console.log('Quote', agent.id)}
+                onContact={() => {/* TODO: Implement contact modal */}}
+                onRequestQuote={() => {/* TODO: Implement quote request */}}
               />
             ))}
           </div>
