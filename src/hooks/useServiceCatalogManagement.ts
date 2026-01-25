@@ -102,6 +102,7 @@ export const SUBCATEGORY_LABELS: Record<string, string> = {
 
 /**
  * Get all preconfigured services (system-level, organization_id = NULL)
+ * Note: is_active is false for templates (they become active when copied to org)
  */
 export function usePreconfiguredServices() {
   return useQuery({
@@ -112,9 +113,11 @@ export function usePreconfiguredServices() {
         .select('*')
         .is('organization_id', null)
         .eq('is_preconfigured', true)
+        .order('category')
         .order('display_order', { ascending: true });
       
       if (error) throw error;
+      console.log('[ServiceCatalog] Preconfigured services loaded:', data?.length || 0);
       return (data || []) as unknown as PreconfiguredService[];
     },
   });
