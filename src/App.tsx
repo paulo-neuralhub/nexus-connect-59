@@ -136,6 +136,11 @@ import ServiceCatalogPage from "./pages/app/settings/ServiceCatalogPage";
 import DeadlineConfigPage from "./pages/app/settings/deadlines";
 import ReportsPage from "./pages/app/reports";
 import NewReportPage from "./pages/app/reports/NewReport";
+import MyOfficesPage from "./pages/app/settings/offices";
+import SyncPreferencesPage from "./pages/app/settings/offices/sync";
+import SyncHistoryPage from "./pages/app/settings/offices/history";
+import ImportDataPage from "./pages/app/docket/ImportDataPage";
+import ReviewQueuePage from "./pages/app/docket/ReviewQueuePage";
 // Migrator pages consolidated into Data Hub
 import FilingIndexPage from "./pages/app/filing";
 import NewFilingPage from "./pages/app/filing/new";
@@ -400,6 +405,11 @@ const App = () => (
                 <Route path="settings/sso" element={<SSOSettingsPage />} />
                 <Route path="settings/catalogo-servicios" element={<ServiceCatalogPage />} />
                 <Route path="settings/deadlines" element={<DeadlineConfigPage />} />
+                <Route path="settings/offices" element={<MyOfficesPage />} />
+                <Route path="settings/offices/sync" element={<SyncPreferencesPage />} />
+                <Route path="settings/offices/history" element={<SyncHistoryPage />} />
+                <Route path="expedientes/importar" element={<ImportDataPage />} />
+                <Route path="expedientes/revision" element={<ReviewQueuePage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />
                 <Route path="tools" element={<ToolsPage />} />
                 {/* Migrator redirect to Data Hub */}
