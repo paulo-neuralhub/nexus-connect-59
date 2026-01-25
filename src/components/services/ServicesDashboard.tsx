@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   Plus, 
   Package, 
@@ -14,6 +15,7 @@ import {
   ArrowRight,
   Search,
   Filter,
+  RefreshCw,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +41,7 @@ import {
 } from '@/hooks/useServiceCatalogManagement';
 
 export function ServicesDashboard() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -48,6 +51,11 @@ export function ServicesDashboard() {
   const { data: services = [], isLoading } = useOrganizationServices(true);
   const { data: preconfigured = [], isLoading: loadingPreconfigured } = usePreconfiguredServices();
   const activatedCodes = new Set(services.filter(s => s.preconfigured_code).map(s => s.preconfigured_code));
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['preconfigured-services'] });
+    await queryClient.invalidateQueries({ queryKey: ['organization-services'] });
+  };
   
   // Filter services
   const filteredServices = services.filter(service => {
@@ -118,10 +126,20 @@ export function ServicesDashboard() {
             Gestiona los servicios que ofreces a tus clientes
           </p>
         </div>
-        <Button onClick={() => setShowCreateForm(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Crear nuevo
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh} 
+            disabled={isLoading || loadingPreconfigured}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${(isLoading || loadingPreconfigured) ? 'animate-spin' : ''}`} />
+            Refrescar
+          </Button>
+          <Button onClick={() => setShowCreateForm(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Crear nuevo
+          </Button>
+        </div>
       </div>
       
       {/* Stats Cards */}
@@ -141,13 +159,19 @@ export function ServicesDashboard() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disponibles</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Catálogo</CardTitle>
             <Package className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.available}</div>
+            <div className="text-2xl font-bold">
+              {loadingPreconfigured ? (
+                <span className="text-muted-foreground">...</span>
+              ) : (
+                stats.available
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
-              (+{stats.available - stats.active} por activar)
+              {loadingPreconfigured ? 'cargando...' : `${stats.available - stats.active} por activar`}
             </p>
           </CardContent>
         </Card>

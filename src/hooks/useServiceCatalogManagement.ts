@@ -108,6 +108,7 @@ export function usePreconfiguredServices() {
   return useQuery({
     queryKey: ['preconfigured-services'],
     queryFn: async () => {
+      console.log('[ServiceCatalog] Fetching preconfigured services...');
       const { data, error } = await supabase
         .from('service_catalog')
         .select('*')
@@ -116,10 +117,16 @@ export function usePreconfiguredServices() {
         .order('category')
         .order('display_order', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('[ServiceCatalog] Error fetching preconfigured:', error);
+        throw error;
+      }
       console.log('[ServiceCatalog] Preconfigured services loaded:', data?.length || 0);
+      console.log('[ServiceCatalog] Sample services:', data?.slice(0, 3));
       return (data || []) as unknown as PreconfiguredService[];
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 }
 
