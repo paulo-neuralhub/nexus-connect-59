@@ -119,6 +119,9 @@ import NotificationSettingsPage from "./pages/app/settings/notifications";
 import ApiKeysPage from "./pages/app/settings/api-keys";
 import AuditSettingsPage from "./pages/app/settings/audit";
 import ComplianceSettingsPage from "./pages/app/settings/compliance";
+import SubscriptionPage from "./pages/app/settings/subscription";
+import SubscriptionInvoicesPage from "./pages/app/settings/subscription/invoices";
+import SubscriptionPlansPage from "./pages/app/settings/subscription/plans";
 import IPChainPage from "./pages/app/ip-chain";
 import TranslatorPage from "./pages/app/genius/translator";
 import DocumentTemplatesPage from "./pages/app/genius/templates";
@@ -416,6 +419,9 @@ const App = () => (
                 <Route path="settings/offices" element={<MyOfficesPage />} />
                 <Route path="settings/offices/sync" element={<SyncPreferencesPage />} />
                 <Route path="settings/offices/history" element={<SyncHistoryPage />} />
+                <Route path="settings/subscription" element={<SubscriptionPage />} />
+                <Route path="settings/subscription/invoices" element={<SubscriptionInvoicesPage />} />
+                <Route path="settings/subscription/plans" element={<SubscriptionPlansPage />} />
                 <Route path="expedientes/importar" element={<ImportDataPage />} />
                 <Route path="expedientes/revision" element={<ReviewQueuePage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />
