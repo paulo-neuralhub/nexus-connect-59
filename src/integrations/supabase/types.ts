@@ -23549,6 +23549,53 @@ export type Database = {
         }
         Relationships: []
       }
+      office_pricing: {
+        Row: {
+          created_at: string | null
+          id: string
+          included_in_plans: string[] | null
+          is_available: boolean | null
+          min_plan_required: string | null
+          office_code: string
+          price_monthly: number | null
+          price_yearly: number | null
+          product_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          included_in_plans?: string[] | null
+          is_available?: boolean | null
+          min_plan_required?: string | null
+          office_code: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          product_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          included_in_plans?: string[] | null
+          is_available?: boolean | null
+          min_plan_required?: string | null
+          office_code?: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          product_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "office_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       official_fees: {
         Row: {
           amount: number
@@ -24902,6 +24949,45 @@ export type Database = {
           },
         ]
       }
+      plan_inclusions: {
+        Row: {
+          created_at: string | null
+          id: string
+          included_product_id: string
+          limit_override: number | null
+          plan_product_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          included_product_id: string
+          limit_override?: number | null
+          plan_product_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          included_product_id?: string
+          limit_override?: number | null
+          plan_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_inclusions_included_product_id_fkey"
+            columns: ["included_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_inclusions_plan_product_id_fkey"
+            columns: ["plan_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_jurisdictions: {
         Row: {
           created_at: string | null
@@ -26004,6 +26090,211 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_addons: {
+        Row: {
+          addon_product_id: string
+          available_for_plans: string[] | null
+          created_at: string | null
+          id: string
+          included_in_plans: string[] | null
+          incompatible_with: string[] | null
+          min_plan_required: string | null
+          requires_product_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          addon_product_id: string
+          available_for_plans?: string[] | null
+          created_at?: string | null
+          id?: string
+          included_in_plans?: string[] | null
+          incompatible_with?: string[] | null
+          min_plan_required?: string | null
+          requires_product_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          addon_product_id?: string
+          available_for_plans?: string[] | null
+          created_at?: string | null
+          id?: string
+          included_in_plans?: string[] | null
+          incompatible_with?: string[] | null
+          min_plan_required?: string | null
+          requires_product_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_addons_addon_product_id_fkey"
+            columns: ["addon_product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_addons_requires_product_id_fkey"
+            columns: ["requires_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_features: {
+        Row: {
+          created_at: string | null
+          feature_code: string
+          feature_description: string | null
+          feature_name: string
+          id: string
+          is_highlighted: boolean | null
+          limit_unit: string | null
+          limit_value: number | null
+          product_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_code: string
+          feature_description?: string | null
+          feature_name: string
+          id?: string
+          is_highlighted?: boolean | null
+          limit_unit?: string | null
+          limit_value?: number | null
+          product_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_code?: string
+          feature_description?: string | null
+          feature_name?: string
+          id?: string
+          is_highlighted?: boolean | null
+          limit_unit?: string | null
+          limit_value?: number | null
+          product_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_features_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_prices: {
+        Row: {
+          billing_period: string
+          created_at: string | null
+          currency: string | null
+          discount_percent: number | null
+          id: string
+          is_active: boolean | null
+          price: number
+          product_id: string
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_period: string
+          created_at?: string | null
+          currency?: string | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          price: number
+          product_id: string
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string | null
+          currency?: string | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          price?: number
+          product_id?: string
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          code: string
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_popular: boolean | null
+          is_visible: boolean | null
+          landing_url: string | null
+          module_code: string | null
+          name: string
+          product_type: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          is_visible?: boolean | null
+          landing_url?: string | null
+          module_code?: string | null
+          name: string
+          product_type: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          is_visible?: boolean | null
+          landing_url?: string | null
+          module_code?: string | null
+          name?: string
+          product_type?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
