@@ -224,6 +224,14 @@ import StripeSubscriptionsPage from "./pages/backoffice/stripe/subscriptions";
 import StripeInvoicesPage from "./pages/backoffice/stripe/invoices";
 import StripeWebhooksPage from "./pages/backoffice/stripe/webhooks";
 
+// Analytics Backoffice
+import AnalyticsOverviewPage from "./pages/backoffice/analytics";
+import AnalyticsRevenuePage from "./pages/backoffice/analytics/revenue";
+import AnalyticsSubscriptionsPage from "./pages/backoffice/analytics/subscriptions";
+import AnalyticsUsagePage from "./pages/backoffice/analytics/usage";
+import AnalyticsCohortsPage from "./pages/backoffice/analytics/cohorts";
+import AnalyticsTenantsPage from "./pages/backoffice/analytics/tenants";
+
 // Landings Backoffice
 import LandingsDashboard from "./pages/backoffice/landings";
 import LandingPagesListPage from "./pages/backoffice/landings/pages";
@@ -513,6 +521,13 @@ const App = () => (
                 <Route path="stripe/subscriptions" element={<StripeSubscriptionsPage />} />
                 <Route path="stripe/invoices" element={<StripeInvoicesPage />} />
                 <Route path="stripe/webhooks" element={<StripeWebhooksPage />} />
+                {/* Analytics */}
+                <Route path="analytics" element={<AnalyticsOverviewPage />} />
+                <Route path="analytics/revenue" element={<AnalyticsRevenuePage />} />
+                <Route path="analytics/subscriptions" element={<AnalyticsSubscriptionsPage />} />
+                <Route path="analytics/usage" element={<AnalyticsUsagePage />} />
+                <Route path="analytics/cohorts" element={<AnalyticsCohortsPage />} />
+                <Route path="analytics/tenants" element={<AnalyticsTenantsPage />} />
                 {/* Landings */}
                 <Route path="landings" element={<LandingsDashboard />} />
                 <Route path="landings/paginas" element={<LandingPagesListPage />} />

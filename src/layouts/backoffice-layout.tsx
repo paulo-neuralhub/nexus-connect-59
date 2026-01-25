@@ -79,6 +79,17 @@ const sidebarSections = [
     ],
   },
   {
+    label: 'Analytics',
+    items: [
+      { label: 'Overview', path: '/backoffice/analytics', icon: BarChart3 },
+      { label: 'Ingresos', path: '/backoffice/analytics/revenue', icon: DollarSign },
+      { label: 'Suscripciones', path: '/backoffice/analytics/subscriptions', icon: Users },
+      { label: 'Uso', path: '/backoffice/analytics/usage', icon: Activity },
+      { label: 'Cohortes', path: '/backoffice/analytics/cohorts', icon: Calendar },
+      { label: 'Tenants', path: '/backoffice/analytics/tenants', icon: Building2 },
+    ],
+  },
+  {
     label: 'Marketing',
     items: [
       { label: 'Landings', path: '/backoffice/landings', icon: Globe },
