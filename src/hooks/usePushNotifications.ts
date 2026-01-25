@@ -139,6 +139,27 @@ export function usePushNotifications() {
     }
   }, [subscription, user]);
 
+  const sendTestNotification = useCallback(async () => {
+    if (permission !== 'granted') {
+      toast.error('Permiso de notificaciones no concedido');
+      return;
+    }
+    
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification('IP-NEXUS', {
+        body: '¡Las notificaciones están funcionando!',
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-72x72.png',
+        tag: 'test',
+      });
+      toast.success('Notificación de prueba enviada');
+    } catch (error) {
+      console.error('Test notification failed:', error);
+      toast.error('Error al enviar notificación de prueba');
+    }
+  }, [permission]);
+
   return {
     isSupported,
     permission,
@@ -147,6 +168,7 @@ export function usePushNotifications() {
     subscribe,
     unsubscribe,
     requestPermission,
+    sendTestNotification,
   };
 }
 

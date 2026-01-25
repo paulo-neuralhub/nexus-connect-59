@@ -283,8 +283,7 @@ export function useCreateSignatureRequest() {
       });
 
       // TODO: Enviar emails cuando esté configurado RESEND_API_KEY
-      console.log('📧 [DEV] Simulating email send to:', data.signers.map(s => s.email));
-      console.log('📧 [DEV] Sign URLs would be:', signersWithTokens.map(s => `/sign/${s.sign_token}`));
+      // En DEV se simula el envío
 
       return result;
     },
@@ -373,8 +372,7 @@ export function useSendReminder() {
         actor_email: user?.email,
       });
 
-      // TODO: Enviar email de recordatorio
-      console.log('📧 [DEV] Simulating reminder email for request:', requestId);
+      // TODO: Enviar email de recordatorio via Edge Function
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['signature-requests'] });

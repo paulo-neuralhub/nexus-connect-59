@@ -146,8 +146,7 @@ export default function PortalMessages() {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    // En producción, aquí se enviaría el mensaje a Supabase
-    console.log('Enviar mensaje:', newMessage);
+    // TODO: Implementar envío real de mensajes a Supabase
     setNewMessage('');
   };
 
