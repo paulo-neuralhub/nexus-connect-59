@@ -200,6 +200,7 @@ import VoipManagementPage from "./pages/backoffice/voip/VoipManagementPage";
 import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
+import BackofficeProductsPage from "./pages/backoffice/products";
 
 // Landings Backoffice
 import LandingsDashboard from "./pages/backoffice/landings";
@@ -467,6 +468,7 @@ const App = () => (
                 <Route path="events" element={<EventLogPage />} />
                 <Route path="logs" element={<SystemLogsPage />} />
                 <Route path="alerts" element={<BackofficeAlertsPage />} />
+                <Route path="products" element={<BackofficeProductsPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
                 {/* Landings */}
                 <Route path="landings" element={<LandingsDashboard />} />
