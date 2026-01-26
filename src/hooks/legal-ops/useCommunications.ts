@@ -398,3 +398,167 @@ export function useCreateCommunication() {
     }
   });
 }
+
+// =============================================
+// Hook para enviar email
+// =============================================
+export function useSendEmail() {
+  const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+
+  return useMutation({
+    mutationFn: async (params: {
+      to: string;
+      to_name?: string;
+      subject: string;
+      body: string;
+      body_html?: string;
+      attachments?: { name: string; content: string; type: string }[];
+      contact_id?: string;
+      client_id?: string;
+      matter_id?: string;
+      template_id?: string;
+      scheduled_at?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          organization_id: currentOrganization?.id,
+          to: params.to,
+          subject: params.subject,
+          html: params.body_html || params.body,
+          text: params.body,
+          template_data: {
+            to_name: params.to_name,
+            contact_id: params.contact_id,
+            client_id: params.client_id,
+            matter_id: params.matter_id,
+          }
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['communications'] });
+      queryClient.invalidateQueries({ queryKey: ['inbox-stats'] });
+    }
+  });
+}
+
+// =============================================
+// Hook para enviar SMS
+// =============================================
+export function useSendSMS() {
+  const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+
+  return useMutation({
+    mutationFn: async (params: {
+      to: string;
+      message: string;
+      contact_id?: string;
+      client_id?: string;
+      matter_id?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('send-sms', {
+        body: {
+          organization_id: currentOrganization?.id,
+          to: params.to,
+          message: params.message,
+          contact_id: params.contact_id,
+          client_id: params.client_id,
+          matter_id: params.matter_id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['communications'] });
+      queryClient.invalidateQueries({ queryKey: ['inbox-stats'] });
+    }
+  });
+}
+
+// =============================================
+// Hook para enviar WhatsApp
+// =============================================
+export function useSendWhatsApp() {
+  const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+
+  return useMutation({
+    mutationFn: async (params: {
+      to: string;
+      message?: string;
+      template_name?: string;
+      template_language?: string;
+      template_params?: Record<string, string[]>;
+      media_url?: string;
+      media_type?: 'image' | 'document' | 'audio' | 'video';
+      contact_id?: string;
+      client_id?: string;
+      matter_id?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('send-whatsapp', {
+        body: {
+          organization_id: currentOrganization?.id,
+          to: params.to,
+          message: params.message,
+          template_name: params.template_name,
+          template_language: params.template_language,
+          template_params: params.template_params,
+          media_url: params.media_url,
+          media_type: params.media_type,
+          contact_id: params.contact_id,
+          client_id: params.client_id,
+          matter_id: params.matter_id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['communications'] });
+      queryClient.invalidateQueries({ queryKey: ['inbox-stats'] });
+    }
+  });
+}
+
+// =============================================
+// Hook para hacer llamada
+// =============================================
+export function useMakeCall() {
+  const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+
+  return useMutation({
+    mutationFn: async (params: {
+      to: string;
+      contact_id?: string;
+      client_id?: string;
+      matter_id?: string;
+      record?: boolean;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('telephony-make-call', {
+        body: {
+          tenantId: currentOrganization?.id,
+          toNumber: params.to,
+          record: params.record ?? true,
+          contactId: params.contact_id,
+          clientId: params.client_id,
+          matterId: params.matter_id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['communications'] });
+    }
+  });
+}
