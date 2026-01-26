@@ -7,7 +7,6 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { Plus, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
@@ -36,29 +35,19 @@ export function ModuleBadgesRow() {
     isLoading,
   } = useModules();
 
-  // Separate active/trial modules from available ones
-  const { activeModules, availableCount } = useMemo(() => {
+  // Get all modules to display (active first, then inactive in gray)
+  const { activeModules, inactiveModules } = useMemo(() => {
     const active = modulesWithStatus.filter(
       m => m.visual_status === 'active' || m.visual_status === 'trial'
     );
-    const available = modulesWithStatus.filter(
-      m => m.visual_status === 'locked' && m.can_activate
+    const inactive = modulesWithStatus.filter(
+      m => m.visual_status === 'locked' || m.visual_status === 'unavailable'
     );
     return {
-      activeModules: active.slice(0, 8), // Limit to 8 visible badges
-      availableCount: available.length,
+      activeModules: active.slice(0, 6), // Limit active to 6
+      inactiveModules: inactive.slice(0, 4), // Show up to 4 inactive
     };
   }, [modulesWithStatus]);
-
-  const handleModuleClick = (module: ModuleWithStatus) => {
-    // Navigate to module's first menu item if accessible
-    if (module.is_accessible && module.menu_items?.length > 0) {
-      navigate(module.menu_items[0].path);
-    } else {
-      // Navigate to modules page to activate
-      navigate('/app/modules');
-    }
-  };
 
   const handleExploreClick = () => {
     navigate('/app/modules');
@@ -74,68 +63,77 @@ export function ModuleBadgesRow() {
     );
   }
 
-  if (activeModules.length === 0) {
+  if (activeModules.length === 0 && inactiveModules.length === 0) {
     return (
-      <div className="flex h-10 items-center justify-between border-t border-border/50 px-4">
+      <div className="flex h-9 items-center justify-between border-t border-border/50 px-4">
         <p className="text-xs text-muted-foreground">
-          No tienes módulos activos
+          No tienes módulos configurados
         </p>
         <Button 
           variant="ghost" 
           size="sm" 
           onClick={handleExploreClick}
-          className="h-7 gap-1 text-xs text-primary"
+          className="h-6 gap-1 text-xs text-primary"
         >
           <Sparkles className="h-3 w-3" />
-          Explorar módulos
+          Explorar
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex h-10 items-center gap-2 border-t border-border/50">
+    <div className="flex h-9 items-center gap-2 border-t border-border/50">
       <ScrollArea className="flex-1">
-        <div className="flex items-center gap-1.5 px-4 py-1">
+        <div className="flex items-center gap-1 px-4 py-1">
+          {/* Active modules first */}
           {activeModules.map((module) => (
             <ModuleBadge
               key={module.code}
-              code={module.code}
               name={module.name}
               shortName={module.short_name}
               icon={getLucideIcon(module.icon_lucide)}
-              color={module.color}
               status={module.visual_status}
               trialDaysRemaining={module.trial_days_remaining}
-              onClick={() => handleModuleClick(module)}
+            />
+          ))}
+          
+          {/* Separator if both exist */}
+          {activeModules.length > 0 && inactiveModules.length > 0 && (
+            <div className="mx-1 h-4 w-px bg-border" />
+          )}
+          
+          {/* Inactive modules in gray */}
+          {inactiveModules.map((module) => (
+            <ModuleBadge
+              key={module.code}
+              name={module.name}
+              shortName={module.short_name}
+              icon={getLucideIcon(module.icon_lucide)}
+              status={module.visual_status}
             />
           ))}
         </div>
-        <ScrollBar orientation="horizontal" className="h-1.5" />
+        <ScrollBar orientation="horizontal" className="h-1" />
       </ScrollArea>
 
-      {/* Add more modules button */}
-      {availableCount > 0 && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExploreClick}
-              className={cn(
-                'mr-3 h-7 gap-1 rounded-md border border-dashed border-primary/40 px-2 text-xs',
-                'text-primary hover:border-primary hover:bg-primary/5'
-              )}
-            >
-              <Plus className="h-3 w-3" />
-              <span className="hidden sm:inline">+{availableCount}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs">
-            {availableCount} módulos disponibles
-          </TooltipContent>
-        </Tooltip>
-      )}
+      {/* Link to explore more modules */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExploreClick}
+            className="mr-3 h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:text-primary"
+          >
+            <Plus className="h-3 w-3" />
+            <span className="hidden sm:inline">Más</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-xs">
+          Ver todos los módulos
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }
