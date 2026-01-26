@@ -7,6 +7,272 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/contexts/organization-context";
 
+// Datos estáticos de fallback mientras se arregla la BD
+const STATIC_SIDEBAR_DATA: SidebarSection[] = [
+  {
+    sectionCode: "gestion",
+    sectionName: "Gestión",
+    sectionLabel: "Gestión Principal",
+    sectionIcon: "LayoutGrid",
+    sectionOrder: 10,
+    sectionAlwaysVisible: true,
+    modules: [
+      {
+        moduleCode: "dashboard",
+        moduleName: "Dashboard",
+        moduleShortName: "Panel",
+        moduleIcon: "LayoutDashboard",
+        moduleIconLucide: "LayoutDashboard",
+        moduleColor: "#3B82F6",
+        moduleOrder: 1,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "docket",
+        moduleName: "Docket",
+        moduleShortName: "Expedientes",
+        moduleIcon: "FileText",
+        moduleIconLucide: "FileText",
+        moduleColor: "#0EA5E9",
+        moduleOrder: 2,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [
+          { label: "Todos", path: "/app/docket", icon: "List" },
+          { label: "Crear nuevo", path: "/app/docket/new", icon: "Plus" },
+        ],
+        moduleRequires: [],
+        modulePopular: true,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "datahub",
+        moduleName: "Data Hub",
+        moduleShortName: "Conectores",
+        moduleIcon: "Database",
+        moduleIconLucide: "Database",
+        moduleColor: "#1E293B",
+        moduleOrder: 3,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+    ],
+  },
+  {
+    sectionCode: "operaciones",
+    sectionName: "Operaciones",
+    sectionLabel: "Operaciones Diarias",
+    sectionIcon: "Briefcase",
+    sectionOrder: 20,
+    sectionAlwaysVisible: false,
+    modules: [
+      {
+        moduleCode: "spider",
+        moduleName: "Spider",
+        moduleShortName: "Vigilancia",
+        moduleIcon: "Radar",
+        moduleIconLucide: "Radar",
+        moduleColor: "#8B5CF6",
+        moduleOrder: 10,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "finance",
+        moduleName: "Finance",
+        moduleShortName: "Finanzas",
+        moduleIcon: "DollarSign",
+        moduleIconLucide: "DollarSign",
+        moduleColor: "#14B8A6",
+        moduleOrder: 11,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "collab",
+        moduleName: "Colaboración",
+        moduleShortName: "Equipos",
+        moduleIcon: "Users2",
+        moduleIconLucide: "Users2",
+        moduleColor: "#EC4899",
+        moduleOrder: 12,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "communications",
+        moduleName: "Comunicaciones",
+        moduleShortName: "Comms",
+        moduleIcon: "MessageSquare",
+        moduleIconLucide: "MessageSquare",
+        moduleColor: "#F97316",
+        moduleOrder: 13,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+    ],
+  },
+  {
+    sectionCode: "inteligencia",
+    sectionName: "Inteligencia",
+    sectionLabel: "IA y Análisis",
+    sectionIcon: "Brain",
+    sectionOrder: 30,
+    sectionAlwaysVisible: false,
+    modules: [
+      {
+        moduleCode: "genius",
+        moduleName: "Genius",
+        moduleShortName: "IA Legal",
+        moduleIcon: "Brain",
+        moduleIconLucide: "Brain",
+        moduleColor: "#F59E0B",
+        moduleOrder: 20,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: true,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "alerts",
+        moduleName: "Alertas IA",
+        moduleShortName: "Predicción",
+        moduleIcon: "Bell",
+        moduleIconLucide: "Bell",
+        moduleColor: "#EF4444",
+        moduleOrder: 21,
+        moduleCategory: "core",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+    ],
+  },
+  {
+    sectionCode: "extensiones",
+    sectionName: "Extensiones",
+    sectionLabel: "Módulos Avanzados",
+    sectionIcon: "Puzzle",
+    sectionOrder: 40,
+    sectionAlwaysVisible: false,
+    modules: [
+      {
+        moduleCode: "crm",
+        moduleName: "CRM",
+        moduleShortName: "Clientes",
+        moduleIcon: "Users",
+        moduleIconLucide: "Users",
+        moduleColor: "#EC4899",
+        moduleOrder: 30,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [
+          { label: "Contactos", path: "/app/crm/contacts", icon: "Users" },
+          { label: "Deals", path: "/app/crm/deals", icon: "TrendingUp" },
+        ],
+        moduleRequires: [],
+        modulePopular: true,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "marketing",
+        moduleName: "Marketing",
+        moduleShortName: "Campañas",
+        moduleIcon: "Megaphone",
+        moduleIconLucide: "Megaphone",
+        moduleColor: "#F97316",
+        moduleOrder: 31,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+      {
+        moduleCode: "market",
+        moduleName: "Market",
+        moduleShortName: "Mercado",
+        moduleIcon: "Globe",
+        moduleIconLucide: "Globe",
+        moduleColor: "#10B981",
+        moduleOrder: 32,
+        moduleCategory: "addon",
+        moduleExpanded: false,
+        moduleMenuItems: [],
+        moduleRequires: [],
+        modulePopular: false,
+        moduleComingSoon: false,
+        isLicensed: true,
+        isTrial: false,
+        trialEndsAt: null,
+      },
+    ],
+  },
+];
+
 export interface SidebarMenuItem {
   label: string;
   path: string;
@@ -52,83 +318,12 @@ export function useSidebarMenu() {
     queryFn: async (): Promise<SidebarSection[]> => {
       if (!orgId) return [];
 
-      const { data, error } = await supabase.rpc("get_tenant_sidebar_menu", {
-        p_organization_id: orgId,
-      });
-
-      if (error) {
-        console.error("Error fetching sidebar menu:", error);
-        throw error;
-      }
-
-      if (!data || !Array.isArray(data)) return [];
-
-      // Agrupar por sección
-      const sectionsMap = new Map<string, SidebarSection>();
-
-      for (const row of data) {
-        const sectionCode = row.section_code || "otros";
-        
-        if (!sectionsMap.has(sectionCode)) {
-          sectionsMap.set(sectionCode, {
-            sectionCode,
-            sectionName: row.section_name || "Otros",
-            sectionLabel: row.section_label || row.section_name || "Otros",
-            sectionIcon: row.section_icon || "Folder",
-            sectionOrder: row.section_order ?? 99,
-            sectionAlwaysVisible: row.section_always_visible ?? false,
-            modules: [],
-          });
-        }
-
-        // Solo agregar módulos válidos (no null)
-        if (row.module_code) {
-          const menuItems = parseMenuItems(row.module_menu_items);
-          
-          sectionsMap.get(sectionCode)!.modules.push({
-            moduleCode: row.module_code,
-            moduleName: row.module_name,
-            moduleShortName: row.module_short_name,
-            moduleIcon: row.module_icon || row.module_icon_lucide || "Package",
-            moduleIconLucide: row.module_icon_lucide || row.module_icon || "Package",
-            moduleColor: row.module_color || "#6B7280",
-            moduleOrder: row.module_order ?? 99,
-            moduleCategory: row.module_category || "general",
-            moduleExpanded: row.module_expanded ?? false,
-            moduleMenuItems: menuItems,
-            moduleRequires: row.module_requires || [],
-            modulePopular: row.module_popular ?? false,
-            moduleComingSoon: row.module_coming_soon ?? false,
-            isLicensed: row.is_licensed ?? false,
-            isTrial: row.is_trial ?? false,
-            trialEndsAt: row.trial_ends_at,
-          });
-        }
-      }
-
-      // Ordenar secciones y módulos
-      const sections = Array.from(sectionsMap.values())
-        .sort((a, b) => a.sectionOrder - b.sectionOrder)
-        .map(section => ({
-          ...section,
-          modules: section.modules.sort((a, b) => a.moduleOrder - b.moduleOrder),
-        }));
-
-      return sections;
+      // Temporalmente retornamos datos estáticos mientras se arregla la BD
+      // TODO: Implementar llamada RPC cuando la estructura de BD esté lista
+      return STATIC_SIDEBAR_DATA;
     },
     enabled: !!orgId,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: Infinity, // Cache infinito para datos estáticos
   });
 }
 
-function parseMenuItems(items: unknown): SidebarMenuItem[] {
-  if (!items) return [];
-  if (!Array.isArray(items)) return [];
-  
-  return items.map((item: Record<string, unknown>) => ({
-    label: String(item.label || ""),
-    path: String(item.path || ""),
-    icon: String(item.icon || "Circle"),
-    badge: item.badge ? String(item.badge) : undefined,
-  })).filter(item => item.path);
-}
