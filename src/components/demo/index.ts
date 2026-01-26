@@ -8,3 +8,6 @@ export * from './guideContent';
 export * from './ValueHighlightPopup';
 export * from './ValueHighlightsManager';
 export * from './valueHighlights';
+export * from './DemoClosingPanel';
+export * from './DemoClosingButton';
+export * from './competitorData';
