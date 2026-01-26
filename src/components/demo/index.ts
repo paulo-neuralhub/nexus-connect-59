@@ -11,3 +11,5 @@ export * from './valueHighlights';
 export * from './DemoClosingPanel';
 export * from './DemoClosingButton';
 export * from './competitorData';
+export * from './DemoTourNavigator';
+export * from './tourSteps';
