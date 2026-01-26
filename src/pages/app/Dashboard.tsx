@@ -3,7 +3,7 @@
 // Dashboard principal rediseñado (L57-B)
 // =============================================
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useOrganization } from "@/contexts/organization-context";
 import { usePageTitle } from "@/contexts/page-context";
@@ -16,18 +16,19 @@ import {
   ExpedientesChart,
   FacturacionChart,
   TiposChart,
-  PlazosChart,
   RecentActivity,
+  DeadlineCalendar,
 } from "@/components/dashboard";
 import { FeatureGuide } from "@/components/help";
 import { useContextualHelp } from "@/hooks/useContextualHelp";
+import type { CalendarDeadline } from "@/components/dashboard/DeadlineCalendar";
 
 const Dashboard = () => {
   const { featureKey, currentGuide, shouldShowGuide } = useContextualHelp();
   const { profile } = useAuth();
   const { currentOrganization } = useOrganization();
   const { setTitle } = usePageTitle();
-  const { isLoading } = useDashboardHome();
+  const { data, isLoading } = useDashboardHome();
   const { metrics } = useDashboardMetrics();
 
   useEffect(() => {
@@ -43,6 +44,20 @@ const Dashboard = () => {
     if (hour < 19) return "Buenas tardes";
     return "Buenas noches";
   };
+
+  // Mapear deadlines para el calendario
+  const calendarDeadlines: CalendarDeadline[] = useMemo(() => {
+    if (!data?.deadlines) return [];
+    return data.deadlines.map(d => ({
+      id: d.id,
+      title: d.title,
+      date: new Date(d.dueDate),
+      priority: d.priority,
+      type: d.type,
+      matterId: d.matterId,
+      matterRef: d.matterRef,
+    }));
+  }, [data?.deadlines]);
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -74,12 +89,15 @@ const Dashboard = () => {
       {/* Grid principal */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Columna izquierda: Hoy */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 space-y-6">
           <TodaySection />
         </div>
 
-        {/* Columna central y derecha: Gráficos y Actividad */}
+        {/* Columna central y derecha: Calendario y Gráficos */}
         <div className="lg:col-span-8 space-y-6">
+          {/* Calendario de plazos con vistas */}
+          <DeadlineCalendar deadlines={calendarDeadlines} />
+
           {/* Primera fila de gráficos */}
           <div className="grid md:grid-cols-2 gap-6">
             <ExpedientesChart />
@@ -91,9 +109,6 @@ const Dashboard = () => {
             <TiposChart />
             <RecentActivity />
           </div>
-
-          {/* Tercera fila: Plazos */}
-          <PlazosChart />
         </div>
       </div>
     </div>
@@ -122,6 +137,7 @@ function DashboardSkeleton() {
           <Skeleton className="h-[500px] rounded-xl" />
         </div>
         <div className="lg:col-span-8 space-y-6">
+          <Skeleton className="h-[300px] rounded-xl" />
           <div className="grid md:grid-cols-2 gap-6">
             <Skeleton className="h-64 rounded-xl" />
             <Skeleton className="h-64 rounded-xl" />

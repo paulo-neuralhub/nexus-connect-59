@@ -23,3 +23,4 @@ export {
   PlazosChart,
 } from './TrendCharts';
 export { RecentActivity } from './RecentActivity';
+export { DeadlineCalendar } from './DeadlineCalendar';
