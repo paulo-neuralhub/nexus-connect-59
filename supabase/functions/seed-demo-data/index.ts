@@ -638,13 +638,13 @@ serve(async (req) => {
     for (let i = 0; i < 3; i++) {
       // market_assets.owner_id references auth.users(id), NOT market_users(id).
       // Use the authenticated user's auth id as the asset owner for demo purposes.
-      const ownerId = userData.user.id;
-      // We still pick a random market_user to assign as "seller" in the listing
-      const sellerMarketUserId = pick(marketUserIds);
+      // Both market_assets.owner_id and market_listings.seller_id reference auth.users(id).
+      // Use the authenticated user's auth id for both.
+      const authUserId = userData.user.id;
       const { data: asset, error: assetErr } = await adminClient
         .from("market_assets")
         .insert({
-          owner_id: ownerId,
+          owner_id: authUserId,
           // market_asset_type is an enum; "trademark" is NOT a valid value.
           asset_type: "trademark_word",
           // market_asset_category enum: industrial_property | intellectual_property | intangible_assets
@@ -673,7 +673,7 @@ serve(async (req) => {
         .insert({
           listing_number: `LIST-DEMO-${String(i + 1).padStart(4, "0")}`,
           asset_id: asset.id,
-          seller_id: sellerMarketUserId,
+          seller_id: authUserId,
           status: "active",
           transaction_types: transactionTypes,
           asking_price: 15000 + i * 5000,
