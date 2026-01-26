@@ -87,7 +87,7 @@ export function ModulesGrid({ searchQuery = '' }: ModulesGridProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {sortedSections.map(sectionKey => {
         const sectionModules = groupedModules[sectionKey];
         const config = SECTION_CONFIG[sectionKey] || {
@@ -97,19 +97,19 @@ export function ModulesGrid({ searchQuery = '' }: ModulesGridProps) {
         };
 
         return (
-          <div key={sectionKey} className="space-y-4">
-            {/* Header de sección */}
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">
+          <div key={sectionKey}>
+            {/* Header de sección - más compacto */}
+            <div className="flex items-baseline gap-2 mb-3">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
                 {config.title}
               </h3>
-              <p className="text-sm text-muted-foreground">
-                {config.description}
-              </p>
+              <span className="text-xs text-muted-foreground">
+                ({sectionModules.length})
+              </span>
             </div>
 
-            {/* Grid de módulos */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Grid de módulos - más compacto */}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sectionModules
                 .sort((a, b) => a.sidebar_order - b.sidebar_order)
                 .map(module => (
@@ -128,7 +128,7 @@ export function ModulesGrid({ searchQuery = '' }: ModulesGridProps) {
 }
 
 // =============================================
-// Subcomponente: ModuleCard
+// Subcomponente: ModuleCard - Diseño compacto profesional
 // =============================================
 
 interface ModuleCardProps {
@@ -146,7 +146,6 @@ function ModuleCard({ module, onActivate }: ModuleCardProps) {
 
   // Determinar ruta de navegación
   const getModulePath = () => {
-    // Mapeo de códigos a rutas
     const routeMap: Record<string, string> = {
       'docket': '/app/docket',
       'crm': '/app/crm',
@@ -173,120 +172,112 @@ function ModuleCard({ module, onActivate }: ModuleCardProps) {
     return routeMap[module.code] || `/app/${module.code}`;
   };
 
+  // Obtener nombre corto para display
+  const displayName = module.short_name || module.name;
+
   return (
     <div
       className={cn(
-        'group relative rounded-xl border bg-card p-5 transition-all hover:shadow-lg hover:border-primary/20',
-        isActive && 'border-primary/30 bg-primary/5 shadow-sm',
-        isTrial && 'border-amber-500/30 bg-amber-500/5 shadow-sm',
-        isLocked && 'border-border hover:bg-muted/30',
-        isComingSoon && 'border-dashed opacity-70 pointer-events-none'
+        'group relative rounded-lg border bg-card overflow-hidden transition-all duration-200',
+        'hover:shadow-md hover:border-primary/30',
+        isActive && 'ring-1 ring-primary/20 bg-primary/[0.02]',
+        isTrial && 'ring-1 ring-amber-500/20 bg-amber-500/[0.02]',
+        isLocked && 'hover:bg-muted/20',
+        isComingSoon && 'border-dashed opacity-60 pointer-events-none'
       )}
     >
-      {/* Status badge */}
-      <div className="absolute top-3 right-3 z-10">
-        {isActive && (
-          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0 text-xs font-medium">
-            <Check className="h-3 w-3 mr-1" />
-            Activo
-          </Badge>
-        )}
-        {isTrial && (
-          <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-xs font-medium">
-            <Clock className="h-3 w-3 mr-1" />
-            {module.trial_days_remaining}d restantes
-          </Badge>
-        )}
-        {isComingSoon && (
-          <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-0 text-xs">
-            <Sparkles className="h-3 w-3 mr-1" />
-            Próximamente
-          </Badge>
-        )}
-        {isLocked && !isComingSoon && module.is_popular && (
-          <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 text-xs">
-            Popular
-          </Badge>
-        )}
-      </div>
-
-      {/* Contenido */}
-      <div className="flex gap-4">
-        {/* Icono con color del módulo */}
+      {/* Header con icono y status */}
+      <div className="flex items-start gap-3 p-4 pb-3">
+        {/* Icono compacto */}
         <div 
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-transform group-hover:scale-105"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg"
           style={{ 
-            backgroundColor: `${module.color}15`,
-            boxShadow: isActive ? `0 4px 12px ${module.color}20` : undefined
+            backgroundColor: `${module.color}12`,
+            color: module.color,
           }}
         >
           {module.icon}
         </div>
 
-        <div className="flex-1 min-w-0 space-y-2">
-          <h4 className="font-semibold text-foreground truncate pr-16">
-            {module.name}
+        {/* Título y tagline */}
+        <div className="flex-1 min-w-0 pr-1">
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate" title={module.name}>
+            {displayName}
           </h4>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
             {module.tagline || module.description}
           </p>
-
-          {/* Features preview */}
-          {module.features && module.features.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
-              {module.features.slice(0, 2).map((f, i) => (
-                <span 
-                  key={i}
-                  className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded"
-                >
-                  {f.title}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Precio y acción */}
-          <div className="flex items-center justify-between pt-2">
-            {!isActive && !isTrial && module.effective_price ? (
-              <span className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">
-                  €{module.effective_price}
-                </span>
-                /mes
-              </span>
-            ) : (
-              <span />
-            )}
-
-            {isActive && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate(getModulePath())}
-                className="text-primary"
-              >
-                Abrir
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </Button>
-            )}
-            {isTrial && (
-              <Button size="sm" onClick={onActivate}>
-                Suscribirse
-              </Button>
-            )}
-            {isLocked && module.can_activate && (
-              <Button size="sm" variant="outline" onClick={onActivate}>
-                Activar
-              </Button>
-            )}
-            {isLocked && !module.can_activate && (
-              <Button size="sm" variant="ghost" disabled>
-                <Lock className="h-3.5 w-3.5 mr-1" />
-                Ver más
-              </Button>
-            )}
-          </div>
         </div>
+
+        {/* Status badge - compacto */}
+        <div className="shrink-0">
+          {isActive && (
+            <span className="flex items-center justify-center h-5 w-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+              <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            </span>
+          )}
+          {isTrial && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-amber-300 text-amber-600 dark:text-amber-400">
+              {module.trial_days_remaining}d
+            </Badge>
+          )}
+          {isComingSoon && (
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
+          )}
+          {isLocked && !isComingSoon && module.is_popular && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+              Popular
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Footer con precio/acción */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/30 border-t border-border/50">
+        {/* Precio */}
+        <div className="text-xs text-muted-foreground">
+          {!isActive && !isTrial && module.effective_price ? (
+            <>
+              <span className="font-medium text-foreground">€{module.effective_price}</span>
+              <span>/mes</span>
+            </>
+          ) : isActive ? (
+            <span className="text-emerald-600 dark:text-emerald-400 font-medium">Activo</span>
+          ) : isTrial ? (
+            <span className="text-amber-600 dark:text-amber-400 font-medium">En prueba</span>
+          ) : (
+            <span>Disponible</span>
+          )}
+        </div>
+
+        {/* Acción */}
+        {isActive && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate(getModulePath())}
+            className="h-7 px-2.5 text-xs text-primary hover:text-primary"
+          >
+            Abrir
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        )}
+        {isTrial && (
+          <Button size="sm" onClick={onActivate} className="h-7 px-3 text-xs">
+            Suscribir
+          </Button>
+        )}
+        {isLocked && module.can_activate && (
+          <Button size="sm" variant="outline" onClick={onActivate} className="h-7 px-3 text-xs">
+            Activar
+          </Button>
+        )}
+        {isLocked && !module.can_activate && !isComingSoon && (
+          <Button size="sm" variant="ghost" disabled className="h-7 px-2.5 text-xs">
+            <Lock className="h-3 w-3 mr-1" />
+            Bloqueado
+          </Button>
+        )}
       </div>
     </div>
   );
