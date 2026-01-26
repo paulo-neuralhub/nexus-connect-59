@@ -35009,6 +35009,77 @@ export type Database = {
           },
         ]
       }
+      tenant_modules: {
+        Row: {
+          access_type: string
+          activated_at: string | null
+          created_at: string | null
+          id: string
+          module_code: string
+          settings: Json | null
+          status: string
+          stripe_subscription_item_id: string | null
+          tenant_id: string
+          trial_ends_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_type?: string
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string
+          module_code: string
+          settings?: Json | null
+          status?: string
+          stripe_subscription_item_id?: string | null
+          tenant_id: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_type?: string
+          activated_at?: string | null
+          created_at?: string | null
+          id?: string
+          module_code?: string
+          settings?: Json | null
+          status?: string
+          stripe_subscription_item_id?: string | null
+          tenant_id?: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "tenant_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       tenant_office_addons: {
         Row: {
           cancelled_at: string | null
