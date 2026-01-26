@@ -99,15 +99,24 @@ export default function DemoModePage() {
   );
 
   const handleOpenDemo = () => {
-    // Find the selected demo org
-    const targetOrg = demoOrganizations.find(org => org.slug === selectedDemoOrg);
+    // Find the selected demo org by slug OR id
+    const targetOrg = demoOrganizations.find(org => 
+      org.slug === selectedDemoOrg || org.id === selectedDemoOrg
+    );
+    
     if (targetOrg) {
       setCurrentOrganization(targetOrg as Organization);
-      toast.success(`Cambiado a: ${targetOrg.name}`);
-      // Navigate to app dashboard
+      toast.success(`Abriendo demo: ${targetOrg.name}`);
+      // Navigate to app dashboard - demo mode will be auto-detected
+      navigate("/app/dashboard");
+    } else if (demoOrganizations.length > 0) {
+      // Fallback: use the first demo org available
+      const fallbackOrg = demoOrganizations[0];
+      setCurrentOrganization(fallbackOrg as Organization);
+      toast.success(`Abriendo demo: ${fallbackOrg.name}`);
       navigate("/app/dashboard");
     } else {
-      toast.error("Organización demo no encontrada. Selecciona otra.");
+      toast.error("No hay organizaciones demo disponibles. Crea una primero.");
     }
   };
 
@@ -256,16 +265,16 @@ export default function DemoModePage() {
               onClick={handleOpenDemo}
               size="lg"
               className="gap-2"
-              disabled={!config?.data_loaded}
+              disabled={demoOrganizations.length === 0}
             >
               <Play className="h-4 w-4" />
-              Abrir Demo
+              Iniciar Demo
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           </div>
-          {!config?.data_loaded && (
+          {demoOrganizations.length === 0 && (
             <p className="mt-3 text-sm text-amber-600">
-              ⚠️ Carga los datos demo primero (abajo) antes de abrir la demo
+              ⚠️ No hay organizaciones demo disponibles
             </p>
           )}
         </CardContent>
