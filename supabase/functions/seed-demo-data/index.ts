@@ -65,11 +65,15 @@ function formatError(e: unknown): string {
   }
 }
 
+// Bump this string to confirm which deployed version is running
+const SEED_DEMO_DATA_VERSION = "2026-01-26-agent-type-check-fix";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
+    console.info("seed-demo-data version", SEED_DEMO_DATA_VERSION);
     const SUPABASE_URL = getEnv("SUPABASE_URL");
     const SUPABASE_ANON_KEY = getEnv("SUPABASE_ANON_KEY");
     const SUPABASE_SERVICE_ROLE_KEY = getEnv("SUPABASE_SERVICE_ROLE_KEY");
