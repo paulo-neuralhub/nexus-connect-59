@@ -101,6 +101,7 @@ const sidebarSections = [
       { label: 'Calendar', path: '/backoffice/calendar', icon: Calendar },
       { label: 'Comunicaciones', path: '/backoffice/communications/whatsapp', icon: MessageSquare },
       { label: 'VoIP', path: '/backoffice/voip', icon: PhoneCall },
+      { label: 'Telefonía', path: '/backoffice/telephony', icon: PhoneCall },
       { label: 'Feature Flags', path: '/backoffice/feature-flags', icon: Flag },
       { label: 'Integraciones', path: '/backoffice/integrations', icon: Plug },
       { label: 'Announcements', path: '/backoffice/announcements', icon: Megaphone },

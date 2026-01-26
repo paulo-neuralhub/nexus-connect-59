@@ -15,3 +15,6 @@ export * from './useStripeSubscriptions';
 export * from './useStripeInvoices';
 export * from './useStripeWebhooks';
 export * from './useStripeProducts';
+
+// Telephony
+export * from './useTelephonyConfig';
