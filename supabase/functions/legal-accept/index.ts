@@ -23,16 +23,70 @@ function json(status: number, body: unknown) {
   });
 }
 
+function isValidIPv4(ip: string): boolean {
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  return parts.every((p) => {
+    if (!/^[0-9]{1,3}$/.test(p)) return false;
+    const n = Number(p);
+    return n >= 0 && n <= 255;
+  });
+}
+
+function isValidIPv6(ip: string): boolean {
+  // Pragmatic check: accept common IPv6 forms, reject obviously invalid strings.
+  if (!ip.includes(':')) return false;
+  return /^[0-9a-fA-F:]+$/.test(ip);
+}
+
+function normalizeIpCandidate(candidate: string): string | null {
+  const trimmed = candidate.trim();
+  if (!trimmed) return null;
+
+  // Strip brackets for IPv6 like: [2001:db8::1]
+  const unbracketed =
+    trimmed.startsWith('[') && trimmed.includes(']')
+      ? trimmed.slice(1, trimmed.indexOf(']'))
+      : trimmed;
+
+  // Strip port for IPv4:port (e.g., 203.0.113.1:12345)
+  const maybeIpv4WithPort =
+    unbracketed.includes('.') && unbracketed.includes(':') && unbracketed.split(':').length === 2;
+  const withoutPort = maybeIpv4WithPort ? unbracketed.split(':')[0] : unbracketed;
+
+  const ip = withoutPort.trim();
+  if (isValidIPv4(ip) || isValidIPv6(ip)) return ip;
+
+  // Fallback: extract first IPv4 that appears anywhere inside the string
+  const ipv4Match = ip.match(/(\d{1,3}(?:\.\d{1,3}){3})/);
+  if (ipv4Match && isValidIPv4(ipv4Match[1])) return ipv4Match[1];
+
+  return null;
+}
+
 function getRequestIp(req: Request): string | null {
   const forwardedFor = req.headers.get('x-forwarded-for');
+  const cfConnectingIp = req.headers.get('cf-connecting-ip');
+  const realIp = req.headers.get('x-real-ip');
+
+  // x-forwarded-for can contain multiple IPs. Prefer the first valid IP.
   if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs, take only the first (client IP)
-    return forwardedFor.split(',')[0].trim();
+    for (const part of forwardedFor.split(',')) {
+      const ip = normalizeIpCandidate(part);
+      if (ip) return ip;
+    }
+    // As a last resort, try to extract from the whole header
+    const fallback = normalizeIpCandidate(forwardedFor);
+    if (fallback) return fallback;
   }
-  return (
-    req.headers.get('cf-connecting-ip') ||
-    req.headers.get('x-real-ip')
-  );
+
+  for (const raw of [cfConnectingIp, realIp]) {
+    if (!raw) continue;
+    const ip = normalizeIpCandidate(raw);
+    if (ip) return ip;
+  }
+
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -108,7 +162,12 @@ Deno.serve(async (req) => {
     return json(200, { success: true, acceptance });
   } catch (error: unknown) {
     console.error('legal-accept error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message?: unknown }).message ?? 'Unknown error')
+          : 'Unknown error';
     return json(500, { error: message });
   }
 });
