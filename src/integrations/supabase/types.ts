@@ -12196,6 +12196,150 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          billing_status: string | null
+          category: string
+          contact_id: string | null
+          created_at: string | null
+          currency: string | null
+          date: string
+          description: string
+          id: string
+          invoice_id: string | null
+          invoice_line_id: string | null
+          is_billable: boolean | null
+          markup_percent: number | null
+          matter_id: string | null
+          organization_id: string
+          receipt_file_name: string | null
+          receipt_url: string | null
+          rejection_reason: string | null
+          status: string | null
+          total_amount: number
+          updated_at: string | null
+          user_id: string
+          vat_amount: number | null
+          vat_rate: number | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_status?: string | null
+          category: string
+          contact_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date: string
+          description: string
+          id?: string
+          invoice_id?: string | null
+          invoice_line_id?: string | null
+          is_billable?: boolean | null
+          markup_percent?: number | null
+          matter_id?: string | null
+          organization_id: string
+          receipt_file_name?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          total_amount: number
+          updated_at?: string | null
+          user_id: string
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_status?: string | null
+          category?: string
+          contact_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string
+          id?: string
+          invoice_id?: string | null
+          invoice_line_id?: string | null
+          is_billable?: boolean | null
+          markup_percent?: number | null
+          matter_id?: string | null
+          organization_id?: string
+          receipt_file_name?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "expenses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       exports: {
         Row: {
           columns: Json | null

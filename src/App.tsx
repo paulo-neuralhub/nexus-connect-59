@@ -102,6 +102,8 @@ import BillingRatesPage from "./pages/app/timetracking/rates";
 import FinanceDashboard from "./pages/app/finance/FinanceDashboard";
 import InvoiceListPage from "./pages/app/finance/invoices";
 import InvoiceDetailPage from "./pages/app/finance/invoices/InvoiceDetailPage";
+import InvoiceEditorPage from "./pages/app/finance/invoices/InvoiceEditorPage";
+import ExpensesPage from "./pages/app/finance/ExpensesPage";
 import RenewalSchedulePage from "./pages/app/finance/renewals";
 import CostsPage from "./pages/app/finance/costs";
 import QuotesPage from "./pages/app/finance/quotes";
@@ -413,7 +415,10 @@ const App = () => (
                   <Route path="costs" element={<CostsPage />} />
                   <Route path="quotes" element={<QuotesPage />} />
                   <Route path="invoices" element={<InvoiceListPage />} />
+                  <Route path="invoices/new" element={<InvoiceEditorPage />} />
                   <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+                  <Route path="invoices/:id/edit" element={<InvoiceEditorPage />} />
+                  <Route path="expenses" element={<ExpensesPage />} />
                   <Route path="clients" element={<BillingClientsPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
