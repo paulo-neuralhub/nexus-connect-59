@@ -122,6 +122,9 @@ import ComplianceSettingsPage from "./pages/app/settings/compliance";
 import SubscriptionPage from "./pages/app/settings/subscription";
 import SubscriptionInvoicesPage from "./pages/app/settings/subscription/invoices";
 import SubscriptionPlansPage from "./pages/app/settings/subscription/plans";
+import TenantTelephonySettingsPage from "./pages/app/settings/telephony";
+import TenantTelephonyPacksPage from "./pages/app/settings/telephony/packs";
+import TenantTelephonyHistoryPage from "./pages/app/settings/telephony/historial";
 import IPChainPage from "./pages/app/ip-chain";
 import TranslatorPage from "./pages/app/genius/translator";
 import DocumentTemplatesPage from "./pages/app/genius/templates";
@@ -446,6 +449,10 @@ const App = () => (
                 <Route path="settings/subscription" element={<SubscriptionPage />} />
                 <Route path="settings/subscription/invoices" element={<SubscriptionInvoicesPage />} />
                 <Route path="settings/subscription/plans" element={<SubscriptionPlansPage />} />
+                {/* Telephony Settings */}
+                <Route path="settings/telephony" element={<TenantTelephonySettingsPage />} />
+                <Route path="settings/telephony/packs" element={<TenantTelephonyPacksPage />} />
+                <Route path="settings/telephony/historial" element={<TenantTelephonyHistoryPage />} />
                 {/* Document Templates */}
                 <Route path="settings/templates" element={<DocumentTemplatesDashboard />} />
                 <Route path="settings/templates/branding" element={<DocumentTemplateBrandingPage />} />

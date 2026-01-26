@@ -248,3 +248,9 @@ verify_jwt = false
 
 [functions.generate-document-pdf]
 verify_jwt = false
+
+[functions.telephony-purchase-pack]
+verify_jwt = false
+
+[functions.telephony-check-balance]
+verify_jwt = false
