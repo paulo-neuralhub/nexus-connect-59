@@ -105,14 +105,14 @@ export function SendEmailConfig({ action, onUpdate }: ActionConfigProps) {
       <div className="space-y-1.5">
         <Label className="text-sm">Plantilla de Email</Label>
         <Select
-          value={(action.config.template_id as string) || ''}
-          onValueChange={(v) => updateField('template_id', v)}
+          value={(action.config.template_id as string) || 'none'}
+          onValueChange={(v) => updateField('template_id', v === 'none' ? '' : v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar plantilla (opcional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Sin plantilla</SelectItem>
+            <SelectItem value="none">Sin plantilla</SelectItem>
             <SelectItem value="deadline_reminder">Recordatorio de plazo</SelectItem>
             <SelectItem value="welcome_client">Bienvenida cliente</SelectItem>
             <SelectItem value="document_shared">Documento compartido</SelectItem>
