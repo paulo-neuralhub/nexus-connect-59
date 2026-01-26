@@ -218,6 +218,13 @@ import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
 import DemoDataPage from "./pages/backoffice/demo-data";
 import VoipManagementPage from "./pages/backoffice/voip/VoipManagementPage";
+import { 
+  TelephonyDashboard, 
+  TelephonyProviderPage, 
+  TelephonyPacksPage, 
+  TelephonyConsumptionPage, 
+  TelephonyAlertsPage 
+} from "./pages/backoffice/telephony";
 import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
@@ -524,6 +531,11 @@ const App = () => (
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
                 <Route path="demo-data" element={<DemoDataPage />} />
                 <Route path="voip" element={<VoipManagementPage />} />
+                <Route path="telephony" element={<TelephonyDashboard />} />
+                <Route path="telephony/provider" element={<TelephonyProviderPage />} />
+                <Route path="telephony/packs" element={<TelephonyPacksPage />} />
+                <Route path="telephony/consumption" element={<TelephonyConsumptionPage />} />
+                <Route path="telephony/alerts" element={<TelephonyAlertsPage />} />
                 <Route path="events" element={<EventLogPage />} />
                 <Route path="logs" element={<SystemLogsPage />} />
                 <Route path="alerts" element={<BackofficeAlertsPage />} />
