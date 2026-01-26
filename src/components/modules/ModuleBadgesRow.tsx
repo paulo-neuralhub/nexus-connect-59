@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ModuleBadge } from './ModuleBadge';
-import { useModulesContext } from '@/contexts/ModulesContext';
+import { useModules } from '@/hooks/useModules';
 import type { ModuleWithStatus } from '@/types/modules';
 
 // Helper to get Lucide icon by name
@@ -33,10 +33,8 @@ export function ModuleBadgesRow() {
   const navigate = useNavigate();
   const { 
     modulesWithStatus, 
-    modulesSummary, 
     isLoading,
-    showActivationPopup,
-  } = useModulesContext();
+  } = useModules();
 
   // Separate active/trial modules from available ones
   const { activeModules, availableCount } = useMemo(() => {
@@ -57,7 +55,8 @@ export function ModuleBadgesRow() {
     if (module.is_accessible && module.menu_items?.length > 0) {
       navigate(module.menu_items[0].path);
     } else {
-      showActivationPopup(module.code);
+      // Navigate to modules page to activate
+      navigate('/app/modules');
     }
   };
 
