@@ -14,6 +14,7 @@ import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SoftphoneWidget } from "@/components/voip/SoftphoneWidget";
+import { CallManager } from "@/components/telephony/CallManager";
 
 export function AppLayout() {
   const isMobile = useIsMobile();
@@ -103,6 +104,9 @@ export function AppLayout() {
 
                 {/* Softphone Widget (VoIP) */}
                 <SoftphoneWidget />
+                
+                {/* Click-to-Call Manager */}
+                <CallManager />
               </div>
             )}
           </ContextualHelpProvider>
