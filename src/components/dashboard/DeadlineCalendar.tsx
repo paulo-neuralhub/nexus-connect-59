@@ -1,14 +1,15 @@
 // =============================================
 // COMPONENTE: DeadlineCalendar
-// Calendario de plazos con vistas diaria/semanal/mensual
+// Calendario compacto con expansión a modal
 // =============================================
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, AlertCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, AlertCircle, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, isToday, isPast } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -28,8 +29,6 @@ interface DeadlineCalendarProps {
   deadlines: CalendarDeadline[];
 }
 
-type ViewMode = 'day' | 'week' | 'month';
-
 const PRIORITY_COLORS = {
   critical: 'bg-red-500',
   high: 'bg-orange-500',
@@ -45,8 +44,179 @@ const PRIORITY_BG = {
 };
 
 export function DeadlineCalendar({ deadlines }: DeadlineCalendarProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Próximos 7 días para vista compacta
+  const next7Days = useMemo(() => {
+    return eachDayOfInterval({ 
+      start: new Date(), 
+      end: addDays(new Date(), 6) 
+    });
+  }, []);
+
+  // Plazos próximos (ordenados)
+  const upcomingDeadlines = useMemo(() => {
+    return deadlines
+      .filter(d => d.date >= new Date() || isToday(d.date))
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .slice(0, 5);
+  }, [deadlines]);
+
+  return (
+    <>
+      {/* Vista Compacta */}
+      <Card className="h-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              Calendario
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 gap-1 text-xs"
+              onClick={() => setIsExpanded(true)}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              Ampliar
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {/* Mini calendario semanal */}
+          <div className="grid grid-cols-7 gap-1 mb-3">
+            {next7Days.map(day => {
+              const dayDeadlines = deadlines.filter(d => isSameDay(d.date, day));
+              const hasCritical = dayDeadlines.some(d => d.priority === 'critical');
+              const hasHigh = dayDeadlines.some(d => d.priority === 'high');
+              
+              return (
+                <div 
+                  key={day.toISOString()} 
+                  className={cn(
+                    "text-center p-1.5 rounded-lg cursor-pointer transition-colors hover:bg-muted",
+                    isToday(day) && "bg-primary/10 ring-1 ring-primary"
+                  )}
+                  onClick={() => {
+                    setCurrentDate(day);
+                    setIsExpanded(true);
+                  }}
+                >
+                  <div className="text-[10px] text-muted-foreground uppercase">
+                    {format(day, 'EEE', { locale: es })}
+                  </div>
+                  <div className={cn(
+                    "text-sm font-medium",
+                    isToday(day) && "text-primary"
+                  )}>
+                    {format(day, 'd')}
+                  </div>
+                  {dayDeadlines.length > 0 && (
+                    <div className="flex justify-center gap-0.5 mt-0.5">
+                      {dayDeadlines.slice(0, 3).map((_, i) => (
+                        <span 
+                          key={i} 
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            hasCritical ? PRIORITY_COLORS.critical : 
+                            hasHigh ? PRIORITY_COLORS.high : PRIORITY_COLORS.medium
+                          )} 
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Lista compacta de próximos plazos */}
+          {upcomingDeadlines.length > 0 ? (
+            <div className="space-y-1.5">
+              {upcomingDeadlines.slice(0, 3).map(deadline => (
+                <CompactDeadlineItem key={deadline.id} deadline={deadline} />
+              ))}
+              {upcomingDeadlines.length > 3 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-xs h-7"
+                  onClick={() => setIsExpanded(true)}
+                >
+                  Ver {upcomingDeadlines.length - 3} más
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-3 text-sm text-muted-foreground">
+              Sin plazos próximos
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal Expandido */}
+      <ExpandedCalendarModal 
+        open={isExpanded} 
+        onOpenChange={setIsExpanded}
+        deadlines={deadlines}
+        initialDate={currentDate}
+      />
+    </>
+  );
+}
+
+// =============================================
+// Item compacto de deadline
+// =============================================
+
+function CompactDeadlineItem({ deadline }: { deadline: CalendarDeadline }) {
+  const isOverdue = isPast(deadline.date) && !isToday(deadline.date);
+  
+  const content = (
+    <div className={cn(
+      "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
+      PRIORITY_BG[deadline.priority],
+      deadline.matterId && "hover:opacity-80 cursor-pointer"
+    )}>
+      <span className={cn("w-2 h-2 rounded-full shrink-0", PRIORITY_COLORS[deadline.priority])} />
+      <span className="truncate flex-1 font-medium">{deadline.title}</span>
+      <span className={cn(
+        "text-xs shrink-0",
+        isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"
+      )}>
+        {isToday(deadline.date) ? 'Hoy' : format(deadline.date, 'd MMM', { locale: es })}
+      </span>
+    </div>
+  );
+
+  if (deadline.matterId) {
+    return <Link to={`/app/docket/${deadline.matterId}`}>{content}</Link>;
+  }
+  return content;
+}
+
+// =============================================
+// Modal con calendario completo
+// =============================================
+
+type ViewMode = 'day' | 'week' | 'month';
+
+function ExpandedCalendarModal({ 
+  open, 
+  onOpenChange, 
+  deadlines,
+  initialDate 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+  deadlines: CalendarDeadline[];
+  initialDate: Date;
+}) {
+  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const [currentDate, setCurrentDate] = useState(initialDate);
 
   const navigate = (direction: 'prev' | 'next') => {
     const operations = {
@@ -90,48 +260,51 @@ export function DeadlineCalendar({ deadlines }: DeadlineCalendarProps) {
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarIcon className="h-5 w-5 text-primary" />
-            Próximos Plazos
-          </CardTitle>
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-            <TabsList className="h-8">
-              <TabsTrigger value="day" className="text-xs px-2">Día</TabsTrigger>
-              <TabsTrigger value="week" className="text-xs px-2">Semana</TabsTrigger>
-              <TabsTrigger value="month" className="text-xs px-2">Mes</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => navigate('prev')}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => navigate('next')}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="text-xs ml-1" onClick={goToToday}>
-              Hoy
-            </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              Calendario de Plazos
+            </DialogTitle>
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+              <TabsList className="h-8">
+                <TabsTrigger value="day" className="text-xs px-3">Día</TabsTrigger>
+                <TabsTrigger value="week" className="text-xs px-3">Semana</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs px-3">Mes</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
-          <span className="text-sm font-medium capitalize">{getTitle()}</span>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('prev')}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate('next')}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="text-xs ml-2" onClick={goToToday}>
+                Hoy
+              </Button>
+            </div>
+            <span className="text-sm font-medium capitalize">{getTitle()}</span>
+          </div>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-auto pt-2">
+          {viewMode === 'day' && (
+            <DayView date={currentDate} deadlines={deadlines} />
+          )}
+          {viewMode === 'week' && (
+            <WeekView startDate={range.start} endDate={range.end} deadlines={deadlines} />
+          )}
+          {viewMode === 'month' && (
+            <MonthView currentDate={currentDate} deadlines={deadlines} />
+          )}
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {viewMode === 'day' && (
-          <DayView date={currentDate} deadlines={deadlines} />
-        )}
-        {viewMode === 'week' && (
-          <WeekView startDate={range.start} endDate={range.end} deadlines={deadlines} />
-        )}
-        {viewMode === 'month' && (
-          <MonthView currentDate={currentDate} deadlines={deadlines} />
-        )}
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -144,9 +317,9 @@ function DayView({ date, deadlines }: { date: Date; deadlines: CalendarDeadline[
 
   if (dayDeadlines.length === 0) {
     return (
-      <div className="text-center py-8">
-        <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-        <p className="text-sm text-muted-foreground">Sin plazos para este día</p>
+      <div className="text-center py-12">
+        <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+        <p className="text-muted-foreground">Sin plazos para este día</p>
       </div>
     );
   }
@@ -168,18 +341,18 @@ function WeekView({ startDate, endDate, deadlines }: { startDate: Date; endDate:
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   return (
-    <div className="grid grid-cols-7 gap-1">
+    <div className="grid grid-cols-7 gap-2">
       {/* Headers */}
       {days.map(day => (
         <div 
           key={day.toISOString()} 
           className={cn(
-            "text-center text-xs font-medium py-1 rounded",
+            "text-center py-2 rounded-lg",
             isToday(day) && "bg-primary text-primary-foreground"
           )}
         >
-          <div>{format(day, 'EEE', { locale: es })}</div>
-          <div className="text-lg">{format(day, 'd')}</div>
+          <div className="text-xs font-medium">{format(day, 'EEE', { locale: es })}</div>
+          <div className="text-lg font-bold">{format(day, 'd')}</div>
         </div>
       ))}
       {/* Deadline cells */}
@@ -189,19 +362,14 @@ function WeekView({ startDate, endDate, deadlines }: { startDate: Date; endDate:
           <div 
             key={`cell-${day.toISOString()}`} 
             className={cn(
-              "min-h-[80px] p-1 rounded border",
-              isToday(day) ? "border-primary/50 bg-primary/5" : "border-border/50",
+              "min-h-[120px] p-2 rounded-lg border",
+              isToday(day) ? "border-primary/50 bg-primary/5" : "border-border",
               isPast(day) && !isToday(day) && "opacity-60"
             )}
           >
-            {dayDeadlines.slice(0, 3).map(deadline => (
+            {dayDeadlines.map(deadline => (
               <WeekDeadlineItem key={deadline.id} deadline={deadline} />
             ))}
-            {dayDeadlines.length > 3 && (
-              <div className="text-xs text-muted-foreground text-center mt-1">
-                +{dayDeadlines.length - 3} más
-              </div>
-            )}
           </div>
         );
       })}
@@ -213,13 +381,15 @@ function WeekDeadlineItem({ deadline }: { deadline: CalendarDeadline }) {
   const content = (
     <div 
       className={cn(
-        "text-xs p-1 rounded mb-1 truncate border cursor-pointer hover:opacity-80",
+        "text-xs p-1.5 rounded mb-1 border cursor-pointer hover:opacity-80",
         PRIORITY_BG[deadline.priority]
       )}
       title={deadline.title}
     >
-      <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1", PRIORITY_COLORS[deadline.priority])} />
-      {deadline.title}
+      <div className="flex items-center gap-1">
+        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", PRIORITY_COLORS[deadline.priority])} />
+        <span className="truncate">{deadline.title}</span>
+      </div>
     </div>
   );
 
@@ -245,9 +415,9 @@ function MonthView({ currentDate, deadlines }: { currentDate: Date; deadlines: C
   return (
     <div>
       {/* Week headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-1 mb-2">
         {weekDays.map(day => (
-          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-1">
+          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
             {day}
           </div>
         ))}
@@ -262,28 +432,28 @@ function MonthView({ currentDate, deadlines }: { currentDate: Date; deadlines: C
             <div 
               key={day.toISOString()} 
               className={cn(
-                "min-h-[50px] p-1 rounded text-center",
+                "min-h-[70px] p-1.5 rounded-lg text-center",
                 isCurrentMonth ? "bg-muted/30" : "bg-muted/10 opacity-50",
-                isToday(day) && "ring-2 ring-primary ring-offset-1"
+                isToday(day) && "ring-2 ring-primary ring-offset-2"
               )}
             >
               <div className={cn(
-                "text-xs font-medium mb-1",
+                "text-sm font-medium mb-1",
                 isToday(day) && "text-primary"
               )}>
                 {format(day, 'd')}
               </div>
               {dayDeadlines.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-0.5">
-                  {dayDeadlines.slice(0, 3).map(deadline => (
+                  {dayDeadlines.slice(0, 4).map(deadline => (
                     <span 
                       key={deadline.id} 
                       className={cn("w-2 h-2 rounded-full", PRIORITY_COLORS[deadline.priority])}
                       title={deadline.title}
                     />
                   ))}
-                  {dayDeadlines.length > 3 && (
-                    <span className="text-[8px] text-muted-foreground">+{dayDeadlines.length - 3}</span>
+                  {dayDeadlines.length > 4 && (
+                    <span className="text-[10px] text-muted-foreground">+{dayDeadlines.length - 4}</span>
                   )}
                 </div>
               )}
@@ -296,7 +466,7 @@ function MonthView({ currentDate, deadlines }: { currentDate: Date; deadlines: C
 }
 
 // =============================================
-// Item de deadline individual
+// Item de deadline completo
 // =============================================
 
 function DeadlineItem({ deadline }: { deadline: CalendarDeadline }) {
@@ -319,7 +489,7 @@ function DeadlineItem({ deadline }: { deadline: CalendarDeadline }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{deadline.title}</p>
+        <p className="font-medium text-sm">{deadline.title}</p>
         {deadline.matterRef && (
           <p className="text-xs text-muted-foreground mt-0.5">{deadline.matterRef}</p>
         )}

@@ -86,25 +86,23 @@ const Dashboard = () => {
       {/* Métricas compactas */}
       <MetricsBar metrics={metrics} />
 
-      {/* Grid principal */}
+      {/* Grid principal - Layout reorganizado */}
       <div className="grid lg:grid-cols-12 gap-6">
-        {/* Columna izquierda: Hoy */}
+        {/* Columna izquierda: Hoy + Calendario compacto */}
         <div className="lg:col-span-4 space-y-6">
           <TodaySection />
+          <DeadlineCalendar deadlines={calendarDeadlines} />
         </div>
 
-        {/* Columna central y derecha: Calendario y Gráficos */}
+        {/* Columna central y derecha: Gráficos */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Calendario de plazos con vistas */}
-          <DeadlineCalendar deadlines={calendarDeadlines} />
-
-          {/* Primera fila de gráficos */}
+          {/* Primera fila: Expedientes y Facturación */}
           <div className="grid md:grid-cols-2 gap-6">
             <ExpedientesChart />
             <FacturacionChart />
           </div>
 
-          {/* Segunda fila */}
+          {/* Segunda fila: Tipos y Actividad */}
           <div className="grid md:grid-cols-2 gap-6">
             <TiposChart />
             <RecentActivity />
@@ -133,11 +131,11 @@ function DashboardSkeleton() {
 
       {/* Main grid skeleton */}
       <div className="grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4">
-          <Skeleton className="h-[500px] rounded-xl" />
+        <div className="lg:col-span-4 space-y-6">
+          <Skeleton className="h-[350px] rounded-xl" />
+          <Skeleton className="h-[200px] rounded-xl" />
         </div>
         <div className="lg:col-span-8 space-y-6">
-          <Skeleton className="h-[300px] rounded-xl" />
           <div className="grid md:grid-cols-2 gap-6">
             <Skeleton className="h-64 rounded-xl" />
             <Skeleton className="h-64 rounded-xl" />
