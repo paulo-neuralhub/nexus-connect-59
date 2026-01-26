@@ -18,3 +18,5 @@ export * from './useStripeProducts';
 
 // Telephony
 export * from './useTelephonyConfig';
+export * from './useTelephonyAnalytics';
+export * from './useTelephonyAlerts';
