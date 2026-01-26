@@ -7,21 +7,24 @@ import { Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Download, 
-  Filter,
   Phone,
-  MessageSquare,
+  Clock,
   TrendingUp,
-  TrendingDown,
+  Euro,
   Building2,
-  Calendar
+  Globe,
+  PhoneOutgoing,
+  PhoneIncoming,
+  AlertTriangle,
+  XCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -29,8 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import {
   ResponsiveContainer,
   BarChart,
@@ -40,110 +41,62 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
-import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--module-genius))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))'];
+import { StatCard } from '@/components/ui/charts';
+import { CallLogsTable } from '@/components/backoffice/telephony/CallLogsTable';
+import {
+  useTelephonyGlobalMetrics,
+  useTelephonyDailyMetrics,
+  useTenantConsumption,
+  useCountryBreakdown,
+  useCallLogs,
+  useExportConsumption,
+  type DateRangeType,
+} from '@/hooks/backoffice/useTelephonyAnalytics';
+import { toast } from 'sonner';
 
 export default function TelephonyConsumptionPage() {
-  const [dateRange, setDateRange] = useState('month');
+  const [dateRange, setDateRange] = useState<DateRangeType>('month');
   const [searchTenant, setSearchTenant] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // Get consumption data
-  const { data: consumptionData, isLoading } = useQuery({
-    queryKey: ['telephony-consumption', dateRange],
-    queryFn: async () => {
-      let startDate: Date;
-      let endDate = new Date();
+  const { data: metrics, isLoading: loadingMetrics } = useTelephonyGlobalMetrics(dateRange);
+  const { data: dailyMetrics, isLoading: loadingDaily } = useTelephonyDailyMetrics(dateRange);
+  const { data: tenants, isLoading: loadingTenants } = useTenantConsumption(dateRange);
+  const { data: countries, isLoading: loadingCountries } = useCountryBreakdown(dateRange);
+  const { data: callLogs, isLoading: loadingLogs } = useCallLogs({ limit: 50 });
+  const { exportToCSV } = useExportConsumption();
 
-      switch (dateRange) {
-        case 'week':
-          startDate = subDays(new Date(), 7);
-          break;
-        case 'month':
-          startDate = startOfMonth(new Date());
-          endDate = endOfMonth(new Date());
-          break;
-        case 'quarter':
-          startDate = subDays(new Date(), 90);
-          break;
-        default:
-          startDate = startOfMonth(new Date());
-      }
-
-      // Get daily metrics
-      const { data: dailyMetrics } = await supabase
-        .from('telephony_daily_metrics')
-        .select('*')
-        .gte('date', startDate.toISOString().split('T')[0])
-        .lte('date', endDate.toISOString().split('T')[0])
-        .order('date');
-
-      // Get tenant balances
-      const { data: tenantBalances } = await supabase
-        .from('tenant_telephony_balance')
-        .select('*, organizations!inner(name)')
-        .eq('is_enabled', true)
-        .order('total_minutes_used', { ascending: false });
-
-      // Get usage logs for top destinations
-      const { data: usageLogs } = await supabase
-        .from('telephony_usage_logs')
-        .select('country_code, duration_minutes, charged_cost')
-        .gte('created_at', startDate.toISOString())
-        .not('country_code', 'is', null);
-
-      // Aggregate by country
-      const countryMap = new Map<string, { minutes: number; cost: number; calls: number }>();
-      usageLogs?.forEach((log: any) => {
-        const country = log.country_code || 'Unknown';
-        const existing = countryMap.get(country) || { minutes: 0, cost: 0, calls: 0 };
-        existing.minutes += log.duration_minutes || 0;
-        existing.cost += log.charged_cost || 0;
-        existing.calls++;
-        countryMap.set(country, existing);
-      });
-
-      // Aggregate global daily stats
-      const globalDaily = dailyMetrics?.filter((m: any) => !m.tenant_id) || [];
-      const tenantDaily = dailyMetrics?.filter((m: any) => m.tenant_id) || [];
-
-      // Calculate totals
-      const totals = globalDaily.reduce(
-        (acc: any, m: any) => ({
-          calls: acc.calls + (m.calls_outbound || 0) + (m.calls_inbound || 0),
-          minutes: acc.minutes + (m.calls_total_minutes || 0),
-          sms: acc.sms + (m.sms_outbound || 0) + (m.sms_inbound || 0),
-          revenue: acc.revenue + (m.revenue || 0),
-          cost: acc.cost + (m.provider_cost || 0),
-        }),
-        { calls: 0, minutes: 0, sms: 0, revenue: 0, cost: 0 }
-      );
-
-      return {
-        dailyMetrics: globalDaily,
-        tenantBalances: tenantBalances || [],
-        countryBreakdown: Array.from(countryMap.entries()).map(([country, data]) => ({
-          country,
-          ...data,
-        })).sort((a, b) => b.minutes - a.minutes).slice(0, 10),
-        totals,
-        margin: totals.revenue - totals.cost,
-        marginPercent: totals.revenue > 0 ? ((totals.revenue - totals.cost) / totals.revenue * 100) : 0,
-      };
-    },
-  });
+  const handleExport = async () => {
+    try {
+      const blob = await exportToCSV(dateRange);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `consumo-telefonia-${dateRange}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Exportación completada');
+    } catch (error) {
+      toast.error('Error al exportar');
+    }
+  };
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
 
-  const filteredTenants = consumptionData?.tenantBalances.filter((t: any) =>
-    t.organizations?.name?.toLowerCase().includes(searchTenant.toLowerCase())
+  const filteredTenants = tenants?.filter((t) =>
+    t.tenantName.toLowerCase().includes(searchTenant.toLowerCase())
   ) || [];
+
+  // Calculate type breakdown (outbound vs inbound)
+  const totalOutbound = dailyMetrics?.reduce((sum, m) => sum + m.callsOutbound, 0) || 0;
+  const totalInbound = dailyMetrics?.reduce((sum, m) => sum + m.callsInbound, 0) || 0;
+  const totalCalls = totalOutbound + totalInbound;
+  const outboundPercentage = totalCalls > 0 ? (totalOutbound / totalCalls) * 100 : 0;
+  const inboundPercentage = totalCalls > 0 ? (totalInbound / totalCalls) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -163,7 +116,7 @@ export default function TelephonyConsumptionPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={dateRange} onValueChange={setDateRange}>
+          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRangeType)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -171,85 +124,86 @@ export default function TelephonyConsumptionPage() {
               <SelectItem value="week">Última semana</SelectItem>
               <SelectItem value="month">Este mes</SelectItem>
               <SelectItem value="quarter">Últimos 90 días</SelectItem>
+              <SelectItem value="year">Este año</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Exportar
+            Exportar CSV
           </Button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => (
+      {loadingMetrics ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <SummaryCard
-            label="Llamadas"
-            value={consumptionData?.totals.calls.toLocaleString() || '0'}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            title="Llamadas totales"
+            value={metrics?.totalCalls.toLocaleString() || '0'}
             icon={Phone}
-            color="hsl(var(--primary))"
+            color="#3B82F6"
           />
-          <SummaryCard
-            label="Minutos"
-            value={Math.round(consumptionData?.totals.minutes || 0).toLocaleString()}
-            icon={Phone}
-            color="hsl(var(--module-genius))"
+          <StatCard
+            title="Horas totales"
+            value={metrics?.totalHours || '0:00'}
+            icon={Clock}
+            color="#8B5CF6"
           />
-          <SummaryCard
-            label="SMS"
-            value={consumptionData?.totals.sms.toLocaleString() || '0'}
-            icon={MessageSquare}
-            color="hsl(var(--info))"
+          <StatCard
+            title="Ingresos"
+            value={formatCurrency(metrics?.totalRevenue || 0)}
+            isFormatted
+            icon={Euro}
+            color="#10B981"
           />
-          <SummaryCard
-            label="Ingresos"
-            value={formatCurrency(consumptionData?.totals.revenue || 0)}
+          <StatCard
+            title="Coste proveedor"
+            value={formatCurrency(metrics?.totalCost || 0)}
+            isFormatted
             icon={TrendingUp}
-            color="hsl(var(--success))"
-          />
-          <SummaryCard
-            label="Margen"
-            value={`${formatCurrency(consumptionData?.margin || 0)} (${consumptionData?.marginPercent.toFixed(1)}%)`}
-            icon={consumptionData?.margin >= 0 ? TrendingUp : TrendingDown}
-            color={consumptionData?.margin >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'}
+            color="#F59E0B"
+            subtitle={`Margen: ${metrics?.marginPercentage.toFixed(0)}%`}
           />
         </div>
       )}
 
-      <Tabs defaultValue="daily" className="space-y-4">
+      {/* Main Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="daily">Actividad Diaria</TabsTrigger>
+          <TabsTrigger value="overview">Evolución</TabsTrigger>
           <TabsTrigger value="tenants">Por Tenant</TabsTrigger>
           <TabsTrigger value="destinations">Por Destino</TabsTrigger>
+          <TabsTrigger value="logs">Detalle Llamadas</TabsTrigger>
         </TabsList>
 
-        {/* Daily Activity */}
-        <TabsContent value="daily">
+        {/* Overview Tab - Monthly Evolution */}
+        <TabsContent value="overview" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Actividad Diaria</CardTitle>
+              <CardTitle>Evolución de Ingresos vs Costes</CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-[400px]" />
-              ) : consumptionData?.dailyMetrics && consumptionData.dailyMetrics.length > 0 ? (
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={consumptionData.dailyMetrics}>
+              {loadingDaily ? (
+                <Skeleton className="h-[350px]" />
+              ) : dailyMetrics && dailyMetrics.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={dailyMetrics}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis
                       dataKey="date"
                       tickFormatter={(val) => format(new Date(val), 'd MMM', { locale: es })}
                       className="text-xs"
                     />
-                    <YAxis className="text-xs" />
+                    <YAxis className="text-xs" tickFormatter={(v) => `€${v}`} />
                     <Tooltip
-                      labelFormatter={(val) => format(new Date(val), 'EEEE d MMM yyyy', { locale: es })}
+                      labelFormatter={(val) => format(new Date(val), 'EEEE d MMM', { locale: es })}
+                      formatter={(value: number) => formatCurrency(value)}
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
@@ -257,21 +211,21 @@ export default function TelephonyConsumptionPage() {
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="calls_outbound" name="Llamadas salientes" fill="hsl(var(--primary))" />
-                    <Bar dataKey="calls_inbound" name="Llamadas entrantes" fill="hsl(var(--module-genius))" />
+                    <Bar dataKey="revenue" name="Ingresos" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="cost" name="Coste proveedor" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                  No hay datos de actividad
+                <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+                  No hay datos para el período seleccionado
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* By Tenant */}
-        <TabsContent value="tenants">
+        {/* Tenants Tab */}
+        <TabsContent value="tenants" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Consumo por Tenant</CardTitle>
@@ -283,152 +237,170 @@ export default function TelephonyConsumptionPage() {
               />
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {loadingTenants ? (
                 <Skeleton className="h-[400px]" />
-              ) : (
+              ) : filteredTenants.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 font-medium text-muted-foreground">Tenant</th>
-                        <th className="text-right py-3 font-medium text-muted-foreground">Saldo</th>
-                        <th className="text-right py-3 font-medium text-muted-foreground">Total Usado</th>
-                        <th className="text-right py-3 font-medium text-muted-foreground">Gastado</th>
-                        <th className="text-right py-3 font-medium text-muted-foreground">Estado</th>
+                      <tr className="border-b text-muted-foreground">
+                        <th className="text-left py-3 font-medium">Tenant</th>
+                        <th className="text-right py-3 font-medium">Minutos usados</th>
+                        <th className="text-right py-3 font-medium">Gastado</th>
+                        <th className="text-right py-3 font-medium">Saldo</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredTenants.map((tenant: any) => (
-                        <tr key={tenant.id} className="border-b last:border-0 hover:bg-muted/50">
+                      {filteredTenants.map((tenant) => (
+                        <tr key={tenant.id} className="border-b last:border-0 hover:bg-muted/30">
                           <td className="py-3">
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{tenant.organizations?.name}</span>
+                              <span className="font-medium">{tenant.tenantName}</span>
                             </div>
                           </td>
-                          <td className="py-3 text-right">
-                            <Badge variant={tenant.minutes_balance < 30 ? 'destructive' : 'secondary'}>
-                              {tenant.minutes_balance} min
-                            </Badge>
+                          <td className="py-3 text-right font-mono">
+                            {tenant.formattedMinutes}
                           </td>
-                          <td className="py-3 text-right">{tenant.total_minutes_used} min</td>
-                          <td className="py-3 text-right">{formatCurrency(Number(tenant.total_spent) || 0)}</td>
                           <td className="py-3 text-right">
-                            <Badge variant={tenant.is_enabled ? 'default' : 'secondary'}>
-                              {tenant.is_enabled ? 'Activo' : 'Inactivo'}
-                            </Badge>
+                            {formatCurrency(tenant.spent)}
+                          </td>
+                          <td className="py-3 text-right">
+                            {tenant.isZeroBalance ? (
+                              <Badge variant="destructive" className="gap-1">
+                                <XCircle className="h-3 w-3" />
+                                0 min
+                              </Badge>
+                            ) : tenant.isLowBalance ? (
+                              <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning">
+                                <AlertTriangle className="h-3 w-3" />
+                                {tenant.balance} min
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">{tenant.balance} min</Badge>
+                            )}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  No hay tenants con consumo
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* By Destination */}
-        <TabsContent value="destinations">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Destinations Tab */}
+        <TabsContent value="destinations" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* By Country */}
             <Card>
               <CardHeader>
-                <CardTitle>Top Destinos por Minutos</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-primary" />
+                  Por País
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
+                {loadingCountries ? (
                   <Skeleton className="h-[300px]" />
-                ) : consumptionData?.countryBreakdown && consumptionData.countryBreakdown.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={consumptionData.countryBreakdown}
-                        dataKey="minutes"
-                        nameKey="country"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {consumptionData.countryBreakdown.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    No hay datos
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Detalle por País</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-[300px]" />
-                ) : (
+                ) : countries && countries.length > 0 ? (
                   <div className="space-y-3">
-                    {consumptionData?.countryBreakdown.map((item: any, idx: number) => (
-                      <div key={item.country} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: COLORS[idx % COLORS.length] }}
-                          />
-                          <span className="font-medium">{item.country}</span>
+                    {countries.map((country) => (
+                      <div key={country.countryCode} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{country.flag}</span>
+                            <span className="font-medium">{country.country}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-medium">{country.calls.toLocaleString()}</span>
+                            <span className="text-muted-foreground ml-1">llamadas</span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">{Math.round(item.minutes)} min</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.calls} llamadas · {formatCurrency(item.cost)}
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <Progress value={country.percentage} className="h-2 flex-1" />
+                          <span className="text-xs text-muted-foreground w-10 text-right">
+                            {country.percentage.toFixed(0)}%
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No hay datos de destinos
+                  </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* By Type */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
+                  Por Tipo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <PhoneOutgoing className="h-4 w-4 text-primary" />
+                        <span>Salientes</span>
+                      </div>
+                      <span className="font-medium">{totalOutbound.toLocaleString()}</span>
+                    </div>
+                    <Progress value={outboundPercentage} className="h-2" />
+                    <p className="text-xs text-muted-foreground">{outboundPercentage.toFixed(0)}%</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <PhoneIncoming className="h-4 w-4 text-success" />
+                        <span>Entrantes</span>
+                      </div>
+                      <span className="font-medium">{totalInbound.toLocaleString()}</span>
+                    </div>
+                    <Progress value={inboundPercentage} className="h-2" />
+                    <p className="text-xs text-muted-foreground">{inboundPercentage.toFixed(0)}%</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Duración promedio</span>
+                    <span className="font-medium">
+                      {metrics?.avgCallDuration
+                        ? `${Math.floor(metrics.avgCallDuration / 60)}:${Math.round(metrics.avgCallDuration % 60).toString().padStart(2, '0')}`
+                        : '0:00'}
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
+
+        {/* Call Logs Tab */}
+        <TabsContent value="logs">
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalle de Llamadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CallLogsTable logs={callLogs || []} isLoading={loadingLogs} />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-  icon: Icon,
-  color,
-}: {
-  label: string;
-  value: string;
-  icon: any;
-  color: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold">{value}</p>
-          </div>
-          <div
-            className="h-10 w-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${color}20` }}
-          >
-            <Icon className="h-5 w-5" style={{ color }} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

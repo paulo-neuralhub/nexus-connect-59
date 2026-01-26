@@ -10,7 +10,11 @@ import {
   Bell,
   Mail,
   AlertTriangle,
-  Settings
+  Settings,
+  Clock,
+  Shield,
+  Zap,
+  Calendar
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,54 +23,93 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
-import { useTelephonyConfig, useUpdateTelephonyConfig } from '@/hooks/backoffice/useTelephonyConfig';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  useTelephonyAlertConfig,
+  useUpdateTelephonyAlertConfig,
+  useActiveAlerts,
+  useSendBulkReminder,
+  type AlertConfig,
+} from '@/hooks/backoffice/useTelephonyAlerts';
+import { ActiveAlertsList } from '@/components/backoffice/telephony/ActiveAlertsList';
 
 export default function TelephonyAlertsPage() {
-  const { data: config, isLoading: loadingConfig } = useTelephonyConfig();
-  const updateConfig = useUpdateTelephonyConfig();
+  const { data: config, isLoading: loadingConfig } = useTelephonyAlertConfig();
+  const updateConfig = useUpdateTelephonyAlertConfig();
+  const { data: activeAlerts, isLoading: loadingAlerts } = useActiveAlerts();
+  const sendBulkReminder = useSendBulkReminder();
 
-  const [alertThreshold, setAlertThreshold] = useState(30);
+  // Form state
+  const [enableLowBalance, setEnableLowBalance] = useState(true);
+  const [lowBalanceThreshold, setLowBalanceThreshold] = useState(30);
+  const [notifyTenant, setNotifyTenant] = useState(true);
+  const [notifyBackoffice, setNotifyBackoffice] = useState(true);
   const [alertEmail, setAlertEmail] = useState('');
-  const [enableLowBalanceAlerts, setEnableLowBalanceAlerts] = useState(true);
-  const [enableUsageSpikes, setEnableUsageSpikes] = useState(true);
-  const [enableDailyReport, setEnableDailyReport] = useState(false);
-
-  // Get recent alerts
-  const { data: recentAlerts, isLoading: loadingAlerts } = useQuery({
-    queryKey: ['telephony-recent-alerts'],
-    queryFn: async () => {
-      // Get tenants that have low balance
-      const { data } = await supabase
-        .from('tenant_telephony_balance')
-        .select('*, organizations!inner(name)')
-        .eq('is_enabled', true)
-        .eq('low_balance_alert_sent', true)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-      
-      return data || [];
-    },
+  const [alertFrequency, setAlertFrequency] = useState<'once' | 'daily'>('daily');
+  
+  const [enableZeroBalance, setEnableZeroBalance] = useState(true);
+  const [zeroBehavior, setZeroBehavior] = useState<'block' | 'payg' | 'invoice'>('payg');
+  
+  const [enableExpiration, setEnableExpiration] = useState(true);
+  const [expirationDays, setExpirationDays] = useState({
+    day30: true,
+    day7: true,
+    day1: true,
   });
+  
+  const [enableProviderAlerts, setEnableProviderAlerts] = useState(true);
+  const [enableUsageSpike, setEnableUsageSpike] = useState(true);
+  const [usageSpikeMinutes, setUsageSpikeMinutes] = useState(100);
+  const [usageSpikeWindow, setUsageSpikeWindow] = useState(1);
 
   // Initialize from config
   useEffect(() => {
     if (config) {
-      setAlertThreshold(config.alert_low_balance_threshold || 30);
-      setAlertEmail(config.alert_email || '');
+      setEnableLowBalance(config.enableLowBalanceAlerts);
+      setLowBalanceThreshold(config.lowBalanceThreshold);
+      setNotifyTenant(config.lowBalanceNotifyTenant);
+      setNotifyBackoffice(config.lowBalanceNotifyBackoffice);
+      setAlertEmail(config.lowBalanceEmail);
+      setAlertFrequency(config.lowBalanceFrequency);
+      setEnableZeroBalance(config.enableZeroBalanceAlerts);
+      setZeroBehavior(config.zeroBehavior);
+      setEnableExpiration(config.enableExpirationAlerts);
+      setEnableProviderAlerts(config.enableProviderAlerts);
+      setEnableUsageSpike(config.enableUsageSpikeAlerts);
+      setUsageSpikeMinutes(config.usageSpikeMinutes);
+      setUsageSpikeWindow(config.usageSpikeWindow);
     }
   }, [config]);
 
   const handleSave = async () => {
     await updateConfig.mutateAsync({
-      id: config?.id,
-      alert_low_balance_threshold: alertThreshold,
-      alert_email: alertEmail || null,
+      enableLowBalanceAlerts: enableLowBalance,
+      lowBalanceThreshold,
+      lowBalanceNotifyTenant: notifyTenant,
+      lowBalanceNotifyBackoffice: notifyBackoffice,
+      lowBalanceEmail: alertEmail,
+      lowBalanceFrequency: alertFrequency,
+      enableZeroBalanceAlerts: enableZeroBalance,
+      zeroBehavior,
+      enableExpirationAlerts: enableExpiration,
+      enableProviderAlerts,
+      enableUsageSpikeAlerts: enableUsageSpike,
+      usageSpikeMinutes,
+      usageSpikeWindow,
     });
+  };
+
+  const handleSendReminder = (tenantIds: string[]) => {
+    sendBulkReminder.mutate(tenantIds);
   };
 
   if (loadingConfig) {
@@ -90,7 +133,7 @@ export default function TelephonyAlertsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Configuración de Alertas</h1>
             <p className="text-muted-foreground">
-              Configura notificaciones y alertas de telefonía
+              Configura notificaciones automáticas de telefonía
             </p>
           </div>
         </div>
@@ -104,15 +147,15 @@ export default function TelephonyAlertsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Alert Configuration */}
-        <div className="space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           {/* Low Balance Alerts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-warning" />
-                Alertas de Bajo Saldo
+                Alertas de Saldo Bajo
               </CardTitle>
               <CardDescription>
                 Notifica cuando un tenant tiene pocos minutos restantes
@@ -120,183 +163,331 @@ export default function TelephonyAlertsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label htmlFor="enable-low-balance">Activar alertas</Label>
+                <Label htmlFor="enable-low-balance">Activar alertas de saldo bajo</Label>
                 <Switch
                   id="enable-low-balance"
-                  checked={enableLowBalanceAlerts}
-                  onCheckedChange={setEnableLowBalanceAlerts}
+                  checked={enableLowBalance}
+                  onCheckedChange={setEnableLowBalance}
                 />
               </div>
 
-              {enableLowBalanceAlerts && (
+              {enableLowBalance && (
                 <>
+                  <Separator />
+                  
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label>Umbral de alerta</Label>
-                      <span className="text-lg font-bold text-primary">{alertThreshold} min</span>
+                      <Label>Umbral de alerta (minutos restantes)</Label>
+                      <span className="text-lg font-bold text-primary">{lowBalanceThreshold} min</span>
                     </div>
                     <Slider
-                      value={[alertThreshold]}
-                      onValueChange={([val]) => setAlertThreshold(val)}
-                      min={10}
+                      value={[lowBalanceThreshold]}
+                      onValueChange={([val]) => setLowBalanceThreshold(val)}
+                      min={5}
                       max={100}
                       step={5}
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Se enviará alerta cuando el saldo sea menor a {alertThreshold} minutos
-                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <Label>Notificar a:</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id="notify-tenant"
+                          checked={notifyTenant}
+                          onCheckedChange={(v) => setNotifyTenant(!!v)}
+                        />
+                        <Label htmlFor="notify-tenant" className="font-normal cursor-pointer">
+                          Administrador del tenant
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id="notify-backoffice"
+                          checked={notifyBackoffice}
+                          onCheckedChange={(v) => setNotifyBackoffice(!!v)}
+                        />
+                        <Label htmlFor="notify-backoffice" className="font-normal cursor-pointer">
+                          Email de backoffice
+                        </Label>
+                      </div>
+                    </div>
+                    
+                    {notifyBackoffice && (
+                      <Input
+                        type="email"
+                        value={alertEmail}
+                        onChange={(e) => setAlertEmail(e.target.value)}
+                        placeholder="alertas@ip-nexus.com"
+                        className="mt-2"
+                      />
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label>Frecuencia de notificación</Label>
+                    <Select value={alertFrequency} onValueChange={(v: 'once' | 'daily') => setAlertFrequency(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="once">Una vez (hasta que recarguen)</SelectItem>
+                        <SelectItem value="daily">Diaria (mientras siga bajo)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Usage Spikes */}
+          {/* Zero Balance Alerts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary" />
-                Alertas de Uso Anómalo
+                <Bell className="h-5 w-5 text-destructive" />
+                Alertas de Saldo Agotado
               </CardTitle>
               <CardDescription>
-                Detecta picos inusuales de consumo
+                Configura qué sucede cuando se agota el saldo
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label htmlFor="enable-spikes">Activar detección</Label>
+                <Label htmlFor="enable-zero">Activar alertas cuando se agote el saldo</Label>
                 <Switch
-                  id="enable-spikes"
-                  checked={enableUsageSpikes}
-                  onCheckedChange={setEnableUsageSpikes}
+                  id="enable-zero"
+                  checked={enableZeroBalance}
+                  onCheckedChange={setEnableZeroBalance}
                 />
               </div>
-              
-              {enableUsageSpikes && (
-                <p className="text-sm text-muted-foreground">
-                  Se alertará cuando el consumo sea 3x superior al promedio diario
-                </p>
+
+              {enableZeroBalance && (
+                <>
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <Label>Comportamiento cuando no hay saldo</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          id="zero-block"
+                          name="zeroBehavior"
+                          checked={zeroBehavior === 'block'}
+                          onChange={() => setZeroBehavior('block')}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="zero-block" className="font-normal cursor-pointer">
+                          Bloquear llamadas salientes
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          id="zero-payg"
+                          name="zeroBehavior"
+                          checked={zeroBehavior === 'payg'}
+                          onChange={() => setZeroBehavior('payg')}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="zero-payg" className="font-normal cursor-pointer">
+                          Permitir con cargo por minuto (pay-as-you-go)
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          id="zero-invoice"
+                          name="zeroBehavior"
+                          checked={zeroBehavior === 'invoice'}
+                          onChange={() => setZeroBehavior('invoice')}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="zero-invoice" className="font-normal cursor-pointer">
+                          Permitir y facturar después
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
 
-          {/* Daily Report */}
+          {/* Expiration Alerts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-info" />
-                Informe Diario
+                <Calendar className="h-5 w-5 text-info" />
+                Alertas de Expiración
               </CardTitle>
               <CardDescription>
-                Recibe un resumen diario de actividad
+                Notifica antes de que expiren los minutos de un pack
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="enable-daily">Activar informe</Label>
+                <Label htmlFor="enable-expiration">Notificar antes de expiración</Label>
                 <Switch
-                  id="enable-daily"
-                  checked={enableDailyReport}
-                  onCheckedChange={setEnableDailyReport}
+                  id="enable-expiration"
+                  checked={enableExpiration}
+                  onCheckedChange={setEnableExpiration}
                 />
               </div>
-              
-              {enableDailyReport && (
-                <p className="text-sm text-muted-foreground">
-                  Se enviará a las 9:00 AM cada día
-                </p>
+
+              {enableExpiration && (
+                <>
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <Label>Días antes de expiración:</Label>
+                    <div className="flex gap-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="exp-30"
+                          checked={expirationDays.day30}
+                          onCheckedChange={(v) => setExpirationDays({ ...expirationDays, day30: !!v })}
+                        />
+                        <Label htmlFor="exp-30" className="font-normal cursor-pointer">30 días</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="exp-7"
+                          checked={expirationDays.day7}
+                          onCheckedChange={(v) => setExpirationDays({ ...expirationDays, day7: !!v })}
+                        />
+                        <Label htmlFor="exp-7" className="font-normal cursor-pointer">7 días</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="exp-1"
+                          checked={expirationDays.day1}
+                          onCheckedChange={(v) => setExpirationDays({ ...expirationDays, day1: !!v })}
+                        />
+                        <Label htmlFor="exp-1" className="font-normal cursor-pointer">1 día</Label>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
 
-          {/* Email Configuration */}
+          {/* Operational Alerts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Configuración de Email
+                <Shield className="h-5 w-5 text-primary" />
+                Alertas Operativas
               </CardTitle>
+              <CardDescription>
+                Monitoreo de problemas y uso anómalo
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="alert-email">Email para alertas</Label>
-                <Input
-                  id="alert-email"
-                  type="email"
-                  value={alertEmail}
-                  onChange={(e) => setAlertEmail(e.target.value)}
-                  placeholder="admin@empresa.com"
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="enable-provider">Alertar si el proveedor tiene problemas</Label>
+                  <p className="text-sm text-muted-foreground">Circuit breaker activado, errores 5xx</p>
+                </div>
+                <Switch
+                  id="enable-provider"
+                  checked={enableProviderAlerts}
+                  onCheckedChange={setEnableProviderAlerts}
                 />
-                <p className="text-sm text-muted-foreground">
-                  Todas las alertas se enviarán a este email
-                </p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="enable-spike">Alertar si hay consumo inusual</Label>
+                    <p className="text-sm text-muted-foreground">Posible fraude o abuso</p>
+                  </div>
+                  <Switch
+                    id="enable-spike"
+                    checked={enableUsageSpike}
+                    onCheckedChange={setEnableUsageSpike}
+                  />
+                </div>
+
+                {enableUsageSpike && (
+                  <div className="grid grid-cols-2 gap-4 pl-4 border-l-2 border-muted">
+                    <div className="space-y-2">
+                      <Label htmlFor="spike-minutes">Más de (minutos)</Label>
+                      <Input
+                        id="spike-minutes"
+                        type="number"
+                        min={10}
+                        value={usageSpikeMinutes}
+                        onChange={(e) => setUsageSpikeMinutes(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="spike-window">En (horas)</Label>
+                      <Input
+                        id="spike-window"
+                        type="number"
+                        min={1}
+                        max={24}
+                        value={usageSpikeWindow}
+                        onChange={(e) => setUsageSpikeWindow(Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Alerts */}
+        {/* Active Alerts Sidebar */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Alertas Recientes</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-warning" />
+                Tenants con Alertas Activas
+              </CardTitle>
               <CardDescription>
-                Últimas alertas enviadas
+                Tenants que requieren atención
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {loadingAlerts ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
-                  ))}
-                </div>
-              ) : recentAlerts && recentAlerts.length > 0 ? (
-                <div className="space-y-3">
-                  {recentAlerts.map((alert: any) => (
-                    <div
-                      key={alert.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <AlertTriangle className="h-5 w-5 text-warning" />
-                        <div>
-                          <p className="font-medium text-sm">
-                            {alert.organizations?.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Saldo: {alert.minutes_balance} min
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">Enviada</Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p>No hay alertas recientes</p>
-                </div>
-              )}
+              <ActiveAlertsList
+                alerts={activeAlerts || []}
+                isLoading={loadingAlerts}
+                onSendReminder={handleSendReminder}
+                isSending={sendBulkReminder.isPending}
+              />
             </CardContent>
           </Card>
 
           {/* Alert Preview */}
           <Card>
             <CardHeader>
-              <CardTitle>Vista Previa de Alerta</CardTitle>
+              <CardTitle className="text-sm">Vista Previa de Alerta</CardTitle>
             </CardHeader>
             <CardContent>
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Bajo saldo de telefonía</strong>
+                  <strong>⚠️ Bajo saldo de telefonía</strong>
                   <br />
-                  El tenant "Ejemplo Corp" tiene solo {alertThreshold} minutos restantes.
+                  <span className="text-sm">
+                    Tu saldo de telefonía es de solo <strong>{lowBalanceThreshold} minutos</strong>.
+                    Recarga ahora para seguir realizando llamadas.
+                  </span>
                   <br />
-                  <span className="text-xs text-muted-foreground">
-                    Este es un ejemplo de cómo se verá la alerta
+                  <span className="text-xs text-muted-foreground mt-2 block">
+                    Ejemplo de email/notificación enviada
                   </span>
                 </AlertDescription>
               </Alert>
