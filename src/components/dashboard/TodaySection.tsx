@@ -91,33 +91,33 @@ export function TodaySection() {
   const alerts = items.filter(i => i.type === 'alert');
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Hoy</CardTitle>
-            <Badge variant="secondary" className="text-xs">
-              {items.filter(i => !i.completed).length} pendientes
+            <Calendar className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium">Hoy</CardTitle>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+              {items.filter(i => !i.completed).length}
             </Badge>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/app/docket')}>
+          <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => navigate('/app/docket')}>
             Ver todo
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 px-4 pb-3 pt-0">
         {/* Plazos urgentes */}
         {deadlines.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="h-4 w-4" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <Clock className="h-3 w-3" />
               Plazos ({deadlines.length})
             </div>
-            <div className="space-y-1.5">
-              {deadlines.map(item => (
+            <div className="space-y-1">
+              {deadlines.slice(0, 2).map(item => (
                 <TodayItemRow 
                   key={item.id} 
                   item={item} 
@@ -130,13 +130,13 @@ export function TodaySection() {
 
         {/* Tareas */}
         {tasks.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <CheckCircle2 className="h-3 w-3" />
               Tareas ({tasks.filter(t => !t.completed).length}/{tasks.length})
             </div>
-            <div className="space-y-1.5">
-              {tasks.map(item => (
+            <div className="space-y-1">
+              {tasks.slice(0, 2).map(item => (
                 <TaskItemRow 
                   key={item.id} 
                   item={item} 
@@ -149,13 +149,13 @@ export function TodaySection() {
 
         {/* Alertas */}
         {alerts.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <AlertTriangle className="h-4 w-4" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <AlertTriangle className="h-3 w-3" />
               Alertas ({alerts.length})
             </div>
-            <div className="space-y-1.5">
-              {alerts.map(item => (
+            <div className="space-y-1">
+              {alerts.slice(0, 1).map(item => (
                 <TodayItemRow 
                   key={item.id} 
                   item={item} 
@@ -168,10 +168,9 @@ export function TodaySection() {
 
         {/* Estado vacío */}
         {items.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Sparkles className="h-10 w-10 text-green-500 mb-2" />
-            <p className="font-medium text-foreground">¡Todo al día!</p>
-            <p className="text-sm text-muted-foreground">No tienes tareas ni plazos pendientes</p>
+          <div className="flex flex-col items-center justify-center py-4 text-center">
+            <Sparkles className="h-6 w-6 text-green-500 mb-1" />
+            <p className="text-xs font-medium text-foreground">¡Todo al día!</p>
           </div>
         )}
       </CardContent>
@@ -199,27 +198,22 @@ function TodayItemRow({
   return (
     <div 
       className={cn(
-        "flex items-center justify-between p-2.5 rounded-md border-l-4 cursor-pointer hover:opacity-80 transition-opacity",
+        "flex items-center justify-between p-2 rounded border-l-2 cursor-pointer hover:opacity-80 transition-opacity",
         priorityColors[item.priority]
       )}
       onClick={onClick}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground truncate">
+        <p className="text-xs font-medium text-foreground truncate">
           {item.title}
         </p>
-        {item.subtitle && (
-          <p className="text-xs text-muted-foreground truncate">
-            {item.subtitle}
-          </p>
-        )}
       </div>
       {item.time && (
-        <Badge variant="outline" className="ml-2 shrink-0 text-xs">
+        <Badge variant="outline" className="ml-2 shrink-0 text-[10px] px-1.5 py-0">
           {item.time}
         </Badge>
       )}
-      <ChevronRight className="h-4 w-4 text-muted-foreground ml-2 shrink-0" />
+      <ChevronRight className="h-3 w-3 text-muted-foreground ml-1 shrink-0" />
     </div>
   );
 }
@@ -236,25 +230,18 @@ function TaskItemRow({
   onToggle: () => void;
 }) {
   return (
-    <div className="flex items-start gap-3 p-2.5 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+    <div className="flex items-center gap-2 p-1.5 rounded bg-muted/50 hover:bg-muted transition-colors">
       <Checkbox 
         checked={item.completed} 
         onCheckedChange={onToggle}
-        className="mt-0.5"
+        className="h-3 w-3"
       />
-      <div className="min-w-0 flex-1">
-        <p className={cn(
-          "text-sm font-medium transition-all",
-          item.completed && "line-through text-muted-foreground"
-        )}>
-          {item.title}
-        </p>
-        {item.subtitle && (
-          <p className="text-xs text-muted-foreground truncate">
-            {item.subtitle}
-          </p>
-        )}
-      </div>
+      <p className={cn(
+        "text-xs font-medium transition-all truncate flex-1",
+        item.completed && "line-through text-muted-foreground"
+      )}>
+        {item.title}
+      </p>
     </div>
   );
 }
