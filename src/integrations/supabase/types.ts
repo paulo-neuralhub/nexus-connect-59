@@ -30469,6 +30469,7 @@ export type Database = {
           display_order: number | null
           estimated_days: number | null
           estimated_duration: string | null
+          estimated_hours: number | null
           extra_class_fee: number | null
           generates_matter: boolean | null
           id: string
@@ -30487,6 +30488,7 @@ export type Database = {
           service_type: string | null
           stripe_price_id: string | null
           subcategory: string | null
+          tax_rate: number | null
           updated_at: string
         }
         Insert: {
@@ -30502,6 +30504,7 @@ export type Database = {
           display_order?: number | null
           estimated_days?: number | null
           estimated_duration?: string | null
+          estimated_hours?: number | null
           extra_class_fee?: number | null
           generates_matter?: boolean | null
           id?: string
@@ -30520,6 +30523,7 @@ export type Database = {
           service_type?: string | null
           stripe_price_id?: string | null
           subcategory?: string | null
+          tax_rate?: number | null
           updated_at?: string
         }
         Update: {
@@ -30535,6 +30539,7 @@ export type Database = {
           display_order?: number | null
           estimated_days?: number | null
           estimated_duration?: string | null
+          estimated_hours?: number | null
           extra_class_fee?: number | null
           generates_matter?: boolean | null
           id?: string
@@ -30553,6 +30558,7 @@ export type Database = {
           service_type?: string | null
           stripe_price_id?: string | null
           subcategory?: string | null
+          tax_rate?: number | null
           updated_at?: string
         }
         Relationships: [
