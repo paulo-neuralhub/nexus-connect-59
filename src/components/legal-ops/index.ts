@@ -3,6 +3,7 @@ export * from './AIClassificationBadge';
 export * from './AIDisclaimer';
 export * from './CommunicationsInbox';
 export * from './CommunicationDetail';
+export * from './ComposeMessageDialog';
 export * from './Client360Page';
 export * from './ClientTimeline';
 export * from './ClientDocuments';

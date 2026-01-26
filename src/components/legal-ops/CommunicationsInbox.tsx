@@ -13,20 +13,27 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Mail, MessageSquare, Phone, Globe, Search,
-  Star, RefreshCw
+  Star, RefreshCw, Plus, ChevronDown
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CommunicationDetail } from './CommunicationDetail';
 import { AIClassificationBadge } from './AIClassificationBadge';
+import { ComposeMessageDialog } from './ComposeMessageDialog';
 
 const CHANNEL_ICONS: Record<CommChannel, React.ReactNode> = {
   email: <Mail className="w-4 h-4" />,
-  whatsapp: <MessageSquare className="w-4 h-4 text-primary" />,
+  whatsapp: <MessageSquare className="w-4 h-4 text-[#25D366]" />,
   portal: <Globe className="w-4 h-4 text-primary" />,
   phone: <Phone className="w-4 h-4" />,
-  sms: <MessageSquare className="w-4 h-4" />,
+  sms: <MessageSquare className="w-4 h-4 text-amber-500" />,
   in_person: <MessageSquare className="w-4 h-4" />,
   other: <MessageSquare className="w-4 h-4" />
 };
@@ -41,6 +48,8 @@ export function CommunicationsInbox({ defaultChannel = null, defaultTab = 'all' 
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'starred'>(defaultTab);
   const [channelFilter, setChannelFilter] = useState<CommChannel | null>(defaultChannel);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [composeChannel, setComposeChannel] = useState<CommChannel>('email');
 
   useEffect(() => {
     setActiveTab(defaultTab);
@@ -54,6 +63,11 @@ export function CommunicationsInbox({ defaultChannel = null, defaultTab = 'all' 
     channel: channelFilter || undefined,
     search: searchQuery || undefined
   });
+
+  const handleCompose = (channel: CommChannel) => {
+    setComposeChannel(channel);
+    setIsComposeOpen(true);
+  };
   const markAsRead = useMarkAsRead();
 
   const communications = commsResult?.data || [];
@@ -72,9 +86,38 @@ export function CommunicationsInbox({ defaultChannel = null, defaultTab = 'all' 
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Comunicaciones</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" className="gap-1">
+                    <Plus className="w-4 h-4" />
+                    Nuevo
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleCompose('email')}>
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCompose('whatsapp')}>
+                    <MessageSquare className="w-4 h-4 mr-2 text-[#25D366]" />
+                    WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCompose('sms')}>
+                    <MessageSquare className="w-4 h-4 mr-2 text-amber-500" />
+                    SMS
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCompose('phone')}>
+                    <Phone className="w-4 h-4 mr-2" />
+                    Llamada
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="ghost" size="sm" onClick={() => refetch()}>
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
           
           {/* Stats rápidos */}
@@ -179,6 +222,13 @@ export function CommunicationsInbox({ defaultChannel = null, defaultTab = 'all' 
           </Card>
         )}
       </div>
+
+      {/* Dialog de composición */}
+      <ComposeMessageDialog
+        open={isComposeOpen}
+        onOpenChange={setIsComposeOpen}
+        channelType={composeChannel}
+      />
     </div>
   );
 }
