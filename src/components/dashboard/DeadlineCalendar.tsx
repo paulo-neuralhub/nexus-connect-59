@@ -65,95 +65,89 @@ export function DeadlineCalendar({ deadlines }: DeadlineCalendarProps) {
 
   return (
     <>
-      {/* Vista Compacta */}
+      {/* Vista Compacta - Formato rectangular */}
       <Card className="h-full">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 pt-3 px-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CalendarIcon className="h-5 w-5 text-primary" />
-              Calendario
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <CalendarIcon className="h-4 w-4 text-primary" />
+              Calendario de plazos
             </CardTitle>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-8 gap-1 text-xs"
+              className="h-6 gap-1 text-xs px-2"
               onClick={() => setIsExpanded(true)}
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              <Maximize2 className="h-3 w-3" />
               Ampliar
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
-          {/* Mini calendario semanal */}
-          <div className="grid grid-cols-7 gap-1 mb-3">
-            {next7Days.map(day => {
-              const dayDeadlines = deadlines.filter(d => isSameDay(d.date, day));
-              const hasCritical = dayDeadlines.some(d => d.priority === 'critical');
-              const hasHigh = dayDeadlines.some(d => d.priority === 'high');
-              
-              return (
-                <div 
-                  key={day.toISOString()} 
-                  className={cn(
-                    "text-center p-1.5 rounded-lg cursor-pointer transition-colors hover:bg-muted",
-                    isToday(day) && "bg-primary/10 ring-1 ring-primary"
-                  )}
-                  onClick={() => {
-                    setCurrentDate(day);
-                    setIsExpanded(true);
-                  }}
-                >
-                  <div className="text-[10px] text-muted-foreground uppercase">
-                    {format(day, 'EEE', { locale: es })}
-                  </div>
-                  <div className={cn(
-                    "text-sm font-medium",
-                    isToday(day) && "text-primary"
-                  )}>
-                    {format(day, 'd')}
-                  </div>
-                  {dayDeadlines.length > 0 && (
-                    <div className="flex justify-center gap-0.5 mt-0.5">
-                      {dayDeadlines.slice(0, 3).map((_, i) => (
-                        <span 
-                          key={i} 
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full",
-                            hasCritical ? PRIORITY_COLORS.critical : 
-                            hasHigh ? PRIORITY_COLORS.high : PRIORITY_COLORS.medium
-                          )} 
-                        />
-                      ))}
+        <CardContent className="pt-0 px-4 pb-3">
+          <div className="flex gap-4">
+            {/* Mini calendario semanal - horizontal */}
+            <div className="flex gap-1">
+              {next7Days.map(day => {
+                const dayDeadlines = deadlines.filter(d => isSameDay(d.date, day));
+                const hasCritical = dayDeadlines.some(d => d.priority === 'critical');
+                const hasHigh = dayDeadlines.some(d => d.priority === 'high');
+                
+                return (
+                  <div 
+                    key={day.toISOString()} 
+                    className={cn(
+                      "text-center p-1.5 rounded cursor-pointer transition-colors hover:bg-muted w-9",
+                      isToday(day) && "bg-primary/10 ring-1 ring-primary"
+                    )}
+                    onClick={() => {
+                      setCurrentDate(day);
+                      setIsExpanded(true);
+                    }}
+                  >
+                    <div className="text-[9px] text-muted-foreground uppercase">
+                      {format(day, 'EEE', { locale: es })}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    <div className={cn(
+                      "text-xs font-medium",
+                      isToday(day) && "text-primary"
+                    )}>
+                      {format(day, 'd')}
+                    </div>
+                    {dayDeadlines.length > 0 && (
+                      <div className="flex justify-center gap-0.5 mt-0.5">
+                        {dayDeadlines.slice(0, 2).map((_, i) => (
+                          <span 
+                            key={i} 
+                            className={cn(
+                              "w-1 h-1 rounded-full",
+                              hasCritical ? PRIORITY_COLORS.critical : 
+                              hasHigh ? PRIORITY_COLORS.high : PRIORITY_COLORS.medium
+                            )} 
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
-          {/* Lista compacta de próximos plazos */}
-          {upcomingDeadlines.length > 0 ? (
-            <div className="space-y-1.5">
-              {upcomingDeadlines.slice(0, 3).map(deadline => (
-                <CompactDeadlineItem key={deadline.id} deadline={deadline} />
-              ))}
-              {upcomingDeadlines.length > 3 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full text-xs h-7"
-                  onClick={() => setIsExpanded(true)}
-                >
-                  Ver {upcomingDeadlines.length - 3} más
-                </Button>
+            {/* Lista compacta de próximos plazos - al lado */}
+            <div className="flex-1 min-w-0">
+              {upcomingDeadlines.length > 0 ? (
+                <div className="space-y-1">
+                  {upcomingDeadlines.slice(0, 3).map(deadline => (
+                    <CompactDeadlineItem key={deadline.id} deadline={deadline} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-2 text-xs text-muted-foreground">
+                  Sin plazos próximos
+                </div>
               )}
             </div>
-          ) : (
-            <div className="text-center py-3 text-sm text-muted-foreground">
-              Sin plazos próximos
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
@@ -177,14 +171,13 @@ function CompactDeadlineItem({ deadline }: { deadline: CalendarDeadline }) {
   
   const content = (
     <div className={cn(
-      "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
+      "flex items-center gap-1.5 p-1.5 rounded text-xs transition-colors border-l-2",
       PRIORITY_BG[deadline.priority],
       deadline.matterId && "hover:opacity-80 cursor-pointer"
     )}>
-      <span className={cn("w-2 h-2 rounded-full shrink-0", PRIORITY_COLORS[deadline.priority])} />
       <span className="truncate flex-1 font-medium">{deadline.title}</span>
       <span className={cn(
-        "text-xs shrink-0",
+        "text-[10px] shrink-0",
         isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"
       )}>
         {isToday(deadline.date) ? 'Hoy' : format(deadline.date, 'd MMM', { locale: es })}

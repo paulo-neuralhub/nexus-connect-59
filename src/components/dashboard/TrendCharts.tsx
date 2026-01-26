@@ -154,22 +154,22 @@ export function TiposChart() {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">
-          Por tipo de expediente
+      <CardHeader className="pb-1 pt-3 px-4">
+        <CardTitle className="text-sm font-medium">
+          Por tipo
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-4">
-          <div className="h-[140px] w-[140px]">
+      <CardContent className="px-4 pb-3 pt-0">
+        <div className="flex items-center gap-3">
+          <div className="h-[80px] w-[80px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={35}
-                  outerRadius={60}
+                  innerRadius={22}
+                  outerRadius={38}
                   paddingAngle={2}
                   dataKey="value"
                 >
@@ -180,23 +180,24 @@ export function TiposChart() {
                 <Tooltip 
                   formatter={(value: number) => [`${value}%`, '']}
                   contentStyle={{ 
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     border: '1px solid hsl(var(--border))',
                     backgroundColor: 'hsl(var(--background))',
+                    fontSize: '11px',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-0.5">
             {data.map((item) => (
-              <div key={item.name} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
+              <div key={item.name} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
                   <div 
-                    className="h-2.5 w-2.5 rounded-sm" 
+                    className="h-2 w-2 rounded-sm" 
                     style={{ backgroundColor: item.color }}
                   />
-                  {item.name}
+                  <span className="text-muted-foreground">{item.name}</span>
                 </div>
                 <span className="font-medium">{item.value}%</span>
               </div>

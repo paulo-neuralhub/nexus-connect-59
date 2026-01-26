@@ -86,27 +86,28 @@ const Dashboard = () => {
       {/* Métricas compactas */}
       <MetricsBar metrics={metrics} />
 
-      {/* Grid principal - Layout reorganizado */}
-      <div className="grid lg:grid-cols-12 gap-6">
-        {/* Columna izquierda: Hoy + Calendario compacto */}
-        <div className="lg:col-span-4 space-y-6">
+      {/* Grid principal - Layout compacto */}
+      <div className="grid lg:grid-cols-12 gap-4">
+        {/* Fila superior: Hoy + Tipos + Calendario */}
+        <div className="lg:col-span-3">
           <TodaySection />
+        </div>
+        <div className="lg:col-span-3">
+          <TiposChart />
+        </div>
+        <div className="lg:col-span-6">
           <DeadlineCalendar deadlines={calendarDeadlines} />
         </div>
 
-        {/* Columna central y derecha: Gráficos */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Primera fila: Expedientes y Facturación */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <ExpedientesChart />
-            <FacturacionChart />
-          </div>
-
-          {/* Segunda fila: Tipos y Actividad */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <TiposChart />
-            <RecentActivity />
-          </div>
+        {/* Fila inferior: Gráficos grandes + Actividad */}
+        <div className="lg:col-span-4">
+          <ExpedientesChart />
+        </div>
+        <div className="lg:col-span-4">
+          <FacturacionChart />
+        </div>
+        <div className="lg:col-span-4">
+          <RecentActivity />
         </div>
       </div>
     </div>
