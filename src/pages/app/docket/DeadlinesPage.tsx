@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DeadlineList } from '@/components/docket/DeadlineList';
+import { DeadlineCalendar } from '@/components/deadlines/DeadlineCalendar';
 import { useDeadlineStats } from '@/hooks/useDeadlines';
 import { usePageTitle } from '@/hooks/use-page-title';
 
@@ -103,40 +104,44 @@ export default function DeadlinesPage() {
         ))}
       </div>
 
-      {/* Main Content */}
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="overdue" className="text-red-600">
-            Vencidos {stats?.overdue ? `(${stats.overdue})` : ''}
-          </TabsTrigger>
-          <TabsTrigger value="urgent" className="text-orange-600">
-            Urgentes {stats?.urgent ? `(${stats.urgent})` : ''}
-          </TabsTrigger>
-          <TabsTrigger value="upcoming">Próximos</TabsTrigger>
-          <TabsTrigger value="completed">Completados</TabsTrigger>
-        </TabsList>
+      {/* Main Content - Calendar or List View */}
+      {view === 'calendar' ? (
+        <DeadlineCalendar />
+      ) : (
+        <Tabs defaultValue="all" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="overdue" className="text-red-600">
+              Vencidos {stats?.overdue ? `(${stats.overdue})` : ''}
+            </TabsTrigger>
+            <TabsTrigger value="urgent" className="text-orange-600">
+              Urgentes {stats?.urgent ? `(${stats.urgent})` : ''}
+            </TabsTrigger>
+            <TabsTrigger value="upcoming">Próximos</TabsTrigger>
+            <TabsTrigger value="completed">Completados</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="all">
-          <DeadlineList showFilters={true} />
-        </TabsContent>
+          <TabsContent value="all">
+            <DeadlineList showFilters={true} />
+          </TabsContent>
 
-        <TabsContent value="overdue">
-          <DeadlineList showFilters={false} />
-        </TabsContent>
+          <TabsContent value="overdue">
+            <DeadlineList showFilters={false} />
+          </TabsContent>
 
-        <TabsContent value="urgent">
-          <DeadlineList showFilters={false} />
-        </TabsContent>
+          <TabsContent value="urgent">
+            <DeadlineList showFilters={false} />
+          </TabsContent>
 
-        <TabsContent value="upcoming">
-          <DeadlineList showFilters={false} />
-        </TabsContent>
+          <TabsContent value="upcoming">
+            <DeadlineList showFilters={false} />
+          </TabsContent>
 
-        <TabsContent value="completed">
-          <DeadlineList showFilters={false} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="completed">
+            <DeadlineList showFilters={false} />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
