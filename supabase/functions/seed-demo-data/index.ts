@@ -635,12 +635,13 @@ serve(async (req) => {
 
     // Assets + listings
     const listingIds: string[] = [];
+    // Hoist authUserId so it's in scope for both assets/listings and offers
+    const authUserId = userData.user.id;
+
     for (let i = 0; i < 3; i++) {
       // market_assets.owner_id references auth.users(id), NOT market_users(id).
-      // Use the authenticated user's auth id as the asset owner for demo purposes.
-      // Both market_assets.owner_id and market_listings.seller_id reference auth.users(id).
+      // market_listings.seller_id also references auth.users(id).
       // Use the authenticated user's auth id for both.
-      const authUserId = userData.user.id;
       const { data: asset, error: assetErr } = await adminClient
         .from("market_assets")
         .insert({
@@ -691,14 +692,15 @@ serve(async (req) => {
     }
 
     // Offers
+    // market_offers.buyer_id references auth.users(id), NOT market_users(id).
+    // Use the authenticated user's auth id as buyer for demo purposes.
     for (let i = 0; i < 5; i++) {
       const listingId = pick(listingIds);
-      const buyerId = pick(marketUserIds);
       const { data, error } = await adminClient
         .from("market_offers")
         .insert({
           listing_id: listingId,
-          buyer_id: buyerId,
+          buyer_id: authUserId,
           offer_type: "offer",
           amount: 10000 + i * 1000,
           currency: "EUR",
