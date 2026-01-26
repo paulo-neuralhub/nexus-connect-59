@@ -24,8 +24,12 @@ function json(status: number, body: unknown) {
 }
 
 function getRequestIp(req: Request): string | null {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    // x-forwarded-for can contain multiple IPs, take only the first (client IP)
+    return forwardedFor.split(',')[0].trim();
+  }
   return (
-    req.headers.get('x-forwarded-for') ||
     req.headers.get('cf-connecting-ip') ||
     req.headers.get('x-real-ip')
   );
