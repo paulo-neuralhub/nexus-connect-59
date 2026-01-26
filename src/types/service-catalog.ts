@@ -33,7 +33,9 @@ export interface ServiceCatalogItem {
   professional_fee: number;
   base_price: number;
   currency: string;
+  tax_rate: number;
   estimated_days: number | null;
+  estimated_hours: number | null;
   nice_classes_included: number;
   extra_class_fee: number;
   display_order: number | null;

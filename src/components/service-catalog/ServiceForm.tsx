@@ -54,11 +54,20 @@ const serviceFormSchema = z.object({
   jurisdiction: z.string().nullable().optional(),
   official_fee: z.number().min(0),
   professional_fee: z.number().min(0),
+  tax_rate: z.number().min(0).max(100),
   estimated_days: z.number().min(0).optional().nullable(),
+  estimated_hours: z.number().min(0).optional().nullable(),
   nice_classes_included: z.number().min(0),
   extra_class_fee: z.number().min(0),
   is_active: z.boolean(),
 });
+
+const TAX_RATES = [
+  { value: 0, label: '0% (Exento)' },
+  { value: 4, label: '4%' },
+  { value: 10, label: '10%' },
+  { value: 21, label: '21%' },
+];
 
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
 
@@ -90,7 +99,9 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
       jurisdiction: null,
       official_fee: 0,
       professional_fee: 0,
+      tax_rate: 21,
       estimated_days: null,
+      estimated_hours: null,
       nice_classes_included: 1,
       extra_class_fee: 0,
       is_active: true,
@@ -108,7 +119,9 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
         jurisdiction: service.jurisdiction,
         official_fee: service.official_fee || 0,
         professional_fee: service.professional_fee || 0,
+        tax_rate: (service as any).tax_rate ?? 21,
         estimated_days: service.estimated_days,
+        estimated_hours: (service as any).estimated_hours ?? null,
         nice_classes_included: service.nice_classes_included || 1,
         extra_class_fee: service.extra_class_fee || 0,
         is_active: service.is_active,
@@ -122,7 +135,9 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
         jurisdiction: null,
         official_fee: 0,
         professional_fee: 0,
+        tax_rate: 21,
         estimated_days: null,
+        estimated_hours: null,
         nice_classes_included: 1,
         extra_class_fee: 0,
         is_active: true,
@@ -342,7 +357,7 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
             <div className="space-y-4">
               <h4 className="font-medium">Precios</h4>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
                   name="official_fee"
@@ -383,6 +398,34 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="tax_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>IVA (%)</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(parseFloat(v))}
+                        value={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TAX_RATES.map((rate) => (
+                            <SelectItem key={rate.value} value={rate.value.toString()}>
+                              {rate.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormItem>
                   <FormLabel>Precio Base (€)</FormLabel>
                   <Input
@@ -399,9 +442,54 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
 
             {/* Extra options */}
             <div className="space-y-4">
-              <h4 className="font-medium">Opciones adicionales</h4>
+              <h4 className="font-medium">Tiempo y opciones adicionales</h4>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FormField
+                  control={form.control}
+                  name="estimated_hours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Horas estimadas</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          placeholder="0"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        />
+                      </FormControl>
+                      <FormDescription>Para imputar al expediente</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="estimated_days"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Plazo estimado</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="días"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                        />
+                      </FormControl>
+                      <FormDescription>Días de tramitación</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="nice_classes_included"
@@ -437,28 +525,6 @@ export function ServiceForm({ open, onOpenChange, service, onSuccess }: ServiceF
                           onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="estimated_days"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Plazo estimado</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="días"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
-                        />
-                      </FormControl>
-                      <FormDescription>En días</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

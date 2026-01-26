@@ -72,6 +72,7 @@ const editServiceSchema = z.object({
   official_fees_note: z.string().optional(),
   tax_rate: z.number().min(0).max(100),
   estimated_duration: z.string().optional(),
+  estimated_hours: z.number().min(0).nullable().optional(),
   generates_matter: z.boolean(),
   default_matter_type: z.string().optional(),
   default_matter_subtype: z.string().optional(),
@@ -155,6 +156,7 @@ export function ServiceEditModal({
       official_fees_note: '',
       tax_rate: 21,
       estimated_duration: '',
+      estimated_hours: null,
       generates_matter: false,
       default_matter_type: '',
       default_matter_subtype: '',
@@ -174,6 +176,7 @@ export function ServiceEditModal({
         official_fees_note: service.official_fees_note || '',
         tax_rate: service.tax_rate || 21,
         estimated_duration: service.estimated_duration || '',
+        estimated_hours: (service as any).estimated_hours ?? null,
         generates_matter: service.generates_matter,
         default_matter_type: service.default_matter_type || '',
         default_matter_subtype: service.default_matter_subtype || '',
@@ -202,12 +205,13 @@ export function ServiceEditModal({
           official_fees_note: values.official_fees_note,
           tax_rate: values.tax_rate,
           estimated_duration: values.estimated_duration,
+          estimated_hours: values.estimated_hours,
           generates_matter: values.generates_matter,
           default_matter_type: values.default_matter_type,
           default_matter_subtype: values.default_matter_subtype,
           is_active: values.is_active,
           applicable_offices: values.applicable_offices,
-        },
+        } as any,
       });
       
       toast.success('Servicio actualizado');
@@ -394,21 +398,47 @@ export function ServiceEditModal({
             
             {/* Configuration */}
             <div className="space-y-4">
-              <h4 className="font-medium">Configuración</h4>
+              <h4 className="font-medium">Tiempo y Configuración</h4>
               
-              <FormField
-                control={form.control}
-                name="estimated_duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duración estimada</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: 4-6 meses" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="estimated_hours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Horas estimadas</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          placeholder="0"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        />
+                      </FormControl>
+                      <FormDescription>Para imputar al expediente</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="estimated_duration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duración estimada</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: 4-6 meses" {...field} />
+                      </FormControl>
+                      <FormDescription>Plazo de tramitación</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <FormField
                 control={form.control}

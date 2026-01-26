@@ -124,7 +124,7 @@ export function useCreateService() {
   const { currentOrganization } = useOrganization();
   
   return useMutation({
-    mutationFn: async (data: Partial<ServiceCatalogItem>) => {
+    mutationFn: async (data: Partial<ServiceCatalogItem> & { tax_rate?: number; estimated_hours?: number }) => {
       const insertData = {
         organization_id: currentOrganization!.id,
         name: data.name || '',
@@ -138,6 +138,8 @@ export function useCreateService() {
         base_price: (data.official_fee || 0) + (data.professional_fee || 0),
         currency: data.currency || 'EUR',
         estimated_days: data.estimated_days,
+        estimated_hours: data.estimated_hours,
+        tax_rate: data.tax_rate ?? 21,
         nice_classes_included: data.nice_classes_included || 1,
         extra_class_fee: data.extra_class_fee || 0,
         display_order: data.display_order,
