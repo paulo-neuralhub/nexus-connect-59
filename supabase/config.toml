@@ -254,3 +254,12 @@ verify_jwt = false
 
 [functions.telephony-check-balance]
 verify_jwt = false
+
+[functions.telephony-make-call]
+verify_jwt = false
+
+[functions.telephony-call-status]
+verify_jwt = false
+
+[functions.telephony-get-recording]
+verify_jwt = false

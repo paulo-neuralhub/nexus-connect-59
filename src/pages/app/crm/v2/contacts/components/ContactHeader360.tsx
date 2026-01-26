@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Mail, MoreHorizontal, Phone, MessageSquare } from "lucide-react";
+import { Mail, MoreHorizontal, MessageSquare } from "lucide-react";
 import { cn, formatCurrency, getInitials } from "@/lib/utils";
 import { StatCard } from "@/components/ui/stat-card";
 import { ActionButton } from "@/components/ui/action-button";
@@ -7,6 +7,7 @@ import { VipBadge } from "@/components/ui/vip-badge";
 import { ColorTag } from "@/components/ui/color-tag";
 import { ProfessionalCard } from "@/components/ui/professional-card";
 import { Button } from "@/components/ui/button";
+import { ClickToCallButton } from "@/components/telephony";
 
 type ContactLike = {
   id: string;
@@ -71,16 +72,20 @@ export function ContactHeader360({ contact, stats }: ContactHeader360Props) {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          <ActionButton
-            variant="call"
-            icon={<Phone className="h-4 w-4" />}
-            onClick={() => {
-              if (contact.phone) window.location.href = `tel:${contact.phone}`;
-            }}
-            disabled={!contact.phone}
-          >
-            Llamar
-          </ActionButton>
+          {contact.phone ? (
+            <ClickToCallButton
+              phone={contact.phone}
+              name={contact.full_name || undefined}
+              company={contact.account?.name || undefined}
+              contactId={contact.id}
+              variant="default"
+              size="sm"
+            />
+          ) : (
+            <ActionButton variant="call" disabled>
+              Llamar
+            </ActionButton>
+          )}
           <ActionButton
             variant="email"
             icon={<Mail className="h-4 w-4" />}
