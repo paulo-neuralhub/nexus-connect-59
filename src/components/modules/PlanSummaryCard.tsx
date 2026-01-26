@@ -1,13 +1,12 @@
 // =============================================
 // COMPONENTE: PlanSummaryCard
-// Resumen visual del plan actual
+// Resumen visual del plan actual - Diseño profesional
 // =============================================
 
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
   Check, 
-  ArrowUpRight,
   Package,
   Puzzle,
 } from 'lucide-react';
@@ -15,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useModulesContext } from '@/contexts/ModulesContext';
-import { cn } from '@/lib/utils';
 
 export function PlanSummaryCard() {
   const navigate = useNavigate();
@@ -70,12 +68,12 @@ export function PlanSummaryCard() {
       </div>
 
       {/* Métricas */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Módulos */}
         <div className="bg-white/5 rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-2">
             <Package className="h-3.5 w-3.5" />
-            Módulos
+            Módulos activos
           </div>
           <div className="flex items-baseline gap-1 mb-2">
             <span className="text-2xl font-bold text-white">
@@ -94,7 +92,7 @@ export function PlanSummaryCard() {
         <div className="bg-white/5 rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-2">
             <Puzzle className="h-3.5 w-3.5" />
-            Add-ons
+            Add-ons activos
           </div>
           <div className="flex items-baseline gap-1 mb-2">
             <span className="text-2xl font-bold text-white">
@@ -112,7 +110,7 @@ export function PlanSummaryCard() {
         {/* Coste add-ons */}
         <div className="bg-white/5 rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-2">
-            Coste add-ons
+            Coste mensual add-ons
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-white">

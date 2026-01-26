@@ -17,7 +17,7 @@ import { useModulesContext } from '@/contexts/ModulesContext';
 import { cn } from '@/lib/utils';
 import type { ModuleWithStatus } from '@/types/modules';
 
-// Configuración de secciones
+// Configuración de secciones - ampliada
 const MODULE_SECTIONS = [
   {
     id: 'core',
@@ -29,19 +29,19 @@ const MODULE_SECTIONS = [
     id: 'intelligence',
     title: 'Inteligencia',
     description: 'IA y análisis avanzado',
-    codes: ['spider', 'genius', 'analytics'],
+    codes: ['spider', 'genius', 'analytics', 'alertas-ia'],
   },
   {
     id: 'operations',
     title: 'Operaciones',
     description: 'Gestión del día a día',
-    codes: ['legal-ops', 'workflow', 'finance'],
+    codes: ['legal-ops', 'workflow', 'filing', 'finance', 'timetracking'],
   },
   {
     id: 'extensions',
     title: 'Extensiones',
     description: 'Funcionalidades adicionales',
-    codes: ['communications', 'portal-cliente'],
+    codes: ['communications', 'portal-cliente', 'data-hub', 'equipos'],
   },
 ];
 
@@ -149,41 +149,49 @@ function ModuleCard({ module, onActivate }: ModuleCardProps) {
   return (
     <div
       className={cn(
-        'relative rounded-xl border bg-card p-5 transition-all hover:shadow-md',
-        isActive && 'border-primary/30 bg-primary/5',
-        isTrial && 'border-amber-500/30 bg-amber-500/5',
-        isLocked && 'border-border',
-        isComingSoon && 'border-dashed opacity-60'
+        'group relative rounded-xl border bg-card p-5 transition-all hover:shadow-lg hover:border-primary/20',
+        isActive && 'border-primary/30 bg-primary/5 shadow-sm',
+        isTrial && 'border-amber-500/30 bg-amber-500/5 shadow-sm',
+        isLocked && 'border-border hover:bg-muted/30',
+        isComingSoon && 'border-dashed opacity-70 pointer-events-none'
       )}
     >
       {/* Status badge */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-3 right-3 z-10">
         {isActive && (
-          <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0 text-xs font-medium">
             <Check className="h-3 w-3 mr-1" />
             Activo
           </Badge>
         )}
         {isTrial && (
-          <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
+          <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-xs font-medium">
             <Clock className="h-3 w-3 mr-1" />
             {module.trial_days_remaining}d restantes
           </Badge>
         )}
         {isComingSoon && (
-          <Badge className="bg-slate-100 text-slate-600 border-0 text-xs">
+          <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-0 text-xs">
             <Sparkles className="h-3 w-3 mr-1" />
             Próximamente
+          </Badge>
+        )}
+        {isLocked && !isComingSoon && module.is_popular && (
+          <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 text-xs">
+            Popular
           </Badge>
         )}
       </div>
 
       {/* Contenido */}
       <div className="flex gap-4">
-        {/* Icono */}
+        {/* Icono con color del módulo */}
         <div 
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-2xl"
-          style={{ backgroundColor: `${module.color}15` }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-transform group-hover:scale-105"
+          style={{ 
+            backgroundColor: `${module.color}15`,
+            boxShadow: isActive ? `0 4px 12px ${module.color}20` : undefined
+          }}
         >
           {module.icon}
         </div>

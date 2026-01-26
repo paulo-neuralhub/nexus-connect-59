@@ -311,3 +311,10 @@ export const ADDON_CATEGORY_CONFIG: Record<string, {
     description: 'Soporte prioritario y dedicado',
   },
 };
+
+// Subcategorías para jurisdicciones
+export const ADDON_SUBCATEGORY_LABELS: Record<string, string> = {
+  ip: 'Propiedad Intelectual',
+  legal: 'Marco Legal (Genius)',
+  spider: 'Vigilancia Spider',
+};
