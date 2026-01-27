@@ -1,5 +1,6 @@
 /**
  * use-matter-tasks - Hook para tareas del expediente
+ * Usa la tabla matter_tasks dedicada
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,7 +13,8 @@ export interface MatterTask {
   organization_id: string;
   title: string;
   description?: string | null;
-  priority?: string;
+  priority: string;
+  status: string;
   due_date?: string | null;
   is_completed: boolean;
   completed_at?: string | null;
@@ -25,30 +27,44 @@ export function useMatterTasks(matterId: string) {
   return useQuery({
     queryKey: ['matter-tasks', matterId],
     queryFn: async () => {
-      // Query from activities table with type = 'task' for matter
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*')
+      // Query from the dedicated matter_tasks table
+      const client: any = supabase;
+      const { data, error } = await client
+        .from('matter_tasks')
+        .select(`
+          id,
+          matter_id,
+          organization_id,
+          title,
+          description,
+          priority,
+          status,
+          due_date,
+          is_completed,
+          completed_at,
+          assigned_to,
+          created_at,
+          users:assigned_to(full_name)
+        `)
         .eq('matter_id', matterId)
-        .eq('type', 'task')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Map to MatterTask interface
-      return (data || []).map(a => ({
-        id: a.id,
-        matter_id: a.matter_id || '',
-        organization_id: a.organization_id,
-        title: a.subject || 'Sin título',
-        description: a.content,
-        priority: (a.metadata as any)?.priority || 'medium',
-        due_date: a.due_date,
-        is_completed: a.is_completed || false,
-        completed_at: a.completed_at,
-        assigned_to: (a.metadata as any)?.assigned_to,
-        assigned_to_name: (a.metadata as any)?.assigned_to_name,
-        created_at: a.created_at || '',
+      return (data || []).map((t: any) => ({
+        id: t.id,
+        matter_id: t.matter_id,
+        organization_id: t.organization_id,
+        title: t.title,
+        description: t.description,
+        priority: t.priority || 'medium',
+        status: t.status || 'pending',
+        due_date: t.due_date,
+        is_completed: t.is_completed || false,
+        completed_at: t.completed_at,
+        assigned_to: t.assigned_to,
+        assigned_to_name: t.users?.full_name,
+        created_at: t.created_at,
       })) as MatterTask[];
     },
     enabled: !!matterId,
@@ -66,19 +82,21 @@ export function useCreateMatterTask() {
       description?: string | null;
       priority?: string;
       due_date?: string | null;
+      assigned_to?: string | null;
     }) => {
-      const { data: task, error } = await supabase
-        .from('activities')
+      const client: any = supabase;
+      const { data: task, error } = await client
+        .from('matter_tasks')
         .insert({ 
           organization_id: currentOrganization!.id,
-          owner_type: 'tenant',
           matter_id: data.matter_id,
-          type: 'task',
-          subject: data.title,
-          content: data.description,
+          title: data.title,
+          description: data.description,
+          priority: data.priority || 'medium',
+          status: 'pending',
           due_date: data.due_date,
+          assigned_to: data.assigned_to,
           is_completed: false,
-          metadata: { priority: data.priority || 'medium' },
         })
         .select()
         .single();
@@ -97,10 +115,12 @@ export function useCompleteMatterTask() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('activities')
+      const client: any = supabase;
+      const { error } = await client
+        .from('matter_tasks')
         .update({ 
           is_completed: true,
+          status: 'completed',
           completed_at: new Date().toISOString(),
         })
         .eq('id', id);
