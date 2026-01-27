@@ -378,64 +378,8 @@ export function useMarkTipSeen() {
 }
 
 // =============================================
-// ORGANIZATION OFFICES
+// ORGANIZATION OFFICES - REMOVED
 // =============================================
-
-export function useOrganizationOffices() {
-  const { currentOrganization } = useOrganization();
-  
-  return useQuery({
-    queryKey: ['organization-offices', currentOrganization?.id],
-    queryFn: async () => {
-      if (!currentOrganization?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('organization_offices')
-        .select(`
-          *,
-          office:ipo_offices(*)
-        `)
-        .eq('organization_id', currentOrganization.id);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!currentOrganization?.id
-  });
-}
-
-export function useSetFavoriteOffices() {
-  const queryClient = useQueryClient();
-  const { currentOrganization } = useOrganization();
-  
-  return useMutation({
-    mutationFn: async (officeIds: string[]) => {
-      if (!currentOrganization?.id) throw new Error('No organization');
-      
-      // Delete existing
-      await supabase
-        .from('organization_offices')
-        .delete()
-        .eq('organization_id', currentOrganization.id);
-      
-      // Insert new
-      if (officeIds.length > 0) {
-        const { error } = await supabase
-          .from('organization_offices')
-          .insert(
-            officeIds.map(officeId => ({
-              organization_id: currentOrganization.id,
-              office_id: officeId,
-              is_favorite: true
-            }))
-          );
-        
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-offices'] });
-      toast.success('Oficinas favoritas actualizadas');
-    }
-  });
-}
+// Las oficinas IP son gestionadas globalmente por IP-NEXUS.
+// Los tenants solo VEN información de oficinas (SOLO LECTURA).
+// Ver: useTenantOffices.ts para lectura de oficinas por plan.
