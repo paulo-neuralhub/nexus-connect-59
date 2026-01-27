@@ -68,6 +68,10 @@ import MatterList from "./pages/app/docket";
 import MatterDetail from "./pages/app/docket/MatterDetail";
 import MatterForm from "./pages/app/docket/MatterForm";
 import DeadlinesPage from "./pages/app/docket/DeadlinesPage";
+// Expedientes V2
+import ExpedientesPage from "./pages/app/expedientes";
+import MatterDetailPageV2 from "./pages/app/expedientes/[id]";
+import NewMatterPage from "./pages/app/expedientes/nuevo";
 import CRMLayout from "./pages/app/crm/CRMLayout";
 import CRMV2Dashboard from "./pages/app/crm/v2/Dashboard";
 import CRMV2AccountsList from "./pages/app/crm/v2/accounts";
@@ -377,6 +381,10 @@ const App = () => (
                   <Route path="automations/new/editor" element={<AutomationEditor />} />
                   <Route path="automations/:id" element={<AutomationEditor />} />
                 </Route>
+                {/* Expedientes V2 */}
+                <Route path="expedientes" element={<ExpedientesPage />} />
+                <Route path="expedientes/nuevo" element={<NewMatterPage />} />
+                <Route path="expedientes/:id" element={<MatterDetailPageV2 />} />
                 <Route path="market" element={<MarketLayout />}>
                   <Route index element={<MarketDashboard />} />
                   <Route path="listings" element={<MarketListings />} />
