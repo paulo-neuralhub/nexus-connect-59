@@ -161,7 +161,7 @@ export function CostAnalyticsTab() {
       if (!data) return [];
 
       // Get tenant names
-      const tenantIds = [...new Set(data.map((d: any) => d.tenant_id))];
+      const tenantIds = [...new Set(data.map((d: any) => d.tenant_id))] as string[];
       const { data: tenants } = await supabase
         .from('organizations')
         .select('id, name')
