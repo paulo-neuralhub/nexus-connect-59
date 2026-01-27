@@ -78,3 +78,20 @@ export { useDiscoverAIModels } from './useAIModelDiscovery';
 // FinOps
 export { useAIFinOpsDashboard } from './useAIFinOps';
 
+// Health Monitor
+export {
+  useProviderHealthStats,
+  useProviderHealthLog,
+  useToggleCircuitBreaker,
+  useResetProviderHealth,
+  useReportExecution,
+  useHealthSummary,
+} from './useAIHealthMonitor';
+
+// Routing Simulator
+export {
+  useTaskRouting,
+  useSimulateModelSelection,
+  useAllTasksRouting,
+} from './useAIRoutingSimulator';
+

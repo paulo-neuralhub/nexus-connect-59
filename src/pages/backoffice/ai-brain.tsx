@@ -364,13 +364,7 @@ export default function AIBrainPage() {
         </TabsContent>
 
         <TabsContent value="circuit" className="space-y-4">
-          <CircuitBreakerTab
-            circuitStates={circuitStates}
-            providers={providers}
-            isLoading={circuitLoading}
-            onReset={handleResetCircuit}
-            onForceOpen={handleForceOpenCircuit}
-          />
+          <CircuitBreakerTab />
         </TabsContent>
 
         <TabsContent value="rag" className="space-y-4">

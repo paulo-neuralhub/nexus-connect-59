@@ -1925,22 +1925,77 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_provider_health_log: {
+        Row: {
+          check_type: string | null
+          checked_at: string | null
+          created_at: string | null
+          error_code: string | null
+          error_message: string | null
+          execution_id: string | null
+          id: string
+          is_healthy: boolean
+          latency_ms: number | null
+          provider_id: string
+        }
+        Insert: {
+          check_type?: string | null
+          checked_at?: string | null
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          id?: string
+          is_healthy: boolean
+          latency_ms?: number | null
+          provider_id: string
+        }
+        Update: {
+          check_type?: string | null
+          checked_at?: string | null
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          id?: string
+          is_healthy?: boolean
+          latency_ms?: number | null
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_provider_health_log_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_providers: {
         Row: {
           api_key_encrypted: string | null
+          avg_latency_1h: number | null
           base_url: string | null
+          circuit_half_open_at: string | null
+          circuit_open: boolean | null
+          circuit_opened_at: string | null
           code: string
           config: Json | null
           consecutive_failures: number | null
           created_at: string | null
+          error_count_1h: number | null
           health_latency_ms: number | null
           health_status: string | null
           id: string
           is_gateway: boolean | null
+          last_error_at: string | null
+          last_error_message: string | null
           last_health_check_at: string | null
           logo_url: string | null
           name: string
           status: string | null
+          success_count_1h: number | null
           supports_chat: boolean | null
           supports_embeddings: boolean | null
           supports_tools: boolean | null
@@ -1949,19 +2004,27 @@ export type Database = {
         }
         Insert: {
           api_key_encrypted?: string | null
+          avg_latency_1h?: number | null
           base_url?: string | null
+          circuit_half_open_at?: string | null
+          circuit_open?: boolean | null
+          circuit_opened_at?: string | null
           code: string
           config?: Json | null
           consecutive_failures?: number | null
           created_at?: string | null
+          error_count_1h?: number | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
           is_gateway?: boolean | null
+          last_error_at?: string | null
+          last_error_message?: string | null
           last_health_check_at?: string | null
           logo_url?: string | null
           name: string
           status?: string | null
+          success_count_1h?: number | null
           supports_chat?: boolean | null
           supports_embeddings?: boolean | null
           supports_tools?: boolean | null
@@ -1970,19 +2033,27 @@ export type Database = {
         }
         Update: {
           api_key_encrypted?: string | null
+          avg_latency_1h?: number | null
           base_url?: string | null
+          circuit_half_open_at?: string | null
+          circuit_open?: boolean | null
+          circuit_opened_at?: string | null
           code?: string
           config?: Json | null
           consecutive_failures?: number | null
           created_at?: string | null
+          error_count_1h?: number | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
           is_gateway?: boolean | null
+          last_error_at?: string | null
+          last_error_message?: string | null
           last_health_check_at?: string | null
           logo_url?: string | null
           name?: string
           status?: string | null
+          success_count_1h?: number | null
           supports_chat?: boolean | null
           supports_embeddings?: boolean | null
           supports_tools?: boolean | null
@@ -42666,6 +42737,25 @@ export type Database = {
       }
       get_super_admin_mode: { Args: never; Returns: Json }
       get_super_admin_permissions: { Args: never; Returns: Json }
+      get_task_routing: {
+        Args: { p_task_code: string; p_tenant_id?: string }
+        Returns: {
+          backup_1_healthy: boolean
+          backup_1_model_code: string
+          backup_1_provider_code: string
+          backup_2_healthy: boolean
+          backup_2_model_code: string
+          backup_2_provider_code: string
+          max_tokens: number
+          primary_healthy: boolean
+          primary_model_code: string
+          primary_provider_code: string
+          task_code: string
+          task_id: string
+          temperature: number
+          timeout_ms: number
+        }[]
+      }
       get_tenant_modules_summary: {
         Args: { p_tenant_id: string }
         Returns: Json
@@ -42886,6 +42976,11 @@ export type Database = {
         }
         Returns: string
       }
+      reset_provider_health: {
+        Args: { p_provider_id: string }
+        Returns: undefined
+      }
+      reset_provider_hourly_counters: { Args: never; Returns: undefined }
       resolve_event: {
         Args: { p_event_id: string; p_resolution_notes?: string }
         Returns: boolean
@@ -42946,6 +43041,24 @@ export type Database = {
         Args: never
         Returns: undefined
       }
+      select_model_for_task: {
+        Args: {
+          p_requires_tools?: boolean
+          p_requires_vision?: boolean
+          p_task_code: string
+          p_tenant_id?: string
+        }
+        Returns: {
+          fallback_reason: string
+          is_fallback: boolean
+          max_tokens: number
+          selected_model_code: string
+          selected_model_id: string
+          selected_provider_code: string
+          temperature: number
+          timeout_ms: number
+        }[]
+      }
       set_super_admin_mode: {
         Args: { p_mode: string; p_subscription?: string; p_tenant_id?: string }
         Returns: Json
@@ -42970,11 +43083,26 @@ export type Database = {
         Returns: boolean
       }
       text_soundex: { Args: { "": string }; Returns: string }
+      toggle_circuit_breaker: {
+        Args: { p_open: boolean; p_provider_id: string }
+        Returns: undefined
+      }
       trigger_workflow_manually: {
         Args: { p_trigger_data?: Json; p_workflow_id: string }
         Returns: string
       }
       update_deadline_statuses: { Args: never; Returns: number }
+      update_provider_health_after_execution: {
+        Args: {
+          p_error_code?: string
+          p_error_message?: string
+          p_execution_id?: string
+          p_latency_ms?: number
+          p_provider_code: string
+          p_success: boolean
+        }
+        Returns: undefined
+      }
       use_ai_query: {
         Args: {
           p_input_tokens?: number
