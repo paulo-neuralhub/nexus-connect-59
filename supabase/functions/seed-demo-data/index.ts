@@ -456,7 +456,108 @@ serve(async (req) => {
       await register("matter_deadlines", data.id);
     }
 
-    // CRM: ensure at least 1 pipeline+stages exist (some orgs might be new)
+    // ============================================================
+    // CRM V2: Pipelines + Stages + Deals (crm_* tables)
+    // ============================================================
+    
+    // Check for existing CRM V2 pipeline
+    let crmPipelineId: string | null = null;
+    const crmPipelineStageIds: { id: string; name: string; probability: number }[] = [];
+    
+    {
+      const { data: existingPipeline, error: pipeErr } = await adminClient
+        .from("crm_pipelines")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .eq("is_active", true)
+        .order("is_default", { ascending: false })
+        .order("sort_order", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (pipeErr) throw pipeErr;
+      crmPipelineId = (existingPipeline?.id as string) ?? null;
+    }
+
+    if (!crmPipelineId) {
+      // Create CRM V2 pipeline
+      const pipelineCode = `sales-demo-${runSuffix}`;
+      const { data: newPipeline, error: createPipeErr } = await adminClient
+        .from("crm_pipelines")
+        .insert({
+          organization_id: organizationId,
+          code: pipelineCode,
+          name: "Captación de Clientes",
+          name_es: "Captación de Clientes",
+          description: "Pipeline de ventas demo para captar nuevos clientes.",
+          pipeline_type: "sales",
+          icon: "funnel",
+          color: "#3B82F6",
+          is_active: true,
+          is_default: true,
+          sort_order: 0,
+        })
+        .select("id")
+        .single();
+      if (createPipeErr) throw createPipeErr;
+      crmPipelineId = newPipeline.id;
+      await register("crm_pipelines", newPipeline.id);
+
+      // Create CRM V2 stages
+      const stagesDef = [
+        { code: "lead", name: "Lead Entrante", color: "#3B82F6", probability: 10 },
+        { code: "contacted", name: "Contacto Inicial", color: "#0EA5E9", probability: 20 },
+        { code: "qualified", name: "Cualificado", color: "#10B981", probability: 40 },
+        { code: "proposal", name: "Propuesta Enviada", color: "#F59E0B", probability: 60 },
+        { code: "negotiation", name: "Negociación", color: "#8B5CF6", probability: 80 },
+        { code: "won", name: "Cliente Ganado", color: "#22C55E", probability: 100, is_won: true },
+        { code: "lost", name: "Perdido", color: "#EF4444", probability: 0, is_lost: true },
+      ];
+
+      for (let idx = 0; idx < stagesDef.length; idx++) {
+        const s = stagesDef[idx];
+        const { data: stageData, error: stageErr } = await adminClient
+          .from("crm_pipeline_stages")
+          .insert({
+            pipeline_id: crmPipelineId,
+            code: s.code,
+            name: s.name,
+            name_es: s.name,
+            color: s.color,
+            sort_order: idx,
+            probability: s.probability,
+            is_won: (s as any).is_won ?? false,
+            is_lost: (s as any).is_lost ?? false,
+            is_active: true,
+          })
+          .select("id, name, probability")
+          .single();
+        if (stageErr) throw stageErr;
+        crmPipelineStageIds.push({ id: stageData.id, name: stageData.name, probability: stageData.probability ?? 0 });
+        await register("crm_pipeline_stages", stageData.id);
+      }
+    } else {
+      // Load existing stages
+      const { data: existingStages, error: stagesErr } = await adminClient
+        .from("crm_pipeline_stages")
+        .select("id, name, probability")
+        .eq("pipeline_id", crmPipelineId)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (stagesErr) throw stagesErr;
+      for (const s of existingStages ?? []) {
+        crmPipelineStageIds.push({ id: s.id, name: s.name, probability: s.probability ?? 0 });
+      }
+    }
+
+    if (crmPipelineStageIds.length === 0) {
+      throw new Error("No CRM pipeline stages found or created");
+    }
+
+    // CRM V2 Deals will be created after crmAccountIds/crmContactIds are populated
+
+    // ============================================================
+    // Legacy CRM: pipelines + pipeline_stages + deals (backward compat)
+    // ============================================================
     let pipelineId: string | null = null;
     {
       const { data: pipelineRow, error: pipeErr } = await adminClient
@@ -705,6 +806,86 @@ serve(async (req) => {
         .single();
       if (error) throw error;
       await register("crm_tasks", data.id);
+    }
+
+    // ============================================================
+    // CRM V2: Deals (crm_deals) - distributed across stages
+    // ============================================================
+    const dealScenarios = [
+      // Stage: Lead Entrante
+      { stageIdx: 0, name: "TechVerde - Registro marca EU", amount: 4500, opportunity_type: "trademark_registration", territory: "EU" },
+      { stageIdx: 0, name: "StartupAI - Consulta patente software", amount: 8000, opportunity_type: "patent_prosecution", territory: "ES" },
+      
+      // Stage: Contacto Inicial
+      { stageIdx: 1, name: "BioSalud - Portfolio patentes farmacéuticas", amount: 45000, opportunity_type: "patent_prosecution", territory: "EU" },
+      { stageIdx: 1, name: "GlobalLog - Renovación marcas internacionales", amount: 12000, opportunity_type: "trademark_renewal", territory: "WIPO" },
+      
+      // Stage: Cualificado  
+      { stageIdx: 2, name: "Cerámica Artesana - Diseño industrial colección", amount: 6500, opportunity_type: "design_registration", territory: "ES" },
+      { stageIdx: 2, name: "Atlas Logistics - Marcas de transporte", amount: 8500, opportunity_type: "trademark_registration", territory: "EU" },
+      
+      // Stage: Propuesta Enviada
+      { stageIdx: 3, name: "Cobalt Games - Patente motor gráfico", amount: 22000, opportunity_type: "patent_prosecution", territory: "EU" },
+      { stageIdx: 3, name: "Solaria - Vigilancia competencia", amount: 3600, opportunity_type: "watch_service", territory: "ES" },
+      
+      // Stage: Negociación
+      { stageIdx: 4, name: "MediTech Labs - Oposición marca competidor", amount: 15000, opportunity_type: "opposition_defense", territory: "EU" },
+      { stageIdx: 4, name: "FoodTech Labs - Cartera PI completa", amount: 35000, opportunity_type: "portfolio_management", territory: "ES" },
+      
+      // Stage: Won (already closed)
+      { stageIdx: 5, name: "TechVerde - Marca ES (CERRADA)", amount: 2500, opportunity_type: "trademark_registration", territory: "ES", won: true },
+      { stageIdx: 5, name: "BioSalud - Patente formulación (CERRADA)", amount: 18000, opportunity_type: "patent_prosecution", territory: "ES", won: true },
+      
+      // Stage: Lost
+      { stageIdx: 6, name: "CompetidorX - Perdido por precio", amount: 5000, opportunity_type: "trademark_registration", territory: "ES", lost: true, lost_reason: "Precio demasiado alto" },
+    ];
+
+    for (let i = 0; i < dealScenarios.length; i++) {
+      const scenario = dealScenarios[i] as { stageIdx: number; name: string; amount: number; opportunity_type: string; territory: string; won?: boolean; lost?: boolean; lost_reason?: string };
+      const stageInfo = crmPipelineStageIds[scenario.stageIdx] ?? crmPipelineStageIds[0];
+      const accountId = crmAccountIds[i % crmAccountIds.length];
+      const contactId = crmContactIds[i % crmContactIds.length];
+      const daysAgoCreated = 60 - (scenario.stageIdx * 8) + Math.floor(Math.random() * 10);
+      const expectedClose = new Date(Date.now() + (30 + scenario.stageIdx * 15) * 24 * 60 * 60 * 1000);
+      
+      const dealData: Record<string, unknown> = {
+        organization_id: organizationId,
+        pipeline_id: crmPipelineId,
+        stage_id: stageInfo.id,
+        stage: stageInfo.name,
+        account_id: accountId,
+        contact_id: contactId,
+        owner_id: userData.user.id,
+        name: scenario.name,
+        opportunity_type: scenario.opportunity_type,
+        amount: scenario.amount,
+        weighted_amount: Math.round((scenario.amount * stageInfo.probability) / 100),
+        expected_close_date: expectedClose.toISOString().slice(0, 10),
+        stage_entered_at: daysAgo(daysAgoCreated - scenario.stageIdx * 5).toISOString(),
+        stage_history: [],
+        territory: scenario.territory,
+        metadata: { demo: true },
+        created_at: daysAgo(daysAgoCreated).toISOString(),
+      };
+
+      if (scenario.won) {
+        dealData.won = true;
+        dealData.actual_close_date = daysAgo(5).toISOString().slice(0, 10);
+        dealData.close_reason = "Cliente satisfecho con propuesta";
+      } else if (scenario.lost) {
+        dealData.won = false;
+        dealData.lost_reason = scenario.lost_reason;
+        dealData.actual_close_date = daysAgo(10).toISOString().slice(0, 10);
+        dealData.close_reason = scenario.lost_reason;
+      }
+
+      const { data: dealRow, error: dealErr } = await adminClient
+        .from("crm_deals")
+        .insert(dealData)
+        .select("id")
+        .single();
+      if (dealErr) throw dealErr;
+      await register("crm_deals", dealRow.id);
     }
 
     // Original Deals (CRM v1)
