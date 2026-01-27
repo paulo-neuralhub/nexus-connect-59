@@ -44,10 +44,10 @@ export function MatterInvoicesTab({ matterId, clientId }: MatterInvoicesTabProps
 
   // Calculate totals
   const totals = invoices?.reduce((acc, inv) => ({
-    total: acc.total + (inv.total_amount || 0),
-    paid: acc.paid + (inv.status === 'paid' ? (inv.total_amount || 0) : 0),
+    total: acc.total + (inv.total || 0),
+    paid: acc.paid + (inv.status === 'paid' ? (inv.total || 0) : 0),
     pending: acc.pending + (inv.status === 'pending' || inv.status === 'sent' || inv.status === 'overdue' 
-      ? (inv.total_amount || 0) : 0),
+      ? (inv.total || 0) : 0),
   }), { total: 0, paid: 0, pending: 0 });
 
   return (
@@ -122,14 +122,14 @@ export function MatterInvoicesTab({ matterId, clientId }: MatterInvoicesTabProps
                             {statusConfig.label}
                           </Badge>
                           <span>
-                            {format(new Date(invoice.issue_date || invoice.created_at), 'dd MMM yyyy', { locale: es })}
+                            {format(new Date(invoice.invoice_date || invoice.created_at), 'dd MMM yyyy', { locale: es })}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <p className="font-semibold">
-                        {(invoice.total_amount || 0).toLocaleString('es-ES', { 
+                        {(invoice.total || 0).toLocaleString('es-ES', { 
                           style: 'currency', 
                           currency: invoice.currency || 'EUR' 
                         })}

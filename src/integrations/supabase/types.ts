@@ -18265,6 +18265,7 @@ export type Database = {
           invoice_number: string
           invoice_series: string | null
           invoice_type: string | null
+          matter_id: string | null
           notes: string | null
           organization_id: string
           paid_amount: number | null
@@ -18330,6 +18331,7 @@ export type Database = {
           invoice_number: string
           invoice_series?: string | null
           invoice_type?: string | null
+          matter_id?: string | null
           notes?: string | null
           organization_id: string
           paid_amount?: number | null
@@ -18395,6 +18397,7 @@ export type Database = {
           invoice_number?: string
           invoice_series?: string | null
           invoice_type?: string | null
+          matter_id?: string | null
           notes?: string | null
           organization_id?: string
           paid_amount?: number | null
@@ -18456,6 +18459,20 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "invoices_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
           {
@@ -24426,7 +24443,14 @@ export type Database = {
             foreignKeyName: "matter_filings_matter_id_fkey"
             columns: ["matter_id"]
             isOneToOne: false
-            referencedRelation: "matters_v2"
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_filings_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
           {
@@ -24878,6 +24902,7 @@ export type Database = {
           poa_reference: string | null
           poa_type: string | null
           role_detail: string | null
+          sort_order: number | null
           source_relationship_id: string | null
           source_type: string
           updated_at: string | null
@@ -24922,6 +24947,7 @@ export type Database = {
           poa_reference?: string | null
           poa_type?: string | null
           role_detail?: string | null
+          sort_order?: number | null
           source_relationship_id?: string | null
           source_type?: string
           updated_at?: string | null
@@ -24966,6 +24992,7 @@ export type Database = {
           poa_reference?: string | null
           poa_type?: string | null
           role_detail?: string | null
+          sort_order?: number | null
           source_relationship_id?: string | null
           source_type?: string
           updated_at?: string | null
@@ -25235,6 +25262,124 @@ export type Database = {
           },
         ]
       }
+      matter_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          is_completed: boolean | null
+          matter_id: string
+          organization_id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          matter_id: string
+          organization_id: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          matter_id?: string
+          organization_id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       matter_timeline: {
         Row: {
           actor_name: string | null
@@ -25333,7 +25478,14 @@ export type Database = {
             foreignKeyName: "matter_timeline_matter_id_fkey"
             columns: ["matter_id"]
             isOneToOne: false
-            referencedRelation: "matters_v2"
+            referencedRelation: "matter_deadline_summary"
+            referencedColumns: ["matter_id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
           {
