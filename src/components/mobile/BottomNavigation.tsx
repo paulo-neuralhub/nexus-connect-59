@@ -17,8 +17,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/app/dashboard', icon: LayoutDashboard, label: 'Inicio' },
-  { href: '/app/docket', icon: Folder, label: 'Docket' },
-  { href: '/app/docket/deadlines', icon: Calendar, label: 'Plazos' },
+  { href: '/app/expedientes', icon: Folder, label: 'Expedientes' },
+  { href: '/app/expedientes/plazos', icon: Calendar, label: 'Plazos' },
   { href: '/app/search', icon: Search, label: 'Buscar' },
   { href: '/app/menu', icon: Menu, label: 'Más' },
 ];

@@ -13,7 +13,10 @@ interface MobileHeaderProps {
 
 const PAGE_TITLES: Record<string, string> = {
   '/app/dashboard': 'Dashboard',
-  '/app/docket': 'Docket',
+  '/app/expedientes': 'Expedientes',
+  '/app/expedientes/nuevo': 'Nuevo Expediente',
+  '/app/expedientes/plazos': 'Plazos',
+  '/app/docket': 'Expedientes',
   '/app/docket/deadlines': 'Plazos',
   '/app/contacts': 'Contactos',
   '/app/crm': 'CRM',
