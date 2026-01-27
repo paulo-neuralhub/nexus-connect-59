@@ -23,6 +23,7 @@ import {
   CalendarClock,
   FileText,
   Zap,
+  Hash,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
@@ -46,6 +47,7 @@ import ApiWebhooksSettings from './sections/ApiWebhooksSettings';
 import CrmSettings from './sections/CrmSettings';
 import EmailSettings from './sections/EmailSettings';
 import DeadlineConfigPage from './deadlines';
+import InternalReferenceConfigPage from './internal-reference';
 import TemplatesSettings from './sections/TemplatesSettings';
 import TenantTelephonySettingsPage from './telephony';
 import { ServicesDashboard } from '@/components/services';
@@ -70,6 +72,7 @@ const ORG_TABS = [
   { id: 'templates', label: 'Plantillas', icon: FileText, permission: 'settings.view' },
   { id: 'automations', label: 'Automatizaciones', icon: Zap, permission: 'settings.update' },
   { id: 'deadlines', label: 'Reglas de Plazos', icon: CalendarClock, permission: 'settings.update' },
+  { id: 'internal-reference', label: 'Referencia Interna', icon: Hash, permission: 'settings.update' },
 ];
 
 // Tabs for user settings
@@ -267,6 +270,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
       {activeTab === 'deadlines' && (
         <RequirePermission permission="settings.update">
           <DeadlineConfigPage />
+        </RequirePermission>
+      )}
+
+      {activeTab === 'internal-reference' && (
+        <RequirePermission permission="settings.update">
+          <InternalReferenceConfigPage />
         </RequirePermission>
       )}
     </>

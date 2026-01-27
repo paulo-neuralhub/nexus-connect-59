@@ -15,6 +15,7 @@ import {
   useGenerateMatterNumber, 
   useMatterTypes 
 } from '@/hooks/use-matters-v2';
+import { useGenerateInternalReference } from '@/hooks/use-internal-reference-config';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,7 @@ export default function NewMatterPage() {
   const { data: matterTypes, isLoading: loadingTypes } = useMatterTypes();
   const createMatter = useCreateMatterV2();
   const generateNumber = useGenerateMatterNumber();
+  const generateInternalRef = useGenerateInternalReference();
   
   const [previewNumber, setPreviewNumber] = useState<string | null>(null);
   const [generatingNumber, setGeneratingNumber] = useState(false);
@@ -172,6 +174,21 @@ export default function NewMatterPage() {
         clientId: data.client_id || undefined,
       });
       
+      // Generate internal reference automatically (if not provided manually)
+      let internalReference = data.reference || null;
+      if (!internalReference) {
+        try {
+          internalReference = await generateInternalRef.mutateAsync({
+            typeCode: data.matter_type,
+            jurisdictionCode: data.jurisdiction_code,
+            clientCode: selectedClient?.client_token || undefined,
+          });
+        } catch (err) {
+          // If auto-generation fails, continue without it
+          console.warn('Could not auto-generate internal reference:', err);
+        }
+      }
+      
       // Parse nice classes
       const niceClasses = data.nice_classes
         ? data.nice_classes.split(',').map(c => parseInt(c.trim())).filter(n => !isNaN(n))
@@ -183,7 +200,7 @@ export default function NewMatterPage() {
         title: data.title,
         matter_type: data.matter_type,
         client_id: data.client_id || null,
-        reference: data.reference || null,
+        reference: internalReference,
         mark_name: data.mark_name || null,
         invention_title: data.invention_title || null,
         nice_classes: niceClasses?.length ? niceClasses : null,
@@ -409,11 +426,13 @@ export default function NewMatterPage() {
                   name="reference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia interna</FormLabel>
+                      <FormLabel>Referencia interna (opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej: 2026/TM/001" {...field} />
+                        <Input placeholder="Se genera automáticamente si se deja vacío" {...field} />
                       </FormControl>
-                      <FormDescription>Tu referencia interna</FormDescription>
+                      <FormDescription>
+                        Déjalo vacío para generar automáticamente según tu configuración
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
