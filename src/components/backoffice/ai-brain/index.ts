@@ -4,6 +4,7 @@ export { ProvidersTab } from './ProvidersTab';
 export { ModelsTab } from './ModelsTab';
 export { TaskRouterTab } from './TaskRouterTab';
 export { CircuitBreakerTab } from './CircuitBreakerTab';
+export { RoutingSimulatorTab } from './RoutingSimulatorTab';
 export { RAGTab } from './RAGTab';
 export { AnalyticsTab } from './AnalyticsTab';
 export { PromptsTab } from './PromptsTab';
