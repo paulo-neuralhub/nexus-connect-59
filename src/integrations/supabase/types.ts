@@ -6827,6 +6827,7 @@ export type Database = {
           assigned_to: string | null
           avatar_url: string | null
           city: string | null
+          client_token: string | null
           client_type: string | null
           company_name: string | null
           country: string | null
@@ -6886,6 +6887,7 @@ export type Database = {
           assigned_to?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_token?: string | null
           client_type?: string | null
           company_name?: string | null
           country?: string | null
@@ -6945,6 +6947,7 @@ export type Database = {
           assigned_to?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_token?: string | null
           client_type?: string | null
           company_name?: string | null
           country?: string | null
@@ -22971,6 +22974,148 @@ export type Database = {
           },
         ]
       }
+      matter_filings: {
+        Row: {
+          application_number: string | null
+          created_at: string | null
+          custom_fields: Json | null
+          expiry_date: string | null
+          filing_date: string | null
+          grant_date: string | null
+          id: string
+          jurisdiction_code: string
+          last_sync_at: string | null
+          local_agent_id: string | null
+          local_reference: string | null
+          matter_id: string
+          next_renewal_date: string | null
+          notes: string | null
+          office_code: string | null
+          office_link_id: string | null
+          official_fees_paid: number | null
+          organization_id: string
+          priority_claimed: boolean | null
+          priority_country: string | null
+          priority_date: string | null
+          priority_number: string | null
+          professional_fees: number | null
+          publication_date: string | null
+          publication_number: string | null
+          registration_date: string | null
+          registration_number: string | null
+          status: string | null
+          status_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          application_number?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          expiry_date?: string | null
+          filing_date?: string | null
+          grant_date?: string | null
+          id?: string
+          jurisdiction_code: string
+          last_sync_at?: string | null
+          local_agent_id?: string | null
+          local_reference?: string | null
+          matter_id: string
+          next_renewal_date?: string | null
+          notes?: string | null
+          office_code?: string | null
+          office_link_id?: string | null
+          official_fees_paid?: number | null
+          organization_id: string
+          priority_claimed?: boolean | null
+          priority_country?: string | null
+          priority_date?: string | null
+          priority_number?: string | null
+          professional_fees?: number | null
+          publication_date?: string | null
+          publication_number?: string | null
+          registration_date?: string | null
+          registration_number?: string | null
+          status?: string | null
+          status_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          application_number?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          expiry_date?: string | null
+          filing_date?: string | null
+          grant_date?: string | null
+          id?: string
+          jurisdiction_code?: string
+          last_sync_at?: string | null
+          local_agent_id?: string | null
+          local_reference?: string | null
+          matter_id?: string
+          next_renewal_date?: string | null
+          notes?: string | null
+          office_code?: string | null
+          office_link_id?: string | null
+          official_fees_paid?: number | null
+          organization_id?: string
+          priority_claimed?: boolean | null
+          priority_country?: string | null
+          priority_date?: string | null
+          priority_number?: string | null
+          professional_fees?: number | null
+          publication_date?: string | null
+          publication_number?: string | null
+          registration_date?: string | null
+          registration_number?: string | null
+          status?: string | null
+          status_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_filings_local_agent_id_fkey"
+            columns: ["local_agent_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_filings_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_filings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_filings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_filings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_filings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       matter_jurisdiction_ep: {
         Row: {
           appeal_pending: boolean | null
@@ -23274,6 +23419,74 @@ export type Database = {
           },
         ]
       }
+      matter_numbering_config: {
+        Row: {
+          created_at: string | null
+          date_format: string | null
+          id: string
+          include_check_digit: boolean | null
+          include_client_token: boolean | null
+          organization_id: string
+          pattern: string
+          seq_length: number | null
+          seq_reset_period: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_format?: string | null
+          id?: string
+          include_check_digit?: boolean | null
+          include_client_token?: boolean | null
+          organization_id: string
+          pattern?: string
+          seq_length?: number | null
+          seq_reset_period?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_format?: string | null
+          id?: string
+          include_check_digit?: boolean | null
+          include_client_token?: boolean | null
+          organization_id?: string
+          pattern?: string
+          seq_length?: number | null
+          seq_reset_period?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_numbering_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_numbering_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_numbering_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_numbering_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       matter_parties: {
         Row: {
           client_id: string | null
@@ -23537,6 +23750,178 @@ export type Database = {
           },
         ]
       }
+      matter_sequences: {
+        Row: {
+          id: string
+          jurisdiction_code: string
+          last_sequence: number | null
+          matter_type: string
+          month: number | null
+          organization_id: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          id?: string
+          jurisdiction_code: string
+          last_sequence?: number | null
+          matter_type: string
+          month?: number | null
+          organization_id: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          id?: string
+          jurisdiction_code?: string
+          last_sequence?: number | null
+          matter_type?: string
+          month?: number | null
+          organization_id?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
+      matter_timeline: {
+        Row: {
+          changed_fields: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          document_id: string | null
+          event_category: string | null
+          event_date: string | null
+          event_type: string
+          filing_id: string | null
+          id: string
+          matter_id: string
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          organization_id: string
+          party_id: string | null
+          title: string
+        }
+        Insert: {
+          changed_fields?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          event_category?: string | null
+          event_date?: string | null
+          event_type: string
+          filing_id?: string | null
+          id?: string
+          matter_id: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          organization_id: string
+          party_id?: string | null
+          title: string
+        }
+        Update: {
+          changed_fields?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          event_category?: string | null
+          event_date?: string | null
+          event_type?: string
+          filing_id?: string | null
+          id?: string
+          matter_id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          organization_id?: string
+          party_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_timeline_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_filing_id_fkey"
+            columns: ["filing_id"]
+            isOneToOne: false
+            referencedRelation: "matter_filings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       matter_trademark_details: {
         Row: {
           acquired_distinctiveness: boolean | null
@@ -23632,6 +24017,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      matter_types: {
+        Row: {
+          code: string
+          color: string | null
+          created_at: string | null
+          icon: string | null
+          is_active: boolean | null
+          name_en: string
+          name_es: string
+          sort_order: number | null
+        }
+        Insert: {
+          code: string
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          is_active?: boolean | null
+          name_en: string
+          name_es: string
+          sort_order?: number | null
+        }
+        Update: {
+          code?: string
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          is_active?: boolean | null
+          name_en?: string
+          name_es?: string
+          sort_order?: number | null
+        }
+        Relationships: []
       }
       matter_valuations: {
         Row: {
@@ -24036,6 +24454,178 @@ export type Database = {
           {
             foreignKeyName: "matters_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matters_v2: {
+        Row: {
+          assistant_id: string | null
+          client_id: string | null
+          client_instructions: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          custom_fields: Json | null
+          estimated_official_fees: number | null
+          estimated_professional_fees: number | null
+          goods_services: string | null
+          id: string
+          instruction_date: string | null
+          internal_notes: string | null
+          invention_title: string | null
+          ipc_classes: string[] | null
+          is_archived: boolean | null
+          is_confidential: boolean | null
+          is_urgent: boolean | null
+          mark_image_url: string | null
+          mark_name: string | null
+          mark_type: string | null
+          matter_number: string
+          matter_type: string
+          nice_classes: number[] | null
+          organization_id: string
+          priority_date: string | null
+          reference: string | null
+          responsible_id: string | null
+          status: string
+          status_date: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assistant_id?: string | null
+          client_id?: string | null
+          client_instructions?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          custom_fields?: Json | null
+          estimated_official_fees?: number | null
+          estimated_professional_fees?: number | null
+          goods_services?: string | null
+          id?: string
+          instruction_date?: string | null
+          internal_notes?: string | null
+          invention_title?: string | null
+          ipc_classes?: string[] | null
+          is_archived?: boolean | null
+          is_confidential?: boolean | null
+          is_urgent?: boolean | null
+          mark_image_url?: string | null
+          mark_name?: string | null
+          mark_type?: string | null
+          matter_number: string
+          matter_type: string
+          nice_classes?: number[] | null
+          organization_id: string
+          priority_date?: string | null
+          reference?: string | null
+          responsible_id?: string | null
+          status?: string
+          status_date?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assistant_id?: string | null
+          client_id?: string | null
+          client_instructions?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          custom_fields?: Json | null
+          estimated_official_fees?: number | null
+          estimated_professional_fees?: number | null
+          goods_services?: string | null
+          id?: string
+          instruction_date?: string | null
+          internal_notes?: string | null
+          invention_title?: string | null
+          ipc_classes?: string[] | null
+          is_archived?: boolean | null
+          is_confidential?: boolean | null
+          is_urgent?: boolean | null
+          mark_image_url?: string | null
+          mark_name?: string | null
+          mark_type?: string | null
+          matter_number?: string
+          matter_type?: string
+          nice_classes?: number[] | null
+          organization_id?: string
+          priority_date?: string | null
+          reference?: string | null
+          responsible_id?: string | null
+          status?: string
+          status_date?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matters_v2_assistant_id_fkey"
+            columns: ["assistant_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_v2_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_v2_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_v2_matter_type_fkey"
+            columns: ["matter_type"]
+            isOneToOne: false
+            referencedRelation: "matter_types"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "matters_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matters_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "matters_v2_responsible_id_fkey"
+            columns: ["responsible_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -40972,6 +41562,7 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_check_digit: { Args: { p_input: string }; Returns: string }
       calculate_daily_analytics: {
         Args: { p_date?: string }
         Returns: undefined
@@ -41185,6 +41776,19 @@ export type Database = {
       dmetaphone: { Args: { "": string }; Returns: string }
       dmetaphone_alt: { Args: { "": string }; Returns: string }
       expire_trials: { Args: never; Returns: number }
+      generate_client_token: {
+        Args: { p_client_name: string; p_organization_id: string }
+        Returns: string
+      }
+      generate_matter_number: {
+        Args: {
+          p_client_id?: string
+          p_jurisdiction_code: string
+          p_matter_type: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
       generate_voip_invoices_superadmin: {
         Args: { p_period_start: string; p_tax_rate?: number }
         Returns: {
@@ -41450,6 +42054,20 @@ export type Database = {
           p_title: string
           p_user_agent?: string
           p_user_id?: string
+        }
+        Returns: string
+      }
+      log_matter_event: {
+        Args: {
+          p_changed_fields?: string[]
+          p_description?: string
+          p_event_type: string
+          p_filing_id?: string
+          p_matter_id: string
+          p_metadata?: Json
+          p_new_value?: Json
+          p_old_value?: Json
+          p_title: string
         }
         Returns: string
       }
@@ -41790,6 +42408,18 @@ export type Database = {
         | "withdrawn"
         | "expired"
         | "abandoned"
+      matter_type_code:
+        | "TM"
+        | "PT"
+        | "UM"
+        | "DS"
+        | "CP"
+        | "DN"
+        | "TS"
+        | "OP"
+        | "LT"
+        | "LC"
+        | "OT"
       ner_entity_type:
         | "date_grant"
         | "date_expiry"
@@ -42144,6 +42774,19 @@ export const Constants = {
         "withdrawn",
         "expired",
         "abandoned",
+      ],
+      matter_type_code: [
+        "TM",
+        "PT",
+        "UM",
+        "DS",
+        "CP",
+        "DN",
+        "TS",
+        "OP",
+        "LT",
+        "LC",
+        "OT",
       ],
       ner_entity_type: [
         "date_grant",
