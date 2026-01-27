@@ -38,13 +38,13 @@ interface QuickAction {
 
 const mainNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/app/dashboard' },
-  { icon: Briefcase, label: 'Expedientes', path: '/app/docket' },
+  { icon: Briefcase, label: 'Expedientes', path: '/app/expedientes' },
   { icon: Users, label: 'CRM', path: '/app/crm' },
   { icon: Clock, label: 'Tiempo', path: '/app/legal-ops/time' },
 ];
 
 const quickActions: QuickAction[] = [
-  { icon: Briefcase, label: 'Nuevo Expediente', path: '/app/docket/new' },
+  { icon: Briefcase, label: 'Nuevo Expediente', path: '/app/expedientes/nuevo' },
   { icon: Users, label: 'Nuevo Contacto', path: '/app/crm/contacts/new' },
   { icon: CheckSquare, label: 'Nueva Tarea', path: '/app/legal-ops/tasks' },
   { icon: Calendar, label: 'Nuevo Evento', path: '/app/legal-ops/calendar' },

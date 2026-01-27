@@ -48,7 +48,7 @@ const entityConfig = {
     icon: FileText,
     label: 'Expedientes',
     color: 'bg-module-docket/10 text-module-docket',
-    path: '/app/docket',
+    path: '/app/expedientes',
   },
   contact: {
     icon: User,

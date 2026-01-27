@@ -15,13 +15,13 @@ const ACTIONS: FABAction[] = [
   { 
     icon: FileText, 
     label: 'Nuevo Expediente', 
-    href: '/app/docket/new', 
+    href: '/app/expedientes/nuevo', 
     color: 'bg-blue-500 hover:bg-blue-600' 
   },
   { 
     icon: Calendar, 
     label: 'Nuevo Plazo', 
-    href: '/app/docket/deadlines/new', 
+    href: '/app/expedientes/plazos/nuevo', 
     color: 'bg-amber-500 hover:bg-amber-600' 
   },
   { 

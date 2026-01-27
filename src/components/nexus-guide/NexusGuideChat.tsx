@@ -63,7 +63,8 @@ export function NexusGuideChat({ onClose }: NexusGuideChatProps) {
 
   const getCurrentContext = () => {
     const path = location.pathname;
-    if (path.includes('/docket')) return 'módulo Docket (expedientes)';
+    if (path.includes('/expedientes')) return 'módulo Expedientes (PI)';
+    if (path.includes('/docket')) return 'módulo Expedientes (PI)'; // Legacy redirect
     if (path.includes('/spider')) return 'módulo Spider (vigilancia)';
     if (path.includes('/crm')) return 'módulo CRM';
     if (path.includes('/finance')) return 'módulo Finance';
