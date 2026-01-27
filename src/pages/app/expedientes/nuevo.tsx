@@ -237,14 +237,14 @@ export default function NewMatterPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                   {matterTypes?.map(type => (
                     <button
                       key={type.code}
                       type="button"
                       onClick={() => form.setValue('matter_type', type.code)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-sm",
+                        "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-sm",
                         watchedType === type.code
                           ? "border-primary bg-primary/10 font-medium"
                           : "border-border hover:border-primary/50 bg-card"
@@ -254,7 +254,7 @@ export default function NewMatterPage() {
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: type.color }}
                       />
-                      <span className="text-foreground">{type.name_es}</span>
+                      <span className="text-foreground truncate">{type.name_es}</span>
                     </button>
                   ))}
                 </div>
