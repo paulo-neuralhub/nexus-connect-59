@@ -8,6 +8,7 @@ import { Settings, Plus, X, ExternalLink, Loader2, Check, AlertTriangle, Crown }
 import { useTenantOffices, TenantOffice, OfficeAddon } from "@/hooks/useTenantOffices";
 import { useOrganization } from "@/contexts/organization-context";
 import { Link } from "react-router-dom";
+import { AutomationBadge } from "@/components/offices/AutomationBadge";
 
 export default function MyOfficesPage() {
   const { currentOrganization } = useOrganization();
@@ -92,8 +93,17 @@ export default function MyOfficesPage() {
               <div key={office.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{office.flag_emoji}</span>
-                  <div>
-                    <div className="font-medium">{office.office_name_short || office.office_code}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium">{office.office_name_short || office.office_code}</span>
+                      {office.automation_level && (
+                        <AutomationBadge 
+                          level={office.automation_level} 
+                          percentage={office.automation_percentage ?? 0}
+                          capabilities={office.capabilities}
+                        />
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">{office.office_name}</div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Estado: {getStatusIcon(office.operational_status)} {office.operational_status || 'N/A'}
@@ -129,10 +139,17 @@ export default function MyOfficesPage() {
               <div key={office.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{office.flag_emoji}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium">{office.office_name_short || office.office_code}</span>
                       <Badge variant="secondary">+{office.price_monthly}€/mes</Badge>
+                      {office.automation_level && (
+                        <AutomationBadge 
+                          level={office.automation_level} 
+                          percentage={office.automation_percentage ?? 0}
+                          capabilities={office.capabilities}
+                        />
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">{office.office_name}</div>
                     <div className="text-xs text-muted-foreground mt-1">

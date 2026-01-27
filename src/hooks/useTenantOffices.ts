@@ -18,6 +18,10 @@ export interface TenantOffice {
   matters_count: number;
   price_monthly?: number;
   flag_emoji?: string;
+  // Automation fields
+  automation_level?: 'A' | 'B' | 'C' | 'D' | 'E';
+  automation_percentage?: number;
+  capabilities?: Record<string, { available: boolean; method: 'api' | 'web' | 'manual'; notes?: string }>;
 }
 
 export interface OfficeAddon {
@@ -123,7 +127,7 @@ export function useTenantOffices() {
       // Build tenant offices list (included in plan)
       const tenantOffices: TenantOffice[] = [];
 
-      allOffices?.forEach(office => {
+      allOffices?.forEach((office: any) => {
         if (includedOfficeCodes.includes(office.code)) {
           tenantOffices.push({
             id: office.id,
@@ -138,7 +142,10 @@ export function useTenantOffices() {
             operational_status: (office.operational_status as TenantOffice['operational_status']) || 'operational',
             last_sync_at: office.last_health_check || undefined,
             matters_count: mattersByOffice[office.code] || 0,
-            flag_emoji: getFlagEmoji(office.country_code || undefined),
+            flag_emoji: office.flag_emoji || getFlagEmoji(office.country_code || undefined),
+            automation_level: office.automation_level || 'E',
+            automation_percentage: office.automation_percentage ?? 0,
+            capabilities: office.capabilities || {},
           });
         }
       });
@@ -146,7 +153,7 @@ export function useTenantOffices() {
       // TODO: When tenant_office_addons table exists, also fetch addon offices
       // For now, we simulate an addon (USPTO) for demo purposes if plan is professional
       if (plan === 'professional') {
-        const usptOffice = allOffices?.find(o => o.code === 'USPTO');
+        const usptOffice = allOffices?.find((o: any) => o.code === 'USPTO') as any;
         if (usptOffice) {
           tenantOffices.push({
             id: usptOffice.id,
@@ -162,7 +169,10 @@ export function useTenantOffices() {
             last_sync_at: usptOffice.last_health_check || undefined,
             matters_count: mattersByOffice['USPTO'] || 0,
             price_monthly: 39,
-            flag_emoji: getFlagEmoji(usptOffice.country_code || undefined),
+            flag_emoji: usptOffice.flag_emoji || getFlagEmoji(usptOffice.country_code || undefined),
+            automation_level: usptOffice.automation_level || 'C',
+            automation_percentage: usptOffice.automation_percentage ?? 50,
+            capabilities: usptOffice.capabilities || {},
           });
         }
       }
