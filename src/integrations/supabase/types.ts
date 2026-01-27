@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      _backup_organization_offices: {
+        Row: {
+          created_at: string | null
+          credentials_configured: boolean | null
+          id: string | null
+          is_favorite: boolean | null
+          office_id: string | null
+          organization_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credentials_configured?: boolean | null
+          id?: string | null
+          is_favorite?: boolean | null
+          office_id?: string | null
+          organization_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credentials_configured?: boolean | null
+          id?: string | null
+          is_favorite?: boolean | null
+          office_id?: string | null
+          organization_id?: string | null
+        }
+        Relationships: []
+      }
       access_audit_log: {
         Row: {
           action: string
@@ -26908,76 +26935,6 @@ export type Database = {
           },
         ]
       }
-      organization_offices: {
-        Row: {
-          created_at: string | null
-          credentials_configured: boolean | null
-          id: string
-          is_favorite: boolean | null
-          office_id: string
-          organization_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          credentials_configured?: boolean | null
-          id?: string
-          is_favorite?: boolean | null
-          office_id: string
-          organization_id: string
-        }
-        Update: {
-          created_at?: string | null
-          credentials_configured?: boolean | null
-          id?: string
-          is_favorite?: boolean | null
-          office_id?: string
-          organization_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_offices_office_id_fkey"
-            columns: ["office_id"]
-            isOneToOne: false
-            referencedRelation: "ipo_health_overview"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_offices_office_id_fkey"
-            columns: ["office_id"]
-            isOneToOne: false
-            referencedRelation: "ipo_offices"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_offices_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "backoffice_tenant_crm"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_offices_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organization_usage_stats"
-            referencedColumns: ["organization_id"]
-          },
-          {
-            foreignKeyName: "organization_offices_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_offices_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "v_voip_billing_summary"
-            referencedColumns: ["organization_id"]
-          },
-        ]
-      }
       organization_settings: {
         Row: {
           branding: Json | null
@@ -41212,6 +41169,25 @@ export type Database = {
       get_next_invoice_number: {
         Args: { p_org_id: string; p_series_code?: string }
         Returns: string
+      }
+      get_offices_with_plan_access: {
+        Args: { p_plan: string }
+        Returns: {
+          automation_level: string
+          automation_percentage: number
+          capabilities: Json
+          code: string
+          country_code: string
+          country_name: string
+          flag_emoji: string
+          has_access: boolean
+          id: string
+          last_sync_at: string
+          name: string
+          name_short: string
+          operational_status: string
+          region: string
+        }[]
       }
       get_organization_jurisdictions: {
         Args: { p_organization_id: string }

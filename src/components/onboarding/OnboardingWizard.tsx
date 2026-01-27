@@ -5,7 +5,6 @@ import { Progress } from '@/components/ui/progress';
 import {
   Building2,
   Upload,
-  Globe,
   Users,
   Sparkles,
   ChevronRight,
@@ -15,7 +14,6 @@ import {
 import { useUpdateOnboardingProgress, useCompleteOnboarding, type OnboardingProgress } from '@/hooks/useOnboarding';
 import { StepCompanySetup } from './steps/StepCompanySetup';
 import { StepImportData } from './steps/StepImportData';
-import { StepOfficesSetup } from './steps/StepOfficesSetup';
 import { StepTeamInvite } from './steps/StepTeamInvite';
 import { StepTourIntro } from './steps/StepTourIntro';
 
@@ -25,12 +23,14 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
+// NOTA: Se eliminó el paso de Oficinas de PI.
+// Las oficinas son gestionadas globalmente por IP-NEXUS.
+// Los tenants solo VEN información según su plan.
 const STEPS = [
   { id: 1, title: 'Tu Empresa', icon: Building2, description: 'Configura los datos básicos' },
   { id: 2, title: 'Importar Datos', icon: Upload, description: 'Importa tu portfolio existente' },
-  { id: 3, title: 'Oficinas de PI', icon: Globe, description: 'Selecciona oficinas frecuentes' },
-  { id: 4, title: 'Tu Equipo', icon: Users, description: 'Invita a tu equipo' },
-  { id: 5, title: 'Comenzar', icon: Sparkles, description: 'Tour guiado' },
+  { id: 3, title: 'Tu Equipo', icon: Users, description: 'Invita a tu equipo' },
+  { id: 4, title: 'Comenzar', icon: Sparkles, description: 'Tour guiado' },
 ];
 
 export function OnboardingWizard({ organizationId, progress, onComplete }: OnboardingWizardProps) {
@@ -99,10 +99,8 @@ export function OnboardingWizard({ organizationId, progress, onComplete }: Onboa
       case 2:
         return <StepImportData organizationId={organizationId} onSkip={handleSkip} />;
       case 3:
-        return <StepOfficesSetup data={formData} updateData={updateFormData} />;
-      case 4:
         return <StepTeamInvite organizationId={organizationId} />;
-      case 5:
+      case 4:
         return <StepTourIntro onComplete={onComplete} />;
       default:
         return null;
