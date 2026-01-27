@@ -168,18 +168,19 @@ export function useMattersV2(filters?: MatterV2Filters) {
   return useQuery({
     queryKey: ['matters-v2', currentOrganization?.id, filters],
     queryFn: async () => {
-      const client: any = supabase;
-      let query = client
-        .from('matters_v2')
+      // Use legacy 'matters' table since matters_v2 is empty
+      // Map legacy fields to V2 interface
+      let query = supabase
+        .from('matters')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
       
       if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,matter_number.ilike.%${filters.search}%,mark_name.ilike.%${filters.search}%`);
+        query = query.or(`title.ilike.%${filters.search}%,reference.ilike.%${filters.search}%,mark_name.ilike.%${filters.search}%`);
       }
       if (filters?.matter_type) {
-        query = query.eq('matter_type', filters.matter_type);
+        query = query.eq('type', filters.matter_type);
       }
       if (filters?.status) {
         query = query.eq('status', filters.status);
@@ -188,17 +189,49 @@ export function useMattersV2(filters?: MatterV2Filters) {
         query = query.eq('client_id', filters.client_id);
       }
       if (filters?.responsible_id) {
-        query = query.eq('responsible_id', filters.responsible_id);
+        query = query.eq('assigned_to', filters.responsible_id);
       }
-      if (filters?.is_archived !== undefined) {
-        query = query.eq('is_archived', filters.is_archived);
-      } else {
-        query = query.eq('is_archived', false);
-      }
+      // Legacy table doesn't have is_archived, skip that filter
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as MatterV2[];
+      
+      // Map legacy 'matters' fields to MatterV2 interface
+      return (data || []).map((m: any) => ({
+        id: m.id,
+        organization_id: m.organization_id,
+        matter_number: m.reference || m.id.substring(0, 8),
+        reference: m.reference,
+        title: m.title || m.mark_name || 'Sin título',
+        matter_type: m.type || 'trademark',
+        status: m.status || 'active',
+        status_date: m.updated_at,
+        client_id: m.client_id,
+        instruction_date: m.filing_date,
+        priority_date: m.priority_date,
+        mark_name: m.mark_name,
+        mark_type: m.mark_type,
+        mark_image_url: m.mark_image_url,
+        invention_title: m.title,
+        nice_classes: m.nice_classes,
+        ipc_classes: null,
+        goods_services: m.goods_services,
+        responsible_id: m.assigned_to,
+        assistant_id: null,
+        estimated_official_fees: null,
+        estimated_professional_fees: null,
+        currency: 'EUR',
+        is_urgent: false,
+        is_confidential: false,
+        is_archived: false,
+        internal_notes: m.notes,
+        client_instructions: null,
+        tags: m.tags || [],
+        custom_fields: {},
+        created_by: m.created_by,
+        created_at: m.created_at,
+        updated_at: m.updated_at,
+      })) as MatterV2[];
     },
     enabled: !!currentOrganization?.id,
   });
