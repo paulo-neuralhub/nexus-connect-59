@@ -157,6 +157,7 @@ import ModulesManagementPage from "./pages/app/settings/modules";
 import SignaturesPage from "./pages/app/settings/signatures";
 
 import DeadlineConfigPage from "./pages/app/settings/deadlines";
+import InternalReferenceConfigPage from "./pages/app/settings/internal-reference";
 import AutomationsPage from "./pages/app/settings/automations";
 import AutomationRulesPage from "./pages/app/settings/automations/rules";
 import LegalDeadlinesPage from "./pages/app/settings/automations/legal-deadlines";
@@ -478,6 +479,7 @@ const App = () => (
                 <Route path="settings/servicios" element={<ServicesPage />} />
                 
                 <Route path="settings/deadlines" element={<DeadlineConfigPage />} />
+                <Route path="settings/internal-reference" element={<InternalReferenceConfigPage />} />
                 {/* Automations */}
                 <Route path="settings/automations" element={<AutomationsPage />} />
                 <Route path="settings/automations/rules" element={<AutomationRulesPage />} />

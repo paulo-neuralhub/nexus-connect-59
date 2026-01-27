@@ -16644,6 +16644,136 @@ export type Database = {
           },
         ]
       }
+      internal_reference_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          include_client_code: boolean | null
+          is_active: boolean | null
+          organization_id: string
+          preview_example: string | null
+          separator: string | null
+          seq_padding: number | null
+          seq_scope: string | null
+          seq_start: number | null
+          template: string
+          updated_at: string | null
+          uppercase: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          include_client_code?: boolean | null
+          is_active?: boolean | null
+          organization_id: string
+          preview_example?: string | null
+          separator?: string | null
+          seq_padding?: number | null
+          seq_scope?: string | null
+          seq_start?: number | null
+          template?: string
+          updated_at?: string | null
+          uppercase?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          include_client_code?: boolean | null
+          is_active?: boolean | null
+          organization_id?: string
+          preview_example?: string | null
+          separator?: string | null
+          seq_padding?: number | null
+          seq_scope?: string | null
+          seq_start?: number | null
+          template?: string
+          updated_at?: string | null
+          uppercase?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_reference_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_reference_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "internal_reference_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_reference_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
+      internal_reference_sequences: {
+        Row: {
+          id: string
+          last_value: number | null
+          organization_id: string
+          sequence_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          last_value?: number | null
+          organization_id: string
+          sequence_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          last_value?: number | null
+          organization_id?: string
+          sequence_key?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_reference_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_reference_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "internal_reference_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_reference_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "v_voip_billing_summary"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -42033,6 +42163,15 @@ export type Database = {
             Args: { p_client_name: string; p_organization_id: string }
             Returns: string
           }
+      generate_internal_reference: {
+        Args: {
+          p_client_code?: string
+          p_jurisdiction_code?: string
+          p_organization_id: string
+          p_type_code: string
+        }
+        Returns: string
+      }
       generate_matter_number:
         | {
             Args: {
