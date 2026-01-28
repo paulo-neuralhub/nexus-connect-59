@@ -10435,11 +10435,14 @@ export type Database = {
           next_action_date: string | null
           notes: string | null
           organization_id: string
+          pipeline_id: string | null
           source: string | null
+          stage_id: string | null
           standby_reason: string | null
           standby_until: string | null
           status: string
           tags: string[] | null
+          title: string | null
           updated_at: string | null
         }
         Insert: {
@@ -10469,11 +10472,14 @@ export type Database = {
           next_action_date?: string | null
           notes?: string | null
           organization_id: string
+          pipeline_id?: string | null
           source?: string | null
+          stage_id?: string | null
           standby_reason?: string | null
           standby_until?: string | null
           status?: string
           tags?: string[] | null
+          title?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -10503,11 +10509,14 @@ export type Database = {
           next_action_date?: string | null
           notes?: string | null
           organization_id?: string
+          pipeline_id?: string | null
           source?: string | null
+          stage_id?: string | null
           standby_reason?: string | null
           standby_until?: string | null
           status?: string
           tags?: string[] | null
+          title?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -10573,6 +10582,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_voip_billing_summary"
             referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "crm_leads_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipelines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -30820,8 +30843,10 @@ export type Database = {
       }
       pipelines: {
         Row: {
+          code: string | null
           created_at: string | null
           description: string | null
+          entity_type: string | null
           id: string
           is_active: boolean | null
           is_default: boolean | null
@@ -30834,8 +30859,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          code?: string | null
           created_at?: string | null
           description?: string | null
+          entity_type?: string | null
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
@@ -30848,8 +30875,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          code?: string | null
           created_at?: string | null
           description?: string | null
+          entity_type?: string | null
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null

@@ -171,16 +171,22 @@ export default function CRMPipelinePage() {
     return [];
   }, [selectedPipeline]);
 
-  // Determine view type based on pipeline name - STRICT SEPARATION
+  // Determine view type based on pipeline entity_type (NEW LOGIC)
   const view: ViewType = useMemo(() => {
     if (!selectedPipeline) return 'deals';
+    // Usar entity_type si existe, fallback al nombre
+    if ((selectedPipeline as any).entity_type === 'deal') return 'deals';
+    if ((selectedPipeline as any).entity_type === 'lead') return 'leads';
+    // Fallback al comportamiento anterior
     const name = selectedPipeline.name.toLowerCase();
     if (name.includes('lead')) return 'leads';
     return 'deals';
   }, [selectedPipeline]);
 
-  // Data
-  const { data: leads = [], isLoading: isLoadingLeads, refetch: refetchLeads } = useLeads();
+  // Data - FILTRAR POR PIPELINE_ID
+  const { data: leads = [], isLoading: isLoadingLeads, refetch: refetchLeads } = useLeads(
+    view === 'leads' && selectedPipelineId ? { pipeline_id: selectedPipelineId } : undefined
+  );
   const { data: deals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useDeals();
 
   // Mutations - SIMPLIFIED: only status/stage updates
@@ -235,19 +241,27 @@ export default function CRMPipelinePage() {
     return view === 'leads' ? FALLBACK_LEAD_COLUMNS : FALLBACK_DEAL_COLUMNS;
   }, [stages, view]);
 
-  // Group items by column - STRICT SEPARATION
+  // Group items by column - USANDO STAGE_ID PARA LEADS (NUEVA LÓGICA)
   const itemsByColumn = useMemo(() => {
     const grouped: Record<string, (Lead | Deal)[]> = {};
     columns.forEach(col => { grouped[col.id] = []; });
     
     if (view === 'leads') {
       filteredLeads.forEach(lead => {
-        const status = lead.status || 'new';
-        if (status === 'converted') return;
-        const col = columns.find(c => c.status === status || c.id === status);
-        if (col && grouped[col.id]) {
-          grouped[col.id].push(lead);
+        // NUEVA LÓGICA: Usar stage_id para agrupar leads
+        const stageId = lead.stage_id;
+        if (!stageId) {
+          // Fallback: si no tiene stage_id, usar primera columna
+          if (grouped[columns[0]?.id]) {
+            grouped[columns[0].id].push(lead);
+          }
+          return;
+        }
+        // Buscar columna por stage_id
+        if (grouped[stageId]) {
+          grouped[stageId].push(lead);
         } else if (grouped[columns[0]?.id]) {
+          // Fallback a primera columna
           grouped[columns[0].id].push(lead);
         }
       });
@@ -311,7 +325,7 @@ export default function CRMPipelinePage() {
         return; // Don't update yet, wait for modal confirmation
       }
 
-      // Normal stage movement - just update status
+      // Normal stage movement - update stage_id AND status (for compatibility)
       const normalizedName = targetCol.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       
       const statusMap: Record<string, LeadStatus> = {
@@ -322,20 +336,22 @@ export default function CRMPipelinePage() {
       };
       
       const newStatus = statusMap[normalizedName] || (targetCol.status as LeadStatus) || 'new';
+      const newStageId = targetColId; // El ID de la columna ES el stage_id
       
-      updateLeadStatus.mutate(
-        { leadId: lead.id, status: newStatus },
-        { 
-          onSuccess: () => {
-            toast.success(`Movido a ${targetCol.title}`);
-            // No refetchLeads() - optimistic update handles it
-          },
-          onError: (err) => {
-            console.error('Error updating lead:', err);
+      // Actualizar stage_id directamente en la BD + status para compatibilidad
+      fromTable('crm_leads')
+        .update({ stage_id: newStageId, status: newStatus })
+        .eq('id', lead.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error updating lead stage:', error);
             toast.error('Error al mover lead');
+            refetchLeads();
+          } else {
+            toast.success(`Movido a ${targetCol.title}`);
+            refetchLeads();
           }
-        }
-      );
+        });
     } else {
       // DEAL PIPELINE
       const deal = deals.find(d => d.id === itemId);
