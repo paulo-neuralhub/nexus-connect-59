@@ -18,6 +18,9 @@ export interface Lead {
   company_name: string | null;
   company_tax_id: string | null;
   status: LeadStatus;
+  pipeline_id: string | null;
+  stage_id: string | null;
+  title: string | null;
   interested_in: string[];
   estimated_value: number | null;
   source: string | null;
@@ -54,7 +57,7 @@ export interface CreateLeadData {
   assigned_to?: string;
 }
 
-export function useLeads(filters?: { status?: LeadStatus; assigned_to?: string }) {
+export function useLeads(filters?: { status?: LeadStatus; assigned_to?: string; pipeline_id?: string }) {
   const { currentOrganization } = useOrganization();
   const orgId = currentOrganization?.id;
 
@@ -75,6 +78,11 @@ export function useLeads(filters?: { status?: LeadStatus; assigned_to?: string }
 
       if (filters?.assigned_to) {
         query = query.eq('assigned_to', filters.assigned_to);
+      }
+
+      // CRÍTICO: Filtrar por pipeline_id si se proporciona
+      if (filters?.pipeline_id) {
+        query = query.eq('pipeline_id', filters.pipeline_id);
       }
 
       const { data, error } = await query;

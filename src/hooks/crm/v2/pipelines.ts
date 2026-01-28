@@ -16,6 +16,8 @@ export type CRMPipelineStage = {
 export type CRMPipeline = {
   id: string;
   name: string;
+  code?: string | null;
+  entity_type?: string | null; // 'lead' or 'deal'
   is_default: boolean;
   position: number;
   stages?: CRMPipelineStage[];
@@ -30,7 +32,7 @@ export function useCRMPipelines() {
       if (!organizationId) return [];
       const { data, error } = await fromTable("pipelines")
         .select(
-          `id, name, is_default, position,
+          `id, name, code, entity_type, is_default, position,
            stages:pipeline_stages(id, pipeline_id, name, color, probability, position, is_won_stage, is_lost_stage)
           `
         )
