@@ -11,11 +11,13 @@ export function useCRMAccounts(filters?: { search?: string }) {
       if (!organizationId) return [];
       let query = fromTable("crm_accounts")
         .select(`
-          id, name, legal_name, tax_id, city, country, 
-          status, tier, health_score, client_type, 
-          payment_classification, rating, tags,
-          total_invoiced, contact_count, matter_count,
-          primary_contact_name, primary_contact_phone, primary_contact_email
+          id, name, legal_name, 
+          status, tier, health_score, 
+          rating_stars, tags,
+          last_interaction_at,
+          created_at, updated_at,
+          client_type:client_type_config(id, name, color),
+          payment_classification:payment_classification_config(id, name, color, alert_level)
         `)
         .eq("organization_id", organizationId)
         .order("name", { ascending: true });
@@ -38,10 +40,14 @@ export function useCRMAccount(id: string) {
     queryFn: async () => {
       if (!organizationId || !id) return null;
       const { data, error } = await fromTable("crm_accounts")
-        .select("*")
+        .select(`
+          *,
+          client_type:client_type_config(id, name, color),
+          payment_classification:payment_classification_config(id, name, color, alert_level)
+        `)
         .eq("id", id)
         .eq("organization_id", organizationId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
