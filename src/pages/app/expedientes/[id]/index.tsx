@@ -33,7 +33,7 @@ import { MatterInvoicesTab } from '@/components/matters/MatterInvoicesTab';
 import { MatterCommunicationsTab } from '@/components/matters/MatterCommunicationsTab';
 import { EmailComposeModal } from '@/components/matters/EmailComposeModal';
 import { LogCallModal } from '@/components/matters/LogCallModal';
-import { MatterWhatsAppModal } from '@/components/matters/MatterWhatsAppModal';
+import { MatterChatModal } from '@/components/matters/MatterChatModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 
@@ -669,17 +669,16 @@ export default function MatterDetailPage() {
         contactName={matter?.client_name || undefined}
       />
       
-      <MatterWhatsAppModal
+      <MatterChatModal
         open={showWhatsAppModal}
         onOpenChange={setShowWhatsAppModal}
         matterId={id!}
         matterTitle={matter?.title}
         matterReference={matter?.matter_number}
-        matterStatus={matter?.status}
-        matterType={matter?.matter_type}
         clientId={matter?.client_id}
         clientName={matter?.client_name}
         clientPhone={matter?.client_phone}
+        clientEmail={matter?.client_email}
       />
     </div>
   );
