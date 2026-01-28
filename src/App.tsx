@@ -86,6 +86,7 @@ import CRMV2InteractionsList from "./pages/app/crm/v2/interactions";
 import CRMV2TasksList from "./pages/app/crm/v2/tasks";
 import CRMLeadsPage from "./pages/app/crm/v2/leads";
 import CRMPipelinesPage from "./pages/app/crm/v2/pipelines";
+import CRMKanbanPage from "./pages/app/crm/CRMKanbanPage";
 import MarketingLayout from "./pages/app/marketing/MarketingLayout";
 import MarketingDashboard from "./pages/app/marketing/MarketingDashboard";
 import TemplateList from "./pages/app/marketing/templates";
@@ -357,7 +358,8 @@ const App = () => (
                   <Route path="analyze" element={<AnalyzePage />} />
                 </Route>
                 <Route path="crm" element={<CRMLayout />}>
-                  <Route index element={<CRMV2Dashboard />} />
+                  <Route index element={<CRMKanbanPage />} />
+                  <Route path="kanban" element={<CRMKanbanPage />} />
                   <Route path="accounts" element={<CRMV2AccountsList />} />
                   <Route path="accounts/:id" element={<CRMV2AccountDetail />} />
                   <Route path="contacts" element={<CRMV2ContactsList />} />
