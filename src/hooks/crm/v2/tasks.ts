@@ -11,7 +11,13 @@ export function useCRMTasks(filters?: { account_id?: string; deal_id?: string; s
     queryFn: async () => {
       if (!organizationId) return [];
       let query = fromTable("crm_tasks")
-        .select("*, assigned_to:users!assigned_to(id,full_name)")
+        .select(`
+          *, 
+          assigned_to:users!assigned_to(id, full_name),
+          account:crm_accounts!account_id(id, name),
+          contact:crm_contacts!contact_id(id, full_name),
+          deal:crm_deals!deal_id(id, name)
+        `)
         .eq("organization_id", organizationId)
         .order("due_date", { ascending: true, nullsFirst: false });
 

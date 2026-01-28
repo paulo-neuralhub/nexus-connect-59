@@ -10,7 +10,13 @@ export function useCRMAccounts(filters?: { search?: string }) {
     queryFn: async () => {
       if (!organizationId) return [];
       let query = fromTable("crm_accounts")
-        .select("id, name, tier, status, health_score")
+        .select(`
+          id, name, legal_name, tax_id, city, country, 
+          status, tier, health_score, client_type, 
+          payment_classification, rating, tags,
+          total_invoiced, contact_count, matter_count,
+          primary_contact_name, primary_contact_phone, primary_contact_email
+        `)
         .eq("organization_id", organizationId)
         .order("name", { ascending: true });
 

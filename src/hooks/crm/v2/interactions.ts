@@ -11,17 +11,27 @@ export function useCRMInteractions(filters?: { account_id?: string; contact_id?:
     queryFn: async () => {
       if (!organizationId) return [];
       let query = fromTable("crm_interactions")
-        .select("*, account:crm_accounts!account_id(id,name), contact:crm_contacts!contact_id(id,full_name)")
+        .select(`
+          *, 
+          account:crm_accounts!account_id(id, name), 
+          contact:crm_contacts!contact_id(id, full_name),
+          deal:crm_deals!deal_id(id, name),
+          created_by_user:users!created_by(id, full_name)
+        `)
         .eq("organization_id", organizationId)
         .order("created_at", { ascending: false });
 
       if (filters?.account_id) query = query.eq("account_id", filters.account_id);
       if (filters?.contact_id) query = query.eq("contact_id", filters.contact_id);
-      if (filters?.deal_id) query = query.eq("metadata->>deal_id", filters.deal_id);
+      if (filters?.deal_id) query = query.eq("deal_id", filters.deal_id);
 
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      // Map created_by_user to created_by_name for the UI
+      return (data ?? []).map((row: Record<string, unknown>) => ({
+        ...row,
+        created_by_name: (row.created_by_user as { full_name?: string } | null)?.full_name,
+      }));
     },
     enabled: !!organizationId,
   });
