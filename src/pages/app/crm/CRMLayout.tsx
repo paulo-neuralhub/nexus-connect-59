@@ -1,8 +1,8 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
-  KanbanSquare, UserPlus, Briefcase, Building2, 
-  Users, Activity, CheckSquare, Settings2 
+  LayoutDashboard, KanbanSquare, Building2, 
+  Activity, CheckSquare, Settings2 
 } from 'lucide-react';
 import { ModuleGate } from '@/components/common/ModuleGate';
 import { Badge } from '@/components/ui/badge';
@@ -13,83 +13,61 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 interface NavItem {
   to: string;
   label: string;
-  icon: typeof KanbanSquare;
-  description: string;
+  icon: typeof LayoutDashboard;
+  description?: string;
   exact?: boolean;
   hasBadge?: boolean;
 }
 
-// Navegación completa del CRM estilo Bitrix/HubSpot
+// Menú CRM simplificado según especificaciones
 const navItems: NavItem[] = [
   { 
     to: '/app/crm', 
-    label: 'Pipeline', 
-    icon: KanbanSquare,
-    description: 'Kanban de ventas',
+    label: 'Dashboard', 
+    icon: LayoutDashboard,
     exact: true,
   },
   { 
-    to: '/app/crm/leads', 
-    label: 'Leads', 
-    icon: UserPlus,
-    description: 'Prospectos nuevos',
-    hasBadge: true,
+    to: '/app/crm/pipeline', 
+    label: 'Pipeline', 
+    icon: KanbanSquare,
   },
   { 
-    to: '/app/crm/deals', 
-    label: 'Negocios', 
-    icon: Briefcase,
-    description: 'Oportunidades',
-    hasBadge: true,
-  },
-  { 
-    to: '/app/crm/accounts', 
+    to: '/app/crm/clients', 
     label: 'Clientes', 
     icon: Building2,
-    description: 'Empresas/Cuentas',
   },
   { 
-    to: '/app/crm/contacts', 
-    label: 'Contactos', 
-    icon: Users,
-    description: 'Personas',
-  },
-  { 
-    to: '/app/crm/interactions', 
+    to: '/app/crm/activities', 
     label: 'Actividades', 
     icon: Activity,
-    description: 'Timeline/Historial',
   },
   { 
     to: '/app/crm/tasks', 
     label: 'Tareas', 
     icon: CheckSquare,
-    description: 'Pendientes',
     hasBadge: true,
   },
 ];
 
 const configItem: NavItem = { 
-  to: '/app/crm/pipelines', 
+  to: '/app/crm/settings', 
   label: 'Configuración', 
   icon: Settings2,
-  description: 'Pipelines y etapas',
 };
 
 export default function CRMLayout() {
   const location = useLocation();
   
-  // Determinar si estamos en una sub-ruta de detalle (no mostrar tabs)
-  const isDetailRoute = location.pathname.match(/\/app\/crm\/(accounts|contacts|deals|leads)\/[^/]+/);
+  // Determinar si estamos en una sub-ruta de detalle (no mostrar sidebar)
+  const isDetailRoute = location.pathname.match(/\/app\/crm\/(accounts|contacts|deals|leads|clients)\/[^/]+/);
   
   // TODO: Conectar con hooks reales para obtener contadores
   const badgeCounts: Record<string, number> = {
-    '/app/crm/leads': 12,
-    '/app/crm/deals': 8,
     '/app/crm/tasks': 5,
   };
 
-  const renderNavItem = (item: typeof navItems[0], isConfig = false) => {
+  const renderNavItem = (item: NavItem, isConfig = false) => {
     const isActive = item.exact
       ? location.pathname === item.to
       : location.pathname.startsWith(item.to);
@@ -102,7 +80,7 @@ export default function CRMLayout() {
             <NavLink
               to={item.to}
               className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200',
+                'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                 isActive
                   ? 'bg-primary/10 border-l-4 border-primary text-primary'
                   : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800',
@@ -115,14 +93,7 @@ export default function CRMLayout() {
                   isActive ? 'text-primary' : 'text-slate-500'
                 )} 
               />
-              <div className="flex-1 min-w-0">
-                <span className="block truncate">{item.label}</span>
-                {item.description && (
-                  <span className="block text-xs text-slate-400 truncate">
-                    {item.description}
-                  </span>
-                )}
-              </div>
+              <span className="flex-1">{item.label}</span>
               {item.hasBadge && badgeCount > 0 && (
                 <Badge 
                   className={cn(
@@ -150,12 +121,11 @@ export default function CRMLayout() {
       <div className="flex gap-6 min-h-[calc(100vh-12rem)]">
         {/* Sidebar de navegación CRM - Solo mostrar en rutas principales */}
         {!isDetailRoute && (
-          <aside className="w-64 shrink-0 hidden lg:block">
+          <aside className="w-56 shrink-0 hidden lg:block">
             <div className="sticky top-4 space-y-1 bg-card rounded-xl border p-3 shadow-sm">
               {/* Header */}
-              <div className="px-3 py-2 mb-2">
+              <div className="px-3 py-2 mb-1">
                 <h2 className="text-lg font-bold text-foreground">CRM</h2>
-                <p className="text-xs text-muted-foreground">Gestión comercial</p>
               </div>
               
               {/* Main navigation items */}
@@ -201,14 +171,7 @@ export default function CRMLayout() {
         )}
 
         {/* Content */}
-        <main className={cn("flex-1 min-w-0", !isDetailRoute && "lg:max-w-[calc(100%-16rem-1.5rem)]")}>
-          {/* Page header for detail routes */}
-          {isDetailRoute && (
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold">CRM</h1>
-              <p className="text-muted-foreground">Gestión comercial</p>
-            </div>
-          )}
+        <main className={cn("flex-1 min-w-0", !isDetailRoute && "lg:max-w-[calc(100%-14rem-1.5rem)]")}>
           <Outlet />
         </main>
       </div>

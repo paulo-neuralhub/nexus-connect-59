@@ -87,6 +87,8 @@ import CRMV2TasksList from "./pages/app/crm/v2/tasks";
 import CRMLeadsPage from "./pages/app/crm/v2/leads";
 import CRMPipelinesPage from "./pages/app/crm/v2/pipelines";
 import CRMKanbanPage from "./pages/app/crm/CRMKanbanPage";
+import CRMDashboardNew from "./pages/app/crm/CRMDashboardNew";
+import CRMPipelinePage from "./pages/app/crm/CRMPipelinePage";
 import MarketingLayout from "./pages/app/marketing/MarketingLayout";
 import MarketingDashboard from "./pages/app/marketing/MarketingDashboard";
 import TemplateList from "./pages/app/marketing/templates";
@@ -358,16 +360,21 @@ const App = () => (
                   <Route path="analyze" element={<AnalyzePage />} />
                 </Route>
                 <Route path="crm" element={<CRMLayout />}>
-                  <Route index element={<CRMKanbanPage />} />
+                  <Route index element={<CRMDashboardNew />} />
+                  <Route path="pipeline" element={<CRMPipelinePage />} />
                   <Route path="kanban" element={<CRMKanbanPage />} />
+                  <Route path="clients" element={<CRMV2AccountsList />} />
                   <Route path="accounts" element={<CRMV2AccountsList />} />
                   <Route path="accounts/:id" element={<CRMV2AccountDetail />} />
+                  <Route path="clients/:id" element={<CRMV2AccountDetail />} />
                   <Route path="contacts" element={<CRMV2ContactsList />} />
                   <Route path="contacts/:id" element={<CRMV2ContactDetail />} />
                   <Route path="leads" element={<CRMLeadsPage />} />
                   <Route path="deals" element={<CRMV2DealsList />} />
                   <Route path="deals/:id" element={<CRMV2DealDetail />} />
+                  <Route path="settings" element={<CRMPipelinesPage />} />
                   <Route path="pipelines" element={<CRMPipelinesPage />} />
+                  <Route path="activities" element={<CRMV2InteractionsList />} />
                   <Route path="interactions" element={<CRMV2InteractionsList />} />
                   <Route path="tasks" element={<CRMV2TasksList />} />
                 </Route>
