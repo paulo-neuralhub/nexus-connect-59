@@ -10,6 +10,7 @@ import {
   Grid3X3,
   X,
   Minimize2,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTwilioDevice } from '@/hooks/useTwilioDevice';
@@ -22,6 +23,8 @@ import { Button } from '@/components/ui/button';
 import { useVoipEnabled } from '@/hooks/useVoipEnabled';
 import { useOrganizationSettings, useUpdateOrganizationSettings } from '@/hooks/use-settings';
 import { useSecureCredentialStatus } from '@/hooks/use-secure-credentials';
+import { useSoftphoneSearch, type SoftphoneSearchResult } from '@/hooks/voip/useSoftphoneSearch';
+import { SoftphoneSearchResults } from '@/components/voip/SoftphoneSearchResults';
 
 type CallState = 'idle' | 'connecting' | 'ringing' | 'in_call' | 'on_hold' | 'incoming';
 
@@ -73,6 +76,13 @@ export function SoftphoneWidget() {
   const [callDuration, setCallDuration] = useState(0);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedFromSearch, setSelectedFromSearch] = useState(false);
+
+  // Softphone search hook
+  const { data: searchResults = [], isLoading: isSearching } = useSoftphoneSearch(
+    selectedFromSearch ? '' : phoneNumber
+  );
 
   // Only initialize Twilio when globally+tenant enabled AND credentials exist.
   // This prevents calling the edge function (503) when Twilio isn't configured.
@@ -506,12 +516,79 @@ export function SoftphoneWidget() {
         {/* Idle */}
         {callState === 'idle' && (
           <div className="space-y-3">
-            <input
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Introduce un número…"
-              className="w-full rounded-xl border bg-muted px-4 py-3 text-center font-mono text-lg text-foreground outline-none focus:ring-2 focus:ring-ring"
-            />
+            {/* Selected contact info */}
+            {selectedFromSearch && contactInfo && (
+              <div className="flex items-center gap-3 rounded-xl border bg-muted/50 p-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Phone className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {contactInfo.name || 'Contacto'}
+                  </p>
+                  {contactInfo.company && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {contactInfo.company}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactInfo(null);
+                    setSelectedFromSearch(false);
+                    setPhoneNumber('');
+                  }}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Limpiar selección"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Search/Input field */}
+            <div className="relative">
+              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Search className="h-4 w-4" />
+              </div>
+              <input
+                value={phoneNumber}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                  setSelectedFromSearch(false);
+                  setContactInfo(null);
+                  setShowSearchResults(true);
+                }}
+                onFocus={() => setShowSearchResults(true)}
+                onBlur={() => {
+                  // Delay hiding to allow click on results
+                  setTimeout(() => setShowSearchResults(false), 200);
+                }}
+                placeholder="Nombre o teléfono…"
+                className="w-full rounded-xl border bg-muted py-3 pl-10 pr-4 text-center font-mono text-lg text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && !selectedFromSearch && (
+                <SoftphoneSearchResults
+                  results={searchResults}
+                  isLoading={isSearching}
+                  query={phoneNumber}
+                  onSelect={(result: SoftphoneSearchResult) => {
+                    const phone = result.phone || result.whatsapp_phone || '';
+                    setPhoneNumber(phone);
+                    setContactInfo({
+                      id: result.id,
+                      name: result.display_name,
+                      company: result.account_name || undefined,
+                    });
+                    setSelectedFromSearch(true);
+                    setShowSearchResults(false);
+                  }}
+                />
+              )}
+            </div>
 
             <div className="grid grid-cols-3 gap-2">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((d) => (
@@ -529,7 +606,11 @@ export function SoftphoneWidget() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setPhoneNumber('')}
+                onClick={() => {
+                  setPhoneNumber('');
+                  setContactInfo(null);
+                  setSelectedFromSearch(false);
+                }}
                 className="rounded-xl bg-muted px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/80"
                 disabled={!phoneNumber}
               >
