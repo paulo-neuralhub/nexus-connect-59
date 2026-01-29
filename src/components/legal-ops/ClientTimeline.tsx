@@ -1,38 +1,44 @@
 // ============================================
 // src/components/legal-ops/ClientTimeline.tsx
+// Timeline Interactivo con entradas expandibles
 // ============================================
 
 import { useClientTimeline, TimelineEvent } from '@/hooks/legal-ops/useClientTimeline';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import {
   Mail, MessageSquare, Phone, FileText, Clock, Calendar,
-  Play, ChevronDown, Filter
+  Play, ChevronDown, ChevronUp, Plus, PenLine, Send, 
+  ExternalLink, CalendarPlus, Briefcase
 } from 'lucide-react';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ClientTimelineProps {
   clientId: string;
 }
 
-const CHANNEL_FILTERS = [
+type FilterType = 'all' | 'email' | 'whatsapp' | 'phone' | 'document';
+
+const FILTERS: { id: FilterType; label: string; icon: React.ElementType }[] = [
+  { id: 'all', label: 'Todo', icon: Calendar },
   { id: 'email', label: 'Emails', icon: Mail },
   { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
   { id: 'phone', label: 'Llamadas', icon: Phone },
-  { id: 'document', label: 'Documentos', icon: FileText },
-  { id: 'deadline', label: 'Vencimientos', icon: Clock },
+  { id: 'document', label: 'Docs', icon: FileText },
 ];
 
 export function ClientTimeline({ clientId }: ClientTimelineProps) {
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [quickComment, setQuickComment] = useState('');
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   
-  const channelFilters = activeFilters.filter(
-    (f): f is 'email' | 'whatsapp' | 'phone' => ['email', 'whatsapp', 'phone'].includes(f)
-  );
+  const channelFilters = activeFilter !== 'all' && activeFilter !== 'document' 
+    ? [activeFilter as 'email' | 'whatsapp' | 'phone'] 
+    : undefined;
 
   const { 
     data, 
@@ -41,12 +47,19 @@ export function ClientTimeline({ clientId }: ClientTimelineProps) {
     hasNextPage,
     isFetchingNextPage 
   } = useClientTimeline(clientId, {
-    channels: channelFilters.length > 0 ? channelFilters : undefined
+    channels: channelFilters
   });
 
   const events = useMemo(() => {
-    return data?.pages.flatMap(page => page.events) || [];
-  }, [data]);
+    const allEvents = data?.pages.flatMap(page => page.events) || [];
+    
+    // Filtrar por tipo si es documento
+    if (activeFilter === 'document') {
+      return allEvents.filter(e => e.type === 'document');
+    }
+    
+    return allEvents;
+  }, [data, activeFilter]);
 
   // Agrupar eventos por fecha
   const groupedEvents = useMemo(() => {
@@ -67,44 +80,66 @@ export function ClientTimeline({ clientId }: ClientTimelineProps) {
     return groups;
   }, [events]);
 
-  const toggleFilter = (filterId: string) => {
-    setActiveFilters(prev => 
-      prev.includes(filterId)
-        ? prev.filter(f => f !== filterId)
-        : [...prev, filterId]
-    );
+  const toggleExpanded = (id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   const formatDateHeader = (date: Date) => {
     if (isToday(date)) return 'Hoy';
     if (isYesterday(date)) return 'Ayer';
-    return format(date, "d 'de' MMMM 'de' yyyy", { locale: es });
+    return format(date, "d 'de' MMMM", { locale: es });
+  };
+
+  const handleQuickComment = () => {
+    if (!quickComment.trim()) return;
+    // TODO: Implementar envío de comentario rápido
+    console.log('Quick comment:', quickComment);
+    setQuickComment('');
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">Timeline</CardTitle>
-          <div className="flex items-center gap-1">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Filtros:</span>
-          </div>
+    <div className="flex flex-col h-full">
+      {/* Input rápido */}
+      <div className="p-3 border-b bg-muted/30">
+        <div className="flex gap-2">
+          <Input 
+            placeholder="Comentario rápido..." 
+            value={quickComment}
+            onChange={e => setQuickComment(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleQuickComment()}
+            className="h-8 text-sm"
+          />
+          <Button 
+            size="sm" 
+            className="h-8 px-3 shrink-0"
+            onClick={handleQuickComment}
+            disabled={!quickComment.trim()}
+          >
+            <Send className="w-3 h-3" />
+          </Button>
         </div>
         
         {/* Filtros */}
-        <div className="flex flex-wrap gap-2 mt-2">
-          {CHANNEL_FILTERS.map(filter => {
+        <div className="flex gap-1 mt-2 overflow-x-auto pb-1">
+          {FILTERS.map(filter => {
             const Icon = filter.icon;
-            const isActive = activeFilters.includes(filter.id);
+            const isActive = activeFilter === filter.id;
             
             return (
               <Button
                 key={filter.id}
-                variant={isActive ? 'secondary' : 'outline'}
+                variant={isActive ? 'secondary' : 'ghost'}
                 size="sm"
-                onClick={() => toggleFilter(filter.id)}
-                className="h-7"
+                onClick={() => setActiveFilter(filter.id)}
+                className="h-6 px-2 text-xs shrink-0"
               >
                 <Icon className="w-3 h-3 mr-1" />
                 {filter.label}
@@ -112,135 +147,222 @@ export function ClientTimeline({ clientId }: ClientTimelineProps) {
             );
           })}
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="p-0">
-        <ScrollArea className="h-[600px]">
-          {isLoading ? (
-            <div className="p-6 text-center text-muted-foreground">
-              Cargando timeline...
-            </div>
-          ) : events.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">
-              No hay actividad registrada
-            </div>
-          ) : (
-            <div className="relative">
-              {/* Línea vertical */}
-              <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
+      {/* Timeline Content */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="p-6 text-center text-muted-foreground">
+            Cargando timeline...
+          </div>
+        ) : events.length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground">
+            <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No hay actividad registrada</p>
+          </div>
+        ) : (
+          <div className="relative">
+            {/* Línea vertical */}
+            <div className="absolute left-5 top-0 bottom-0 w-px bg-border" />
 
-              {groupedEvents.map((group, groupIdx) => (
-                <div key={groupIdx}>
-                  {/* Cabecera de fecha */}
-                  <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 px-6 py-2 border-b">
-                    <span className="text-sm font-medium">
-                      {formatDateHeader(group.date)}
-                    </span>
-                  </div>
-
-                  {/* Eventos del día */}
-                  <div className="py-2">
-                    {group.events.map((event) => (
-                      <TimelineEventItem key={event.id} event={event} />
-                    ))}
-                  </div>
+            {groupedEvents.map((group, groupIdx) => (
+              <div key={groupIdx}>
+                {/* Separador de fecha */}
+                <div className="relative flex items-center gap-3 px-4 py-2">
+                  <div className="absolute left-5 w-px h-full bg-border" />
+                  <div className="relative z-10 w-2 h-2 rounded-full bg-muted-foreground/30" />
+                  <span className="text-xs font-medium text-muted-foreground bg-background px-2">
+                    {formatDateHeader(group.date)}
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
-              ))}
 
-              {/* Cargar más */}
-              {hasNextPage && (
-                <div className="p-4 text-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                  >
-                    {isFetchingNextPage ? 'Cargando...' : 'Cargar más'}
-                    <ChevronDown className="w-4 h-4 ml-2" />
-                  </Button>
+                {/* Eventos del día */}
+                <div>
+                  {group.events.map((event) => (
+                    <TimelineEventItem 
+                      key={event.id} 
+                      event={event}
+                      expanded={expandedItems.has(event.id)}
+                      onToggle={() => toggleExpanded(event.id)}
+                    />
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-        </ScrollArea>
-      </CardContent>
-    </Card>
+              </div>
+            ))}
+
+            {/* Cargar más */}
+            {hasNextPage && (
+              <div className="p-4 text-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? 'Cargando...' : 'Ver más'}
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
 // Componente para cada evento
 interface TimelineEventItemProps {
   event: TimelineEvent;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
-function TimelineEventItem({ event }: TimelineEventItemProps) {
+function TimelineEventItem({ event, expanded, onToggle }: TimelineEventItemProps) {
+  const isExpandable = event.type === 'communication' && 
+    (event.metadata.channel === 'email' || event.description);
+
   const getIcon = () => {
     switch (event.type) {
       case 'communication':
         const channel = event.metadata.channel as string;
         if (channel === 'email') return <Mail className="w-4 h-4" />;
-        if (channel === 'whatsapp') return <MessageSquare className="w-4 h-4 text-green-500" />;
-        if (channel === 'phone') return <Phone className="w-4 h-4" />;
+        if (channel === 'whatsapp') return <MessageSquare className="w-4 h-4 text-[hsl(var(--ip-action-whatsapp-text))]" />;
+        if (channel === 'phone') return <Phone className="w-4 h-4 text-primary" />;
         return <MessageSquare className="w-4 h-4" />;
       case 'document':
-        return <FileText className="w-4 h-4 text-blue-500" />;
+        return <FileText className="w-4 h-4 text-primary" />;
       case 'deadline':
-        return <Clock className="w-4 h-4 text-amber-500" />;
+        return <Clock className="w-4 h-4 text-destructive" />;
+      case 'matter':
+        return <Briefcase className="w-4 h-4 text-primary" />;
       default:
         return <Calendar className="w-4 h-4" />;
     }
   };
 
+  const getDirectionBadge = () => {
+    if (event.type !== 'communication') return null;
+    const direction = event.metadata.direction as string;
+    return (
+      <Badge 
+        variant="outline" 
+        className={cn(
+          "h-5 text-[10px]",
+          direction === 'inbound' 
+            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400"
+            : "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+        )}
+      >
+        {direction === 'inbound' ? '← Recibido' : '→ Enviado'}
+      </Badge>
+    );
+  };
+
   return (
-    <div className="relative pl-12 pr-6 py-2 hover:bg-muted/50 transition-colors cursor-pointer">
+    <div className="relative pl-10 pr-3">
       {/* Punto en la línea */}
-      <div className="absolute left-[18px] top-4 w-3 h-3 rounded-full bg-background border-2 border-primary" />
-      
-      {/* Icono */}
-      <div className="absolute left-[34px] top-3">
-        {getIcon()}
-      </div>
+      <div className={cn(
+        "absolute left-[14px] top-4 w-3 h-3 rounded-full border-2 border-background shadow-sm",
+        event.type === 'communication' && event.metadata.channel === 'email' ? "bg-blue-500" :
+        event.type === 'communication' && event.metadata.channel === 'whatsapp' ? "bg-emerald-500" :
+        event.type === 'communication' && event.metadata.channel === 'phone' ? "bg-amber-500" :
+        event.type === 'document' ? "bg-slate-500" :
+        event.type === 'deadline' ? "bg-red-500" :
+        "bg-primary"
+      )} />
 
       {/* Contenido */}
-      <div className="ml-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">{event.title}</span>
-          <span className="text-xs text-muted-foreground">
-            {format(new Date(event.timestamp), 'HH:mm')}
-          </span>
-        </div>
-
-        {event.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-            {event.description}
-          </p>
+      <div 
+        className={cn(
+          "py-2 transition-colors rounded-lg",
+          isExpandable && "cursor-pointer hover:bg-muted/50"
         )}
-
-        {/* Metadata badges */}
-        <div className="flex items-center gap-1 mt-1">
-          {event.metadata.category && (
-            <Badge variant="outline" className="text-xs h-5">
-              {event.metadata.category as string}
-            </Badge>
-          )}
-          {event.metadata.has_transcription && (
-            <Badge variant="secondary" className="text-xs h-5">
-              <Play className="w-2.5 h-2.5 mr-0.5" />
-              Transcripción
-            </Badge>
-          )}
-          {event.metadata.has_attachments && (
-            <Badge variant="secondary" className="text-xs h-5">
-              <FileText className="w-2.5 h-2.5 mr-0.5" />
-              Adjuntos
-            </Badge>
-          )}
-          {!event.metadata.is_read && event.type === 'communication' && (
-            <Badge variant="destructive" className="text-xs h-5">
-              Nuevo
-            </Badge>
-          )}
+        onClick={isExpandable ? onToggle : undefined}
+      >
+        {/* Header */}
+        <div className="flex items-start gap-2">
+          <div className="shrink-0 mt-0.5">
+            {getIcon()}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium line-clamp-1">{event.title}</span>
+              {getDirectionBadge()}
+              {!event.metadata.is_read && event.type === 'communication' && (
+                <Badge variant="destructive" className="h-5 text-[10px]">
+                  Nuevo
+                </Badge>
+              )}
+            </div>
+            
+            {/* Preview (solo si no está expandido) */}
+            {!expanded && event.description && (
+              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                {event.description}
+              </p>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-xs text-muted-foreground">
+              {format(new Date(event.timestamp), 'HH:mm')}
+            </span>
+            {isExpandable && (
+              expanded ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )
+            )}
+          </div>
         </div>
+
+        {/* Contenido expandido */}
+        {expanded && isExpandable && (
+          <div className="mt-3 ml-6 p-3 bg-muted/30 rounded-lg border text-sm">
+            {/* Body del mensaje */}
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {event.description || 'Sin contenido'}
+            </p>
+            
+            {/* Metadata badges */}
+            {(event.metadata.has_attachments || event.metadata.has_transcription) && (
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                {event.metadata.has_attachments && (
+                  <Badge variant="secondary" className="text-xs h-5">
+                    <FileText className="w-3 h-3 mr-1" />
+                    Adjuntos
+                  </Badge>
+                )}
+                {event.metadata.has_transcription && (
+                  <Badge variant="secondary" className="text-xs h-5">
+                    <Play className="w-3 h-3 mr-1" />
+                    Transcripción
+                  </Badge>
+                )}
+              </div>
+            )}
+            
+            {/* Acciones inline */}
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+              <Button size="sm" variant="outline" className="h-7 text-xs">
+                <ExternalLink className="w-3 h-3 mr-1" />
+                Abrir
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs">
+                <CalendarPlus className="w-3 h-3 mr-1" />
+                Planificar
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs">
+                <PenLine className="w-3 h-3 mr-1" />
+                Nota
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
