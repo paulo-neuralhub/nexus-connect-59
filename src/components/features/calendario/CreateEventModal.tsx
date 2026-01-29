@@ -1,6 +1,6 @@
 // ============================================
 // Modal para crear eventos multi-tipo en el calendario
-// Soporta: Tarea, Reunión, Llamada, Recordatorio, Plazo, Plazo Fatal
+// Soporta: Tarea, Reunión, Llamada, Recordatorio, Plazo, Plazo Fatal, Personalizado
 // ============================================
 
 import { useState, useEffect } from 'react';
@@ -12,7 +12,7 @@ import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import {
   CheckSquare, Phone, Video, Bell, AlertTriangle,
-  ChevronLeft, Calendar as CalendarIcon, Clock
+  ChevronLeft, Calendar as CalendarIcon, Clock, MapPin
 } from 'lucide-react';
 import {
   Dialog,
@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,18 @@ import {
 } from '@/components/ui/select';
 import { MatterSelect, type MatterOption } from '@/components/features/docket/MatterSelect';
 import { cn } from '@/lib/utils';
+
+// Colores disponibles para eventos personalizados
+const CUSTOM_COLORS = [
+  '#3b82f6', // blue
+  '#22c55e', // green
+  '#eab308', // yellow
+  '#ef4444', // red
+  '#a855f7', // purple
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#64748b', // slate
+];
 
 // Tipos de eventos disponibles
 const EVENT_TYPES = [
@@ -86,6 +99,14 @@ const EVENT_TYPES = [
     table: 'matter_deadlines',
     description: 'Plazo improrrogable (fatal)'
   },
+  { 
+    id: 'custom', 
+    label: 'Evento personalizado', 
+    icon: CalendarIcon, 
+    color: 'bg-slate-500',
+    table: 'activities',
+    description: 'Evento libre con fecha y descripción'
+  },
 ] as const;
 
 type EventTypeId = typeof EVENT_TYPES[number]['id'];
@@ -101,6 +122,11 @@ interface FormData {
   matter: MatterOption | null;
   priority: string;
   deadlineType: string;
+  // Custom event fields
+  customType: string;
+  eventColor: string;
+  location: string;
+  linkType: 'none' | 'matter' | 'client';
 }
 
 interface CreateEventModalProps {
@@ -135,6 +161,10 @@ export function CreateEventModal({
     matter: null,
     priority: 'medium',
     deadlineType: 'internal',
+    customType: '',
+    eventColor: '#3b82f6',
+    location: '',
+    linkType: 'none',
   });
   
   // Reset cuando se abre/cierra
@@ -153,6 +183,10 @@ export function CreateEventModal({
         matter: null,
         priority: 'medium',
         deadlineType: 'internal',
+        customType: '',
+        eventColor: '#3b82f6',
+        location: '',
+        linkType: 'none',
       });
     }
   }, [isOpen, defaultDate, defaultType]);
@@ -164,7 +198,39 @@ export function CreateEventModal({
       
       const selectedType = EVENT_TYPES.find(t => t.id === eventType);
       
-      if (selectedType?.table === 'activities') {
+      if (eventType === 'custom') {
+        // Crear evento personalizado
+        const startDateTime = formData.allDay 
+          ? `${formData.date}T00:00:00`
+          : `${formData.date}T${formData.time}:00`;
+        
+        const endDateTime = formData.allDay 
+          ? `${formData.date}T23:59:59`
+          : `${formData.date}T${formData.endTime}:00`;
+        
+        const { error } = await supabase.from('activities').insert({
+          organization_id: currentOrganization.id,
+          owner_type: 'tenant',
+          type: 'custom',
+          subject: formData.title,
+          content: formData.description || null,
+          due_date: startDateTime,
+          meeting_start: startDateTime,
+          meeting_end: endDateTime,
+          matter_id: formData.linkType === 'matter' && formData.matter?.id ? formData.matter.id : null,
+          meeting_location: formData.location || null,
+          is_completed: false,
+          metadata: {
+            custom_type: formData.customType,
+            color: formData.eventColor,
+            location: formData.location,
+            all_day: formData.allDay,
+          },
+        });
+        
+        if (error) throw error;
+        
+      } else if (selectedType?.table === 'activities') {
         // Crear en tabla activities
         const dueDate = formData.allDay 
           ? `${formData.date}T23:59:59`
@@ -231,6 +297,9 @@ export function CreateEventModal({
     if (typeId === 'meeting') {
       setFormData(prev => ({ ...prev, allDay: false, hasEndTime: true }));
     }
+    if (typeId === 'custom') {
+      setFormData(prev => ({ ...prev, allDay: true, hasEndTime: true }));
+    }
   };
   
   const isValid = () => {
@@ -243,7 +312,7 @@ export function CreateEventModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {step === 'type' ? (
@@ -254,7 +323,13 @@ export function CreateEventModal({
             ) : (
               <>
                 {selectedTypeConfig && (
-                  <div className={cn("w-6 h-6 rounded flex items-center justify-center text-white", selectedTypeConfig.color)}>
+                  <div 
+                    className={cn(
+                      "w-6 h-6 rounded flex items-center justify-center text-white",
+                      eventType === 'custom' ? '' : selectedTypeConfig.color
+                    )}
+                    style={eventType === 'custom' ? { backgroundColor: formData.eventColor } : undefined}
+                  >
                     <selectedTypeConfig.icon className="h-4 w-4" />
                   </div>
                 )}
@@ -266,31 +341,48 @@ export function CreateEventModal({
         
         {/* PASO 1: Selección de tipo */}
         {step === 'type' && (
-          <div className="grid grid-cols-2 gap-3 py-4">
-            {EVENT_TYPES.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => handleSelectType(type.id)}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all",
-                  "hover:border-primary hover:bg-muted/50"
-                )}
-              >
-                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white", type.color)}>
-                  <type.icon className="h-5 w-5" />
-                </div>
-                <span className="font-medium text-sm">{type.label}</span>
-                <span className="text-xs text-muted-foreground text-center">
-                  {type.description}
-                </span>
-              </button>
-            ))}
+          <div className="py-4 space-y-3">
+            {/* Grid de 6 tipos principales */}
+            <div className="grid grid-cols-3 gap-3">
+              {EVENT_TYPES.slice(0, 6).map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => handleSelectType(type.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    "hover:border-primary hover:bg-muted/50"
+                  )}
+                >
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white", type.color)}>
+                    <type.icon className="h-5 w-5" />
+                  </div>
+                  <span className="font-medium text-xs">{type.label}</span>
+                </button>
+              ))}
+            </div>
+            
+            {/* Evento personalizado - destacado */}
+            <button
+              onClick={() => handleSelectType('custom')}
+              className={cn(
+                "w-full flex items-center gap-3 p-4 rounded-lg border-2 border-dashed transition-all",
+                "hover:border-primary hover:bg-muted/50"
+              )}
+            >
+              <div className="w-10 h-10 rounded-lg bg-slate-500 flex items-center justify-center text-white">
+                <CalendarIcon className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <span className="font-medium text-sm">Evento personalizado</span>
+                <p className="text-xs text-muted-foreground">Evento libre con fecha, hora y color personalizable</p>
+              </div>
+            </button>
           </div>
         )}
         
         {/* PASO 2: Detalles del evento */}
         {step === 'details' && (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             {/* Título */}
             <div className="space-y-2">
               <Label htmlFor="title">Título *</Label>
@@ -302,6 +394,41 @@ export function CreateEventModal({
                 autoFocus
               />
             </div>
+            
+            {/* Campos específicos para evento personalizado */}
+            {eventType === 'custom' && (
+              <>
+                {/* Tipo personalizado */}
+                <div className="space-y-2">
+                  <Label htmlFor="customType">Tipo de evento</Label>
+                  <Input
+                    id="customType"
+                    value={formData.customType}
+                    onChange={(e) => setFormData({ ...formData, customType: e.target.value })}
+                    placeholder="Ej: Conferencia, Webinar, Entrega, etc."
+                  />
+                </div>
+                
+                {/* Color del evento */}
+                <div className="space-y-2">
+                  <Label>Color</Label>
+                  <div className="flex gap-2">
+                    {CUSTOM_COLORS.map(color => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, eventColor: color })}
+                        className={cn(
+                          "w-8 h-8 rounded-full transition-all",
+                          formData.eventColor === color && "ring-2 ring-offset-2 ring-primary"
+                        )}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
             
             {/* Fecha y hora */}
             <div className="grid grid-cols-2 gap-4">
@@ -328,8 +455,8 @@ export function CreateEventModal({
               )}
             </div>
             
-            {/* Todo el día / Hora fin (solo para reuniones) */}
-            {eventType === 'meeting' && (
+            {/* Todo el día / Hora fin (para reuniones y custom) */}
+            {(eventType === 'meeting' || eventType === 'custom') && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -355,6 +482,23 @@ export function CreateEventModal({
               </div>
             )}
             
+            {/* Ubicación (para custom y meeting) */}
+            {(eventType === 'custom' || eventType === 'meeting') && (
+              <div className="space-y-2">
+                <Label htmlFor="location">Ubicación (opcional)</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="Ej: Sala de reuniones, Zoom, Oficina cliente..."
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+            )}
+            
             {/* Descripción */}
             <div className="space-y-2">
               <Label htmlFor="description">Descripción</Label>
@@ -367,20 +511,50 @@ export function CreateEventModal({
               />
             </div>
             
-            {/* Vincular a expediente */}
-            <div className="space-y-2">
-              <Label>
-                Expediente
-                {(eventType === 'deadline' || eventType === 'deadline_fatal') && (
-                  <span className="text-destructive"> *</span>
-                )}
-              </Label>
-              <MatterSelect
-                value={formData.matter}
-                onChange={(matter) => setFormData({ ...formData, matter })}
-                placeholder="Buscar expediente..."
-              />
-            </div>
+            {/* Vincular a (para custom) */}
+            {eventType === 'custom' && (
+              <div className="space-y-2">
+                <Label>Vincular a (opcional)</Label>
+                <Tabs 
+                  value={formData.linkType} 
+                  onValueChange={(v) => setFormData({ ...formData, linkType: v as 'none' | 'matter' | 'client', matter: null })}
+                  className="w-full"
+                >
+                  <TabsList className="w-full grid grid-cols-3">
+                    <TabsTrigger value="none">Ninguno</TabsTrigger>
+                    <TabsTrigger value="matter">Expediente</TabsTrigger>
+                    <TabsTrigger value="client">Cliente</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="matter" className="mt-2">
+                    <MatterSelect
+                      value={formData.matter}
+                      onChange={(matter) => setFormData({ ...formData, matter })}
+                      placeholder="Buscar expediente..."
+                    />
+                  </TabsContent>
+                  <TabsContent value="client" className="mt-2">
+                    <p className="text-sm text-muted-foreground italic">Selector de clientes en desarrollo</p>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+            
+            {/* Vincular a expediente (para otros tipos) */}
+            {eventType !== 'custom' && (
+              <div className="space-y-2">
+                <Label>
+                  Expediente
+                  {(eventType === 'deadline' || eventType === 'deadline_fatal') && (
+                    <span className="text-destructive"> *</span>
+                  )}
+                </Label>
+                <MatterSelect
+                  value={formData.matter}
+                  onChange={(matter) => setFormData({ ...formData, matter })}
+                  placeholder="Buscar expediente..."
+                />
+              </div>
+            )}
             
             {/* Tipo de plazo (solo para deadlines) */}
             {(eventType === 'deadline' || eventType === 'deadline_fatal') && (
@@ -453,9 +627,10 @@ export function CreateEventModal({
             <Button
               onClick={() => createEvent.mutate()}
               disabled={createEvent.isPending || !isValid()}
+              style={eventType === 'custom' ? { backgroundColor: formData.eventColor } : undefined}
               className={cn(
-                selectedTypeConfig?.color.replace('bg-', 'bg-'),
-                "hover:opacity-90"
+                eventType !== 'custom' && selectedTypeConfig?.color.replace('bg-', 'bg-'),
+                "hover:opacity-90 text-white"
               )}
             >
               {createEvent.isPending ? 'Creando...' : 'Crear evento'}
@@ -476,6 +651,7 @@ function getPlaceholderByType(type: string): string {
     case 'reminder': return 'Ej: Recordar enviar presupuesto';
     case 'deadline': return 'Ej: Plazo alegaciones oposición';
     case 'deadline_fatal': return 'Ej: Plazo FATAL presentación recurso';
+    case 'custom': return 'Ej: Conferencia IP 2026';
     default: return 'Título del evento';
   }
 }
