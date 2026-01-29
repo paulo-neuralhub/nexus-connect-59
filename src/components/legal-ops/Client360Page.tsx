@@ -428,23 +428,38 @@ export function Client360Page({ clientId }: Client360PageProps) {
         {/* Right Panel - 50% - Timeline Fijo */}
         <div className="w-1/2 flex flex-col overflow-hidden bg-muted/20">
           {/* Timeline Header Sticky */}
-          <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold text-sm">Timeline de Actividad</h3>
+          <div className="sticky top-0 z-10 bg-background border-b px-3 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm">Timeline</h3>
+                <Badge variant="secondary" className="h-5 text-xs">
+                  {stats.totalMatters + stats.unreadMessages}
+                </Badge>
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="default" className="h-7 px-2 gap-1">
+                  <Plus className="w-3 h-3" />
+                  <span className="text-xs">Actividad</span>
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-1">
-              <Button size="sm" variant="ghost" className="h-7 px-2">
-                <Plus className="w-3 h-3 mr-1" />
-                Nota
+            <div className="flex gap-1 mt-2">
+              <Button size="sm" variant="outline" className="h-7 px-2 gap-1">
+                <PenLine className="w-3 h-3" />
+                <span className="text-xs">Nota</span>
               </Button>
-              <Button size="sm" variant="ghost" className="h-7 px-2">
-                <Phone className="w-3 h-3 mr-1" />
-                Llamada
+              <Button size="sm" variant="outline" className="h-7 px-2 gap-1">
+                <Phone className="w-3 h-3" />
+                <span className="text-xs">Llamada</span>
               </Button>
-              <Button size="sm" variant="ghost" className="h-7 px-2">
-                <Mail className="w-3 h-3 mr-1" />
-                Email
+              <Button size="sm" variant="outline" className="h-7 px-2 gap-1">
+                <Mail className="w-3 h-3" />
+                <span className="text-xs">Email</span>
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 px-2 gap-1">
+                <MessageSquare className="w-3 h-3" />
+                <span className="text-xs">WhatsApp</span>
               </Button>
             </div>
           </div>
