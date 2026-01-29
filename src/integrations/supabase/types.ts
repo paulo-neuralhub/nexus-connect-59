@@ -30429,9 +30429,11 @@ export type Database = {
           last_interaction_at: string | null
           lifetime_value: number | null
           name: string
+          org_code: string | null
           outstanding_balance: number | null
           payment_score: number | null
           plan: string
+          preferred_jurisdictions: string[] | null
           sentiment_score: number | null
           settings: Json | null
           slug: string
@@ -30463,9 +30465,11 @@ export type Database = {
           last_interaction_at?: string | null
           lifetime_value?: number | null
           name: string
+          org_code?: string | null
           outstanding_balance?: number | null
           payment_score?: number | null
           plan?: string
+          preferred_jurisdictions?: string[] | null
           sentiment_score?: number | null
           settings?: Json | null
           slug: string
@@ -30497,9 +30501,11 @@ export type Database = {
           last_interaction_at?: string | null
           lifetime_value?: number | null
           name?: string
+          org_code?: string | null
           outstanding_balance?: number | null
           payment_score?: number | null
           plan?: string
+          preferred_jurisdictions?: string[] | null
           sentiment_score?: number | null
           settings?: Json | null
           slug?: string
