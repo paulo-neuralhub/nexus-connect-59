@@ -144,7 +144,7 @@ export default function CalendarioPage() {
   }, []);
   
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       {/* Header */}
       <CalendarHeader
         date={date}
@@ -157,46 +157,50 @@ export default function CalendarioPage() {
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar de filtros */}
-        <CalendarSidebar
-          date={date}
-          onDateChange={handleNavigate}
-          filters={filters}
-          onFiltersChange={setFilters}
-          stats={stats}
-        />
+        {/* Sidebar izquierdo - FIJO */}
+        <aside className="w-64 flex-shrink-0 border-r bg-muted/30 overflow-y-auto">
+          <CalendarSidebar
+            date={date}
+            onDateChange={handleNavigate}
+            filters={filters}
+            onFiltersChange={setFilters}
+            stats={stats}
+          />
+        </aside>
         
-        {/* Calendario principal */}
-        <div className="flex-1 p-4 overflow-auto bg-background">
+        {/* Calendario principal - FLEX GROW */}
+        <main className="flex-1 overflow-hidden p-4">
           {isLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 h-full">
               <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-[500px] w-full" />
+              <Skeleton className="h-full w-full" />
             </div>
           ) : (
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              view={view}
-              onView={handleViewChange}
-              date={date}
-              onNavigate={handleNavigate}
-              onSelectEvent={handleSelectEvent}
-              onSelectSlot={handleSelectSlot}
-              eventPropGetter={eventStyleGetter}
-              messages={calendarMessages}
-              culture="es"
-              popup
-              selectable
-              className="rounded-lg bg-card p-4 shadow-sm"
-              style={{ height: 'calc(100vh - 12rem)' }}
-              toolbar={false}
-              views={['month', 'week', 'day', 'agenda']}
-            />
+            <div className="h-full bg-card rounded-lg border shadow-sm">
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                view={view}
+                onView={handleViewChange}
+                date={date}
+                onNavigate={handleNavigate}
+                onSelectEvent={handleSelectEvent}
+                onSelectSlot={handleSelectSlot}
+                eventPropGetter={eventStyleGetter}
+                messages={calendarMessages}
+                culture="es"
+                popup
+                selectable
+                className="p-4 h-full [&_.rbc-calendar]:h-full [&_.rbc-month-view]:flex-1"
+                style={{ height: '100%' }}
+                toolbar={false}
+                views={['month', 'week', 'day', 'agenda']}
+              />
+            </div>
           )}
-        </div>
+        </main>
       </div>
       
       {/* Modal de configuración */}
