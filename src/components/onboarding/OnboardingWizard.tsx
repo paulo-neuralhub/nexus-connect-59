@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import {
   Building2,
   Upload,
@@ -10,12 +9,16 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
+  Globe,
+  Plug,
 } from 'lucide-react';
 import { useUpdateOnboardingProgress, useCompleteOnboarding, type OnboardingProgress } from '@/hooks/useOnboarding';
 import { StepCompanySetup } from './steps/StepCompanySetup';
 import { StepImportData } from './steps/StepImportData';
 import { StepTeamInvite } from './steps/StepTeamInvite';
 import { StepTourIntro } from './steps/StepTourIntro';
+import { StepIPConfig } from './steps/StepIPConfig';
+import { StepIntegrations } from './steps/StepIntegrations';
 
 interface OnboardingWizardProps {
   organizationId: string;
@@ -23,14 +26,20 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-// NOTA: Se eliminó el paso de Oficinas de PI.
-// Las oficinas son gestionadas globalmente por IP-NEXUS.
-// Los tenants solo VEN información según su plan.
+// PASOS DEL WIZARD
+// 1. Datos empresa (nombre, país, código org)
+// 2. Configuración PI (jurisdicciones, formato referencias)
+// 3. Importar datos (Excel/CSV)
+// 4. Equipo (invitar usuarios)
+// 5. Integraciones (email, calendario - opcional)
+// 6. ¡Listo! (resumen y tour)
 const STEPS = [
-  { id: 1, title: 'Tu Empresa', icon: Building2, description: 'Configura los datos básicos' },
-  { id: 2, title: 'Importar Datos', icon: Upload, description: 'Importa tu portfolio existente' },
-  { id: 3, title: 'Tu Equipo', icon: Users, description: 'Invita a tu equipo' },
-  { id: 4, title: 'Comenzar', icon: Sparkles, description: 'Tour guiado' },
+  { id: 1, title: 'Tu Empresa', icon: Building2, description: 'Datos básicos de tu organización' },
+  { id: 2, title: 'Propiedad Intelectual', icon: Globe, description: 'Jurisdicciones y referencias' },
+  { id: 3, title: 'Importar Datos', icon: Upload, description: 'Importa tu portfolio' },
+  { id: 4, title: 'Tu Equipo', icon: Users, description: 'Invita colaboradores' },
+  { id: 5, title: 'Integraciones', icon: Plug, description: 'Conecta herramientas' },
+  { id: 6, title: '¡Listo!', icon: Sparkles, description: 'Comienza a usar IP-NEXUS' },
 ];
 
 export function OnboardingWizard({ organizationId, progress, onComplete }: OnboardingWizardProps) {
@@ -97,10 +106,14 @@ export function OnboardingWizard({ organizationId, progress, onComplete }: Onboa
       case 1:
         return <StepCompanySetup data={formData} updateData={updateFormData} organizationId={organizationId} />;
       case 2:
-        return <StepImportData organizationId={organizationId} onSkip={handleSkip} />;
+        return <StepIPConfig data={formData} updateData={updateFormData} organizationId={organizationId} />;
       case 3:
-        return <StepTeamInvite organizationId={organizationId} />;
+        return <StepImportData organizationId={organizationId} onSkip={handleSkip} />;
       case 4:
+        return <StepTeamInvite organizationId={organizationId} />;
+      case 5:
+        return <StepIntegrations data={formData} updateData={updateFormData} organizationId={organizationId} onSkip={handleSkip} />;
+      case 6:
         return <StepTourIntro onComplete={onComplete} />;
       default:
         return null;
@@ -173,7 +186,8 @@ export function OnboardingWizard({ organizationId, progress, onComplete }: Onboa
           </Button>
 
           <div className="flex gap-2">
-            {currentStep !== 5 && currentStep !== 1 && (
+            {/* Skip button for optional steps (3-Import, 4-Team, 5-Integrations) */}
+            {[3, 4, 5].includes(currentStep) && (
               <Button 
                 variant="ghost" 
                 onClick={handleSkip}
