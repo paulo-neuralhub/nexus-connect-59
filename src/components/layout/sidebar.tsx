@@ -6,7 +6,7 @@ import { MODULE_COLORS } from "@/lib/constants";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
   Globe, Brain, DollarSign, HelpCircle, Settings, LogOut, ChevronDown, Lock, Shield,
-  Users2, Bell, MessageSquare, Check
+  Users2, Bell, MessageSquare, Check, Calendar
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const navItems = [
   { path: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard, module: "dashboard" },
   { path: "/app/expedientes", label: "Expedientes", icon: FileText, module: "docket" },
+  { path: "/app/calendario", label: "Calendario", icon: Calendar, module: "calendar" },
   { path: "/app/data-hub", label: "Data Hub", icon: Database, module: "datahub" },
   { path: "/app/spider", label: "Spider", icon: Radar, module: "spider" },
   { separator: true },
