@@ -201,6 +201,7 @@ import AnalyticsPage from "./pages/app/analytics";
 import AlertsPage from "./pages/app/alerts";
 import AlertsSettingsPage from "./pages/app/alerts/settings";
 import AnalyticsChartsPage from "./pages/app/analytics/charts";
+import AdvancedAnalyticsPage from "./pages/app/analytics/dashboard";
 import CollabIndexPage from "./pages/app/collab";
 import CollabDetailPage from "./pages/app/collab/[id]";
 import SearchPage from "./pages/app/SearchPage";
@@ -560,6 +561,7 @@ const App = () => (
                 <Route path="workflow/:id/history" element={<WorkflowHistoryRoute />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="analytics/charts" element={<AnalyticsChartsPage />} />
+                <Route path="analytics/dashboard" element={<AdvancedAnalyticsPage />} />
                 <Route path="collab" element={<CollabIndexPage />} />
                 <Route path="collab/:id" element={<CollabDetailPage />} />
                 <Route path="search" element={<SearchPage />} />
