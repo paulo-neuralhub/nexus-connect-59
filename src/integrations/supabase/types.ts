@@ -8869,6 +8869,7 @@ export type Database = {
           rating_stars: number | null
           status: string
           tags: string[]
+          tax_id: string | null
           tier: string
           updated_at: string
         }
@@ -8891,6 +8892,7 @@ export type Database = {
           rating_stars?: number | null
           status?: string
           tags?: string[]
+          tax_id?: string | null
           tier?: string
           updated_at?: string
         }
@@ -8913,6 +8915,7 @@ export type Database = {
           rating_stars?: number | null
           status?: string
           tags?: string[]
+          tax_id?: string | null
           tier?: string
           updated_at?: string
         }
