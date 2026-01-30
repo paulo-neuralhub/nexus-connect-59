@@ -1,12 +1,12 @@
 // ============================================================
 // IP-NEXUS - DEMO BADGE
 // Badge visual fijo que indica modo demo activo
+// Diseño minimal: transparente por defecto, opaco al hover
 // ============================================================
 
-import { Target, X } from "lucide-react";
+import { Target } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 interface DemoBadgeProps {
   prospectCompany?: string | null;
@@ -14,66 +14,37 @@ interface DemoBadgeProps {
   className?: string;
 }
 
-export function DemoBadge({ prospectCompany, onClose, className }: DemoBadgeProps) {
-  const [isMinimized, setIsMinimized] = useState(false);
-
-  if (isMinimized) {
-    return (
-      <button
-        type="button"
-        onClick={() => setIsMinimized(false)}
-        className={cn(
-          "fixed top-4 right-4 z-[100]",
-          "flex items-center justify-center",
-          "h-10 w-10 rounded-full",
-          "bg-amber-500 text-white shadow-lg",
-          "hover:bg-amber-600 transition-colors",
-          "animate-pulse",
-          className
-        )}
-        title="Expandir indicador DEMO"
-      >
-        <Target className="h-5 w-5" />
-      </button>
-    );
-  }
+export function DemoBadge({ prospectCompany, className }: DemoBadgeProps) {
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "fixed top-4 right-4 z-[100]",
-        "flex items-center gap-2",
-        "px-4 py-2 rounded-lg",
-        "bg-gradient-to-r from-amber-500 to-orange-500",
-        "text-white font-medium text-sm",
-        "shadow-lg shadow-amber-500/20",
-        "border border-amber-400/30",
+        "fixed top-3 right-3 z-[100]",
+        "flex items-center gap-1.5",
+        "px-2.5 py-1.5 rounded-full",
+        "text-xs font-medium",
+        "transition-all duration-300 ease-out",
+        "cursor-default select-none",
+        // Transparente por defecto, opaco al hover
+        isHovered
+          ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25"
+          : "bg-amber-500/20 text-amber-600/70 dark:text-amber-400/70 backdrop-blur-sm",
         className
       )}
     >
-      <Target className="h-4 w-4 animate-pulse" />
+      <Target className={cn(
+        "h-3 w-3 transition-all duration-300",
+        isHovered ? "animate-pulse" : "opacity-70"
+      )} />
       <span>DEMO</span>
-      {prospectCompany && (
-        <>
-          <span className="text-amber-200">—</span>
-          <span className="text-amber-100 font-normal max-w-[150px] truncate">
-            {prospectCompany}
-          </span>
-        </>
+      {prospectCompany && isHovered && (
+        <span className="text-amber-100 font-normal max-w-[120px] truncate ml-1">
+          — {prospectCompany}
+        </span>
       )}
-      <span className="text-amber-200/80 text-xs ml-1">Datos de ejemplo</span>
-      
-      <div className="flex items-center gap-1 ml-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMinimized(true)}
-          className="h-6 w-6 text-white/70 hover:text-white hover:bg-white/10"
-          title="Minimizar"
-        >
-          <X className="h-3.5 w-3.5" />
-        </Button>
-      </div>
     </div>
   );
 }
@@ -83,15 +54,14 @@ export function DemoBadgeCompact({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5",
-        "px-2.5 py-1 rounded-md",
-        "bg-amber-500/10 border border-amber-500/20",
-        "text-amber-600 dark:text-amber-400",
+        "flex items-center gap-1",
+        "px-2 py-0.5 rounded-full",
+        "bg-amber-500/15 text-amber-600/80 dark:text-amber-400/80",
         "text-xs font-medium",
         className
       )}
     >
-      <Target className="h-3 w-3" />
+      <Target className="h-2.5 w-2.5" />
       <span>DEMO</span>
     </div>
   );
