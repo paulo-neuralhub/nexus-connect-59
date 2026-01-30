@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Printer, Save, Eye, Edit, Loader2 } from 'lucide-react';
+import { FileText, Download, Printer, Save, Eye, Edit, Loader2, Receipt, ArrowRight, FileSignature, Mail, FileBarChart, Stamp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { StyleSelector } from './StyleSelector';
 import { DocumentEditor } from './DocumentEditor';
 import { A4Preview } from './A4Preview';
@@ -35,6 +36,14 @@ interface DocumentGeneratorProps {
   initialVariables?: DocumentVariables;
 }
 
+// Template categories (WITHOUT invoices)
+const TEMPLATE_CATEGORIES = [
+  { code: 'contrato', name: 'Contratos', icon: FileSignature },
+  { code: 'carta', name: 'Cartas', icon: Mail },
+  { code: 'informe', name: 'Informes', icon: FileBarChart },
+  { code: 'oficial', name: 'Documentos Oficiales', icon: Stamp },
+];
+
 export function DocumentGenerator({
   isOpen,
   onClose,
@@ -44,6 +53,7 @@ export function DocumentGenerator({
   initialVariables = {},
 }: DocumentGeneratorProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const previewRef = useRef<HTMLDivElement>(null);
   
   // Estado
@@ -286,33 +296,81 @@ export function DocumentGenerator({
               </TabsList>
 
               <TabsContent value="template" className="flex-1 m-0 p-4 overflow-auto">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <h3 className="font-medium">Seleccionar plantilla</h3>
-                  <div className="space-y-2">
-                    {templates.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-8">
-                        No hay plantillas disponibles
-                      </p>
-                    ) : (
-                      templates.map((template) => (
-                        <Card
-                          key={template.id}
-                          className={`cursor-pointer transition-all hover:shadow-md ${
-                            selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
-                          }`}
-                          onClick={() => handleSelectTemplate(template)}
+                  
+                  {/* Special Card for Invoices - Redirects to Billing */}
+                  <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-lg">
+                            <Receipt className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-sm">Facturas</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Las facturas se generan desde el módulo de Facturación
+                            </p>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            onClose();
+                            navigate(matterId ? `/app/facturacion/nueva?matterId=${matterId}` : '/app/facturacion/nueva');
+                          }}
+                          className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900"
                         >
-                          <CardContent className="p-3">
-                            <p className="font-medium text-sm">{template.name}</p>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
-                            <Badge variant="outline" className="mt-2 text-xs">
-                              {template.category}
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+                          <ArrowRight className="w-4 h-4 mr-1" />
+                          Ir a Facturación
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Templates by category (excluding invoices) */}
+                  {TEMPLATE_CATEGORIES.map((category) => {
+                    const categoryTemplates = templates.filter(
+                      t => t.category === category.code && t.category !== 'factura'
+                    );
+                    if (categoryTemplates.length === 0) return null;
+                    
+                    const CategoryIcon = category.icon;
+                    
+                    return (
+                      <div key={category.code}>
+                        <h4 className="font-medium text-sm text-muted-foreground mb-3 flex items-center gap-2">
+                          <CategoryIcon className="w-4 h-4" />
+                          {category.name}
+                        </h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          {categoryTemplates.map((template) => (
+                            <Card
+                              key={template.id}
+                              className={`cursor-pointer transition-all hover:shadow-md ${
+                                selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
+                              }`}
+                              onClick={() => handleSelectTemplate(template)}
+                            >
+                              <CardContent className="p-3">
+                                <p className="font-medium text-sm">{template.name}</p>
+                                <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Fallback if no templates in categories */}
+                  {templates.filter(t => t.category !== 'factura').length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No hay plantillas disponibles
+                    </p>
+                  )}
                 </div>
               </TabsContent>
 
