@@ -199,7 +199,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.generate-document-ai]
-verify_jwt = true
+verify_jwt = false
 
 [functions.genius-chat-v2]
 verify_jwt = false
