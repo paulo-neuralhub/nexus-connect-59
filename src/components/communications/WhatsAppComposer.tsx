@@ -349,12 +349,12 @@ export function WhatsAppComposer({
               <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
                 {/* Filtros */}
                 <div className="flex gap-2">
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <Select value={selectedCategory || 'all'} onValueChange={(v) => setSelectedCategory(v === 'all' ? '' : v)}>
                     <SelectTrigger className="w-[180px] h-9">
                       <SelectValue placeholder="Categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
+                      <SelectItem value="all">Todas</SelectItem>
                       {TEMPLATE_CATEGORIES.map(cat => (
                         <SelectItem key={cat.value} value={cat.value}>
                           {cat.icon} {cat.label}
