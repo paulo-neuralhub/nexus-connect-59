@@ -39469,6 +39469,45 @@ export type Database = {
           },
         ]
       }
+      system_tests: {
+        Row: {
+          category: string
+          created_at: string | null
+          details: Json | null
+          duration_ms: number | null
+          id: string
+          message: string | null
+          run_id: string
+          screenshot_url: string | null
+          status: string
+          test_name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          details?: Json | null
+          duration_ms?: number | null
+          id?: string
+          message?: string | null
+          run_id: string
+          screenshot_url?: string | null
+          status: string
+          test_name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          details?: Json | null
+          duration_ms?: number | null
+          id?: string
+          message?: string | null
+          run_id?: string
+          screenshot_url?: string | null
+          status?: string
+          test_name?: string
+        }
+        Relationships: []
+      }
       task_comments: {
         Row: {
           attachments: Json | null
@@ -44316,6 +44355,21 @@ export type Database = {
             referencedColumns: ["organization_id"]
           },
         ]
+      }
+      system_test_summary: {
+        Row: {
+          completed_at: string | null
+          failed: number | null
+          pass_rate: number | null
+          passed: number | null
+          run_id: string | null
+          skipped: number | null
+          started_at: string | null
+          total_duration_ms: number | null
+          total_tests: number | null
+          warnings: number | null
+        }
+        Relationships: []
       }
       v_active_alerts: {
         Row: {
