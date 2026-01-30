@@ -520,17 +520,40 @@ export function useCreateMatterV2() {
       title: string;
       matter_type: string;
     }) => {
+      // Build clean insert payload - only include known columns
+      const insertData: Record<string, unknown> = {
+        organization_id: currentOrganization!.id,
+        matter_number: data.matter_number,
+        title: data.title,
+        matter_type: data.matter_type,
+        status: data.status || 'active',
+        reference: data.reference || null,
+        client_id: data.client_id || null,
+        mark_name: data.mark_name || null,
+        mark_type: data.mark_type || null,
+        invention_title: data.invention_title || null,
+        nice_classes: data.nice_classes || null,
+        nice_classes_detail: data.nice_classes_detail || null,
+        goods_services: data.goods_services || null,
+        internal_notes: data.internal_notes || null,
+        is_urgent: data.is_urgent ?? false,
+        is_confidential: data.is_confidential ?? false,
+        is_archived: false,
+      };
+      
+      console.log('[useCreateMatterV2] Inserting:', insertData);
+      
       const client: any = supabase;
       const { data: matter, error } = await client
         .from('matters_v2')
-        .insert({ 
-          ...data, 
-          organization_id: currentOrganization!.id,
-        })
+        .insert(insertData)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('[useCreateMatterV2] Error:', error);
+        throw error;
+      }
       return matter as MatterV2;
     },
     onSuccess: () => {
