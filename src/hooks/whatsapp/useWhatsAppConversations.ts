@@ -6,21 +6,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 import { toast } from 'sonner';
+import { transformConversation, transformMessage } from '@/lib/whatsapp-utils';
 import type { 
   WhatsAppConversation, 
   WhatsAppMessage,
-  SendWhatsAppMessageParams 
+  SendWhatsAppMessageParams,
+  WhatsAppConversationRow,
+  WhatsAppMessageRow,
 } from '@/types/whatsapp';
 
 export function useWhatsAppConversations() {
   const { currentOrganization } = useOrganization();
-  const queryClient = useQueryClient();
   const orgId = currentOrganization?.id;
 
   // Fetch all conversations
   const conversationsQuery = useQuery({
     queryKey: ['whatsapp-conversations', orgId],
-    queryFn: async () => {
+    queryFn: async (): Promise<WhatsAppConversation[]> => {
       if (!orgId) return [];
 
       const { data, error } = await supabase
@@ -39,20 +41,19 @@ export function useWhatsAppConversations() {
 
       if (error) throw error;
       
-      // Map client.name to full_name for consistency
-      return (data || []).map(c => ({
-        ...c,
-        client: c.client ? { ...c.client, full_name: (c.client as any).name } : null,
-      })) as unknown as WhatsAppConversation[];
+      return (data || []).map(row => transformConversation(row as unknown as WhatsAppConversationRow & {
+        client?: { id: string; name: string; company_name?: string } | null;
+        assigned_user?: { id: string; full_name: string; avatar_url?: string } | null;
+      }));
     },
     enabled: !!orgId,
-    refetchInterval: 30000, // Poll every 30s
+    refetchInterval: 30000,
   });
 
   // Stats
   const stats = {
     total: conversationsQuery.data?.length || 0,
-    unread: conversationsQuery.data?.filter(c => c.unread_count > 0).length || 0,
+    unread: conversationsQuery.data?.filter(c => c.unreadCount > 0).length || 0,
     open: conversationsQuery.data?.filter(c => c.status === 'open').length || 0,
   };
 
@@ -69,10 +70,10 @@ export function useWhatsAppConversation(conversationId: string | null) {
   const queryClient = useQueryClient();
   const orgId = currentOrganization?.id;
 
-  // Fetch single conversation with messages
+  // Fetch single conversation
   const conversationQuery = useQuery({
     queryKey: ['whatsapp-conversation', conversationId],
-    queryFn: async () => {
+    queryFn: async (): Promise<WhatsAppConversation | null> => {
       if (!conversationId) return null;
 
       const { data, error } = await supabase
@@ -91,12 +92,10 @@ export function useWhatsAppConversation(conversationId: string | null) {
 
       if (error) throw error;
       
-      // Map client.name to full_name
-      const result = {
-        ...data,
-        client: data.client ? { ...data.client, full_name: (data.client as any).name } : null,
-      };
-      return result as unknown as WhatsAppConversation;
+      return transformConversation(data as unknown as WhatsAppConversationRow & {
+        client?: { id: string; name: string; company_name?: string } | null;
+        assigned_user?: { id: string; full_name: string; avatar_url?: string } | null;
+      });
     },
     enabled: !!conversationId,
   });
@@ -104,21 +103,21 @@ export function useWhatsAppConversation(conversationId: string | null) {
   // Fetch messages for conversation
   const messagesQuery = useQuery({
     queryKey: ['whatsapp-messages', conversationId],
-    queryFn: async () => {
+    queryFn: async (): Promise<WhatsAppMessage[]> => {
       if (!conversationId || !conversationQuery.data) return [];
 
       const { data, error } = await supabase
         .from('whatsapp_messages')
         .select('*')
         .eq('organization_id', orgId)
-        .eq('contact_phone', conversationQuery.data.contact_phone)
+        .eq('contact_phone', conversationQuery.data.contactPhone)
         .order('timestamp', { ascending: true });
 
       if (error) throw error;
-      return (data || []) as WhatsAppMessage[];
+      return (data || []).map(row => transformMessage(row as WhatsAppMessageRow));
     },
     enabled: !!conversationId && !!conversationQuery.data,
-    refetchInterval: 10000, // Poll every 10s for new messages
+    refetchInterval: 10000,
   });
 
   // Mark as read
@@ -155,7 +154,9 @@ export function useWhatsAppConversation(conversationId: string | null) {
       });
 
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any)?.message || 'Error sending');
+      if ((data as Record<string, unknown>)?.error) {
+        throw new Error((data as Record<string, unknown>)?.message as string || 'Error sending');
+      }
       return data;
     },
     onSuccess: () => {

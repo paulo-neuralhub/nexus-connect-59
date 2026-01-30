@@ -6,10 +6,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 import { toast } from 'sonner';
+import { transformConfig } from '@/lib/whatsapp-utils';
 import type { 
   WhatsAppTenantConfig, 
   WhatsAppSettingsForm,
-  WhatsAppImplementationRequestForm 
+  WhatsAppImplementationRequestForm,
+  WhatsAppTenantConfigRow,
 } from '@/types/whatsapp';
 
 export function useWhatsAppConfig() {
@@ -20,7 +22,7 @@ export function useWhatsAppConfig() {
   // Fetch config
   const configQuery = useQuery({
     queryKey: ['whatsapp-config', orgId],
-    queryFn: async () => {
+    queryFn: async (): Promise<WhatsAppTenantConfig | null> => {
       if (!orgId) return null;
 
       const { data, error } = await supabase
@@ -30,7 +32,9 @@ export function useWhatsAppConfig() {
         .maybeSingle();
 
       if (error) throw error;
-      return data as WhatsAppTenantConfig | null;
+      if (!data) return null;
+      
+      return transformConfig(data as WhatsAppTenantConfigRow);
     },
     enabled: !!orgId,
   });
@@ -67,10 +71,20 @@ export function useWhatsAppConfig() {
     mutationFn: async (settings: Partial<WhatsAppSettingsForm>) => {
       if (!orgId) throw new Error('No organization');
 
+      // Transform camelCase to snake_case
+      const dbSettings: Record<string, unknown> = {};
+      if (settings.autoReplyEnabled !== undefined) dbSettings.auto_reply_enabled = settings.autoReplyEnabled;
+      if (settings.autoReplyMessage !== undefined) dbSettings.auto_reply_message = settings.autoReplyMessage;
+      if (settings.businessHoursOnly !== undefined) dbSettings.business_hours_only = settings.businessHoursOnly;
+      if (settings.businessHoursStart !== undefined) dbSettings.business_hours_start = settings.businessHoursStart;
+      if (settings.businessHoursEnd !== undefined) dbSettings.business_hours_end = settings.businessHoursEnd;
+      if (settings.notifyNewMessages !== undefined) dbSettings.notify_new_messages = settings.notifyNewMessages;
+      if (settings.notifyEmail !== undefined) dbSettings.notify_email = settings.notifyEmail;
+
       const { error } = await supabase
         .from('whatsapp_tenant_config')
         .update({
-          ...settings,
+          ...dbSettings,
           updated_at: new Date().toISOString(),
         })
         .eq('organization_id', orgId);
@@ -94,13 +108,20 @@ export function useWhatsAppConfig() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create implementation request
+      // Create implementation request (snake_case for DB)
       const { error: reqError } = await supabase
         .from('whatsapp_implementation_requests')
         .insert({
           organization_id: orgId,
           requested_by: user.id,
-          ...form,
+          company_name: form.companyName,
+          contact_name: form.contactName,
+          contact_email: form.contactEmail,
+          contact_phone: form.contactPhone,
+          plan_type: form.planType,
+          estimated_monthly_messages: form.estimatedMonthlyMessages,
+          current_whatsapp_number: form.currentWhatsappNumber,
+          additional_notes: form.additionalNotes,
         });
 
       if (reqError) throw reqError;
@@ -127,13 +148,15 @@ export function useWhatsAppConfig() {
     },
   });
 
+  const config = configQuery.data;
+
   return {
-    config: configQuery.data,
+    config,
     isLoading: configQuery.isLoading,
-    isConfigured: configQuery.data?.integration_type !== 'none',
-    integrationType: configQuery.data?.integration_type || 'none',
-    metaStatus: configQuery.data?.meta_status || 'not_configured',
-    implementationStatus: configQuery.data?.implementation_status || 'none',
+    isConfigured: config?.integrationType !== 'none',
+    integrationType: config?.integrationType || 'none',
+    metaStatus: config?.metaStatus || 'not_configured',
+    implementationStatus: config?.implementationStatus || 'none',
     
     ensureConfig,
     updateSettings,

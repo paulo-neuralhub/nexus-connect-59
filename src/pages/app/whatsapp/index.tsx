@@ -34,9 +34,9 @@ export default function WhatsAppInboxPage() {
   // Filter conversations
   const filteredConversations = conversations.filter(c => {
     const matchesSearch = !searchQuery || 
-      c.contact_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.contact_phone.includes(searchQuery) ||
-      c.last_message_preview?.toLowerCase().includes(searchQuery.toLowerCase());
+      c.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.contactPhone.includes(searchQuery) ||
+      c.lastMessagePreview?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
     
@@ -132,9 +132,9 @@ export default function WhatsAppInboxPage() {
               isLoading={isLoadingChat}
               onSendMessage={(content) => {
                 sendMessage.mutate({
-                  recipientPhone: selectedConversation.contact_phone,
+                  recipientPhone: selectedConversation.contactPhone,
                   content,
-                  contactId: selectedConversation.client_id || undefined,
+                  contactId: selectedConversation.clientId || undefined,
                 });
               }}
               isSending={sendMessage.isPending}
