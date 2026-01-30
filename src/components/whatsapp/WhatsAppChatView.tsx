@@ -58,8 +58,8 @@ export function WhatsAppChatView({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const displayName = conversation.client?.full_name || 
-    conversation.contact_name || 
-    conversation.contact_phone;
+    conversation.contactName || 
+    conversation.contactPhone;
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -103,7 +103,7 @@ export function WhatsAppChatView({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium">{displayName}</span>
-              {conversation.client_id && (
+              {conversation.clientId && (
                 <Badge variant="secondary" className="text-[10px] h-5">
                   <User className="h-3 w-3 mr-1" />
                   Cliente vinculado
@@ -111,15 +111,15 @@ export function WhatsAppChatView({
               )}
             </div>
             <span className="text-sm text-muted-foreground">
-              {conversation.contact_phone}
+              {conversation.contactPhone}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {conversation.client_id && (
+          {conversation.clientId && (
             <Button variant="outline" size="sm" asChild>
-              <Link to={`/app/legal-ops/clients/${conversation.client_id}`}>
+              <Link to={`/app/legal-ops/clients/${conversation.clientId}`}>
                 <ExternalLink className="h-4 w-4 mr-1.5" />
                 Ver cliente
               </Link>
@@ -232,7 +232,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
   };
 
   const getMediaIcon = () => {
-    switch (message.message_type) {
+    switch (message.messageType) {
       case 'image':
         return <ImageIcon className="h-4 w-4" />;
       case 'document':
@@ -259,32 +259,32 @@ function MessageBubble({ message }: MessageBubbleProps) {
         )}
       >
         {/* Media preview */}
-        {message.message_type !== 'text' && (
+        {message.messageType !== 'text' && (
           <div className="mb-2">
-            {message.media_url ? (
-              message.message_type === 'image' ? (
+            {message.mediaUrl ? (
+              message.messageType === 'image' ? (
                 <img 
-                  src={message.media_url} 
+                  src={message.mediaUrl} 
                   alt="Media" 
                   className="max-w-full rounded-md max-h-48 object-cover"
                 />
               ) : (
                 <a 
-                  href={message.media_url} 
+                  href={message.mediaUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 p-2 bg-muted/50 rounded-md hover:bg-muted"
                 >
                   {getMediaIcon()}
                   <span className="text-sm truncate">
-                    {message.media_filename || 'Archivo adjunto'}
+                    {message.mediaFilename || 'Archivo adjunto'}
                   </span>
                 </a>
               )
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 {getMediaIcon()}
-                <span className="text-sm capitalize">{message.message_type}</span>
+                <span className="text-sm capitalize">{message.messageType}</span>
               </div>
             )}
           </div>
@@ -298,9 +298,9 @@ function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Caption for media */}
-        {message.media_caption && (
+        {message.mediaCaption && (
           <p className="text-sm text-muted-foreground mt-1">
-            {message.media_caption}
+            {message.mediaCaption}
           </p>
         )}
 
@@ -314,9 +314,9 @@ function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         {/* Error message */}
-        {message.status === 'failed' && message.error_message && (
+        {message.status === 'failed' && message.errorMessage && (
           <p className="text-xs text-destructive mt-1">
-            {message.error_message}
+            {message.errorMessage}
           </p>
         )}
       </div>

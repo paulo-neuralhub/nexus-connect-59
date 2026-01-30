@@ -74,8 +74,8 @@ interface ConversationItemProps {
 
 function ConversationItem({ conversation, isSelected, onSelect }: ConversationItemProps) {
   const displayName = conversation.client?.full_name || 
-    conversation.contact_name || 
-    conversation.contact_phone;
+    conversation.contactName || 
+    conversation.contactPhone;
   
   const initials = displayName
     .split(' ')
@@ -84,8 +84,8 @@ function ConversationItem({ conversation, isSelected, onSelect }: ConversationIt
     .substring(0, 2)
     .toUpperCase();
 
-  const hasUnread = conversation.unread_count > 0;
-  const isLinkedToClient = !!conversation.client_id;
+  const hasUnread = conversation.unreadCount > 0;
+  const isLinkedToClient = !!conversation.clientId;
 
   return (
     <button
@@ -130,9 +130,9 @@ function ConversationItem({ conversation, isSelected, onSelect }: ConversationIt
                 </span>
               )}
             </div>
-            {conversation.last_message_at && (
+            {conversation.lastMessageAt && (
               <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {formatDistanceToNow(new Date(conversation.last_message_at), {
+                {formatDistanceToNow(new Date(conversation.lastMessageAt), {
                   addSuffix: false,
                   locale: es,
                 })}
@@ -145,12 +145,12 @@ function ConversationItem({ conversation, isSelected, onSelect }: ConversationIt
               'text-sm truncate',
               hasUnread ? 'text-foreground' : 'text-muted-foreground'
             )}>
-              {conversation.last_message_preview || 'Sin mensajes'}
+              {conversation.lastMessagePreview || 'Sin mensajes'}
             </p>
             <div className="flex items-center gap-1.5">
               {hasUnread && (
                 <Badge className="h-5 min-w-5 bg-green-500 hover:bg-green-500">
-                  {conversation.unread_count}
+                  {conversation.unreadCount}
                 </Badge>
               )}
               {conversation.status === 'closed' && (
@@ -163,7 +163,7 @@ function ConversationItem({ conversation, isSelected, onSelect }: ConversationIt
 
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-xs text-muted-foreground">
-              {conversation.contact_phone}
+              {conversation.contactPhone}
             </span>
             {conversation.tags && conversation.tags.length > 0 && (
               <div className="flex gap-1">

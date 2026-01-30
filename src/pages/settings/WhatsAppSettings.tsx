@@ -60,24 +60,24 @@ import { useWhatsAppConfig } from '@/hooks/whatsapp';
 import { useOrganization } from '@/contexts/organization-context';
 
 const settingsSchema = z.object({
-  auto_reply_enabled: z.boolean(),
-  auto_reply_message: z.string().max(500),
-  business_hours_only: z.boolean(),
-  business_hours_start: z.string(),
-  business_hours_end: z.string(),
-  notify_new_messages: z.boolean(),
-  notify_email: z.string().email().optional().or(z.literal('')),
+  autoReplyEnabled: z.boolean(),
+  autoReplyMessage: z.string().max(500),
+  businessHoursOnly: z.boolean(),
+  businessHoursStart: z.string(),
+  businessHoursEnd: z.string(),
+  notifyNewMessages: z.boolean(),
+  notifyEmail: z.string().email().optional().or(z.literal('')),
 });
 
 const requestSchema = z.object({
-  company_name: z.string().min(1, 'Requerido'),
-  contact_name: z.string().min(1, 'Requerido'),
-  contact_email: z.string().email('Email inválido'),
-  contact_phone: z.string().optional(),
-  plan_type: z.enum(['standard', 'premium', 'enterprise']),
-  estimated_monthly_messages: z.number().optional().nullable(),
-  current_whatsapp_number: z.string().optional(),
-  additional_notes: z.string().optional(),
+  companyName: z.string().min(1, 'Requerido'),
+  contactName: z.string().min(1, 'Requerido'),
+  contactEmail: z.string().email('Email inválido'),
+  contactPhone: z.string().optional(),
+  planType: z.enum(['standard', 'premium', 'enterprise']),
+  estimatedMonthlyMessages: z.number().optional().nullable(),
+  currentWhatsappNumber: z.string().optional(),
+  additionalNotes: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -103,13 +103,13 @@ export default function WhatsAppSettingsPage() {
   const settingsForm = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      auto_reply_enabled: config?.auto_reply_enabled ?? false,
-      auto_reply_message: config?.auto_reply_message ?? '',
-      business_hours_only: config?.business_hours_only ?? false,
-      business_hours_start: config?.business_hours_start ?? '09:00',
-      business_hours_end: config?.business_hours_end ?? '18:00',
-      notify_new_messages: config?.notify_new_messages ?? true,
-      notify_email: config?.notify_email ?? '',
+      autoReplyEnabled: config?.autoReplyEnabled ?? false,
+      autoReplyMessage: config?.autoReplyMessage ?? '',
+      businessHoursOnly: config?.businessHoursOnly ?? false,
+      businessHoursStart: config?.businessHoursStart ?? '09:00',
+      businessHoursEnd: config?.businessHoursEnd ?? '18:00',
+      notifyNewMessages: config?.notifyNewMessages ?? true,
+      notifyEmail: config?.notifyEmail ?? '',
     },
   });
 
@@ -117,14 +117,14 @@ export default function WhatsAppSettingsPage() {
   const requestForm = useForm<RequestFormData>({
     resolver: zodResolver(requestSchema),
     defaultValues: {
-      company_name: currentOrganization?.name ?? '',
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      plan_type: 'standard',
-      estimated_monthly_messages: null,
-      current_whatsapp_number: '',
-      additional_notes: '',
+      companyName: currentOrganization?.name ?? '',
+      contactName: '',
+      contactEmail: '',
+      contactPhone: '',
+      planType: 'standard',
+      estimatedMonthlyMessages: null,
+      currentWhatsappNumber: '',
+      additionalNotes: '',
     },
   });
 

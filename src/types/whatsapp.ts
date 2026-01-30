@@ -3,71 +3,255 @@
  * Supports both Meta API and QR Web integrations
  */
 
-// Integration types
+// ============================================
+// Core Type Aliases
+// ============================================
 export type WhatsAppIntegrationType = 'none' | 'meta_api' | 'qr_web';
+export type ImplementationStatus = 'none' | 'pending' | 'in_progress' | 'completed' | 'rejected';
+export type QRSessionStatus = 'disconnected' | 'qr_pending' | 'connected' | 'error';
+export type MessageDirection = 'incoming' | 'outgoing';
+export type MessageType = 'text' | 'image' | 'document' | 'audio' | 'video' | 'location' | 'contact';
+export type MessageStatus = 'received' | 'sent' | 'delivered' | 'read' | 'failed';
+
+// Legacy aliases for backward compatibility
 export type WhatsAppMetaStatus = 'not_configured' | 'pending' | 'active' | 'error';
-export type WhatsAppImplementationStatus = 'none' | 'pending' | 'in_progress' | 'completed' | 'rejected';
-export type WhatsAppQRSessionStatus = 'disconnected' | 'qr_pending' | 'connected' | 'error';
-export type WhatsAppMessageDirection = 'incoming' | 'outgoing';
-export type WhatsAppMessageType = 'text' | 'image' | 'document' | 'audio' | 'video' | 'location' | 'contact';
-export type WhatsAppMessageStatus = 'received' | 'sent' | 'delivered' | 'read' | 'failed';
+export type WhatsAppImplementationStatus = ImplementationStatus;
+export type WhatsAppQRSessionStatus = QRSessionStatus;
+export type WhatsAppMessageDirection = MessageDirection;
+export type WhatsAppMessageType = MessageType;
+export type WhatsAppMessageStatus = MessageStatus;
 export type WhatsAppConversationStatus = 'open' | 'closed' | 'archived';
 
-// Tenant configuration
+// ============================================
+// Tenant Configuration
+// ============================================
 export interface WhatsAppTenantConfig {
+  id: string;
+  organizationId: string;
+  integrationType: WhatsAppIntegrationType;
+  
+  // Meta API
+  metaPhoneNumberId?: string;
+  metaBusinessAccountId?: string;
+  metaAccessToken?: string;
+  metaWebhookVerifyToken?: string;
+  metaAppId?: string;
+  metaStatus: string;
+  
+  // Implementation request
+  implementationRequested: boolean;
+  implementationRequestDate?: string;
+  implementationStatus: ImplementationStatus;
+  implementationNotes?: string;
+  
+  // Configuration
+  autoReplyEnabled: boolean;
+  autoReplyMessage: string;
+  businessHoursOnly: boolean;
+  businessHoursStart: string;
+  businessHoursEnd: string;
+  notifyNewMessages: boolean;
+  notifyEmail?: string;
+  
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ============================================
+// QR Session
+// ============================================
+export interface WhatsAppQRSession {
+  id: string;
+  organizationId: string;
+  userId: string;
+  status: QRSessionStatus;
+  phoneNumber?: string;
+  deviceName?: string;
+  sessionData?: Record<string, unknown>;
+  lastSeen?: string;
+  connectedAt?: string;
+  disconnectedAt?: string;
+  isActive: boolean;
+  receiveNotifications: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ============================================
+// Message
+// ============================================
+export interface WhatsAppMessage {
+  id: string;
+  organizationId: string;
+  waId: string;
+  contactName?: string;
+  contactPhone: string;
+  clientId?: string;
+  messageId: string;
+  direction: MessageDirection;
+  messageType: MessageType;
+  content?: string;
+  mediaUrl?: string;
+  mediaMimeType?: string;
+  mediaFilename?: string;
+  mediaCaption?: string;
+  locationLatitude?: number;
+  locationLongitude?: number;
+  locationName?: string;
+  status: MessageStatus;
+  errorMessage?: string;
+  timestamp: string;
+  readAt?: string;
+  readBy?: string;
+  sentBy?: string;
+  source: 'meta_api' | 'qr_web';
+  sessionId?: string;
+  createdAt?: string;
+}
+
+// ============================================
+// Conversation
+// ============================================
+export interface WhatsAppConversation {
+  id: string;
+  organizationId: string;
+  contactPhone: string;
+  contactName?: string;
+  waId?: string;
+  clientId?: string;
+  client?: {
+    id: string;
+    name: string;
+    full_name?: string;
+    company_name?: string;
+    avatar_url?: string;
+  };
+  status: 'open' | 'closed' | 'archived';
+  assignedTo?: string;
+  assigned_user?: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  };
+  lastMessageId?: string;
+  lastMessageAt?: string;
+  lastMessagePreview?: string;
+  unreadCount: number;
+  totalMessages: number;
+  tags?: string[];
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ============================================
+// Implementation Request
+// ============================================
+export interface ImplementationRequest {
+  id: string;
+  organizationId: string;
+  requestedBy: string;
+  requestedAt: string;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+  planType: 'standard' | 'premium' | 'enterprise';
+  estimatedMonthlyMessages?: number;
+  currentWhatsappNumber?: string;
+  additionalNotes?: string;
+  status: ImplementationStatus;
+  assignedAdmin?: string;
+  adminNotes?: string;
+  contactedAt?: string;
+  completedAt?: string;
+  quotedPrice?: number;
+  setupFee?: number;
+  monthlyFee?: number;
+  invoiceId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  
+  // Joined data
+  organization?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  requester?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+}
+
+// Legacy alias
+export type WhatsAppImplementationRequest = ImplementationRequest;
+
+// ============================================
+// Form Types
+// ============================================
+export interface WhatsAppSettingsForm {
+  autoReplyEnabled: boolean;
+  autoReplyMessage: string;
+  businessHoursOnly: boolean;
+  businessHoursStart: string;
+  businessHoursEnd: string;
+  notifyNewMessages: boolean;
+  notifyEmail: string;
+}
+
+export interface WhatsAppImplementationRequestForm {
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  planType: 'standard' | 'premium' | 'enterprise';
+  estimatedMonthlyMessages: number | null;
+  currentWhatsappNumber: string;
+  additionalNotes: string;
+}
+
+// ============================================
+// API Params
+// ============================================
+export interface SendWhatsAppMessageParams {
+  recipientPhone: string;
+  content?: string;
+  mediaUrl?: string;
+  mediaType?: MessageType;
+  contactId?: string;
+}
+
+// ============================================
+// DB Row Types (snake_case for Supabase)
+// ============================================
+export interface WhatsAppTenantConfigRow {
   id: string;
   organization_id: string;
   integration_type: WhatsAppIntegrationType;
-  
-  // Meta API config
   meta_phone_number_id: string | null;
   meta_business_account_id: string | null;
   meta_access_token: string | null;
   meta_webhook_verify_token: string | null;
   meta_app_id: string | null;
-  meta_status: WhatsAppMetaStatus;
-  
-  // Implementation request
+  meta_status: string;
   implementation_requested: boolean;
   implementation_request_date: string | null;
-  implementation_status: WhatsAppImplementationStatus;
+  implementation_status: ImplementationStatus;
   implementation_notes: string | null;
-  
-  // General settings
   auto_reply_enabled: boolean;
   auto_reply_message: string;
   business_hours_only: boolean;
   business_hours_start: string;
   business_hours_end: string;
-  
-  // Notifications
   notify_new_messages: boolean;
   notify_email: string | null;
-  
   created_at: string;
   updated_at: string;
 }
 
-// QR Session
-export interface WhatsAppQRSession {
-  id: string;
-  organization_id: string;
-  user_id: string;
-  status: WhatsAppQRSessionStatus;
-  phone_number: string | null;
-  device_name: string | null;
-  session_data: Record<string, unknown> | null;
-  last_seen: string | null;
-  connected_at: string | null;
-  disconnected_at: string | null;
-  is_active: boolean;
-  receive_notifications: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Message
-export interface WhatsAppMessage {
+export interface WhatsAppMessageRow {
   id: string;
   organization_id: string;
   wa_id: string;
@@ -75,8 +259,8 @@ export interface WhatsAppMessage {
   contact_phone: string;
   client_id: string | null;
   message_id: string | null;
-  direction: WhatsAppMessageDirection;
-  message_type: WhatsAppMessageType;
+  direction: MessageDirection;
+  message_type: MessageType;
   content: string | null;
   media_url: string | null;
   media_mime_type: string | null;
@@ -85,7 +269,7 @@ export interface WhatsAppMessage {
   location_latitude: number | null;
   location_longitude: number | null;
   location_name: string | null;
-  status: WhatsAppMessageStatus;
+  status: MessageStatus;
   error_message: string | null;
   timestamp: string;
   read_at: string | null;
@@ -96,15 +280,14 @@ export interface WhatsAppMessage {
   created_at: string;
 }
 
-// Conversation
-export interface WhatsAppConversation {
+export interface WhatsAppConversationRow {
   id: string;
   organization_id: string;
   contact_phone: string;
   contact_name: string | null;
   wa_id: string | null;
   client_id: string | null;
-  status: WhatsAppConversationStatus;
+  status: 'open' | 'closed' | 'archived';
   assigned_to: string | null;
   last_message_id: string | null;
   last_message_at: string | null;
@@ -115,87 +298,4 @@ export interface WhatsAppConversation {
   notes: string | null;
   created_at: string;
   updated_at: string;
-  
-  // Joined data
-  client?: {
-    id: string;
-    full_name: string;
-    company_name?: string;
-    avatar_url?: string;
-  } | null;
-  assigned_user?: {
-    id: string;
-    full_name: string;
-    avatar_url?: string;
-  } | null;
-}
-
-// Implementation request
-export interface WhatsAppImplementationRequest {
-  id: string;
-  organization_id: string;
-  requested_by: string | null;
-  requested_at: string;
-  company_name: string;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string | null;
-  plan_type: 'standard' | 'premium' | 'enterprise';
-  estimated_monthly_messages: number | null;
-  current_whatsapp_number: string | null;
-  additional_notes: string | null;
-  status: 'pending' | 'contacted' | 'in_progress' | 'completed' | 'rejected' | 'cancelled';
-  assigned_admin: string | null;
-  admin_notes: string | null;
-  contacted_at: string | null;
-  completed_at: string | null;
-  quoted_price: number | null;
-  setup_fee: number | null;
-  monthly_fee: number | null;
-  invoice_id: string | null;
-  created_at: string;
-  updated_at: string;
-  
-  // Joined data
-  organization?: {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
-  requester?: {
-    id: string;
-    full_name: string;
-    email: string;
-  } | null;
-}
-
-// Form types
-export interface WhatsAppSettingsForm {
-  auto_reply_enabled: boolean;
-  auto_reply_message: string;
-  business_hours_only: boolean;
-  business_hours_start: string;
-  business_hours_end: string;
-  notify_new_messages: boolean;
-  notify_email: string;
-}
-
-export interface WhatsAppImplementationRequestForm {
-  company_name: string;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  plan_type: 'standard' | 'premium' | 'enterprise';
-  estimated_monthly_messages: number | null;
-  current_whatsapp_number: string;
-  additional_notes: string;
-}
-
-// Send message params
-export interface SendWhatsAppMessageParams {
-  recipientPhone: string;
-  content?: string;
-  mediaUrl?: string;
-  mediaType?: WhatsAppMessageType;
-  contactId?: string;
 }
