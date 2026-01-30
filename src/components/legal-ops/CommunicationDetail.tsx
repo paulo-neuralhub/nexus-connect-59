@@ -21,6 +21,7 @@ import { es } from 'date-fns/locale';
 import { AIClassificationBadge } from './AIClassificationBadge';
 import { CommCategory, COMM_CATEGORIES } from '@/types/legal-ops';
 import { useState } from 'react';
+import { EmailComposer } from '@/components/communications/EmailComposer';
 
 interface CommunicationDetailProps {
   communicationId: string;
@@ -32,6 +33,8 @@ export function CommunicationDetail({ communicationId }: CommunicationDetailProp
   const toggleStar = useToggleStar();
   const archive = useArchiveCommunication();
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [showForwardModal, setShowForwardModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -66,17 +69,64 @@ export function CommunicationDetail({ communicationId }: CommunicationDetailProp
     archive.mutate(comm.id);
   };
 
+  // Build reply data
+  const getReplyData = () => {
+    const replyTo = comm?.email_from || comm?.whatsapp_from || '';
+    const replySubject = comm?.subject?.startsWith('Re:') 
+      ? comm.subject 
+      : `Re: ${comm?.subject || ''}`;
+    const originalDate = comm?.received_at 
+      ? format(new Date(comm.received_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })
+      : '';
+    const replyBody = `<br/><br/>---<br/><strong>De:</strong> ${replyTo}<br/><strong>Fecha:</strong> ${originalDate}<br/><strong>Asunto:</strong> ${comm?.subject || ''}<br/><br/>${comm?.body_html || comm?.body || ''}`;
+    
+    return {
+      to: replyTo ? [{ email: replyTo }] : [],
+      subject: replySubject,
+      body: replyBody,
+    };
+  };
+
+  // Build forward data
+  const getForwardData = () => {
+    const fwdSubject = comm?.subject?.startsWith('Fwd:') 
+      ? comm.subject 
+      : `Fwd: ${comm?.subject || ''}`;
+    const originalFrom = comm?.email_from || comm?.whatsapp_from || '';
+    const originalDate = comm?.received_at 
+      ? format(new Date(comm.received_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })
+      : '';
+    const fwdBody = `<br/><br/>---------- Mensaje reenviado ----------<br/><strong>De:</strong> ${originalFrom}<br/><strong>Fecha:</strong> ${originalDate}<br/><strong>Asunto:</strong> ${comm?.subject || ''}<br/><br/>${comm?.body_html || comm?.body || ''}`;
+    
+    return {
+      to: [],
+      subject: fwdSubject,
+      body: fwdBody,
+    };
+  };
+
   return (
+    <>
     <Card className="h-full flex flex-col">
       {/* Header con acciones */}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowReplyModal(true)}
+              disabled={comm?.channel !== 'email'}
+            >
               <Reply className="w-4 h-4 mr-1" />
               Responder
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowForwardModal(true)}
+              disabled={comm?.channel !== 'email'}
+            >
               <Forward className="w-4 h-4 mr-1" />
               Reenviar
             </Button>
@@ -279,5 +329,32 @@ export function CommunicationDetail({ communicationId }: CommunicationDetailProp
         </ScrollArea>
       </CardContent>
     </Card>
+
+    {/* Modal de Responder */}
+    {comm && (
+      <EmailComposer
+        open={showReplyModal}
+        onOpenChange={setShowReplyModal}
+        defaultTo={getReplyData().to}
+        defaultSubject={getReplyData().subject}
+        defaultBody={getReplyData().body}
+        matterId={comm.matter_id || undefined}
+        contactId={comm.contact_id || undefined}
+      />
+    )}
+
+    {/* Modal de Reenviar */}
+    {comm && (
+      <EmailComposer
+        open={showForwardModal}
+        onOpenChange={setShowForwardModal}
+        defaultTo={getForwardData().to}
+        defaultSubject={getForwardData().subject}
+        defaultBody={getForwardData().body}
+        matterId={comm.matter_id || undefined}
+        contactId={comm.contact_id || undefined}
+      />
+    )}
+    </>
   );
 }
