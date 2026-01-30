@@ -262,6 +262,7 @@ import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
 import DemoDataPage from "./pages/backoffice/demo-data";
 import DemoModePage from "./pages/backoffice/demo-mode";
+import SystemTestsPage from "./pages/backoffice/system-tests";
 import VoipManagementPage from "./pages/backoffice/voip/VoipManagementPage";
 import { 
   TelephonyDashboard, 
@@ -630,6 +631,7 @@ const App = () => (
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
                 <Route path="demo-data" element={<DemoDataPage />} />
                 <Route path="demo-mode" element={<DemoModePage />} />
+                <Route path="system-tests" element={<SystemTestsPage />} />
                 <Route path="voip" element={<VoipManagementPage />} />
                 <Route path="telephony" element={<TelephonyDashboard />} />
                 <Route path="telephony/provider" element={<TelephonyProviderPage />} />
