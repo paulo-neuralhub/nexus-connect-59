@@ -27,6 +27,7 @@ import { ClientTimeline } from './ClientTimeline';
 import { ClientDocuments } from './ClientDocuments';
 import { ClientAlerts } from './ClientAlerts';
 import { ClientRelationshipsSection } from './ClientRelationshipsSection';
+import { ClientWhatsAppTimeline } from '@/components/clients/ClientWhatsAppTimeline';
 import { cn } from '@/lib/utils';
 
 interface Client360PageProps {
@@ -163,6 +164,10 @@ export function Client360Page({ clientId }: Client360PageProps) {
                 </TabsTrigger>
                 <TabsTrigger value="documents">
                   Documentos {stats.totalDocuments ? `(${stats.totalDocuments})` : ''}
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp" className="flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                  WhatsApp
                 </TabsTrigger>
                 <TabsTrigger value="billing">Facturación</TabsTrigger>
               </TabsList>
@@ -456,6 +461,15 @@ export function Client360Page({ clientId }: Client360PageProps) {
                     <p className="text-sm mt-1">El historial de facturación aparecerá aquí</p>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* TAB: WHATSAPP */}
+              <TabsContent value="whatsapp" className="space-y-4">
+                <ClientWhatsAppTimeline 
+                  clientId={clientId} 
+                  clientPhone={client.phone || primaryContact?.phone}
+                  clientName={client.display_name || client.company_name}
+                />
               </TabsContent>
             </Tabs>
           </div>
