@@ -30,6 +30,7 @@ import {
   DollarSign,
   Activity,
   Play,
+  FlaskConical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -134,6 +135,7 @@ const sidebarSections = [
       { label: 'Logs', path: '/backoffice/logs', icon: ScrollText },
       { label: 'Audit Logs', path: '/backoffice/audit', icon: FileText },
       { label: 'Event Log', path: '/backoffice/events', icon: ScrollText },
+      { label: 'System Tests', path: '/backoffice/system-tests', icon: FlaskConical },
       { label: 'Feedback', path: '/backoffice/feedback', icon: MessageSquare },
       { label: 'Settings', path: '/backoffice/settings', icon: Settings },
       { label: 'Kill Switch', path: '/backoffice/kill-switch', icon: Power, danger: true },
