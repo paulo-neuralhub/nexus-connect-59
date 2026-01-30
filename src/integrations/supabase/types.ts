@@ -43924,15 +43924,25 @@ export type Database = {
           ai_analysis_enabled: boolean
           ai_model: string
           ai_provider: string
+          aircall_api_id: string | null
+          aircall_api_token: string | null
           api_key_secret: string | null
           api_key_sid: string | null
           auth_token: string | null
+          business_hours: Json | null
           created_at: string
+          default_country_code: string | null
           fallback_number: string | null
           id: string
+          ip_nexus_activated_at: string | null
+          ip_nexus_enabled: boolean | null
+          ip_nexus_extension: string | null
+          ip_nexus_phone_number: string | null
           max_call_duration_minutes: number
           max_concurrent_calls: number
           organization_id: string
+          other_provider_config: Json | null
+          other_provider_name: string | null
           primary_number: string | null
           provider: string
           recording_consent_message: string
@@ -43944,6 +43954,11 @@ export type Database = {
           transcription_language: string
           transcription_provider: string
           updated_at: string
+          voicemail_email: string | null
+          voicemail_enabled: boolean | null
+          vonage_api_key: string | null
+          vonage_api_secret: string | null
+          vonage_phone_number: string | null
           webhook_url: string | null
         }
         Insert: {
@@ -43951,15 +43966,25 @@ export type Database = {
           ai_analysis_enabled?: boolean
           ai_model?: string
           ai_provider?: string
+          aircall_api_id?: string | null
+          aircall_api_token?: string | null
           api_key_secret?: string | null
           api_key_sid?: string | null
           auth_token?: string | null
+          business_hours?: Json | null
           created_at?: string
+          default_country_code?: string | null
           fallback_number?: string | null
           id?: string
+          ip_nexus_activated_at?: string | null
+          ip_nexus_enabled?: boolean | null
+          ip_nexus_extension?: string | null
+          ip_nexus_phone_number?: string | null
           max_call_duration_minutes?: number
           max_concurrent_calls?: number
           organization_id: string
+          other_provider_config?: Json | null
+          other_provider_name?: string | null
           primary_number?: string | null
           provider?: string
           recording_consent_message?: string
@@ -43971,6 +43996,11 @@ export type Database = {
           transcription_language?: string
           transcription_provider?: string
           updated_at?: string
+          voicemail_email?: string | null
+          voicemail_enabled?: boolean | null
+          vonage_api_key?: string | null
+          vonage_api_secret?: string | null
+          vonage_phone_number?: string | null
           webhook_url?: string | null
         }
         Update: {
@@ -43978,15 +44008,25 @@ export type Database = {
           ai_analysis_enabled?: boolean
           ai_model?: string
           ai_provider?: string
+          aircall_api_id?: string | null
+          aircall_api_token?: string | null
           api_key_secret?: string | null
           api_key_sid?: string | null
           auth_token?: string | null
+          business_hours?: Json | null
           created_at?: string
+          default_country_code?: string | null
           fallback_number?: string | null
           id?: string
+          ip_nexus_activated_at?: string | null
+          ip_nexus_enabled?: boolean | null
+          ip_nexus_extension?: string | null
+          ip_nexus_phone_number?: string | null
           max_call_duration_minutes?: number
           max_concurrent_calls?: number
           organization_id?: string
+          other_provider_config?: Json | null
+          other_provider_name?: string | null
           primary_number?: string | null
           provider?: string
           recording_consent_message?: string
@@ -43998,6 +44038,11 @@ export type Database = {
           transcription_language?: string
           transcription_provider?: string
           updated_at?: string
+          voicemail_email?: string | null
+          voicemail_enabled?: boolean | null
+          vonage_api_key?: string | null
+          vonage_api_secret?: string | null
+          vonage_phone_number?: string | null
           webhook_url?: string | null
         }
         Relationships: [
