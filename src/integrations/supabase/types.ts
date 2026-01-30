@@ -45287,6 +45287,7 @@ export type Database = {
           business_hours_end: string | null
           business_hours_only: boolean | null
           business_hours_start: string | null
+          connected_phone: string | null
           created_at: string | null
           id: string
           implementation_notes: string | null
@@ -45304,6 +45305,7 @@ export type Database = {
           notify_new_messages: boolean | null
           organization_id: string | null
           updated_at: string | null
+          whatsapp_backend_url: string | null
         }
         Insert: {
           auto_reply_enabled?: boolean | null
@@ -45311,6 +45313,7 @@ export type Database = {
           business_hours_end?: string | null
           business_hours_only?: boolean | null
           business_hours_start?: string | null
+          connected_phone?: string | null
           created_at?: string | null
           id?: string
           implementation_notes?: string | null
@@ -45328,6 +45331,7 @@ export type Database = {
           notify_new_messages?: boolean | null
           organization_id?: string | null
           updated_at?: string | null
+          whatsapp_backend_url?: string | null
         }
         Update: {
           auto_reply_enabled?: boolean | null
@@ -45335,6 +45339,7 @@ export type Database = {
           business_hours_end?: string | null
           business_hours_only?: boolean | null
           business_hours_start?: string | null
+          connected_phone?: string | null
           created_at?: string | null
           id?: string
           implementation_notes?: string | null
@@ -45352,6 +45357,7 @@ export type Database = {
           notify_new_messages?: boolean | null
           organization_id?: string | null
           updated_at?: string | null
+          whatsapp_backend_url?: string | null
         }
         Relationships: [
           {
