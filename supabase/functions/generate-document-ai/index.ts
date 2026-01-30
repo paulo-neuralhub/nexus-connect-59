@@ -43,11 +43,14 @@ serve(async (req) => {
       );
     }
 
-    const { templateId, matterId, variables } = await req.json();
+    const { templateId, templateType, matterId, variables, context } = await req.json();
 
-    if (!templateId) {
+    // Support both templateId (DB templates) and templateType (built-in templates)
+    const effectiveTemplateId = templateId || templateType;
+    
+    if (!effectiveTemplateId) {
       return new Response(
-        JSON.stringify({ error: 'templateId is required' }),
+        JSON.stringify({ error: 'templateId or templateType is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -58,19 +61,242 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Get template
-    const { data: template, error: templateError } = await supabase
-      .from('document_templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    // Check for built-in template types first
+    const BUILTIN_TEMPLATES: Record<string, { name: string; systemPrompt: string; userPrompt: string }> = {
+      poder_representacion: {
+        name: 'Poder de representación',
+        systemPrompt: 'Eres un experto en documentos legales de propiedad intelectual. Genera documentos profesionales en español.',
+        userPrompt: `Genera un poder de representación para actuar en nombre del cliente en asuntos de propiedad intelectual.
 
-    if (templateError || !template) {
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Título: {{matter_title}}
+- Tipo: {{matter_type}}
+- Marca: {{mark_name}}
+- Cliente: {{client_name}}
+- Email cliente: {{client_email}}
+- Fecha: {{today}}
+
+El documento debe incluir:
+1. Encabezado formal
+2. Identificación del poderdante (cliente)
+3. Identificación del apoderado (organización)
+4. Alcance del poder (específico para PI)
+5. Vigencia
+6. Firma del poderdante`
+      },
+      carta_cese: {
+        name: 'Carta de cese y desistimiento',
+        systemPrompt: 'Eres un experto en documentos legales de propiedad intelectual. Genera documentos profesionales en español.',
+        userPrompt: `Genera una carta de cese y desistimiento (cease and desist) por infracción de derechos de propiedad intelectual.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Marca infringida: {{mark_name}}
+- Número de registro: {{registration_number}}
+- Cliente titular: {{client_name}}
+- Fecha: {{today}}
+
+La carta debe:
+1. Identificar claramente la marca registrada y sus derechos
+2. Describir la infracción detectada
+3. Solicitar el cese inmediato de la actividad infractora
+4. Establecer un plazo razonable (15 días)
+5. Advertir de acciones legales si no se cumple
+6. Tono firme pero profesional`
+      },
+      informe_vigilancia: {
+        name: 'Informe de vigilancia',
+        systemPrompt: 'Eres un experto en propiedad intelectual especializado en vigilancia de marcas.',
+        userPrompt: `Genera un informe de vigilancia de marcas para el cliente.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Marca vigilada: {{mark_name}}
+- Clases Nice: {{nice_classes}}
+- Jurisdicción: {{jurisdiction}}
+- Cliente: {{client_name}}
+- Fecha del informe: {{today}}
+
+El informe debe incluir:
+1. Resumen ejecutivo
+2. Parámetros de búsqueda utilizados
+3. Resultados encontrados (simular 2-3 marcas similares)
+4. Análisis de riesgo de cada resultado
+5. Recomendaciones de acción
+6. Conclusiones`
+      },
+      informe_estado: {
+        name: 'Informe de estado del expediente',
+        systemPrompt: 'Eres un experto en propiedad intelectual. Genera informes claros y profesionales.',
+        userPrompt: `Genera un informe de estado del expediente para enviar al cliente.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Título: {{matter_title}}
+- Tipo: {{matter_type}}
+- Marca: {{mark_name}}
+- Número de solicitud: {{application_number}}
+- Número de registro: {{registration_number}}
+- Fecha de presentación: {{filing_date}}
+- Fecha de registro: {{registration_date}}
+- Fecha de vencimiento: {{expiry_date}}
+- Clases Nice: {{nice_classes}}
+- Jurisdicción: {{jurisdiction}}
+- Cliente: {{client_name}}
+- Fecha: {{today}}
+
+El informe debe:
+1. Resumir el estado actual del expediente
+2. Indicar próximos pasos o acciones pendientes
+3. Recordar fechas importantes
+4. Mantener tono profesional y accesible`
+      },
+      contestacion_oposicion: {
+        name: 'Contestación a oposición',
+        systemPrompt: 'Eres un abogado especializado en propiedad intelectual con experiencia en oposiciones de marca.',
+        userPrompt: `Genera un borrador de contestación a una oposición de marca.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Marca solicitada: {{mark_name}}
+- Número de solicitud: {{application_number}}
+- Clases Nice: {{nice_classes}}
+- Cliente: {{client_name}}
+- Fecha: {{today}}
+
+El escrito debe incluir:
+1. Encabezado formal dirigido a la oficina de PI
+2. Identificación del procedimiento
+3. Alegaciones en defensa de la marca (coexistencia, diferencias, etc.)
+4. Argumentos legales
+5. Solicitud de desestimación de la oposición
+6. Petición final`
+      },
+      solicitud_renovacion: {
+        name: 'Solicitud de instrucciones de renovación',
+        systemPrompt: 'Eres un profesional de propiedad intelectual. Genera comunicaciones claras y profesionales.',
+        userPrompt: `Genera un email solicitando instrucciones de renovación al cliente.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Marca: {{mark_name}}
+- Número de registro: {{registration_number}}
+- Fecha de vencimiento: {{expiry_date}}
+- Clases Nice: {{nice_classes}}
+- Jurisdicción: {{jurisdiction}}
+- Cliente: {{client_name}}
+- Fecha: {{today}}
+
+El email debe:
+1. Informar de la próxima renovación
+2. Indicar la fecha límite
+3. Solicitar confirmación de renovación
+4. Indicar costes aproximados si es posible
+5. Solicitar respuesta en plazo determinado
+6. Tono profesional y amable`
+      },
+      certificado_registro: {
+        name: 'Carta de confirmación de registro',
+        systemPrompt: 'Eres un profesional de propiedad intelectual. Genera comunicaciones positivas y profesionales.',
+        userPrompt: `Genera una carta informando al cliente del registro exitoso de su marca.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Marca registrada: {{mark_name}}
+- Número de registro: {{registration_number}}
+- Fecha de registro: {{registration_date}}
+- Fecha de vencimiento: {{expiry_date}}
+- Clases Nice: {{nice_classes}}
+- Jurisdicción: {{jurisdiction}}
+- Cliente: {{client_name}}
+- Fecha: {{today}}
+
+La carta debe:
+1. Felicitar al cliente por el registro
+2. Detallar los datos del registro
+3. Informar de la fecha de renovación
+4. Recordar la importancia de vigilar la marca
+5. Ofrecer servicios adicionales
+6. Tono positivo y profesional`
+      },
+      presupuesto: {
+        name: 'Presupuesto de servicios',
+        systemPrompt: 'Eres un profesional de propiedad intelectual. Genera presupuestos claros y profesionales.',
+        userPrompt: `Genera un presupuesto de servicios para el cliente.
+
+Datos del expediente:
+- Referencia: {{matter_reference}}
+- Tipo de servicio: {{matter_type}}
+- Marca: {{mark_name}}
+- Jurisdicción: {{jurisdiction}}
+- Cliente: {{client_name}}
+- Fecha: {{today}}
+
+El presupuesto debe:
+1. Describir los servicios incluidos
+2. Desglosar honorarios profesionales
+3. Indicar tasas oficiales aproximadas
+4. Especificar condiciones de pago
+5. Indicar validez del presupuesto
+6. Incluir notas y exclusiones`
+      }
+    };
+
+    let template: {
+      name: string;
+      template_content: string;
+      ai_system_prompt: string | null;
+      ai_user_prompt_template: string | null;
+      ai_model: string;
+      ai_temperature: number;
+      ai_max_tokens: number;
+      variables: Array<{ key: string; source: string; source_path?: string }>;
+      usage_count?: number;
+    } | null = null;
+    let isBuiltIn = false;
+
+    // Check built-in templates first
+    if (BUILTIN_TEMPLATES[effectiveTemplateId]) {
+      const builtIn = BUILTIN_TEMPLATES[effectiveTemplateId];
+      template = {
+        name: builtIn.name,
+        template_content: '{{ai_content}}',
+        ai_system_prompt: builtIn.systemPrompt,
+        ai_user_prompt_template: builtIn.userPrompt,
+        ai_model: 'claude-sonnet-4-5-20250929',
+        ai_temperature: 0.3,
+        ai_max_tokens: 4096,
+        variables: [{ key: 'ai_content', source: 'ai' }],
+      };
+      isBuiltIn = true;
+    } else {
+      // Try to fetch from database
+      const { data: dbTemplate, error: templateError } = await supabase
+        .from('document_templates')
+        .select('*')
+        .eq('id', effectiveTemplateId)
+        .single();
+
+      if (templateError || !dbTemplate) {
+        return new Response(
+          JSON.stringify({ error: `Template '${effectiveTemplateId}' not found` }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      template = dbTemplate;
+    }
+
+    // At this point template should never be null, but TypeScript needs assurance
+    if (!template) {
       return new Response(
-        JSON.stringify({ error: 'Template not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Template could not be loaded' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Merge context variables with explicit variables
+    const allVariables = { ...context, ...variables };
 
     // Get matter data if matterId is provided
     let matterData: Record<string, unknown> | null = null;
@@ -104,12 +330,12 @@ serve(async (req) => {
         } else if (matterData) {
           // Navigate nested path
           const value = getNestedValue(matterData, varDef.source_path);
-          resolvedVariables[varDef.key] = value ?? variables?.[varDef.key] ?? '';
+          resolvedVariables[varDef.key] = value ?? allVariables?.[varDef.key] ?? '';
         } else {
-          resolvedVariables[varDef.key] = variables?.[varDef.key] ?? '';
+          resolvedVariables[varDef.key] = allVariables?.[varDef.key] ?? '';
         }
       } else if (varDef.source === 'manual') {
-        resolvedVariables[varDef.key] = variables?.[varDef.key] ?? '';
+        resolvedVariables[varDef.key] = allVariables?.[varDef.key] ?? '';
       }
       // AI variables will be populated after AI generation
     }
@@ -133,13 +359,15 @@ serve(async (req) => {
         apiKey: anthropicApiKey,
       });
 
-      // Build user prompt with resolved variables
+      // Build user prompt with context and resolved variables
       let userPrompt = template.ai_user_prompt_template;
-      for (const [key, value] of Object.entries(resolvedVariables)) {
+      
+      // Replace with context variables first
+      for (const [key, value] of Object.entries(allVariables || {})) {
         userPrompt = userPrompt.replace(new RegExp(`{{${key}}}`, 'g'), String(value || ''));
       }
-      // Also replace manual variables from input
-      for (const [key, value] of Object.entries(variables || {})) {
+      // Then resolved variables
+      for (const [key, value] of Object.entries(resolvedVariables)) {
         userPrompt = userPrompt.replace(new RegExp(`{{${key}}}`, 'g'), String(value || ''));
       }
 
@@ -167,16 +395,18 @@ serve(async (req) => {
     for (const [key, value] of Object.entries(resolvedVariables)) {
       finalContent = finalContent.replace(new RegExp(`{{${key}}}`, 'g'), String(value || `[${key}]`));
     }
-    // Replace any remaining manual variables
-    for (const [key, value] of Object.entries(variables || {})) {
+    // Replace any remaining context/manual variables
+    for (const [key, value] of Object.entries(allVariables || {})) {
       finalContent = finalContent.replace(new RegExp(`{{${key}}}`, 'g'), String(value || `[${key}]`));
     }
 
-    // Increment usage count
-    await supabase
-      .from('document_templates')
-      .update({ usage_count: (template.usage_count || 0) + 1 })
-      .eq('id', templateId);
+    // Increment usage count only for DB templates
+    if (!isBuiltIn) {
+      await supabase
+        .from('document_templates')
+        .update({ usage_count: (template.usage_count || 0) + 1 })
+        .eq('id', effectiveTemplateId);
+    }
 
     const generationTime = Date.now() - startTime;
 
