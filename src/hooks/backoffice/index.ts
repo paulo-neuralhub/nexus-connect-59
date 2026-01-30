@@ -20,3 +20,6 @@ export * from './useStripeProducts';
 export * from './useTelephonyConfig';
 export * from './useTelephonyAnalytics';
 export * from './useTelephonyAlerts';
+
+// Nice Classes Admin
+export * from './useNiceClassesAdmin';

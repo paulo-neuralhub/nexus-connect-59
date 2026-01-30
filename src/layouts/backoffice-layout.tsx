@@ -74,6 +74,7 @@ const sidebarSections = [
       { label: 'Tasas', path: '/backoffice/ipo/fees', icon: DollarSign },
       { label: 'Monitor', path: '/backoffice/ipo/monitor', icon: Activity },
       { label: 'Logs', path: '/backoffice/ipo/logs', icon: FileText },
+      { label: 'Clases Nice', path: '/backoffice/nice-classes', icon: Target },
     ],
   },
   {

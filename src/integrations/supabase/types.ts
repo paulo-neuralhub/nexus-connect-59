@@ -29131,9 +29131,14 @@ export type Database = {
           id: number
           keywords_en: string[] | null
           keywords_es: string[] | null
+          last_reviewed_at: string | null
+          notes: string | null
+          product_count: number | null
+          reviewed_by: string | null
           title_en: string
           title_es: string
           type: string
+          wipo_version: string | null
         }
         Insert: {
           class_number: number
@@ -29145,9 +29150,14 @@ export type Database = {
           id?: number
           keywords_en?: string[] | null
           keywords_es?: string[] | null
+          last_reviewed_at?: string | null
+          notes?: string | null
+          product_count?: number | null
+          reviewed_by?: string | null
           title_en: string
           title_es: string
           type: string
+          wipo_version?: string | null
         }
         Update: {
           class_number?: number
@@ -29159,41 +29169,116 @@ export type Database = {
           id?: number
           keywords_en?: string[] | null
           keywords_es?: string[] | null
+          last_reviewed_at?: string | null
+          notes?: string | null
+          product_count?: number | null
+          reviewed_by?: string | null
           title_en?: string
           title_es?: string
           type?: string
+          wipo_version?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nice_classes_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nice_products: {
         Row: {
+          added_at: string | null
+          added_by: string | null
           class_number: number
           created_at: string | null
           id: string
+          is_active: boolean | null
           is_common: boolean | null
           name_en: string | null
           name_es: string
           search_keywords: string[] | null
+          wipo_code: string | null
         }
         Insert: {
+          added_at?: string | null
+          added_by?: string | null
           class_number: number
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
           is_common?: boolean | null
           name_en?: string | null
           name_es: string
           search_keywords?: string[] | null
+          wipo_code?: string | null
         }
         Update: {
+          added_at?: string | null
+          added_by?: string | null
           class_number?: number
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
           is_common?: boolean | null
           name_en?: string | null
           name_es?: string
           search_keywords?: string[] | null
+          wipo_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nice_products_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nice_revision_log: {
+        Row: {
+          action: string | null
+          class_number: number | null
+          details: Json | null
+          id: string
+          performed_at: string | null
+          performed_by: string | null
+        }
+        Insert: {
+          action?: string | null
+          class_number?: number | null
+          details?: Json | null
+          id?: string
+          performed_at?: string | null
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string | null
+          class_number?: number | null
+          details?: Json | null
+          id?: string
+          performed_at?: string | null
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nice_revision_log_class_number_fkey"
+            columns: ["class_number"]
+            isOneToOne: false
+            referencedRelation: "nice_classes"
+            referencedColumns: ["class_number"]
+          },
+          {
+            foreignKeyName: "nice_revision_log_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_preferences: {
         Row: {
@@ -46387,6 +46472,14 @@ export type Database = {
           p_required_tier?: string
         }
         Returns: boolean
+      }
+      check_nice_classes_review: {
+        Args: never
+        Returns: {
+          class_number: number
+          last_reviewed_at: string
+          title_es: string
+        }[]
       }
       check_user_permission: {
         Args: {
