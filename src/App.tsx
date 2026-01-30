@@ -244,6 +244,7 @@ import IPOMappingsPage from "./pages/backoffice/ipo/mappings";
 import IPOFeesPage from "./pages/backoffice/ipo/fees";
 import IPOMonitorPage from "./pages/backoffice/ipo/monitor";
 import IPOLogsPage from "./pages/backoffice/ipo/logs";
+import NiceClassesAdminPage from "./pages/backoffice/nice-classes";
 import FeatureFlagsPage from "./pages/backoffice/feature-flags";
 import BackofficeApiKeysPage from "./pages/backoffice/api-keys";
 import BackofficeIntegrationsPage from "./pages/backoffice/integrations";
@@ -610,6 +611,8 @@ const App = () => (
                 <Route path="ipo/fees" element={<IPOFeesPage />} />
                 <Route path="ipo/monitor" element={<IPOMonitorPage />} />
                 <Route path="ipo/logs" element={<IPOLogsPage />} />
+                {/* Nice Classes Admin */}
+                <Route path="nice-classes" element={<NiceClassesAdminPage />} />
                 {/* AI Brain */}
                 <Route path="ai" element={<AIBrainPage />} />
                 {/* Tools */}
