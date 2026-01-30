@@ -26755,6 +26755,7 @@ export type Database = {
           next_deadline: string | null
           next_renewal_date: string | null
           nice_classes: number[] | null
+          nice_classes_detail: Json | null
           notes: string | null
           office_application_number: string | null
           office_code: string | null
@@ -26835,6 +26836,7 @@ export type Database = {
           next_deadline?: string | null
           next_renewal_date?: string | null
           nice_classes?: number[] | null
+          nice_classes_detail?: Json | null
           notes?: string | null
           office_application_number?: string | null
           office_code?: string | null
@@ -26915,6 +26917,7 @@ export type Database = {
           next_deadline?: string | null
           next_renewal_date?: string | null
           nice_classes?: number[] | null
+          nice_classes_detail?: Json | null
           notes?: string | null
           office_application_number?: string | null
           office_code?: string | null
@@ -28452,6 +28455,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nice_products: {
+        Row: {
+          class_number: number
+          created_at: string | null
+          id: string
+          is_common: boolean | null
+          name_en: string | null
+          name_es: string
+          search_keywords: string[] | null
+        }
+        Insert: {
+          class_number: number
+          created_at?: string | null
+          id?: string
+          is_common?: boolean | null
+          name_en?: string | null
+          name_es: string
+          search_keywords?: string[] | null
+        }
+        Update: {
+          class_number?: number
+          created_at?: string | null
+          id?: string
+          is_common?: boolean | null
+          name_en?: string | null
+          name_es?: string
+          search_keywords?: string[] | null
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {
