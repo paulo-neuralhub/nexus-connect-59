@@ -25,8 +25,8 @@ interface Client {
   email: string | null;
   phone: string | null;
   client_token: string | null;
-  nif: string | null;
-  contact_type: string | null;
+  tax_id: string | null; // was 'nif' - use actual column name
+  client_type: string | null;
 }
 
 interface ClientSelectorProps {
@@ -40,7 +40,7 @@ export function ClientSelector({ value, onChange, onCreateNew }: ClientSelectorP
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  // Query clients
+  // Query clients - use correct column names from contacts table
   const { data: clients = [], isLoading, error } = useQuery({
     queryKey: ['clients-for-wizard', currentOrganization?.id],
     queryFn: async (): Promise<Client[]> => {
@@ -48,11 +48,13 @@ export function ClientSelector({ value, onChange, onCreateNew }: ClientSelectorP
       
       console.log('🔍 Fetching clients for org:', currentOrganization.id);
       const client: any = supabase;
+      
+      // Query contacts that are clients (client_type is set or lifecycle_stage indicates client)
       const { data, error } = await client
         .from('contacts')
-        .select('id, name, email, phone, client_token, nif, contact_type')
+        .select('id, name, email, phone, client_token, tax_id, client_type')
         .eq('organization_id', currentOrganization.id)
-        .eq('is_client', true)
+        .not('client_type', 'is', null)
         .order('name');
       
       if (error) {
@@ -76,7 +78,7 @@ export function ClientSelector({ value, onChange, onCreateNew }: ClientSelectorP
     return clients.filter(c =>
       c.name?.toLowerCase().includes(s) ||
       c.email?.toLowerCase().includes(s) ||
-      c.nif?.toLowerCase().includes(s) ||
+      c.tax_id?.toLowerCase().includes(s) ||
       c.client_token?.toLowerCase().includes(s)
     ).slice(0, 20);
   }, [clients, search]);
@@ -205,7 +207,7 @@ export function ClientSelector({ value, onChange, onCreateNew }: ClientSelectorP
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{client.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {client.nif && <span>{client.nif}</span>}
+                        {client.tax_id && <span>{client.tax_id}</span>}
                         {client.email && <span className="truncate">· {client.email}</span>}
                       </div>
                     </div>
