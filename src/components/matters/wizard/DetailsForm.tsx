@@ -1,6 +1,6 @@
 // ============================================================
 // IP-NEXUS - DETAILS FORM COMPONENT
-// L128: Matter details form for wizard step 3 with Nice classes
+// L129: Matter details form for wizard step 2 with improved UX
 // ============================================================
 
 import { useState } from 'react';
@@ -8,10 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Building2,
   FileText,
-  Check,
   AlertCircle,
-  Plus,
-  Search,
   Loader2,
   Sparkles,
   Tag,
@@ -22,23 +19,9 @@ import { useOrganization } from '@/contexts/organization-context';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { NiceClassSelector } from './NiceClassSelector';
+import { ClientSelector } from './ClientSelector';
+import { NiceClassSelectorPro } from './NiceClassSelectorPro';
 import { CreateClientDialog } from './CreateClientDialog';
 
 export interface MatterDetailsData {
@@ -69,46 +52,9 @@ export function DetailsForm({
   previewNumber,
   isGeneratingNumber,
 }: DetailsFormProps) {
-  const { currentOrganization } = useOrganization();
-  const [clientOpen, setClientOpen] = useState(false);
-  const [clientSearch, setClientSearch] = useState('');
   const [showCreateClient, setShowCreateClient] = useState(false);
+  const [clientSearch, setClientSearch] = useState('');
 
-  // Query clients/contacts
-  const { data: clients = [], isLoading: loadingClients } = useQuery({
-    queryKey: ['contacts-for-matter', currentOrganization?.id],
-    queryFn: async (): Promise<Array<{ 
-      id: string; 
-      name: string | null; 
-      email: string | null; 
-      phone: string | null; 
-      client_token: string | null;
-      nif: string | null;
-      contact_type: string | null;
-    }>> => {
-      if (!currentOrganization?.id) return [];
-      const client: any = supabase;
-      const { data, error } = await client
-        .from('contacts')
-        .select('id, name, email, phone, client_token, nif, contact_type')
-        .eq('organization_id', currentOrganization.id)
-        .eq('is_client', true)
-        .order('name');
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!currentOrganization?.id,
-  });
-
-  // Filter clients based on search
-  const filteredClients = clients.filter(
-    (c) =>
-      c.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
-      c.email?.toLowerCase().includes(clientSearch.toLowerCase()) ||
-      c.nif?.toLowerCase().includes(clientSearch.toLowerCase())
-  );
-
-  const selectedClient = clients.find((c) => c.id === data.client_id);
   const isTrademarkType = matterType?.startsWith('TM') || matterType === 'NC';
   const isPatentType = matterType?.startsWith('PT') || matterType === 'UM';
 
@@ -156,134 +102,11 @@ export function DetailsForm({
           <Building2 className="h-4 w-4" />
           Cliente
         </Label>
-        <Popover open={clientOpen} onOpenChange={setClientOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              role="combobox"
-              className={cn(
-                'w-full justify-start h-12',
-                !selectedClient && 'text-muted-foreground'
-              )}
-            >
-              {selectedClient ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                    {selectedClient.name?.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <span className="truncate">{selectedClient.name}</span>
-                    {selectedClient.client_token && (
-                      <Badge variant="outline" className="ml-2 font-mono text-xs">
-                        {selectedClient.client_token}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar cliente...
-                </>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0" align="start">
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder="Buscar por nombre, NIF o email..."
-                value={clientSearch}
-                onValueChange={setClientSearch}
-              />
-              <CommandList>
-                {/* Loading state */}
-                {loadingClients && (
-                  <div className="flex items-center justify-center py-6 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Cargando clientes...
-                  </div>
-                )}
-
-                {/* No results */}
-                {!loadingClients && filteredClients.length === 0 && (
-                  <div className="py-6 text-center">
-                    <p className="text-muted-foreground mb-3">
-                      {clientSearch ? `No se encontró "${clientSearch}"` : 'No hay clientes'}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setShowCreateClient(true);
-                        setClientOpen(false);
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Crear nuevo cliente
-                    </Button>
-                  </div>
-                )}
-
-                {/* Results */}
-                {!loadingClients && filteredClients.length > 0 && (
-                  <CommandGroup>
-                    {filteredClients.slice(0, 10).map((client) => (
-                      <CommandItem
-                        key={client.id}
-                        value={client.id}
-                        onSelect={() => {
-                          onChange({ client_id: client.id });
-                          setClientOpen(false);
-                          setClientSearch('');
-                        }}
-                        className="py-3"
-                      >
-                        <div className="flex items-center gap-3 w-full">
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                            {client.name?.substring(0, 2).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{client.name}</p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              {client.nif && <span>{client.nif}</span>}
-                              {client.contact_type && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {client.contact_type}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          {data.client_id === client.id && (
-                            <Check className="h-4 w-4 text-primary shrink-0" />
-                          )}
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                )}
-
-                {/* Create new button - always visible when there are results */}
-                {!loadingClients && filteredClients.length > 0 && (
-                  <div className="border-t p-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setShowCreateClient(true);
-                        setClientOpen(false);
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Crear nuevo cliente
-                    </Button>
-                  </div>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <ClientSelector
+          value={data.client_id}
+          onChange={(clientId) => onChange({ client_id: clientId })}
+          onCreateNew={() => setShowCreateClient(true)}
+        />
       </div>
 
       {/* Title */}
@@ -323,13 +146,10 @@ export function DetailsForm({
 
           <div className="space-y-2">
             <Label>Clases Nice</Label>
-            <NiceClassSelector
+            <NiceClassSelectorPro
               value={data.nice_classes || []}
               onChange={(classes) => onChange({ nice_classes: classes })}
             />
-            <p className="text-xs text-muted-foreground">
-              Selecciona las clases de productos/servicios para la marca
-            </p>
           </div>
         </>
       )}
