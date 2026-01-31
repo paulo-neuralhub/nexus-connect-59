@@ -1,21 +1,19 @@
 // ============================================================
-// IP-NEXUS - Matter Detail Header (Premium Redesign L119)
-// Full-width hero with gradient, metro workflow, quick actions
+// IP-NEXUS - Matter Detail Header (Premium Redesign L122)
+// Full-width hero with info + WorkflowCards below
 // ============================================================
 
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, differenceInDays } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
 import {
   ArrowLeft, Mail, Phone, MessageCircle, Edit, MoreHorizontal,
-  Star, Building2, ChevronRight, Copy, Download, Share2,
-  Archive, Trash2, CheckCircle2, AlertTriangle, Clock, Zap
+  Star, Building2, Copy, Download, Share2,
+  Archive, Trash2, AlertTriangle, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { MatterV2 } from '@/hooks/use-matters-v2';
+import { WorkflowCards } from './WorkflowCards';
 
 // Type configuration - colors for icon accents only
 const TYPE_CONFIG: Record<string, { label: string; icon: string; borderColor: string; textColor: string; bgLight: string }> = {
@@ -52,20 +51,6 @@ const TYPE_CONFIG: Record<string, { label: string; icon: string; borderColor: st
   patent: { label: 'Patente', icon: '⚙️', borderColor: 'border-purple-200 dark:border-purple-800', textColor: 'text-purple-600', bgLight: 'bg-purple-50 dark:bg-purple-950' },
   design: { label: 'Diseño', icon: '✏️', borderColor: 'border-rose-200 dark:border-rose-800', textColor: 'text-rose-600', bgLight: 'bg-rose-50 dark:bg-rose-950' },
 };
-
-// Workflow phases
-const PHASES = [
-  { key: 'F0', label: 'Apertura', shortLabel: 'Apert.' },
-  { key: 'F1', label: 'Análisis', shortLabel: 'Anális.' },
-  { key: 'F2', label: 'Presupuesto', shortLabel: 'Presup.' },
-  { key: 'F3', label: 'Contratación', shortLabel: 'Contrat.' },
-  { key: 'F4', label: 'Preparación', shortLabel: 'Prepar.' },
-  { key: 'F5', label: 'Presentación', shortLabel: 'Present.' },
-  { key: 'F6', label: 'Examen', shortLabel: 'Examen' },
-  { key: 'F7', label: 'Publicación', shortLabel: 'Public.' },
-  { key: 'F8', label: 'Resolución', shortLabel: 'Resoluc.' },
-  { key: 'F9', label: 'Post-servicio', shortLabel: 'Post.' },
-];
 
 // Jurisdiction flags
 const JURISDICTION_FLAGS: Record<string, { flag: string; name: string }> = {
@@ -116,8 +101,7 @@ export function MatterDetailHeader({
 
   // Get current phase from custom_fields or default
   const currentPhase = (matter.custom_fields as any)?.current_phase || 'F0';
-  const phaseIndex = PHASES.findIndex(p => p.key === currentPhase);
-  const progressPercent = ((phaseIndex + 1) / PHASES.length) * 100;
+  const phaseEnteredAt = (matter.custom_fields as any)?.phase_entered_at;
 
   // Type and jurisdiction config
   const typeConfig = TYPE_CONFIG[matter.matter_type] || TYPE_CONFIG.trademark;
@@ -329,98 +313,21 @@ export function MatterDetailHeader({
       </div>
 
       {/* =============================================== */}
-      {/* WORKFLOW METRO MAP - In separate Card */}
+      {/* WORKFLOW CARDS - New L122 Design */}
       {/* =============================================== */}
       <div className="px-6 pb-4">
-        <div className="bg-muted/30 rounded-xl border p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Progreso del Expediente</span>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {Math.round(progressPercent)}% completado
-            </span>
-          </div>
-
-          {/* Metro Map */}
-          <div className="relative h-16">
-            {/* Base Line */}
-            <div className="absolute top-4 left-4 right-4 h-1 bg-border rounded-full" />
-            
-            {/* Progress Line */}
-            <div 
-              className={cn(
-                "absolute top-4 left-4 h-1 rounded-full transition-all duration-500",
-                typeConfig.textColor.replace('text-', 'bg-')
-              )}
-              style={{ width: `calc(${progressPercent}% - 32px)` }}
-            />
-
-            {/* Nodes */}
-            <div className="absolute top-0 left-4 right-4 flex justify-between">
-              {PHASES.map((phase, index) => {
-                const isCompleted = index < phaseIndex;
-                const isCurrent = index === phaseIndex;
-                const isFuture = index > phaseIndex;
-
-                return (
-                  <Tooltip key={phase.key}>
-                    <TooltipTrigger asChild>
-                      <div className="flex flex-col items-center cursor-pointer">
-                        <div
-                          className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 border-2",
-                            isCompleted && "bg-green-500 border-green-500 text-white",
-                            isCurrent && cn(
-                              "bg-background border-2",
-                              typeConfig.borderColor,
-                              typeConfig.textColor,
-                              "ring-4 ring-offset-2",
-                              typeConfig.bgLight.replace('bg-', 'ring-').replace(' dark:', ' dark:ring-')
-                            ),
-                            isFuture && "bg-muted border-border text-muted-foreground"
-                          )}
-                        >
-                          {isCompleted ? (
-                            <CheckCircle2 className="h-3 w-3" />
-                          ) : (
-                            <span>{index}</span>
-                          )}
-                        </div>
-                        <span
-                          className={cn(
-                            "text-[10px] mt-1.5 whitespace-nowrap",
-                            isCurrent ? "text-foreground font-medium" : "text-muted-foreground"
-                          )}
-                        >
-                          {phase.shortLabel}
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="font-medium">{phase.key}: {phase.label}</p>
-                      {isCurrent && <p className="text-xs text-muted-foreground">Fase actual</p>}
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Current Phase Highlight */}
-          <div className="mt-4 pt-3 border-t flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={cn("w-2 h-2 rounded-full", typeConfig.textColor.replace('text-', 'bg-'))} />
-              <span className="text-sm">
-                Fase actual: <strong>{PHASES[phaseIndex]?.label || 'Desconocida'}</strong>
-              </span>
-            </div>
-            <Button size="sm" variant="outline">
-              Avanzar fase <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
+        <WorkflowCards
+          currentPhase={currentPhase}
+          expedienteId={matter.id}
+          phaseEnteredAt={phaseEnteredAt}
+          typeColor={typeConfig.textColor}
+          onAdvancePhase={() => {
+            toast.info('Funcionalidad de avanzar fase en desarrollo');
+          }}
+          onPhaseClick={(phase) => {
+            toast.info(`Click en fase ${phase}`);
+          }}
+        />
       </div>
     </div>
   );
