@@ -456,6 +456,86 @@ export function Step3RightData({ data, onChange, matterType, jurisdiction }: Ste
                 </ul>
               </div>
             </div>
+
+            {/* Seniority */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="seniority-eu"
+                  checked={data.jurisdictionFields?.euipoSeniority?.country ? true : false}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      updateJurisdictionField('euipoSeniority', { country: '', number: '', date: '' });
+                    } else {
+                      updateJurisdictionField('euipoSeniority', undefined);
+                    }
+                  }}
+                />
+                <div>
+                  <Label htmlFor="seniority-eu" className="cursor-pointer font-medium">
+                    Reivindicar antigüedad (Seniority)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Vincular con marca nacional anterior para mantener antigüedad
+                  </p>
+                </div>
+              </div>
+
+              {data.jurisdictionFields?.euipoSeniority && (
+                <div className="ml-6 p-4 bg-muted/50 rounded-lg space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">País de la marca</Label>
+                      <Select
+                        value={data.jurisdictionFields?.euipoSeniority?.country || ''}
+                        onValueChange={(val) => updateJurisdictionField('euipoSeniority', {
+                          ...data.jurisdictionFields?.euipoSeniority,
+                          country: val
+                        })}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="País" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ES">🇪🇸 España</SelectItem>
+                          <SelectItem value="DE">🇩🇪 Alemania</SelectItem>
+                          <SelectItem value="FR">🇫🇷 Francia</SelectItem>
+                          <SelectItem value="IT">🇮🇹 Italia</SelectItem>
+                          <SelectItem value="PT">🇵🇹 Portugal</SelectItem>
+                          <SelectItem value="NL">🇳🇱 Países Bajos</SelectItem>
+                          <SelectItem value="BE">🇧🇪 Bélgica</SelectItem>
+                          <SelectItem value="AT">🇦🇹 Austria</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Nº de registro</Label>
+                      <Input
+                        className="h-9"
+                        placeholder="M1234567"
+                        value={data.jurisdictionFields?.euipoSeniority?.number || ''}
+                        onChange={(e) => updateJurisdictionField('euipoSeniority', {
+                          ...data.jurisdictionFields?.euipoSeniority,
+                          number: e.target.value
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Fecha de registro</Label>
+                      <Input
+                        type="date"
+                        className="h-9"
+                        value={data.jurisdictionFields?.euipoSeniority?.date || ''}
+                        onChange={(e) => updateJurisdictionField('euipoSeniority', {
+                          ...data.jurisdictionFields?.euipoSeniority,
+                          date: e.target.value
+                        })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -556,6 +636,179 @@ export function Step3RightData({ data, onChange, matterType, jurisdiction }: Ste
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <AlertCircle className="h-3 w-3" />
               China divide las clases Nice en subclases más específicas
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* WIPO/Madrid Fields */}
+      {isWIPO && isTrademarkType && (
+        <Card className="border-green-200 bg-green-50/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Campos específicos WIPO (Protocolo de Madrid)
+              <Badge variant="secondary">Internacional</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Base Mark */}
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg space-y-4">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Marca base (obligatoria)
+              </h4>
+              
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">País de origen</Label>
+                  <Select
+                    value={data.jurisdictionFields?.wipoBaseCountry || ''}
+                    onValueChange={(val) => updateJurisdictionField('wipoBaseCountry', val)}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ES">🇪🇸 España</SelectItem>
+                      <SelectItem value="DE">🇩🇪 Alemania</SelectItem>
+                      <SelectItem value="FR">🇫🇷 Francia</SelectItem>
+                      <SelectItem value="IT">🇮🇹 Italia</SelectItem>
+                      <SelectItem value="GB">🇬🇧 Reino Unido</SelectItem>
+                      <SelectItem value="EU">🇪🇺 EUIPO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tipo</Label>
+                  <RadioGroup
+                    value={data.jurisdictionFields?.wipoBaseType || 'registration'}
+                    onValueChange={(val) => updateJurisdictionField('wipoBaseType', val)}
+                    className="flex gap-3 h-9 items-center"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <RadioGroupItem value="application" id="wipo-app" />
+                      <Label htmlFor="wipo-app" className="text-xs font-normal cursor-pointer">Solicitud</Label>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <RadioGroupItem value="registration" id="wipo-reg" />
+                      <Label htmlFor="wipo-reg" className="text-xs font-normal cursor-pointer">Registro</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Número</Label>
+                  <Input
+                    className="h-9"
+                    placeholder="M1234567"
+                    value={data.jurisdictionFields?.wipoBaseNumber || ''}
+                    onChange={(e) => updateJurisdictionField('wipoBaseNumber', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Fecha de la marca base</Label>
+                <Input
+                  type="date"
+                  className="h-9 w-48"
+                  value={data.jurisdictionFields?.wipoBaseDate || ''}
+                  onChange={(e) => updateJurisdictionField('wipoBaseDate', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Designated Countries */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Países designados <span className="text-destructive">*</span>
+              </Label>
+              
+              <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[60px] bg-muted/30">
+                {!(data.jurisdictionFields?.wipoDesignatedCountries?.length) ? (
+                  <span className="text-sm text-muted-foreground">Ningún país seleccionado</span>
+                ) : (
+                  data.jurisdictionFields.wipoDesignatedCountries.map((code: string) => (
+                    <Badge key={code} variant="secondary" className="gap-1">
+                      {code === 'US' && '🇺🇸'}{code === 'CN' && '🇨🇳'}{code === 'JP' && '🇯🇵'}
+                      {code === 'KR' && '🇰🇷'}{code === 'AU' && '🇦🇺'}{code === 'BR' && '🇧🇷'}
+                      {code === 'MX' && '🇲🇽'}{code === 'IN' && '🇮🇳'}{code === 'RU' && '🇷🇺'}
+                      {code === 'CH' && '🇨🇭'}{code === 'NO' && '🇳🇴'}{code === 'TR' && '🇹🇷'}
+                      {code === 'SG' && '🇸🇬'}{code === 'NZ' && '🇳🇿'}{code === 'ZA' && '🇿🇦'}
+                      {' '}{code}
+                      <button
+                        type="button"
+                        className="hover:text-destructive"
+                        onClick={() => {
+                          const updated = (data.jurisdictionFields?.wipoDesignatedCountries || [])
+                            .filter((p: string) => p !== code);
+                          updateJurisdictionField('wipoDesignatedCountries', updated);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))
+                )}
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { code: 'US', name: 'EE.UU.', flag: '🇺🇸' },
+                  { code: 'CN', name: 'China', flag: '🇨🇳' },
+                  { code: 'JP', name: 'Japón', flag: '🇯🇵' },
+                  { code: 'KR', name: 'Corea S.', flag: '🇰🇷' },
+                  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+                  { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
+                  { code: 'MX', name: 'México', flag: '🇲🇽' },
+                  { code: 'IN', name: 'India', flag: '🇮🇳' },
+                  { code: 'CH', name: 'Suiza', flag: '🇨🇭' },
+                  { code: 'NO', name: 'Noruega', flag: '🇳🇴' },
+                  { code: 'TR', name: 'Turquía', flag: '🇹🇷' },
+                  { code: 'SG', name: 'Singapur', flag: '🇸🇬' },
+                ].map((pais) => {
+                  const isSelected = (data.jurisdictionFields?.wipoDesignatedCountries || []).includes(pais.code);
+                  return (
+                    <label
+                      key={pais.code}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded cursor-pointer text-sm",
+                        isSelected ? "bg-green-100 border border-green-300" : "hover:bg-muted"
+                      )}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          const current = data.jurisdictionFields?.wipoDesignatedCountries || [];
+                          const updated = checked
+                            ? [...current, pais.code]
+                            : current.filter((p: string) => p !== pais.code);
+                          updateJurisdictionField('wipoDesignatedCountries', updated);
+                        }}
+                      />
+                      <span>{pais.flag}</span>
+                      <span className="text-xs">{pais.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Limit by country */}
+            <div className="flex items-start gap-3 pt-2">
+              <Checkbox
+                id="limit-by-country"
+                checked={data.jurisdictionFields?.wipoLimitByCountry}
+                onCheckedChange={(checked) => updateJurisdictionField('wipoLimitByCountry', !!checked)}
+              />
+              <div>
+                <Label htmlFor="limit-by-country" className="cursor-pointer font-medium">
+                  Limitar productos/servicios por país
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  La lista base puede restringirse en designaciones específicas
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

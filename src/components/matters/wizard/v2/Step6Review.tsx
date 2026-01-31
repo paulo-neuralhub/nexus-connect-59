@@ -297,7 +297,7 @@ export function Step6Review({ wizardData, previewNumber, clientName }: Step6Revi
         </Card>
       )}
 
-      {isEU && (step3.jurisdictionFields?.euipoFastTrack || step3.jurisdictionFields?.euipoSecondLanguage) && (
+      {isEU && (step3.jurisdictionFields?.euipoFastTrack || step3.jurisdictionFields?.euipoSecondLanguage || step3.jurisdictionFields?.euipoSeniority) && (
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="py-3 flex flex-col gap-2">
             {step3.jurisdictionFields?.euipoFastTrack && (
@@ -310,6 +310,12 @@ export function Step6Review({ wizardData, previewNumber, clientName }: Step6Revi
               <p className="text-sm flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 2º idioma: {step3.jurisdictionFields.euipoSecondLanguage.toUpperCase()}
+              </p>
+            )}
+            {step3.jurisdictionFields?.euipoSeniority?.country && (
+              <p className="text-sm flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-purple-500" />
+                Seniority: {step3.jurisdictionFields.euipoSeniority.country} - {step3.jurisdictionFields.euipoSeniority.number} ({step3.jurisdictionFields.euipoSeniority.date})
               </p>
             )}
           </CardContent>
