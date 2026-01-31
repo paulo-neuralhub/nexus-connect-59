@@ -384,7 +384,7 @@ interface TimelineItemCardProps {
 function TimelineItemCard({ item, expanded, onToggleExpand }: TimelineItemCardProps) {
   const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.system;
   const Icon = config.icon;
-  const hasLongDescription = item.description && item.description.length > 100;
+  const hasContent = !!(item.description && item.description.length > 0);
 
   const DirectionIcon = item.direction === 'inbound' 
     ? ArrowDownLeft 
@@ -395,18 +395,24 @@ function TimelineItemCard({ item, expanded, onToggleExpand }: TimelineItemCardPr
   return (
     <div 
       className={cn(
-        "p-3 rounded-lg border transition-colors",
-        "hover:bg-muted/30 cursor-pointer"
+        "rounded-xl border transition-all duration-200 overflow-hidden",
+        "hover:shadow-md hover:border-primary/30 cursor-pointer",
+        expanded && "ring-2 ring-primary/20 shadow-md"
       )}
-      onClick={hasLongDescription ? onToggleExpand : undefined}
+      onClick={onToggleExpand}
     >
-      <div className="flex gap-3">
+      {/* Header - always visible */}
+      <div className={cn(
+        "p-3 flex gap-3",
+        expanded && "border-b bg-muted/30"
+      )}>
         {/* Icon */}
         <div className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-          config.bgClass
+          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform",
+          config.bgClass,
+          expanded && "scale-110"
         )}>
-          <Icon className={cn("h-4 w-4", config.colorClass)} />
+          <Icon className={cn("h-5 w-5", config.colorClass)} />
         </div>
 
         {/* Content */}
@@ -415,80 +421,102 @@ function TimelineItemCard({ item, expanded, onToggleExpand }: TimelineItemCardPr
             <div className="flex items-center gap-1.5 min-w-0">
               {DirectionIcon && (
                 <DirectionIcon className={cn(
-                  "h-3 w-3 shrink-0",
+                  "h-3.5 w-3.5 shrink-0",
                   item.direction === 'inbound' ? 'text-success' : 'text-primary'
                 )} />
               )}
-              <span className="font-medium text-sm truncate">
+              <span className="font-semibold text-sm truncate">
                 {item.title}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground shrink-0">
-              {format(new Date(item.timestamp), 'HH:mm')}
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs text-muted-foreground">
+                {format(new Date(item.timestamp), 'HH:mm')}
+              </span>
+              {hasContent && (
+                <div className={cn(
+                  "transition-transform duration-200",
+                  expanded ? "rotate-180" : ""
+                )}>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
-          {item.description && (
-            <p className={cn(
-              "text-sm text-muted-foreground mt-1",
-              !expanded && hasLongDescription && "line-clamp-2"
-            )}>
+          {/* Preview line when collapsed */}
+          {!expanded && item.description && (
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
               {item.description}
             </p>
           )}
 
           {/* Metadata badges */}
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <Badge variant="outline" className="text-xs h-5">
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5", config.bgClass, config.colorClass)}>
               {config.label}
             </Badge>
             
             {item.metadata?.duration && (
-              <Badge variant="secondary" className="text-xs h-5">
-                {formatDuration(item.metadata.duration)}
+              <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                ⏱️ {formatDuration(item.metadata.duration)}
               </Badge>
             )}
             
             {item.metadata?.call_outcome && (
-              <Badge variant="secondary" className="text-xs h-5">
+              <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
                 {item.metadata.call_outcome}
               </Badge>
             )}
 
             {item.metadata?.meeting_location && (
-              <Badge variant="secondary" className="text-xs h-5">
+              <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
                 📍 {item.metadata.meeting_location}
               </Badge>
             )}
           </div>
-
-          {/* Expand/collapse indicator */}
-          {hasLongDescription && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 text-xs mt-1 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleExpand();
-              }}
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp className="h-3 w-3 mr-1" />
-                  Ver menos
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-3 w-3 mr-1" />
-                  Ver más
-                </>
-              )}
-            </Button>
-          )}
         </div>
       </div>
+
+      {/* Expanded content - Bitrix24 style */}
+      {expanded && hasContent && (
+        <div className="px-4 py-3 bg-background">
+          {/* Full description */}
+          <div className="pl-[52px]">
+            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+              {item.description}
+            </p>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+              {(item.type === 'email' || item.type === 'whatsapp') && (
+                <>
+                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                    <ArrowUpRight className="h-3 w-3 mr-1" />
+                    Responder
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs">
+                    Reenviar
+                  </Button>
+                </>
+              )}
+              {item.type === 'document' && (
+                <>
+                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                    👁️ Ver
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs">
+                    ⬇️ Descargar
+                  </Button>
+                </>
+              )}
+              <Button variant="ghost" size="sm" className="h-7 text-xs ml-auto">
+                Abrir completo →
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

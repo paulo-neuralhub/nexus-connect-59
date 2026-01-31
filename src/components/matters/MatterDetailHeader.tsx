@@ -251,8 +251,11 @@ export function MatterDetailHeader({
         </div>
       </div>
 
-      {/* Main Info Section */}
-      <div className="px-6 py-6">
+      {/* Main Info Section - with subtle type-colored background */}
+      <div className={cn(
+        "px-6 py-6 border-b",
+        typeConfig.bgLight
+      )}>
         <div className="flex items-start gap-5">
           {/* Type Icon - with subtle color accent */}
           <div className={cn(
