@@ -1,12 +1,12 @@
 // ============================================================
 // IP-NEXUS - New Matter Wizard Page
-// L127: Multi-step wizard for creating new matters
+// L129: 3-step wizard for creating new matters
 // ============================================================
 
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Check, Loader2, Tag, Globe, FileText, Eye } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Tag, FileText, Eye } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
@@ -22,8 +22,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { usePageTitle } from '@/contexts/page-context';
 import {
   WizardSteps,
-  TypeSelector,
-  JurisdictionSelector,
+  TypeJurisdictionStep,
   DetailsForm,
   ReviewStep,
   type WizardStep,
@@ -31,12 +30,11 @@ import {
 } from '@/components/matters/wizard';
 import { toast } from 'sonner';
 
-// Steps configuration
+// Steps configuration - Now 3 steps instead of 4
 const WIZARD_STEPS: WizardStep[] = [
-  { number: 1, label: 'Tipo', icon: Tag },
-  { number: 2, label: 'Jurisdicción', icon: Globe },
-  { number: 3, label: 'Detalles', icon: FileText },
-  { number: 4, label: 'Revisar', icon: Eye },
+  { number: 1, label: 'Tipo y Jurisdicción', icon: Tag },
+  { number: 2, label: 'Detalles', icon: FileText },
+  { number: 3, label: 'Revisar', icon: Eye },
 ];
 
 export default function NewMatterPage() {
@@ -115,16 +113,14 @@ export default function NewMatterPage() {
     [matterTypes, selectedType]
   );
 
-  // Step validation
+  // Step validation - Now 3 steps
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!selectedType;
+        return !!selectedType && selectedJurisdictions.length > 0;
       case 2:
-        return selectedJurisdictions.length > 0;
-      case 3:
         return detailsData.title.length >= 3;
-      case 4:
+      case 3:
         return true;
       default:
         return false;
@@ -133,7 +129,7 @@ export default function NewMatterPage() {
 
   // Navigation
   const nextStep = () => {
-    if (isStepValid(currentStep) && currentStep < 4) {
+    if (isStepValid(currentStep) && currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -231,32 +227,24 @@ export default function NewMatterPage() {
         <Card className="mt-6">
           <CardContent className="p-6 md:p-8">
             <AnimatePresence mode="wait">
-              {/* Step 1: Type Selection */}
+              {/* Step 1: Type + Jurisdiction Combined */}
               {currentStep === 1 && (
-                <TypeSelector
+                <TypeJurisdictionStep
                   key="step-1"
                   types={matterTypes}
                   selectedType={selectedType}
-                  onSelect={setSelectedType}
-                  isLoading={loadingTypes}
-                />
-              )}
-
-              {/* Step 2: Jurisdiction Selection */}
-              {currentStep === 2 && (
-                <JurisdictionSelector
-                  key="step-2"
+                  onSelectType={setSelectedType}
                   selectedJurisdictions={selectedJurisdictions}
-                  onSelect={setSelectedJurisdictions}
-                  typeLabel={selectedTypeInfo?.name_es?.toLowerCase() || 'expediente'}
-                  singleSelect={true}
+                  onSelectJurisdictions={setSelectedJurisdictions}
+                  isLoading={loadingTypes}
+                  singleJurisdiction={true}
                 />
               )}
 
-              {/* Step 3: Details Form */}
-              {currentStep === 3 && (
+              {/* Step 2: Details Form */}
+              {currentStep === 2 && (
                 <DetailsForm
-                  key="step-3"
+                  key="step-2"
                   data={detailsData}
                   onChange={handleDetailsChange}
                   matterType={selectedType}
@@ -265,10 +253,10 @@ export default function NewMatterPage() {
                 />
               )}
 
-              {/* Step 4: Review */}
-              {currentStep === 4 && (
+              {/* Step 3: Review */}
+              {currentStep === 3 && (
                 <ReviewStep
-                  key="step-4"
+                  key="step-3"
                   formData={{
                     ...detailsData,
                     client_name: selectedClient?.name || undefined,
@@ -294,7 +282,7 @@ export default function NewMatterPage() {
             Anterior
           </Button>
 
-          {currentStep < 4 ? (
+          {currentStep < 3 ? (
             <Button
               onClick={nextStep}
               disabled={!isStepValid(currentStep)}
