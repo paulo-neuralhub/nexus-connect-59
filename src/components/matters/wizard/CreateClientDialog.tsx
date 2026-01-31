@@ -36,7 +36,7 @@ interface CreateClientDialogProps {
 
 interface NewClientData {
   name: string;
-  nif: string;
+  tax_id: string; // NIF/CIF - actual column name in contacts table
   email: string;
   phone: string;
   client_type: string;
@@ -53,7 +53,7 @@ export function CreateClientDialog({
 
   const [formData, setFormData] = useState<NewClientData>({
     name: initialName,
-    nif: '',
+    tax_id: '',
     email: '',
     phone: '',
     client_type: 'company',
@@ -79,15 +79,16 @@ export function CreateClientDialog({
         .from('contacts')
         .insert({
           organization_id: currentOrganization.id,
+          owner_type: 'tenant',
+          type: 'company',
           name: formData.name,
-          nombre_fiscal: formData.name,
-          nif: formData.nif || null,
+          tax_id: formData.tax_id || null,
           email: formData.email || null,
           phone: formData.phone || null,
-          is_client: true,
-          contact_type: formData.client_type,
+          client_type: formData.client_type,
           client_token,
-          created_at: new Date().toISOString(),
+          client_token_generated_at: new Date().toISOString(),
+          lifecycle_stage: 'customer',
         })
         .select('id, name, client_token')
         .single();
@@ -105,7 +106,7 @@ export function CreateClientDialog({
       // Reset form
       setFormData({
         name: '',
-        nif: '',
+        tax_id: '',
         email: '',
         phone: '',
         client_type: 'company',
@@ -152,12 +153,12 @@ export function CreateClientDialog({
           {/* NIF and Type */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="nif">NIF / CIF</Label>
+              <Label htmlFor="tax_id">NIF / CIF</Label>
               <Input
-                id="nif"
+                id="tax_id"
                 placeholder="B12345678"
-                value={formData.nif}
-                onChange={(e) => handleChange('nif', e.target.value)}
+                value={formData.tax_id}
+                onChange={(e) => handleChange('tax_id', e.target.value.toUpperCase())}
               />
             </div>
             <div className="space-y-2">
