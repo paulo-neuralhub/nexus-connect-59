@@ -49,21 +49,40 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 // Configuración de tipos de expediente
-const TYPE_CONFIG: Record<string, { label: string; icon: string; gradient: string; bgLight: string; textColor: string }> = {
-  TM_NAT: { label: 'Marca Nacional', icon: '®️', gradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300' },
-  TM_EU: { label: 'Marca UE', icon: '®️', gradient: 'from-indigo-500 to-indigo-600', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300' },
-  TM_INT: { label: 'Marca Internacional', icon: '®️', gradient: 'from-violet-500 to-violet-600', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
-  PT_NAT: { label: 'Patente Nacional', icon: '⚙️', gradient: 'from-purple-500 to-purple-600', bgLight: 'bg-purple-50 dark:bg-purple-950', textColor: 'text-purple-700 dark:text-purple-300' },
-  PT_EU: { label: 'Patente Europea', icon: '⚙️', gradient: 'from-fuchsia-500 to-fuchsia-600', bgLight: 'bg-fuchsia-50 dark:bg-fuchsia-950', textColor: 'text-fuchsia-700 dark:text-fuchsia-300' },
-  PT_PCT: { label: 'Patente PCT', icon: '⚙️', gradient: 'from-pink-500 to-pink-600', bgLight: 'bg-pink-50 dark:bg-pink-950', textColor: 'text-pink-700 dark:text-pink-300' },
-  UM: { label: 'Modelo Utilidad', icon: '🔧', gradient: 'from-amber-500 to-amber-600', bgLight: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300' },
-  DS_NAT: { label: 'Diseño Nacional', icon: '✏️', gradient: 'from-rose-500 to-rose-600', bgLight: 'bg-rose-50 dark:bg-rose-950', textColor: 'text-rose-700 dark:text-rose-300' },
-  DS_EU: { label: 'Diseño Comunitario', icon: '✏️', gradient: 'from-red-500 to-red-600', bgLight: 'bg-red-50 dark:bg-red-950', textColor: 'text-red-700 dark:text-red-300' },
-  DOM: { label: 'Dominio', icon: '🌐', gradient: 'from-teal-500 to-teal-600', bgLight: 'bg-teal-50 dark:bg-teal-950', textColor: 'text-teal-700 dark:text-teal-300' },
-  NC: { label: 'Nombre Comercial', icon: '🏢', gradient: 'from-emerald-500 to-emerald-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950', textColor: 'text-emerald-700 dark:text-emerald-300' },
-  OPO: { label: 'Oposición', icon: '⚖️', gradient: 'from-orange-500 to-orange-600', bgLight: 'bg-orange-50 dark:bg-orange-950', textColor: 'text-orange-700 dark:text-orange-300' },
-  VIG: { label: 'Vigilancia', icon: '👁️', gradient: 'from-cyan-500 to-cyan-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950', textColor: 'text-cyan-700 dark:text-cyan-300' },
-  LIT: { label: 'Litigio', icon: '🏛️', gradient: 'from-slate-500 to-slate-600', bgLight: 'bg-slate-50 dark:bg-slate-950', textColor: 'text-slate-700 dark:text-slate-300' },
+const TYPE_CONFIG: Record<string, { 
+  label: string; 
+  icon: string; 
+  gradient: string; 
+  bgLight: string; 
+  textColor: string;
+  color: string;
+  borderColor: string;
+}> = {
+  TM_NAT: { label: 'Marca Nacional', icon: '®️', gradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300', color: 'bg-blue-500', borderColor: 'border-blue-200 dark:border-blue-800' },
+  TM_EU: { label: 'Marca UE', icon: '®️', gradient: 'from-indigo-500 to-indigo-600', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300', color: 'bg-indigo-500', borderColor: 'border-indigo-200 dark:border-indigo-800' },
+  TM_INT: { label: 'Marca Internacional', icon: '®️', gradient: 'from-violet-500 to-violet-600', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300', color: 'bg-violet-500', borderColor: 'border-violet-200 dark:border-violet-800' },
+  PT_NAT: { label: 'Patente Nacional', icon: '⚙️', gradient: 'from-purple-500 to-purple-600', bgLight: 'bg-purple-50 dark:bg-purple-950', textColor: 'text-purple-700 dark:text-purple-300', color: 'bg-purple-500', borderColor: 'border-purple-200 dark:border-purple-800' },
+  PT_EU: { label: 'Patente Europea', icon: '⚙️', gradient: 'from-fuchsia-500 to-fuchsia-600', bgLight: 'bg-fuchsia-50 dark:bg-fuchsia-950', textColor: 'text-fuchsia-700 dark:text-fuchsia-300', color: 'bg-fuchsia-500', borderColor: 'border-fuchsia-200 dark:border-fuchsia-800' },
+  PT_PCT: { label: 'Patente PCT', icon: '⚙️', gradient: 'from-pink-500 to-pink-600', bgLight: 'bg-pink-50 dark:bg-pink-950', textColor: 'text-pink-700 dark:text-pink-300', color: 'bg-pink-500', borderColor: 'border-pink-200 dark:border-pink-800' },
+  UM: { label: 'Modelo Utilidad', icon: '🔧', gradient: 'from-amber-500 to-amber-600', bgLight: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300', color: 'bg-amber-500', borderColor: 'border-amber-200 dark:border-amber-800' },
+  DS_NAT: { label: 'Diseño Nacional', icon: '✏️', gradient: 'from-rose-500 to-rose-600', bgLight: 'bg-rose-50 dark:bg-rose-950', textColor: 'text-rose-700 dark:text-rose-300', color: 'bg-rose-500', borderColor: 'border-rose-200 dark:border-rose-800' },
+  DS_EU: { label: 'Diseño Comunitario', icon: '✏️', gradient: 'from-red-500 to-red-600', bgLight: 'bg-red-50 dark:bg-red-950', textColor: 'text-red-700 dark:text-red-300', color: 'bg-red-500', borderColor: 'border-red-200 dark:border-red-800' },
+  DOM: { label: 'Dominio', icon: '🌐', gradient: 'from-teal-500 to-teal-600', bgLight: 'bg-teal-50 dark:bg-teal-950', textColor: 'text-teal-700 dark:text-teal-300', color: 'bg-teal-500', borderColor: 'border-teal-200 dark:border-teal-800' },
+  NC: { label: 'Nombre Comercial', icon: '🏢', gradient: 'from-emerald-500 to-emerald-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950', textColor: 'text-emerald-700 dark:text-emerald-300', color: 'bg-emerald-500', borderColor: 'border-emerald-200 dark:border-emerald-800' },
+  OPO: { label: 'Oposición', icon: '⚖️', gradient: 'from-orange-500 to-orange-600', bgLight: 'bg-orange-50 dark:bg-orange-950', textColor: 'text-orange-700 dark:text-orange-300', color: 'bg-orange-500', borderColor: 'border-orange-200 dark:border-orange-800' },
+  VIG: { label: 'Vigilancia', icon: '👁️', gradient: 'from-cyan-500 to-cyan-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950', textColor: 'text-cyan-700 dark:text-cyan-300', color: 'bg-cyan-500', borderColor: 'border-cyan-200 dark:border-cyan-800' },
+  LIT: { label: 'Litigio', icon: '🏛️', gradient: 'from-slate-500 to-slate-600', bgLight: 'bg-slate-50 dark:bg-slate-950', textColor: 'text-slate-700 dark:text-slate-300', color: 'bg-slate-500', borderColor: 'border-slate-200 dark:border-slate-800' },
+};
+
+// Default para tipos desconocidos
+const DEFAULT_TYPE_CONFIG = { 
+  label: 'Expediente', 
+  icon: '📁', 
+  gradient: 'from-gray-500 to-gray-600', 
+  bgLight: 'bg-gray-50 dark:bg-gray-900', 
+  textColor: 'text-gray-700 dark:text-gray-300',
+  color: 'bg-gray-500',
+  borderColor: 'border-gray-200 dark:border-gray-700'
 };
 
 // Configuración de estados
@@ -88,6 +107,17 @@ const JURISDICTION_FLAGS: Record<string, string> = {
 
 // Configuración de fases (progreso visual)
 const PHASE_CONFIG: Record<string, { label: string; progress: number; color: string }> = {
+  F0: { label: 'Apertura', progress: 5, color: 'bg-slate-400' },
+  F1: { label: 'Análisis', progress: 15, color: 'bg-blue-400' },
+  F2: { label: 'Presupuesto', progress: 25, color: 'bg-cyan-400' },
+  F3: { label: 'Contratación', progress: 35, color: 'bg-indigo-400' },
+  F4: { label: 'Preparación', progress: 45, color: 'bg-violet-400' },
+  F5: { label: 'Presentación', progress: 55, color: 'bg-purple-400' },
+  F6: { label: 'Examen', progress: 70, color: 'bg-fuchsia-400' },
+  F7: { label: 'Publicación', progress: 85, color: 'bg-pink-400' },
+  F8: { label: 'Resolución', progress: 95, color: 'bg-green-400' },
+  F9: { label: 'Post-servicio', progress: 100, color: 'bg-emerald-500' },
+  // Legacy mappings
   inquiry: { label: 'Consulta', progress: 5, color: 'bg-slate-400' },
   analysis: { label: 'Análisis', progress: 15, color: 'bg-blue-400' },
   quotation: { label: 'Presupuesto', progress: 25, color: 'bg-cyan-400' },
@@ -451,7 +481,7 @@ function KpiCard({
 }
 
 function MatterRow({ matter, onClick, onDelete }: { matter: any; onClick: () => void; onDelete: () => void }) {
-  const typeConfig = TYPE_CONFIG[matter.matter_type] || { label: matter.matter_type, icon: '📁', gradient: 'from-gray-500 to-gray-600', bgLight: 'bg-gray-50', textColor: 'text-gray-700' };
+  const typeConfig = TYPE_CONFIG[matter.matter_type] || DEFAULT_TYPE_CONFIG;
   const statusConfig = STATUS_CONFIG[matter.status] || STATUS_CONFIG.draft;
   const phaseConfig = PHASE_CONFIG[matter.current_phase] || { label: matter.current_phase || '—', progress: 50, color: 'bg-gray-400' };
   const flag = JURISDICTION_FLAGS[matter.jurisdiction_primary] || '🌐';
@@ -463,119 +493,184 @@ function MatterRow({ matter, onClick, onDelete }: { matter: any; onClick: () => 
     <div 
       onClick={onClick}
       className={cn(
-        "group relative bg-white dark:bg-slate-800 rounded-xl border border-border/50",
-        "hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5",
-        "transition-all duration-200 cursor-pointer overflow-hidden"
+        "group relative bg-white dark:bg-slate-900 rounded-xl border transition-all duration-200",
+        "hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50",
+        "hover:border-slate-300 dark:hover:border-slate-600",
+        "cursor-pointer overflow-hidden",
+        // Highlighting de urgencia
+        isUrgent && "border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/20"
       )}
     >
-      {/* Barra de color del tipo */}
-      <div className={cn("absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b", typeConfig.gradient)} />
+      {/* Barra de color lateral según tipo */}
+      <div className={cn(
+        "absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl",
+        typeConfig.color
+      )} />
       
       <div className="flex items-center gap-4 p-4 pl-5">
-        {/* Icono tipo */}
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0", typeConfig.bgLight)}>
+        
+        {/* IZQUIERDA: Icono de Tipo (Grande y Claro) */}
+        <div className={cn(
+          "w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0",
+          "border-2 transition-transform group-hover:scale-105",
+          typeConfig.bgLight,
+          typeConfig.borderColor
+        )}>
           {typeConfig.icon}
         </div>
 
-        {/* Info principal */}
+        {/* CENTRO: Información Principal */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-semibold text-primary">
+          {/* Fila 1: Número + Badge Tipo */}
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="font-mono text-sm font-medium text-muted-foreground">
               {matter.matter_number || matter.reference}
             </span>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5", typeConfig.textColor)}>
+            <Badge 
+              variant="secondary" 
+              className={cn(
+                "text-[10px] px-1.5 py-0",
+                typeConfig.bgLight, 
+                typeConfig.textColor,
+                "border",
+                typeConfig.borderColor
+              )}
+            >
               {typeConfig.label}
             </Badge>
-            {matter.is_starred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
-            {matter.is_urgent && <AlertTriangle className="h-4 w-4 text-red-500" />}
+            {matter.is_starred && (
+              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+            )}
           </div>
           
-          <h3 className="font-medium text-foreground truncate mt-0.5">
-            {matter.title}
+          {/* Fila 2: Título */}
+          <h3 className="font-semibold text-base truncate mb-1.5 group-hover:text-primary transition-colors">
+            {matter.title || matter.mark_name || 'Sin título'}
           </h3>
           
-          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Building2 className="h-3.5 w-3.5" />
-              {matter.client_name || 'Sin cliente'}
+          {/* Fila 3: Cliente + Jurisdicción */}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5 truncate">
+              <Building2 className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{matter.client_name || 'Sin cliente'}</span>
             </span>
-            <span className="flex items-center gap-1">
-              {flag} {matter.jurisdiction_primary || '—'}
+            <span className="flex items-center gap-1 shrink-0">
+              <span className="text-base leading-none">{flag}</span>
+              <span>{matter.jurisdiction_primary || '—'}</span>
             </span>
           </div>
         </div>
 
-        {/* Fase y progreso */}
-        <div className="hidden md:flex flex-col items-end gap-1 w-32">
-          <div className="flex items-center gap-1.5">
-            <Badge variant="secondary" className="text-xs font-mono">
+        {/* DERECHA: Fase + Progreso */}
+        <div className="hidden md:block w-36 shrink-0">
+          {/* Label de fase */}
+          <div className="flex items-center justify-between mb-1.5">
+            <Badge variant="outline" className="font-mono text-[10px] h-5">
               {matter.current_phase || '—'}
             </Badge>
-            <span className="text-xs text-muted-foreground">{phaseConfig.label}</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {phaseConfig.label}
+            </span>
           </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+          
+          {/* Progress bar mejorada */}
+          <div className="relative h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
             <div 
-              className={cn("h-full transition-all", phaseConfig.color)}
+              className={cn(
+                "absolute inset-y-0 left-0 rounded-full transition-all duration-500",
+                phaseConfig.color
+              )}
               style={{ width: `${phaseConfig.progress}%` }}
             />
+            {/* Marcadores de fase */}
+            <div className="absolute inset-0 flex justify-between px-0.5">
+              {[...Array(10)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-px h-full bg-white/40 dark:bg-slate-600/50"
+                />
+              ))}
+            </div>
           </div>
+          
+          {/* Porcentaje */}
+          <p className="text-[10px] text-muted-foreground text-right mt-1">
+            {phaseConfig.progress}% completado
+          </p>
         </div>
 
-        {/* Urgencia indicator */}
-        <div className="hidden lg:flex flex-col items-end w-24">
+        {/* DERECHA: Urgencia */}
+        <div className="hidden lg:flex w-24 shrink-0 justify-center">
           {isUrgent ? (
-            <Badge variant="outline" className="font-medium border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950">
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              Urgente
-            </Badge>
+            <div className="inline-flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-xs font-bold">URGENTE</span>
+            </div>
           ) : (
             <span className="text-xs text-muted-foreground">—</span>
           )}
         </div>
 
-        {/* Estado */}
-        <Badge className={cn(statusConfig.bgColor, statusConfig.color, "hidden sm:flex")}>
-          {statusConfig.label}
-        </Badge>
+        {/* DERECHA: Estado */}
+        <div className="shrink-0 hidden sm:block">
+          <Badge 
+            className={cn(
+              "font-medium",
+              statusConfig.bgColor,
+              statusConfig.color
+            )}
+          >
+            {matter.status === 'active' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+            )}
+            {statusConfig.label}
+          </Badge>
+        </div>
 
-        {/* Acciones */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onClick(); }}>
-              <Eye className="h-4 w-4 mr-2" /> Ver expediente
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-              <FileText className="h-4 w-4 mr-2" /> Generar documento
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-              <Mail className="h-4 w-4 mr-2" /> Enviar email
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-              <Download className="h-4 w-4 mr-2" /> Exportar
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" /> Archivar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+        {/* DERECHA: Acciones + Flecha */}
+        <div className="flex items-center gap-1 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onClick(); }}>
+                <Eye className="h-4 w-4 mr-2" /> Ver expediente
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                <FileText className="h-4 w-4 mr-2" /> Generar documento
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                <Mail className="h-4 w-4 mr-2" /> Enviar email
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                <Download className="h-4 w-4 mr-2" /> Exportar PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" /> Archivar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+        </div>
       </div>
     </div>
   );
 }
 
 function MatterCard({ matter, onClick }: { matter: any; onClick: () => void }) {
-  const typeConfig = TYPE_CONFIG[matter.matter_type] || { label: matter.matter_type, icon: '📁', gradient: 'from-gray-500 to-gray-600', bgLight: 'bg-gray-50', textColor: 'text-gray-700' };
+  const typeConfig = TYPE_CONFIG[matter.matter_type] || DEFAULT_TYPE_CONFIG;
   const statusConfig = STATUS_CONFIG[matter.status] || STATUS_CONFIG.draft;
   const phaseConfig = PHASE_CONFIG[matter.current_phase] || { label: matter.current_phase || '—', progress: 50, color: 'bg-gray-400' };
   const flag = JURISDICTION_FLAGS[matter.jurisdiction_primary] || '🌐';
@@ -590,7 +685,7 @@ function MatterCard({ matter, onClick }: { matter: any; onClick: () => void }) {
       
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
-          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-lg", typeConfig.bgLight)}>
+          <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center text-xl border-2", typeConfig.bgLight, typeConfig.borderColor)}>
             {typeConfig.icon}
           </div>
           <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs")}>
