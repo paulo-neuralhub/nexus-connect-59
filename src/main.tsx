@@ -3,11 +3,11 @@ import App from "./App.tsx";
 import "./index.css";
 import "./styles/mobile.css"; // Mobile-first styles
 import "./lib/i18n"; // Initialize i18n
-import { unregisterServiceWorker } from "@/lib/pwa/register-sw";
+import { shouldDisableServiceWorker, unregisterServiceWorker } from "@/lib/pwa/register-sw";
 
 // Prevent Service Worker caching in Lovable preview/dev.
 // Cached mixed chunks can cause React "dispatcher null" hook crashes.
-if (import.meta.env.DEV) {
+if (shouldDisableServiceWorker()) {
   unregisterServiceWorker().catch(() => {
     // ignore
   });
