@@ -1,5 +1,20 @@
 import { logger } from '@/lib/logger';
 
+export function shouldDisableServiceWorker(): boolean {
+  // In Lovable preview (served from *.lovable.app / *.lovableproject.com), SW caching can
+  // serve stale bundles across refreshes. Disable SW there to ensure updates are visible.
+  if (import.meta.env.DEV) return true;
+  if (typeof window === 'undefined') return true;
+
+  const host = window.location.hostname;
+  return (
+    host.endsWith('.lovable.app') ||
+    host === 'lovable.app' ||
+    host.endsWith('.lovableproject.com') ||
+    host === 'lovableproject.com'
+  );
+}
+
 export async function registerServiceWorker() {
   // IMPORTANT:
   // In Lovable preview/dev builds the app is served from a Vite-like dev output
@@ -7,7 +22,7 @@ export async function registerServiceWorker() {
   // cache *mixed* JS chunks across refreshes and trigger React "dispatcher null"
   // errors (useRef/useState/useEffect).
   // لذلك: en DEV deshabilitamos el SW y limpiamos cualquier registro previo.
-  if (import.meta.env.DEV) {
+  if (shouldDisableServiceWorker()) {
     try {
       await unregisterServiceWorker();
     } catch {
