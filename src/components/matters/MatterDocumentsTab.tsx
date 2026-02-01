@@ -260,7 +260,7 @@ export function MatterDocumentsTab({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDownload(doc.file_url, doc.name)}
+                            onClick={() => handleDownload(doc.file_path || doc.storage_path || '', doc.name)}
                           >
                             <Download className="h-4 w-4" />
                           </Button>

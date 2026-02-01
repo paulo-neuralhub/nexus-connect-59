@@ -1,5 +1,9 @@
 // Document types for the storage system
+// ============================================================
+// Extended for PROMPT 5: Document & Template Management
+// ============================================================
 
+// Original DocumentType (for backwards compatibility)
 export type DocumentType = 
   | 'application'
   | 'certificate'
@@ -12,6 +16,216 @@ export type DocumentType =
   | 'office_action'
   | 'response'
   | 'other';
+
+// Extended category for PI document templates
+export type DocumentCategory =
+  | 'power_of_attorney'
+  | 'assignment'
+  | 'declaration'
+  | 'filing'
+  | 'correspondence'
+  | 'official'
+  | 'invoice'
+  | 'report'
+  | 'contract'
+  | 'certificate'
+  | 'evidence'
+  | 'other';
+
+// Document workflow type
+export type MatterDocumentType =
+  | 'generated'
+  | 'uploaded'
+  | 'received'
+  | 'sent'
+  | 'internal';
+
+// Document status
+export type DocumentStatus =
+  | 'draft'
+  | 'active'
+  | 'superseded'
+  | 'archived'
+  | 'deleted';
+
+// Signature status
+export type SignatureStatus =
+  | 'pending'
+  | 'signed'
+  | 'rejected'
+  | 'not_required';
+
+// Template format
+export type TemplateFormat = 'docx' | 'pdf' | 'html' | 'txt' | 'xlsx';
+
+// Signature type
+export type SignatureType = 'client' | 'attorney' | 'both' | 'none';
+
+// ============================================================
+// PI Document Template
+// ============================================================
+export interface PIDocumentTemplate {
+  id: string;
+  code: string;
+  name_en: string;
+  name_es: string;
+  description_en: string | null;
+  description_es: string | null;
+  category: DocumentCategory;
+  right_type: string | null;
+  jurisdiction_id: string | null;
+  typical_phase: string | null;
+  format: TemplateFormat;
+  template_content: string | null;
+  template_file_url: string | null;
+  variable_codes: string[];
+  is_required_for: string[];
+  auto_generate_on_phase: string | null;
+  requires_signature: boolean;
+  signature_type: SignatureType | null;
+  available_languages: string[];
+  tags: string[];
+  is_active: boolean;
+  display_order: number;
+  
+  // Joined
+  jurisdiction?: {
+    id: string;
+    code: string;
+    name_en: string;
+  };
+}
+
+// ============================================================
+// Matter Document (extended for workflow)
+// ============================================================
+export interface MatterDocument {
+  id: string;
+  matter_id: string;
+  organization_id: string;
+  template_id: string | null;
+  name: string;
+  description: string | null;
+  category: DocumentCategory | string;
+  document_type: MatterDocumentType;
+  storage_path: string;
+  file_path?: string; // Legacy alias
+  file_name: string;
+  file_size: number | null;
+  mime_type: string | null;
+  file_extension: string | null;
+  file_hash: string | null;
+  status: DocumentStatus;
+  created_in_phase: string | null;
+  document_date: string | null;
+  received_date: string | null;
+  sent_date: string | null;
+  requires_signature: boolean;
+  signature_status: SignatureStatus | null;
+  signed_by: string | null;
+  signed_at: string | null;
+  correspondent: string | null;
+  correspondent_reference: string | null;
+  language: string;
+  tags: string[];
+  notes: string | null;
+  internal_notes: string | null;
+  version: number;
+  parent_document_id: string | null;
+  is_confidential: boolean;
+  visible_to_client: boolean;
+  created_by: string | null;
+  uploaded_by?: string | null; // Legacy alias
+  created_at: string;
+  updated_at: string;
+  
+  // OCR/Extraction
+  extraction_id?: string | null;
+  extraction_status?: string | null;
+  ocr_text?: string | null;
+  is_official?: boolean;
+  expiry_date?: string | null;
+  
+  // Joined
+  template?: PIDocumentTemplate;
+  creator?: {
+    id: string;
+    full_name: string;
+  };
+}
+
+// ============================================================
+// Document Version (for history)
+// ============================================================
+export interface DocumentVersion {
+  id: string;
+  document_id: string;
+  version_number: number;
+  storage_path: string;
+  file_name: string;
+  file_size: number | null;
+  file_hash: string | null;
+  change_summary: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ============================================================
+// Template Variable (for substitution)
+// ============================================================
+export interface TemplateVariable {
+  id: string;
+  code: string;
+  name_en: string;
+  name_es: string;
+  description_en: string | null;
+  description_es: string | null;
+  category: string;
+  source_table: string | null;
+  source_field: string | null;
+  source_path: string | null;
+  format_type: 'text' | 'date' | 'number' | 'currency' | 'list' | 'boolean';
+  format_pattern: string | null;
+  transform: string | null;
+  default_value: string | null;
+  example_value: string | null;
+  is_active: boolean;
+}
+
+// ============================================================
+// Document Filters
+// ============================================================
+export interface DocumentFilters {
+  category?: DocumentCategory[];
+  documentType?: MatterDocumentType[];
+  status?: DocumentStatus[];
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+// ============================================================
+// Document Category Metadata
+// ============================================================
+export const DOCUMENT_CATEGORIES: Record<DocumentCategory, {
+  label: string;
+  labelEs: string;
+  icon: string;
+  color: string;
+}> = {
+  power_of_attorney: { label: 'Power of Attorney', labelEs: 'Poder', icon: '📜', color: 'blue' },
+  assignment: { label: 'Assignment', labelEs: 'Cesión', icon: '📝', color: 'purple' },
+  declaration: { label: 'Declaration', labelEs: 'Declaración', icon: '📋', color: 'indigo' },
+  filing: { label: 'Filing Document', labelEs: 'Documento Presentación', icon: '📤', color: 'green' },
+  correspondence: { label: 'Correspondence', labelEs: 'Correspondencia', icon: '✉️', color: 'cyan' },
+  official: { label: 'Official Document', labelEs: 'Documento Oficial', icon: '🏛️', color: 'amber' },
+  invoice: { label: 'Invoice', labelEs: 'Factura', icon: '💰', color: 'emerald' },
+  report: { label: 'Report', labelEs: 'Informe', icon: '📊', color: 'violet' },
+  contract: { label: 'Contract', labelEs: 'Contrato', icon: '📄', color: 'rose' },
+  certificate: { label: 'Certificate', labelEs: 'Certificado', icon: '🏆', color: 'yellow' },
+  evidence: { label: 'Evidence', labelEs: 'Prueba/Evidencia', icon: '🔍', color: 'orange' },
+  other: { label: 'Other', labelEs: 'Otro', icon: '📁', color: 'gray' },
+};
 
 export type EntityType = 'matter' | 'client' | 'deal' | 'invoice' | 'quote';
 
