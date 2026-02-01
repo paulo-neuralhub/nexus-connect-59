@@ -27598,7 +27598,9 @@ export type Database = {
           metadata: Json | null
           notes: string | null
           organization_id: string
+          reason: string | null
           time_in_phase_hours: number | null
+          time_in_previous_phase: unknown
           to_phase: string
           trigger_event: string | null
         }
@@ -27612,7 +27614,9 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           organization_id: string
+          reason?: string | null
           time_in_phase_hours?: number | null
+          time_in_previous_phase?: unknown
           to_phase: string
           trigger_event?: string | null
         }
@@ -27626,7 +27630,9 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           organization_id?: string
+          reason?: string | null
           time_in_phase_hours?: number | null
+          time_in_previous_phase?: unknown
           to_phase?: string
           trigger_event?: string | null
         }
@@ -28412,9 +28418,11 @@ export type Database = {
           official_fees: number | null
           organization_id: string
           owner_name: string | null
+          phase_entered_at: string | null
           phase_history: Json | null
           phase_started_at: string | null
           portfolio_id: string | null
+          previous_phase: string | null
           priority_country: string | null
           priority_date: string | null
           priority_number: string | null
@@ -28427,17 +28435,20 @@ export type Database = {
           risk_score: number | null
           search_vector: unknown
           secondary_user_id: string | null
+          service_template_id: string | null
           source_quote_id: string | null
           source_type: string | null
           status: string
           status_code: Database["public"]["Enums"]["matter_status_enum"] | null
           status_date: string | null
           tags: string[] | null
+          target_phase: string | null
           title: string
           total_cost: number | null
           type: string
           updated_at: string | null
           updated_by: string | null
+          workflow_progress: number | null
         }
         Insert: {
           account_id?: string | null
@@ -28493,9 +28504,11 @@ export type Database = {
           official_fees?: number | null
           organization_id: string
           owner_name?: string | null
+          phase_entered_at?: string | null
           phase_history?: Json | null
           phase_started_at?: string | null
           portfolio_id?: string | null
+          previous_phase?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -28508,17 +28521,20 @@ export type Database = {
           risk_score?: number | null
           search_vector?: unknown
           secondary_user_id?: string | null
+          service_template_id?: string | null
           source_quote_id?: string | null
           source_type?: string | null
           status?: string
           status_code?: Database["public"]["Enums"]["matter_status_enum"] | null
           status_date?: string | null
           tags?: string[] | null
+          target_phase?: string | null
           title: string
           total_cost?: number | null
           type: string
           updated_at?: string | null
           updated_by?: string | null
+          workflow_progress?: number | null
         }
         Update: {
           account_id?: string | null
@@ -28574,9 +28590,11 @@ export type Database = {
           official_fees?: number | null
           organization_id?: string
           owner_name?: string | null
+          phase_entered_at?: string | null
           phase_history?: Json | null
           phase_started_at?: string | null
           portfolio_id?: string | null
+          previous_phase?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -28589,17 +28607,20 @@ export type Database = {
           risk_score?: number | null
           search_vector?: unknown
           secondary_user_id?: string | null
+          service_template_id?: string | null
           source_quote_id?: string | null
           source_type?: string | null
           status?: string
           status_code?: Database["public"]["Enums"]["matter_status_enum"] | null
           status_date?: string | null
           tags?: string[] | null
+          target_phase?: string | null
           title?: string
           total_cost?: number | null
           type?: string
           updated_at?: string | null
           updated_by?: string | null
+          workflow_progress?: number | null
         }
         Relationships: [
           {
@@ -28719,6 +28740,13 @@ export type Database = {
             columns: ["secondary_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_service_template_id_fkey"
+            columns: ["service_template_id"]
+            isOneToOne: false
+            referencedRelation: "service_templates"
             referencedColumns: ["id"]
           },
           {
@@ -46496,6 +46524,9 @@ export type Database = {
       }
       workflow_phases: {
         Row: {
+          allowed_next_phases: string[] | null
+          allowed_prev_phases: string[] | null
+          allows_editing: boolean | null
           auto_tasks: Json | null
           can_skip: boolean | null
           code: string
@@ -46503,22 +46534,31 @@ export type Database = {
           created_at: string | null
           default_tasks: Json | null
           description: string | null
+          entry_validations: Json | null
           estimated_days: number | null
           exit_conditions: Json | null
           icon: string | null
           id: string
           is_active: boolean | null
+          is_initial: boolean | null
+          is_terminal: boolean | null
           name: string
           notification_template_id: string | null
+          on_enter_actions: Json | null
+          on_exit_actions: Json | null
           organization_id: string | null
           position: number
           required_approvals: string[] | null
           required_documents: string[] | null
           requires_approval: boolean | null
+          sequence: number | null
           sla_hours: number | null
           updated_at: string | null
         }
         Insert: {
+          allowed_next_phases?: string[] | null
+          allowed_prev_phases?: string[] | null
+          allows_editing?: boolean | null
           auto_tasks?: Json | null
           can_skip?: boolean | null
           code: string
@@ -46526,22 +46566,31 @@ export type Database = {
           created_at?: string | null
           default_tasks?: Json | null
           description?: string | null
+          entry_validations?: Json | null
           estimated_days?: number | null
           exit_conditions?: Json | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_initial?: boolean | null
+          is_terminal?: boolean | null
           name: string
           notification_template_id?: string | null
+          on_enter_actions?: Json | null
+          on_exit_actions?: Json | null
           organization_id?: string | null
           position: number
           required_approvals?: string[] | null
           required_documents?: string[] | null
           requires_approval?: boolean | null
+          sequence?: number | null
           sla_hours?: number | null
           updated_at?: string | null
         }
         Update: {
+          allowed_next_phases?: string[] | null
+          allowed_prev_phases?: string[] | null
+          allows_editing?: boolean | null
           auto_tasks?: Json | null
           can_skip?: boolean | null
           code?: string
@@ -46549,18 +46598,24 @@ export type Database = {
           created_at?: string | null
           default_tasks?: Json | null
           description?: string | null
+          entry_validations?: Json | null
           estimated_days?: number | null
           exit_conditions?: Json | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_initial?: boolean | null
+          is_terminal?: boolean | null
           name?: string
           notification_template_id?: string | null
+          on_enter_actions?: Json | null
+          on_exit_actions?: Json | null
           organization_id?: string | null
           position?: number
           required_approvals?: string[] | null
           required_documents?: string[] | null
           requires_approval?: boolean | null
+          sequence?: number | null
           sla_hours?: number | null
           updated_at?: string | null
         }
@@ -48341,6 +48396,16 @@ export type Database = {
           reason: string
           required_suites: number
         }[]
+      }
+      change_matter_phase: {
+        Args: {
+          p_matter_id: string
+          p_new_phase: string
+          p_notes?: string
+          p_reason?: string
+          p_user_id?: string
+        }
+        Returns: Json
       }
       change_prompt_status: {
         Args: {
