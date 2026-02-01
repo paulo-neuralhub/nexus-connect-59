@@ -13,12 +13,25 @@ export interface WorkflowPhase {
   organization_id: string | null;
   code: string;
   name: string;
+  name_en?: string;
+  name_es?: string;
   description: string | null;
+  description_en?: string | null;
+  description_es?: string | null;
   position: number;
+  sequence?: number;
   color: string | null;
   icon: string | null;
   default_tasks: unknown[];
   is_active: boolean;
+  is_initial?: boolean;
+  is_terminal?: boolean;
+  allows_editing?: boolean;
+  allowed_next_phases?: string[];
+  allowed_prev_phases?: string[];
+  on_enter_actions?: Record<string, unknown>;
+  on_exit_actions?: Record<string, unknown>;
+  entry_validations?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -58,19 +71,22 @@ export function useMatterPhase(matterId: string) {
   const queryClient = useQueryClient();
 
   const advancePhase = useMutation({
-    mutationFn: async ({ newPhase, notes }: { newPhase: string; notes?: string }) => {
+    mutationFn: async ({ newPhase, reason, notes }: { newPhase: string; reason?: string; notes?: string }) => {
+      // Use the new change_matter_phase function
       const { data, error } = await supabase
-        .rpc('advance_matter_phase', {
+        .rpc('change_matter_phase', {
           p_matter_id: matterId,
           p_new_phase: newPhase,
+          p_reason: reason,
           p_notes: notes,
+          p_user_id: null, // Will use auth.uid() in function
         });
 
       if (error) throw error;
       
-      const result = data as { success: boolean; error?: string; from?: string; to?: string };
+      const result = data as { success: boolean; error?: string; from_phase?: string; to_phase?: string; allowed_next?: string[]; allowed_prev?: string[] };
       if (!result.success) {
-        throw new Error(result.error || 'Error al avanzar fase');
+        throw new Error(result.error || 'Error al cambiar fase');
       }
       
       return result;
@@ -79,7 +95,7 @@ export function useMatterPhase(matterId: string) {
       queryClient.invalidateQueries({ queryKey: ['matter', matterId] });
       queryClient.invalidateQueries({ queryKey: ['matter-timeline', matterId] });
       queryClient.invalidateQueries({ queryKey: ['matters'] });
-      toast.success(`Fase actualizada: ${data.from} → ${data.to}`);
+      toast.success(`Fase actualizada: ${data.from_phase} → ${data.to_phase}`);
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`);
