@@ -16,6 +16,7 @@ import {
   Zap,
   Upload,
   Camera,
+  Lock,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ import { ClientSelector } from './ClientSelector';
 import { NiceClassSelectorDB } from './NiceClassSelectorDB';
 import { CreateClientDialog } from './CreateClientDialog';
 import { DynamicJurisdictionFields } from '@/components/matters/DynamicJurisdictionFields';
+import { cn } from '@/lib/utils';
 import type { NiceSelection } from './NiceClassWithProductsSelector';
 
 // Map matter type codes to right types for dynamic fields
@@ -273,44 +275,91 @@ export function DetailsForm({
         />
       </div>
 
-      {/* Options */}
-      <div className="space-y-4 pt-4 border-t">
-        <div className="flex items-center justify-between p-4 rounded-lg border">
-          <div>
-            <p className="font-medium">Urgente</p>
-            <p className="text-sm text-muted-foreground">Marcar como expediente prioritario</p>
+      {/* Options - NIVEL DIOS: Cards con estado visual */}
+      <div className="space-y-3 pt-4 border-t">
+        {/* Urgente Toggle */}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className={cn(
+            "flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer",
+            data.is_urgent
+              ? "border-destructive/70 bg-destructive/5 shadow-md"
+              : "border-border hover:border-destructive/40 hover:bg-destructive/5"
+          )}
+          onClick={() => onChange({ is_urgent: !data.is_urgent })}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center transition-all",
+              data.is_urgent ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"
+            )}>
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <p className={cn("font-semibold", data.is_urgent && "text-destructive")}>
+                ⚠️ Urgente
+              </p>
+              <p className="text-sm text-muted-foreground">Marcar como expediente prioritario</p>
+            </div>
           </div>
           <Switch
             checked={data.is_urgent}
             onCheckedChange={(checked) => onChange({ is_urgent: checked })}
           />
-        </div>
-        <div className="flex items-center justify-between p-4 rounded-lg border">
-          <div>
-            <p className="font-medium">Confidencial</p>
-            <p className="text-sm text-muted-foreground">Restringir acceso a usuarios autorizados</p>
+        </motion.div>
+
+        {/* Confidencial Toggle */}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className={cn(
+            "flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer",
+            data.is_confidential
+              ? "border-primary/70 bg-primary/5 shadow-md"
+              : "border-border hover:border-primary/40 hover:bg-primary/5"
+          )}
+          onClick={() => onChange({ is_confidential: !data.is_confidential })}
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center transition-all",
+              data.is_confidential ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            )}>
+              <Lock className="h-5 w-5" />
+            </div>
+            <div>
+              <p className={cn("font-semibold", data.is_confidential && "text-primary")}>
+                🔒 Confidencial
+              </p>
+              <p className="text-sm text-muted-foreground">Restringir acceso a usuarios autorizados</p>
+            </div>
           </div>
           <Switch
             checked={data.is_confidential}
             onCheckedChange={(checked) => onChange({ is_confidential: checked })}
           />
-        </div>
+        </motion.div>
       </div>
 
       {/* ============================================ */}
-      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN         */}
+      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN - NIVEL DIOS */}
+      {/* Diseño integrado, no llamativo */}
       {/* ============================================ */}
 
       {/* ESPAÑA - OEPM */}
       {isES && (
-        <Card className="border-l-4 border-l-red-500">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <span className="text-xl">🇪🇸</span>
-              Campos específicos España (OEPM)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b">
+            <span className="text-xl">🇪🇸</span>
+            <div>
+              <p className="font-semibold text-sm">España (OEPM)</p>
+              <p className="text-xs text-muted-foreground">Campos específicos de jurisdicción</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-3">
               <Label className="text-sm font-medium">Modalidad de solicitud</Label>
               <RadioGroup
@@ -331,7 +380,7 @@ export function DetailsForm({
               </RadioGroup>
             </div>
 
-            <div className="flex items-start space-x-3 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+            <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg border">
               <Checkbox
                 id="pyme-es"
                 checked={data.reduccion_pyme_es || false}
@@ -346,20 +395,25 @@ export function DetailsForm({
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       )}
 
       {/* UNIÓN EUROPEA - EUIPO */}
       {isEU && (
-        <Card className="border-l-4 border-l-blue-600">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <span className="text-xl">🇪🇺</span>
-              Campos específicos EUIPO
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b">
+            <span className="text-xl">🇪🇺</span>
+            <div>
+              <p className="font-semibold text-sm">Unión Europea (EUIPO)</p>
+              <p className="text-xs text-muted-foreground">Campos específicos de jurisdicción</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 Segundo idioma de procedimiento <span className="text-destructive">*</span>
@@ -381,7 +435,7 @@ export function DetailsForm({
               </Select>
             </div>
 
-            <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg border">
               <Checkbox
                 id="fasttrack-eu"
                 checked={data.fast_track_eu || false}
@@ -389,7 +443,7 @@ export function DetailsForm({
               />
               <div className="space-y-1">
                 <Label htmlFor="fasttrack-eu" className="font-medium cursor-pointer flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-blue-500" />
+                  <Zap className="h-4 w-4 text-primary" />
                   Fast Track
                 </Label>
                 <p className="text-xs text-muted-foreground">
@@ -397,20 +451,25 @@ export function DetailsForm({
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       )}
 
       {/* ESTADOS UNIDOS - USPTO */}
       {isUS && (
-        <Card className="border-l-4 border-l-blue-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <span className="text-xl">🇺🇸</span>
-              Campos específicos USPTO
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b">
+            <span className="text-xl">🇺🇸</span>
+            <div>
+              <p className="font-semibold text-sm">Estados Unidos (USPTO)</p>
+              <p className="text-xs text-muted-foreground">Campos específicos de jurisdicción</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-3">
               <Label className="text-sm font-medium">
                 Base de la solicitud <span className="text-destructive">*</span>
@@ -448,7 +507,7 @@ export function DetailsForm({
             </div>
 
             {data.basis_us === '1a' && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
                     <Camera className="h-4 w-4" />
@@ -495,21 +554,26 @@ export function DetailsForm({
                 Elementos descriptivos que no se reivindican exclusivamente
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       )}
 
       {/* INTERNACIONAL - WIPO/MADRID */}
       {isWO && (
-        <Card className="border-l-4 border-l-green-600">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <span className="text-xl">🌍</span>
-              Campos específicos WIPO (Protocolo de Madrid)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b">
+            <span className="text-xl">🌍</span>
+            <div>
+              <p className="font-semibold text-sm">WIPO (Protocolo de Madrid)</p>
+              <p className="text-xs text-muted-foreground">Campos específicos de jurisdicción</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
+            <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
               <h4 className="font-medium text-sm flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Marca base (obligatoria)
@@ -618,9 +682,12 @@ export function DetailsForm({
                   return (
                     <label
                       key={pais.code}
-                      className={`flex items-center gap-2 p-2 rounded cursor-pointer text-sm ${
-                        isSelected ? 'bg-green-100 dark:bg-green-900/30 border border-green-300' : 'hover:bg-muted'
-                      }`}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded cursor-pointer text-sm transition-all",
+                        isSelected 
+                          ? "bg-primary/10 border border-primary/30" 
+                          : "hover:bg-muted border border-transparent"
+                      )}
                     >
                       <Checkbox
                         checked={isSelected}
@@ -639,20 +706,25 @@ export function DetailsForm({
                 })}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       )}
 
       {/* CHINA - CNIPA */}
       {isCN && (
-        <Card className="border-l-4 border-l-red-600">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <span className="text-xl">🇨🇳</span>
-              Campos específicos China (CNIPA)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b">
+            <span className="text-xl">🇨🇳</span>
+            <div>
+              <p className="font-semibold text-sm">China (CNIPA)</p>
+              <p className="text-xs text-muted-foreground">Campos específicos de jurisdicción</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 Traducción al chino <span className="text-destructive">*</span>
@@ -675,8 +747,8 @@ export function DetailsForm({
                 onChange={(e) => onChange({ pinyin_cn: e.target.value })}
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       )}
 
       {/* ============================================ */}
