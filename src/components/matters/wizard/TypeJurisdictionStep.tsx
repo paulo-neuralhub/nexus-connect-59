@@ -180,23 +180,37 @@ export function TypeJurisdictionStep({
                   key={type.code}
                   type="button"
                   onClick={() => onSelectType(type.code)}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "p-3 rounded-lg border-2 transition-all text-left relative",
-                    "hover:shadow-sm hover:border-primary/50",
+                    "p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden",
+                    "hover:shadow-lg hover:border-primary/60",
                     isSelected
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                      : "border-border bg-card"
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/25 shadow-md shadow-primary/10"
+                      : "border-border bg-card hover:bg-accent/30"
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{config.icon}</span>
+                  {/* Selection indicator - check badge */}
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                    >
+                      <Check className="h-4 w-4 text-primary-foreground" strokeWidth={3} />
+                    </motion.div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-12 h-12 rounded-lg flex items-center justify-center transition-all",
+                      isSelected ? "bg-primary/10" : "bg-muted"
+                    )}>
+                      <span className="text-2xl">{config.icon}</span>
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate">{type.name_es}</h3>
+                      <h3 className="font-semibold text-sm truncate">{type.name_es}</h3>
                       <p className="text-xs text-muted-foreground truncate">{config.description}</p>
                     </div>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                   </div>
                 </motion.button>
               );
@@ -264,38 +278,54 @@ export function TypeJurisdictionStep({
             Jurisdicción
           </div>
 
-          {/* Popular Jurisdictions */}
+          {/* Popular Jurisdictions - NIVEL DIOS */}
           <div className="space-y-2">
             {popularJurisdictions.map((j) => {
               const isSelected = selectedJurisdictions.includes(j.code);
               return (
-                <div
+                <motion.div
                   key={j.code}
                   onClick={() => toggleJurisdiction(j.code)}
+                  whileHover={{ scale: 1.01, x: 4 }}
+                  whileTap={{ scale: 0.99 }}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all",
-                    "hover:border-primary/50",
+                    "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all relative overflow-hidden",
+                    "hover:shadow-md hover:border-primary/60",
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10 ring-2 ring-primary/20"
+                      : "border-border bg-card hover:bg-accent/30"
                   )}
                 >
+                  {/* Selection check badge */}
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                    >
+                      <Check className="h-4 w-4 text-primary-foreground" strokeWidth={3} />
+                    </motion.div>
+                  )}
                   {singleJurisdiction ? (
                     <div className={cn(
-                      "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                      isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                      isSelected ? "border-primary bg-primary shadow-sm shadow-primary/30" : "border-muted-foreground/50"
                     )}>
-                      {isSelected && <div className="w-2 h-2 rounded-full bg-primary-foreground" />}
+                      {isSelected && <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 rounded-full bg-primary-foreground"
+                      />}
                     </div>
                   ) : (
-                    <Checkbox checked={isSelected} />
+                    <Checkbox checked={isSelected} className="data-[state=checked]:bg-primary" />
                   )}
-                  <span className="text-xl">{j.flag}</span>
+                  <span className="text-2xl">{j.flag}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{j.name}</p>
+                    <p className="font-semibold text-sm">{j.name}</p>
                     <p className="text-xs text-muted-foreground">{j.office}</p>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
