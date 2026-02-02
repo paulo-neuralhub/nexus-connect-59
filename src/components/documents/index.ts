@@ -9,3 +9,4 @@ export { DocumentTemplatePicker } from './DocumentTemplatePicker';
 export { JurisdictionRequirementsCard } from './JurisdictionRequirementsCard';
 export { JurisdictionRequirementsSelector } from './JurisdictionRequirementsSelector';
 export { DocumentValidationPanel } from './DocumentValidationPanel';
+export { OfficeTemplateSelector } from './OfficeTemplateSelector';

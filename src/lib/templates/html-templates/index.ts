@@ -5,21 +5,25 @@ export { INVOICE_TEMPLATES } from './invoice-templates';
 export { QUOTE_TEMPLATES } from './quote-templates';
 export { LETTER_TEMPLATES } from './letter-templates';
 export { CONTRACT_TEMPLATES } from './contract-templates';
+export * from './poa-templates';
 
 import { INVOICE_TEMPLATES } from './invoice-templates';
 import { QUOTE_TEMPLATES } from './quote-templates';
 import { LETTER_TEMPLATES } from './letter-templates';
 import { CONTRACT_TEMPLATES } from './contract-templates';
+import { ALL_POA_TEMPLATES, getPOATemplateByOffice, getPOATemplateByCode } from './poa-templates';
 import { DocumentStyle, DocumentTemplateType, DOCUMENT_STYLES, DOCUMENT_TYPE_LABELS } from '../document-template-styles';
 
 export interface TemplateDefinition {
   code: string;
   name: string;
   description: string;
-  document_type: DocumentTemplateType;
-  style: DocumentStyle;
+  document_type: string;
+  style?: DocumentStyle;
   content_html: string;
   category: string;
+  office_code?: string;
+  official_form_number?: string;
 }
 
 // Generate all template definitions
@@ -55,6 +59,20 @@ export function getAllTemplateDefinitions(): TemplateDefinition[] {
     }
   }
 
+  // Add POA templates for each office
+  for (const poa of ALL_POA_TEMPLATES) {
+    templates.push({
+      code: poa.code,
+      name: poa.name_es,
+      description: poa.description_es,
+      document_type: 'power_of_attorney',
+      category: 'powers',
+      content_html: poa.content_html,
+      office_code: poa.office_code,
+      official_form_number: poa.official_form_number,
+    });
+  }
+
   return templates;
 }
 
@@ -84,3 +102,16 @@ export function getTemplatesForType(docType: DocumentTemplateType): Record<Docum
 
   return templateMaps[docType] as Record<DocumentStyle, string>;
 }
+
+// Get templates by office code
+export function getTemplatesByOffice(officeCode: string): TemplateDefinition[] {
+  return getAllTemplateDefinitions().filter(t => t.office_code === officeCode);
+}
+
+// Get template by code
+export function getTemplateByCode(code: string): TemplateDefinition | undefined {
+  return getAllTemplateDefinitions().find(t => t.code === code);
+}
+
+// Re-export POA helpers
+export { getPOATemplateByOffice, getPOATemplateByCode };

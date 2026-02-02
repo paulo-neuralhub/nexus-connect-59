@@ -13373,6 +13373,7 @@ export type Database = {
           available_variables: Json | null
           average_rating: number | null
           based_on_template_id: string | null
+          bilingual_content: Json | null
           body_sections: Json | null
           category: string
           category_code: string | null
@@ -13403,6 +13404,8 @@ export type Database = {
           numbering_digits: number | null
           numbering_prefix: string | null
           numbering_suffix: string | null
+          office_code: string | null
+          official_form_number: string | null
           organization_id: string | null
           orientation: string | null
           output_format: string | null
@@ -13426,6 +13429,7 @@ export type Database = {
           typical_phase: string | null
           updated_at: string | null
           usage_count: number | null
+          validation_rules: Json | null
           variable_codes: string[] | null
           variables: Json | null
           version: number | null
@@ -13445,6 +13449,7 @@ export type Database = {
           available_variables?: Json | null
           average_rating?: number | null
           based_on_template_id?: string | null
+          bilingual_content?: Json | null
           body_sections?: Json | null
           category: string
           category_code?: string | null
@@ -13475,6 +13480,8 @@ export type Database = {
           numbering_digits?: number | null
           numbering_prefix?: string | null
           numbering_suffix?: string | null
+          office_code?: string | null
+          official_form_number?: string | null
           organization_id?: string | null
           orientation?: string | null
           output_format?: string | null
@@ -13498,6 +13505,7 @@ export type Database = {
           typical_phase?: string | null
           updated_at?: string | null
           usage_count?: number | null
+          validation_rules?: Json | null
           variable_codes?: string[] | null
           variables?: Json | null
           version?: number | null
@@ -13517,6 +13525,7 @@ export type Database = {
           available_variables?: Json | null
           average_rating?: number | null
           based_on_template_id?: string | null
+          bilingual_content?: Json | null
           body_sections?: Json | null
           category?: string
           category_code?: string | null
@@ -13547,6 +13556,8 @@ export type Database = {
           numbering_digits?: number | null
           numbering_prefix?: string | null
           numbering_suffix?: string | null
+          office_code?: string | null
+          official_form_number?: string | null
           organization_id?: string | null
           orientation?: string | null
           output_format?: string | null
@@ -13570,6 +13581,7 @@ export type Database = {
           typical_phase?: string | null
           updated_at?: string | null
           usage_count?: number | null
+          validation_rules?: Json | null
           variable_codes?: string[] | null
           variables?: Json | null
           version?: number | null
@@ -30472,6 +30484,77 @@ export type Database = {
           },
         ]
       }
+      office_document_requirements: {
+        Row: {
+          created_at: string | null
+          default_template_id: string | null
+          document_type: string
+          id: string
+          last_verified_date: string | null
+          office_code: string
+          official_form_number: string | null
+          official_form_url: string | null
+          organization_id: string | null
+          requirements: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_template_id?: string | null
+          document_type: string
+          id?: string
+          last_verified_date?: string | null
+          office_code: string
+          official_form_number?: string | null
+          official_form_url?: string | null
+          organization_id?: string | null
+          requirements?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_template_id?: string | null
+          document_type?: string
+          id?: string
+          last_verified_date?: string | null
+          office_code?: string
+          official_form_number?: string | null
+          official_form_url?: string | null
+          organization_id?: string | null
+          requirements?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "office_document_requirements_default_template_id_fkey"
+            columns: ["default_template_id"]
+            isOneToOne: false
+            referencedRelation: "document_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "office_document_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "office_document_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "office_document_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       office_documents: {
         Row: {
           created_at: string | null
@@ -41838,6 +41921,74 @@ export type Database = {
           sort_order?: number | null
         }
         Relationships: []
+      }
+      template_field_validations: {
+        Row: {
+          auto_fill_from: string | null
+          created_at: string | null
+          display_order: number | null
+          error_message_en: string | null
+          error_message_es: string | null
+          field_group: string | null
+          field_label_en: string | null
+          field_label_es: string
+          field_name: string
+          field_type: string
+          id: string
+          is_required: boolean | null
+          max_length: number | null
+          min_length: number | null
+          options: Json | null
+          template_id: string | null
+          validation_regex: string | null
+        }
+        Insert: {
+          auto_fill_from?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          error_message_en?: string | null
+          error_message_es?: string | null
+          field_group?: string | null
+          field_label_en?: string | null
+          field_label_es: string
+          field_name: string
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          max_length?: number | null
+          min_length?: number | null
+          options?: Json | null
+          template_id?: string | null
+          validation_regex?: string | null
+        }
+        Update: {
+          auto_fill_from?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          error_message_en?: string | null
+          error_message_es?: string | null
+          field_group?: string | null
+          field_label_en?: string | null
+          field_label_es?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          max_length?: number | null
+          min_length?: number | null
+          options?: Json | null
+          template_id?: string | null
+          validation_regex?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_field_validations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "document_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenant_addons: {
         Row: {
