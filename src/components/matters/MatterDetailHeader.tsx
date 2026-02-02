@@ -345,6 +345,10 @@ export function MatterDetailHeader({
         matterReference={matter.matter_number || matter.reference || ''}
         matterTitle={matter.title || matter.mark_name || 'Sin título'}
         currentPhase={selectedPhase}
+        clientId={matter.client_id}
+        clientName={matter.client_name}
+        clientEmail={matter.client_email}
+        clientPhone={matter.client_phone}
         onAdvancePhase={() => {
           // Close panel after advance
           setShowPhasePanel(false);
