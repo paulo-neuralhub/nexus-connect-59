@@ -25,6 +25,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { NICE_CLASS_ICONS } from '@/types/nice-classification';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ParsedItem {
   code: string;
@@ -148,6 +149,7 @@ export function NiceImporter({ onImportComplete }: NiceImporterProps) {
   const [importResult, setImportResult] = useState<{ success: boolean; count: number; errors: string[] } | null>(null);
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleAnalyze = () => {
     setImportResult(null);
@@ -221,6 +223,12 @@ export function NiceImporter({ onImportComplete }: NiceImporterProps) {
         count: totalInserted,
         errors
       });
+
+      // Invalidate queries to refresh the browser immediately
+      await queryClient.invalidateQueries({ queryKey: ['nice-classes-browser'] });
+      await queryClient.invalidateQueries({ queryKey: ['nice-class-items'] });
+      await queryClient.invalidateQueries({ queryKey: ['nice-classes'] });
+      await queryClient.invalidateQueries({ queryKey: ['nice-classes-with-products'] });
 
       if (errors.length === 0) {
         toast({

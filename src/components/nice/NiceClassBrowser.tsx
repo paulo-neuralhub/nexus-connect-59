@@ -3,13 +3,15 @@
 // Visual browser for exploring Nice classes and items
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Package, Briefcase, ChevronRight, Loader2, Star } from 'lucide-react';
+import { Search, Package, ChevronRight, Loader2, Star, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { NICE_CLASS_ICONS, NICE_CLASS_TITLES_ES } from '@/types/nice-classification';
 import { cn } from '@/lib/utils';
@@ -34,19 +36,14 @@ interface NiceItemData {
 }
 
 export function NiceClassBrowser() {
-  const [classes, setClasses] = useState<NiceClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
-  const [items, setItems] = useState<NiceItemData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loadingItems, setLoadingItems] = useState(false);
   const [filter, setFilter] = useState<'all' | 'product' | 'service'>('all');
 
-  // Load classes on mount
-  useEffect(() => {
-    async function loadClasses() {
-      setLoading(true);
-      
+  // Load classes with React Query for auto-refresh
+  const { data: classes = [], isLoading: loading, refetch: refetchClasses } = useQuery({
+    queryKey: ['nice-classes-browser'],
+    queryFn: async (): Promise<NiceClassData[]> => {
       // Get classes
       const { data: classesData } = await supabase
         .from('nice_classes')
@@ -63,37 +60,29 @@ export function NiceClassBrowser() {
         counts[item.class_number] = (counts[item.class_number] || 0) + 1;
       });
       
-      setClasses((classesData || []).map(c => ({
+      return (classesData || []).map(c => ({
         ...c,
         items_count: counts[c.class_number] || 0
-      })));
-      setLoading(false);
-    }
-    
-    loadClasses();
-  }, []);
+      }));
+    },
+    staleTime: 1000 * 60, // 1 minute
+  });
 
-  // Load items when class is selected
-  useEffect(() => {
-    if (!selectedClass) {
-      setItems([]);
-      return;
-    }
-    
-    async function loadItems() {
-      setLoadingItems(true);
+  // Load items when class is selected - also with React Query
+  const { data: items = [], isLoading: loadingItems } = useQuery({
+    queryKey: ['nice-class-items', selectedClass],
+    queryFn: async (): Promise<NiceItemData[]> => {
+      if (!selectedClass) return [];
       const { data } = await supabase
         .from('nice_class_items')
         .select('*')
         .eq('class_number', selectedClass)
         .order('item_code');
-      
-      setItems(data || []);
-      setLoadingItems(false);
-    }
-    
-    loadItems();
-  }, [selectedClass]);
+      return data || [];
+    },
+    enabled: !!selectedClass,
+    staleTime: 1000 * 60,
+  });
 
   // Filter classes
   const filteredClasses = classes.filter(c => {
@@ -120,9 +109,14 @@ export function NiceClassBrowser() {
       {/* Classes list */}
       <Card className="lg:col-span-1 flex flex-col">
         <CardHeader className="pb-2 flex-shrink-0">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Clases de Niza
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Clases de Niza
+            </span>
+            <Button variant="ghost" size="icon" onClick={() => refetchClasses()} className="h-8 w-8">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </CardTitle>
           <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mt-2">
             <TabsList className="grid w-full grid-cols-3">
