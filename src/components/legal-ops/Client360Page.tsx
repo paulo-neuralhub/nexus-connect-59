@@ -4,6 +4,7 @@
 // ============================================
 
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useClientDetail } from '@/hooks/legal-ops/useClientDetail';
 import { useCRMAccount } from '@/hooks/crm/v2/accounts';
 import { useCRMContacts } from '@/hooks/crm/v2/contacts';
@@ -29,6 +30,9 @@ import { ClientAlerts } from './ClientAlerts';
 import { ClientRelationshipsSection } from './ClientRelationshipsSection';
 import { ClientWhatsAppTimeline } from '@/components/clients/ClientWhatsAppTimeline';
 import { cn } from '@/lib/utils';
+import { EditClientCompanyDialog } from '@/components/legal-ops/modals/EditClientCompanyDialog';
+import { EditClientInternalNotesDialog } from '@/components/legal-ops/modals/EditClientInternalNotesDialog';
+import { AddClientNoteDialog } from '@/components/legal-ops/modals/AddClientNoteDialog';
 
 interface Client360PageProps {
   clientId: string;
@@ -40,6 +44,10 @@ export function Client360Page({ clientId }: Client360PageProps) {
   const { data: contacts } = useCRMContacts({ account_id: clientId });
   const { data: matters } = useMattersV2({ client_id: clientId });
   const navigate = useNavigate();
+
+  const [openEditCompany, setOpenEditCompany] = useState(false);
+  const [openInternalNotes, setOpenInternalNotes] = useState(false);
+  const [openAddNote, setOpenAddNote] = useState(false);
 
   if (isLoading) {
     return <Client360Skeleton />;
@@ -70,6 +78,38 @@ export function Client360Page({ clientId }: Client360PageProps) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Modales */}
+      <EditClientCompanyDialog
+        open={openEditCompany}
+        onOpenChange={setOpenEditCompany}
+        clientId={clientId}
+        initialValues={{
+          name: client.display_name || client.company_name || '',
+          tax_id: client.tax_id || '',
+          email: client.email || '',
+          phone: client.phone || '',
+          address_line1: client.address_line1 || '',
+          city: client.city || '',
+          postal_code: client.postal_code || '',
+          country: client.country || '',
+          website: (crmAccount as any)?.website || '',
+        }}
+      />
+
+      <EditClientInternalNotesDialog
+        open={openInternalNotes}
+        onOpenChange={setOpenInternalNotes}
+        clientId={clientId}
+        initialNotes={client.notes || ''}
+      />
+
+      <AddClientNoteDialog
+        open={openAddNote}
+        onOpenChange={setOpenAddNote}
+        clientId={clientId}
+        clientDisplayName={client.display_name || client.company_name || 'Cliente'}
+      />
+
       {/* HEADER - Sticky */}
       <div className="sticky top-0 z-20 bg-background border-b">
         <Card className="rounded-none border-x-0 border-t-0">
@@ -179,7 +219,13 @@ export function Client360Page({ clientId }: Client360PageProps) {
                   title="Datos de Empresa"
                   icon={<Building2 className="w-4 h-4" />}
                   actions={
-                    <Button size="sm" variant="ghost" className="h-6 px-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2"
+                      onClick={() => setOpenEditCompany(true)}
+                      aria-label="Editar datos de empresa"
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
                   }
@@ -287,7 +333,13 @@ export function Client360Page({ clientId }: Client360PageProps) {
                   title="Notas Internas"
                   icon={<PenLine className="w-4 h-4" />}
                   actions={
-                    <Button size="sm" variant="ghost" className="h-6 px-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2"
+                      onClick={() => setOpenInternalNotes(true)}
+                      aria-label="Editar notas internas"
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
                   }
@@ -495,7 +547,12 @@ export function Client360Page({ clientId }: Client360PageProps) {
               </div>
             </div>
             <div className="flex gap-1 mt-2">
-              <Button size="sm" variant="outline" className="h-7 px-2 gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 gap-1"
+                onClick={() => setOpenAddNote(true)}
+              >
                 <PenLine className="w-3 h-3" />
                 <span className="text-xs">Nota</span>
               </Button>

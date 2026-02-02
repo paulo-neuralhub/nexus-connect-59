@@ -219,8 +219,9 @@ interface TimelineEventItemProps {
 }
 
 function TimelineEventItem({ event, expanded, onToggle }: TimelineEventItemProps) {
-  const isExpandable = event.type === 'communication' && 
-    (event.metadata.channel === 'email' || event.description);
+  const isExpandable =
+    (event.type === 'communication' && (event.metadata.channel === 'email' || event.description)) ||
+    (event.type === 'note' && !!event.description);
 
   const getIcon = () => {
     switch (event.type) {
@@ -230,6 +231,8 @@ function TimelineEventItem({ event, expanded, onToggle }: TimelineEventItemProps
         if (channel === 'whatsapp') return <MessageSquare className="w-4 h-4 text-[hsl(var(--ip-action-whatsapp-text))]" />;
         if (channel === 'phone') return <Phone className="w-4 h-4 text-primary" />;
         return <MessageSquare className="w-4 h-4" />;
+      case 'note':
+        return <PenLine className="w-4 h-4 text-[hsl(var(--ip-pending-text))]" />;
       case 'document':
         return <FileText className="w-4 h-4 text-primary" />;
       case 'deadline':
@@ -328,7 +331,7 @@ function TimelineEventItem({ event, expanded, onToggle }: TimelineEventItemProps
             </p>
             
             {/* Metadata badges */}
-            {(event.metadata.has_attachments || event.metadata.has_transcription) && (
+            {(event.type === 'communication' && (event.metadata.has_attachments || event.metadata.has_transcription)) && (
               <div className="flex items-center gap-2 mt-3 pt-3 border-t">
                 {event.metadata.has_attachments && (
                   <Badge variant="secondary" className="text-xs h-5">

@@ -72,7 +72,15 @@ export function useClientTimeline(
         commQuery = commQuery.eq('matter_id', filters.matter_id);
       }
 
-      const { data: comms } = await commQuery;
+      // Notas (activity_log)
+      // Nota: usamos activity_log como fuente única para notas y eventos internos.
+      const notesQuery = (supabase.from('activity_log') as any)
+        .select('id, title, description, created_at, is_internal, action')
+        .eq('organization_id', organizationId)
+        .eq('client_id', clientId)
+        .eq('entity_type', 'client')
+        .order('created_at', { ascending: false })
+        .range(pageParam, pageParam + PAGE_SIZE - 1);
 
       // Obtener documentos del período
       let docsQuery = supabase
@@ -91,7 +99,7 @@ export function useClientTimeline(
         docsQuery = docsQuery.lte('created_at', filters.date_to);
       }
 
-      const { data: docs } = await docsQuery;
+      const [{ data: comms }, { data: docs }, { data: notes }] = await Promise.all([commQuery, docsQuery, notesQuery]);
 
       // Deadlines placeholder (tabla no existe aún)
       const deadlines: Array<{ id: string; title: string; due_date: string; status: string; matter_id: string }> = [];
@@ -129,6 +137,21 @@ export function useClientTimeline(
             doc_type: d.doc_type,
             validity_status: d.validity_status
           }
+        });
+      });
+
+      // Notas
+      (notes || []).forEach((n: any) => {
+        events.push({
+          id: `note-${n.id}`,
+          type: 'note',
+          timestamp: n.created_at,
+          title: n.title || 'Nota',
+          description: n.description || undefined,
+          metadata: {
+            is_internal: !!n.is_internal,
+            action: n.action,
+          },
         });
       });
 
