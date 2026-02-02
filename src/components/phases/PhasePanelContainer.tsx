@@ -56,6 +56,11 @@ interface PhasePanelContainerProps {
   matterReference: string;
   matterTitle: string;
   currentPhase: string;
+  // Client data for communication features
+  clientId?: string | null;
+  clientName?: string | null;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
   onAdvancePhase?: () => void;
   onGoBack?: () => void;
 }
@@ -67,6 +72,10 @@ export function PhasePanelContainer({
   matterReference,
   matterTitle,
   currentPhase,
+  clientId,
+  clientName,
+  clientEmail,
+  clientPhone,
   onAdvancePhase,
   onGoBack,
 }: PhasePanelContainerProps) {
@@ -113,19 +122,29 @@ export function PhasePanelContainer({
   const renderPhasePanel = () => {
     const commonProps = {
       matterId,
+      matterReference,
+      matterTitle,
       phaseData: localData,
       checklist: localChecklist,
       onDataChange: handleDataChange,
       onChecklistChange: handleChecklistChange,
     };
 
+    // Extended props for panels that need client info (F2, F3)
+    const clientProps = {
+      clientId: clientId || undefined,
+      clientName: clientName || undefined,
+      clientEmail: clientEmail || undefined,
+      clientPhone: clientPhone || undefined,
+    };
+
     switch (currentPhase) {
       case 'F1':
         return <PhaseF1Panel {...commonProps} />;
       case 'F2':
-        return <PhaseF2Panel {...commonProps} />;
+        return <PhaseF2Panel {...commonProps} {...clientProps} />;
       case 'F3':
-        return <PhaseF3Panel {...commonProps} />;
+        return <PhaseF3Panel {...commonProps} {...clientProps} />;
       case 'F4':
         return <PhaseF4Panel {...commonProps} />;
       case 'F5':

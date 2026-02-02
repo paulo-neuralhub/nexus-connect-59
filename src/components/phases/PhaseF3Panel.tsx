@@ -40,6 +40,12 @@ import { PHASE_CHECKLISTS, type PhaseF3Data } from '@/hooks/use-phase-data';
 
 interface PhaseF3PanelProps {
   matterId: string;
+  matterReference?: string;
+  matterTitle?: string;
+  clientId?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
   phaseData: Record<string, unknown>;
   checklist: Record<string, boolean>;
   onDataChange: (key: string, value: unknown) => void;
@@ -55,6 +61,12 @@ const ENGAGEMENT_TEMPLATES = [
 
 export function PhaseF3Panel({
   matterId,
+  matterReference,
+  matterTitle,
+  clientId,
+  clientName,
+  clientEmail,
+  clientPhone,
   phaseData,
   checklist,
   onDataChange,

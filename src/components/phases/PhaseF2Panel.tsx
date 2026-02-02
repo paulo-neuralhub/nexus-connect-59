@@ -3,7 +3,7 @@
 // PROMPT 21: Panel de creación y gestión de presupuestos
 // ============================================================
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,12 +26,24 @@ import {
   Eye,
   MessageCircle,
   CheckCircle2,
-  SkipForward
+  SkipForward,
+  Loader2,
+  Download
 } from 'lucide-react';
 import { PHASE_CHECKLISTS, type PhaseF2Data } from '@/hooks/use-phase-data';
+import { EmailComposer } from '@/components/communications/EmailComposer';
+import { SendWhatsAppModal } from '@/components/features/crm/v2/SendWhatsAppModal';
+import { useDocumentGeneration } from '@/hooks/useDocumentGeneration';
+import { toast } from 'sonner';
 
 interface PhaseF2PanelProps {
   matterId: string;
+  matterReference?: string;
+  matterTitle?: string;
+  clientId?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
   phaseData: Record<string, unknown>;
   checklist: Record<string, boolean>;
   onDataChange: (key: string, value: unknown) => void;
@@ -56,6 +68,12 @@ const DEFAULT_LINE_ITEMS = [
 
 export function PhaseF2Panel({
   matterId,
+  matterReference,
+  matterTitle,
+  clientId,
+  clientName,
+  clientEmail,
+  clientPhone,
   phaseData,
   checklist,
   onDataChange,
@@ -64,6 +82,12 @@ export function PhaseF2Panel({
   const data = phaseData as PhaseF2Data;
   const checklistItems = PHASE_CHECKLISTS.F2;
 
+  // Modal states
+  const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  
+  // PDF generation
+  const { generateQuotePdf, previewPdf, downloadPdf, isGenerating } = useDocumentGeneration();
   const lineItems = data.line_items || DEFAULT_LINE_ITEMS;
   
   // Calculate totals
@@ -120,13 +144,71 @@ export function PhaseF2Panel({
     }
   };
 
+  // Build quote summary for email/whatsapp
+  const getQuoteSummary = () => {
+    const ref = matterReference || matterId.slice(0, 8);
+    return `Presupuesto ${ref}\n\nConceptos:\n${lineItems.map(item => 
+      `- ${item.concept}: €${item.total.toFixed(2)}`
+    ).join('\n')}\n\nSubtotal: €${subtotal.toFixed(2)}\nIVA (${taxRate}%): €${taxAmount.toFixed(2)}\nTotal: €${total.toFixed(2)}`;
+  };
+
+  // Handler: Preview PDF
+  const handlePreviewPdf = async () => {
+    // For now, generate a quote preview using client-side PDF
+    toast.info('Generando vista previa del presupuesto...');
+    try {
+      const success = await previewPdf('quote', matterId);
+      if (!success) {
+        // Fallback: show toast with summary
+        toast.info(getQuoteSummary(), { duration: 10000 });
+      }
+    } catch {
+      toast.error('Error al generar vista previa');
+    }
+  };
+
+  // Handler: Generate/Download Quote
+  const handleGenerateQuote = async () => {
+    toast.info('Generando presupuesto PDF...');
+    try {
+      const fileName = `Presupuesto_${matterReference || matterId.slice(0, 8)}.pdf`;
+      const success = await downloadPdf('quote', matterId, fileName);
+      if (success) {
+        onDataChange('quote_generated', true);
+        onDataChange('quote_generated_date', new Date().toISOString());
+        toast.success('Presupuesto generado correctamente');
+      } else {
+        // If edge function not available, show user-friendly message
+        toast.warning('La generación de PDF está siendo configurada. Por ahora, use Vista Previa o Enviar por Email.');
+      }
+    } catch {
+      toast.error('Error al generar presupuesto');
+    }
+  };
+
+  // Handler: Send by Email
+  const handleSendEmail = () => {
+    if (!clientEmail) {
+      toast.warning('El cliente no tiene email configurado');
+    }
+    setShowEmailComposer(true);
+  };
+
+  // Handler: Send by WhatsApp
+  const handleSendWhatsApp = () => {
+    if (!clientPhone) {
+      toast.warning('El cliente no tiene teléfono configurado');
+    }
+    setShowWhatsAppModal(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Checklist */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
             Checklist de Presupuesto
           </CardTitle>
         </CardHeader>
@@ -150,7 +232,7 @@ export function PhaseF2Panel({
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="w-4 h-4 text-indigo-500" />
+            <FileText className="w-4 h-4 text-primary" />
             Plantilla de Presupuesto
           </CardTitle>
         </CardHeader>
@@ -345,26 +427,42 @@ export function PhaseF2Panel({
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline">
-              <Eye className="w-4 h-4 mr-2" />
+            <Button 
+              variant="outline" 
+              onClick={handlePreviewPdf}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Eye className="w-4 h-4 mr-2" />
+              )}
               Vista previa PDF
             </Button>
-            <Button variant="outline">
-              <FileText className="w-4 h-4 mr-2" />
+            <Button 
+              variant="outline" 
+              onClick={handleGenerateQuote}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
               Generar presupuesto
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleSendEmail}>
               <Send className="w-4 h-4 mr-2" />
               Enviar por email
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleSendWhatsApp}>
               <MessageCircle className="w-4 h-4 mr-2" />
               Enviar por WhatsApp
             </Button>
           </div>
 
           {data.quote_sent && (
-            <Badge variant="outline" className="mt-3 bg-green-50 text-green-700">
+            <Badge variant="outline" className="mt-3 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
               ✅ Presupuesto enviado el {data.quote_sent_date}
             </Badge>
           )}
@@ -375,7 +473,7 @@ export function PhaseF2Panel({
       <Card className="border-dashed">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <SkipForward className="w-4 h-4 text-gray-500" />
+            <SkipForward className="w-4 h-4 text-muted-foreground" />
             Saltar Presupuesto
           </CardTitle>
         </CardHeader>
@@ -414,6 +512,44 @@ export function PhaseF2Panel({
           )}
         </CardContent>
       </Card>
+
+      {/* Email Composer Modal */}
+      <EmailComposer
+        open={showEmailComposer}
+        onOpenChange={setShowEmailComposer}
+        matterId={matterId}
+        matterName={matterTitle || matterReference}
+        defaultTo={clientEmail ? [{ email: clientEmail, name: clientName }] : []}
+        defaultSubject={`Presupuesto - ${matterReference || matterTitle || 'Expediente'}`}
+        defaultBody={`<p>Estimado/a ${clientName || 'cliente'},</p>
+<p>Adjunto le enviamos el presupuesto solicitado:</p>
+<p><strong>Resumen:</strong></p>
+<ul>
+${lineItems.map(item => `<li>${item.concept}: €${item.total.toFixed(2)}</li>`).join('\n')}
+</ul>
+<p><strong>Total: €${total.toFixed(2)}</strong> (IVA ${taxRate}% incluido sobre honorarios)</p>
+<p>Este presupuesto tiene una validez de ${data.validity_days || 30} días.</p>
+<p>Quedamos a su disposición para cualquier consulta.</p>`}
+        onSuccess={() => {
+          onDataChange('quote_sent', true);
+          onDataChange('quote_sent_date', new Date().toLocaleDateString('es-ES'));
+          toast.success('Presupuesto enviado por email');
+        }}
+      />
+
+      {/* WhatsApp Modal */}
+      <SendWhatsAppModal
+        open={showWhatsAppModal}
+        onOpenChange={setShowWhatsAppModal}
+        contact={clientId ? {
+          id: clientId,
+          full_name: clientName || 'Cliente',
+          phone: clientPhone,
+          whatsapp_phone: clientPhone,
+        } : undefined}
+        matterId={matterId}
+        matterReference={matterReference}
+      />
     </div>
   );
 }
