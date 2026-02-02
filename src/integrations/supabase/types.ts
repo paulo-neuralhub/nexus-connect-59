@@ -13395,6 +13395,7 @@ export type Database = {
           is_required_for: string[] | null
           is_system_template: boolean | null
           jurisdiction_id: string | null
+          jurisdiction_requirement_id: string | null
           last_modified_by: string | null
           layout: string | null
           margins: Json | null
@@ -13466,6 +13467,7 @@ export type Database = {
           is_required_for?: string[] | null
           is_system_template?: boolean | null
           jurisdiction_id?: string | null
+          jurisdiction_requirement_id?: string | null
           last_modified_by?: string | null
           layout?: string | null
           margins?: Json | null
@@ -13537,6 +13539,7 @@ export type Database = {
           is_required_for?: string[] | null
           is_system_template?: boolean | null
           jurisdiction_id?: string | null
+          jurisdiction_requirement_id?: string | null
           last_modified_by?: string | null
           layout?: string | null
           margins?: Json | null
@@ -13594,6 +13597,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "document_templates_jurisdiction_requirement_id_fkey"
+            columns: ["jurisdiction_requirement_id"]
+            isOneToOne: false
+            referencedRelation: "jurisdiction_document_requirements"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "document_templates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -13612,6 +13622,116 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_validation_results: {
+        Row: {
+          created_at: string | null
+          errors: Json | null
+          generated_document_id: string | null
+          id: string
+          is_valid: boolean
+          requirement_id: string | null
+          validated_by: string | null
+          validation_method: string | null
+          validation_timestamp: string | null
+          warnings: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          errors?: Json | null
+          generated_document_id?: string | null
+          id?: string
+          is_valid: boolean
+          requirement_id?: string | null
+          validated_by?: string | null
+          validation_method?: string | null
+          validation_timestamp?: string | null
+          warnings?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          errors?: Json | null
+          generated_document_id?: string | null
+          id?: string
+          is_valid?: boolean
+          requirement_id?: string | null
+          validated_by?: string | null
+          validation_method?: string | null
+          validation_timestamp?: string | null
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_validation_results_generated_document_id_fkey"
+            columns: ["generated_document_id"]
+            isOneToOne: false
+            referencedRelation: "generated_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_validation_results_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "jurisdiction_document_requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_validation_rules: {
+        Row: {
+          created_at: string | null
+          error_message_en: string
+          error_message_es: string | null
+          field_key: string | null
+          id: string
+          is_active: boolean | null
+          is_blocking: boolean | null
+          requirement_id: string
+          rule_code: string
+          rule_type: string
+          severity: string | null
+          validation_type: string
+          validation_value: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message_en: string
+          error_message_es?: string | null
+          field_key?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_blocking?: boolean | null
+          requirement_id: string
+          rule_code: string
+          rule_type: string
+          severity?: string | null
+          validation_type: string
+          validation_value?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message_en?: string
+          error_message_es?: string | null
+          field_key?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_blocking?: boolean | null
+          requirement_id?: string
+          rule_code?: string
+          rule_type?: string
+          severity?: string | null
+          validation_type?: string
+          validation_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_validation_rules_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "jurisdiction_document_requirements"
             referencedColumns: ["id"]
           },
         ]
@@ -22371,6 +22491,144 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      jurisdiction_document_requirements: {
+        Row: {
+          accepted_file_formats: string[] | null
+          accepted_languages: string[] | null
+          apostille_accepted: boolean | null
+          created_at: string | null
+          document_type: string
+          electronic_signature_accepted: boolean | null
+          form_download_url: string | null
+          has_official_form: boolean | null
+          id: string
+          image_max_dimensions: string | null
+          image_max_size_mb: number | null
+          image_min_dpi: number | null
+          is_active: boolean | null
+          jurisdiction_code: string
+          last_verified_at: string | null
+          legalization_required: boolean | null
+          notarization_required: boolean | null
+          notarization_required_condition: string | null
+          notes_en: string | null
+          notes_es: string | null
+          office_code: string
+          official_form_number: string | null
+          official_form_url: string | null
+          official_guidelines_url: string | null
+          official_language: string
+          paper_size: string | null
+          poa_form_code: string | null
+          poa_general_allowed: boolean | null
+          poa_required: boolean | null
+          poa_required_condition: string | null
+          poa_specific_required: boolean | null
+          required_fields: Json | null
+          seal_accepted: boolean | null
+          seal_preferred: boolean | null
+          signature_notes: string | null
+          signature_type: string
+          submission_deadline_days: number | null
+          tips: string[] | null
+          updated_at: string | null
+          validation_rules: Json | null
+          validity_months: number | null
+          verified_by: string | null
+          warnings: string[] | null
+        }
+        Insert: {
+          accepted_file_formats?: string[] | null
+          accepted_languages?: string[] | null
+          apostille_accepted?: boolean | null
+          created_at?: string | null
+          document_type: string
+          electronic_signature_accepted?: boolean | null
+          form_download_url?: string | null
+          has_official_form?: boolean | null
+          id?: string
+          image_max_dimensions?: string | null
+          image_max_size_mb?: number | null
+          image_min_dpi?: number | null
+          is_active?: boolean | null
+          jurisdiction_code: string
+          last_verified_at?: string | null
+          legalization_required?: boolean | null
+          notarization_required?: boolean | null
+          notarization_required_condition?: string | null
+          notes_en?: string | null
+          notes_es?: string | null
+          office_code: string
+          official_form_number?: string | null
+          official_form_url?: string | null
+          official_guidelines_url?: string | null
+          official_language: string
+          paper_size?: string | null
+          poa_form_code?: string | null
+          poa_general_allowed?: boolean | null
+          poa_required?: boolean | null
+          poa_required_condition?: string | null
+          poa_specific_required?: boolean | null
+          required_fields?: Json | null
+          seal_accepted?: boolean | null
+          seal_preferred?: boolean | null
+          signature_notes?: string | null
+          signature_type?: string
+          submission_deadline_days?: number | null
+          tips?: string[] | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+          validity_months?: number | null
+          verified_by?: string | null
+          warnings?: string[] | null
+        }
+        Update: {
+          accepted_file_formats?: string[] | null
+          accepted_languages?: string[] | null
+          apostille_accepted?: boolean | null
+          created_at?: string | null
+          document_type?: string
+          electronic_signature_accepted?: boolean | null
+          form_download_url?: string | null
+          has_official_form?: boolean | null
+          id?: string
+          image_max_dimensions?: string | null
+          image_max_size_mb?: number | null
+          image_min_dpi?: number | null
+          is_active?: boolean | null
+          jurisdiction_code?: string
+          last_verified_at?: string | null
+          legalization_required?: boolean | null
+          notarization_required?: boolean | null
+          notarization_required_condition?: string | null
+          notes_en?: string | null
+          notes_es?: string | null
+          office_code?: string
+          official_form_number?: string | null
+          official_form_url?: string | null
+          official_guidelines_url?: string | null
+          official_language?: string
+          paper_size?: string | null
+          poa_form_code?: string | null
+          poa_general_allowed?: boolean | null
+          poa_required?: boolean | null
+          poa_required_condition?: string | null
+          poa_specific_required?: boolean | null
+          required_fields?: Json | null
+          seal_accepted?: boolean | null
+          seal_preferred?: boolean | null
+          signature_notes?: string | null
+          signature_type?: string
+          submission_deadline_days?: number | null
+          tips?: string[] | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+          validity_months?: number | null
+          verified_by?: string | null
+          warnings?: string[] | null
+        }
+        Relationships: []
       }
       jurisdiction_field_configs: {
         Row: {
