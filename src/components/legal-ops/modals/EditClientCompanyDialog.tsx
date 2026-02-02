@@ -145,6 +145,36 @@ export function EditClientCompanyDialog({
     }
   }, [open, initialValues, form]);
 
+  // Build metadata object with extended fields (address, contact, notes)
+  const buildMetadata = (values: FormValues) => {
+    const meta: Record<string, unknown> = {};
+    
+    // Contact info
+    if (values.email) meta.email = values.email;
+    if (values.phone) meta.phone = values.phone;
+    if (values.website) meta.website = values.website;
+    
+    // Address
+    if (values.address_line1 || values.city || values.country) {
+      meta.address = {
+        line1: values.address_line1 || null,
+        line2: values.address_line2 || null,
+        city: values.city || null,
+        state_province: values.state_province || null,
+        postal_code: values.postal_code || null,
+        country: values.country || null,
+      };
+    }
+    
+    // Notes
+    if (values.notes) meta.notes = values.notes;
+    
+    // Tax ID type
+    if (values.tax_id_type) meta.tax_id_type = values.tax_id_type;
+    
+    return Object.keys(meta).length > 0 ? meta : {};
+  };
+
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -152,7 +182,8 @@ export function EditClientCompanyDialog({
 
       const { data: user } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      const client: any = supabase;
+      const { data, error } = await client
         .from("crm_accounts")
         .insert({
           organization_id: currentOrganization.id,
@@ -161,19 +192,11 @@ export function EditClientCompanyDialog({
           tax_id: values.tax_id || null,
           account_type: values.account_type || "direct",
           status: values.status || "active",
-          tier: values.tier || null,
+          tier: values.tier || "bronze",
           rating_stars: values.rating_stars || null,
           assigned_to: values.assigned_to || user.user?.id || null,
-          email: values.email || null,
-          phone: values.phone || null,
-          website: values.website || null,
-          address_line1: values.address_line1 || null,
-          address_line2: values.address_line2 || null,
-          city: values.city || null,
-          state_province: values.state_province || null,
-          postal_code: values.postal_code || null,
-          country: values.country || null,
-          metadata: values.notes ? { notes: values.notes } : null,
+          internal_notes: values.notes || null,
+          metadata: buildMetadata(values),
         })
         .select("id")
         .single();
@@ -197,7 +220,8 @@ export function EditClientCompanyDialog({
     mutationFn: async (values: FormValues) => {
       if (!currentOrganization?.id || !clientId) throw new Error("Faltan datos");
 
-      const { error } = await supabase
+      const client: any = supabase;
+      const { error } = await client
         .from("crm_accounts")
         .update({
           name: values.name,
@@ -205,19 +229,11 @@ export function EditClientCompanyDialog({
           tax_id: values.tax_id || null,
           account_type: values.account_type || "direct",
           status: values.status || "active",
-          tier: values.tier || null,
+          tier: values.tier || "bronze",
           rating_stars: values.rating_stars || null,
           assigned_to: values.assigned_to || null,
-          email: values.email || null,
-          phone: values.phone || null,
-          website: values.website || null,
-          address_line1: values.address_line1 || null,
-          address_line2: values.address_line2 || null,
-          city: values.city || null,
-          state_province: values.state_province || null,
-          postal_code: values.postal_code || null,
-          country: values.country || null,
-          metadata: values.notes ? { notes: values.notes } : null,
+          internal_notes: values.notes || null,
+          metadata: buildMetadata(values),
         })
         .eq("id", clientId)
         .eq("organization_id", currentOrganization.id);
