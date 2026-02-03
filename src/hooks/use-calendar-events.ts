@@ -136,8 +136,8 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
         }
       }
       
-      // 2. Cargar actividades (activities)
-      if (filters.showTasks || filters.showMeetings || filters.showCalls || filters.showReminders) {
+      // 2. Cargar actividades (activities) - meetings, calls, reminders
+      if (filters.showMeetings || filters.showCalls || filters.showReminders) {
         const { data: activities, error: activitiesError } = await supabase
           .from('activities')
           .select(`
@@ -162,38 +162,26 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
           for (const a of activities) {
             let type: CalendarEvent['type'];
             let color: string;
-            let include = false;
             
             switch (a.type) {
-              case 'task':
-                if (!filters.showTasks) continue;
-                type = 'task';
-                color = EVENT_COLORS.task;
-                include = true;
-                break;
               case 'meeting':
                 if (!filters.showMeetings) continue;
                 type = 'meeting';
                 color = EVENT_COLORS.meeting;
-                include = true;
                 break;
               case 'call':
                 if (!filters.showCalls) continue;
                 type = 'call';
                 color = EVENT_COLORS.call;
-                include = true;
                 break;
               case 'reminder':
                 if (!filters.showReminders) continue;
                 type = 'reminder';
                 color = EVENT_COLORS.reminder;
-                include = true;
                 break;
               default:
                 continue;
             }
-            
-            if (!include) continue;
             
             // Filtro "solo mis eventos"
             if (filters.showOnlyMine && a.created_by !== user?.id) continue;
@@ -212,6 +200,53 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
               description: a.content,
               source_table: 'activities',
               source_id: a.id,
+            });
+          }
+        }
+      }
+      
+      // 3. Cargar tareas desde crm_tasks
+      if (filters.showTasks) {
+        const { data: crmTasks, error: crmTasksError } = await supabase
+          .from('crm_tasks')
+          .select(`
+            id,
+            title,
+            description,
+            due_date,
+            status,
+            account_id,
+            deal_id,
+            assigned_to,
+            crm_accounts(id, name)
+          `)
+          .eq('organization_id', currentOrganization.id)
+          .gte('due_date', startDate.toISOString())
+          .lte('due_date', endDate.toISOString())
+          .neq('status', 'completed');
+        
+        if (!crmTasksError && crmTasks) {
+          for (const task of crmTasks) {
+            // Filtro "solo mis eventos"
+            if (filters.showOnlyMine && task.assigned_to !== user?.id) continue;
+            
+            const dueDate = new Date(task.due_date);
+            
+            events.push({
+              id: `crm-task-${task.id}`,
+              title: task.title,
+              start: dueDate,
+              end: dueDate,
+              type: 'task',
+              color: EVENT_COLORS.task,
+              account: task.crm_accounts ? {
+                id: task.crm_accounts.id,
+                name: task.crm_accounts.name,
+              } : undefined,
+              allDay: true,
+              description: task.description,
+              source_table: 'crm_tasks',
+              source_id: task.id,
             });
           }
         }
