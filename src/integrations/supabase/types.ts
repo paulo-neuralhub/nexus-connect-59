@@ -14214,34 +14214,55 @@ export type Database = {
       }
       document_styles: {
         Row: {
+          body_font: string | null
           code: string
+          colors: Json | null
           created_at: string | null
           css_variables: Json | null
           description: string | null
+          head_font: string | null
+          header_layout: string | null
           id: string
           is_active: boolean | null
+          is_dark: boolean | null
           name: string
+          pack: string | null
           preview_image_url: string | null
+          sort_order: number | null
         }
         Insert: {
+          body_font?: string | null
           code: string
+          colors?: Json | null
           created_at?: string | null
           css_variables?: Json | null
           description?: string | null
+          head_font?: string | null
+          header_layout?: string | null
           id?: string
           is_active?: boolean | null
+          is_dark?: boolean | null
           name: string
+          pack?: string | null
           preview_image_url?: string | null
+          sort_order?: number | null
         }
         Update: {
+          body_font?: string | null
           code?: string
+          colors?: Json | null
           created_at?: string | null
           css_variables?: Json | null
           description?: string | null
+          head_font?: string | null
+          header_layout?: string | null
           id?: string
           is_active?: boolean | null
+          is_dark?: boolean | null
           name?: string
+          pack?: string | null
           preview_image_url?: string | null
+          sort_order?: number | null
         }
         Relationships: []
       }
@@ -14564,6 +14585,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      document_types: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          fields_schema: Json | null
+          icon: string | null
+          id: string
+          name: string
+          name_en: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          fields_schema?: Json | null
+          icon?: string | null
+          id: string
+          name: string
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          fields_schema?: Json | null
+          icon?: string | null
+          id?: string
+          name?: string
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
       }
       document_validation_results: {
         Row: {
@@ -18049,20 +18106,29 @@ export type Database = {
           ai_tokens_used: number | null
           category: string | null
           client_id: string | null
+          contact_id: string | null
           content: string
           content_html: string | null
           content_json: Json | null
           created_at: string | null
           created_by: string | null
+          currency: string | null
+          discount_amount: number | null
+          document_data: Json | null
+          document_date: string | null
           document_number: string | null
+          document_type_id: string | null
+          due_date: string | null
           export_format: string | null
           exported_at: string | null
           exported_document_id: string | null
           generation_time_ms: number | null
           id: string
+          invoice_id: string | null
           matter_id: string | null
           name: string
           organization_id: string
+          paid_at: string | null
           parent_document_id: string | null
           parent_id: string | null
           pdf_url: string | null
@@ -18070,8 +18136,12 @@ export type Database = {
           sent_to: string | null
           status: string | null
           style_code: string | null
+          style_id: string | null
+          subtotal: number | null
+          tax_amount: number | null
           template_id: string | null
           title: string | null
+          total_amount: number | null
           updated_at: string | null
           user_feedback: string | null
           user_rating: number | null
@@ -18085,20 +18155,29 @@ export type Database = {
           ai_tokens_used?: number | null
           category?: string | null
           client_id?: string | null
+          contact_id?: string | null
           content: string
           content_html?: string | null
           content_json?: Json | null
           created_at?: string | null
           created_by?: string | null
+          currency?: string | null
+          discount_amount?: number | null
+          document_data?: Json | null
+          document_date?: string | null
           document_number?: string | null
+          document_type_id?: string | null
+          due_date?: string | null
           export_format?: string | null
           exported_at?: string | null
           exported_document_id?: string | null
           generation_time_ms?: number | null
           id?: string
+          invoice_id?: string | null
           matter_id?: string | null
           name: string
           organization_id: string
+          paid_at?: string | null
           parent_document_id?: string | null
           parent_id?: string | null
           pdf_url?: string | null
@@ -18106,8 +18185,12 @@ export type Database = {
           sent_to?: string | null
           status?: string | null
           style_code?: string | null
+          style_id?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
           template_id?: string | null
           title?: string | null
+          total_amount?: number | null
           updated_at?: string | null
           user_feedback?: string | null
           user_rating?: number | null
@@ -18121,20 +18204,29 @@ export type Database = {
           ai_tokens_used?: number | null
           category?: string | null
           client_id?: string | null
+          contact_id?: string | null
           content?: string
           content_html?: string | null
           content_json?: Json | null
           created_at?: string | null
           created_by?: string | null
+          currency?: string | null
+          discount_amount?: number | null
+          document_data?: Json | null
+          document_date?: string | null
           document_number?: string | null
+          document_type_id?: string | null
+          due_date?: string | null
           export_format?: string | null
           exported_at?: string | null
           exported_document_id?: string | null
           generation_time_ms?: number | null
           id?: string
+          invoice_id?: string | null
           matter_id?: string | null
           name?: string
           organization_id?: string
+          paid_at?: string | null
           parent_document_id?: string | null
           parent_id?: string | null
           pdf_url?: string | null
@@ -18142,8 +18234,12 @@ export type Database = {
           sent_to?: string | null
           status?: string | null
           style_code?: string | null
+          style_id?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
           template_id?: string | null
           title?: string | null
+          total_amount?: number | null
           updated_at?: string | null
           user_feedback?: string | null
           user_rating?: number | null
@@ -18160,10 +18256,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "generated_documents_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "generated_documents_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_documents_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
             referencedColumns: ["id"]
           },
           {
@@ -18234,6 +18344,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "generated_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_documents_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "document_styles"
             referencedColumns: ["id"]
           },
           {
@@ -44943,6 +45060,137 @@ export type Database = {
             foreignKeyName: "tenant_consents_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_document_preferences: {
+        Row: {
+          company_address: string | null
+          company_bank_name: string | null
+          company_cif: string | null
+          company_city: string | null
+          company_country: string | null
+          company_email: string | null
+          company_iban: string | null
+          company_legal_name: string | null
+          company_logo_url: string | null
+          company_name: string | null
+          company_phone: string | null
+          company_postal_code: string | null
+          company_website: string | null
+          created_at: string | null
+          credit_note_next_number: number | null
+          credit_note_prefix: string | null
+          default_style_id: string | null
+          default_tax_rate: number | null
+          footer_text: string | null
+          id: string
+          invoice_next_number: number | null
+          invoice_prefix: string | null
+          legal_notice: string | null
+          organization_id: string
+          payment_terms: string | null
+          quote_next_number: number | null
+          quote_prefix: string | null
+          receipt_next_number: number | null
+          receipt_prefix: string | null
+          tax_label: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_address?: string | null
+          company_bank_name?: string | null
+          company_cif?: string | null
+          company_city?: string | null
+          company_country?: string | null
+          company_email?: string | null
+          company_iban?: string | null
+          company_legal_name?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          company_postal_code?: string | null
+          company_website?: string | null
+          created_at?: string | null
+          credit_note_next_number?: number | null
+          credit_note_prefix?: string | null
+          default_style_id?: string | null
+          default_tax_rate?: number | null
+          footer_text?: string | null
+          id?: string
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
+          legal_notice?: string | null
+          organization_id: string
+          payment_terms?: string | null
+          quote_next_number?: number | null
+          quote_prefix?: string | null
+          receipt_next_number?: number | null
+          receipt_prefix?: string | null
+          tax_label?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_address?: string | null
+          company_bank_name?: string | null
+          company_cif?: string | null
+          company_city?: string | null
+          company_country?: string | null
+          company_email?: string | null
+          company_iban?: string | null
+          company_legal_name?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          company_postal_code?: string | null
+          company_website?: string | null
+          created_at?: string | null
+          credit_note_next_number?: number | null
+          credit_note_prefix?: string | null
+          default_style_id?: string | null
+          default_tax_rate?: number | null
+          footer_text?: string | null
+          id?: string
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
+          legal_notice?: string | null
+          organization_id?: string
+          payment_terms?: string | null
+          quote_next_number?: number | null
+          quote_prefix?: string | null
+          receipt_next_number?: number | null
+          receipt_prefix?: string | null
+          tax_label?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_document_preferences_default_style_id_fkey"
+            columns: ["default_style_id"]
+            isOneToOne: false
+            referencedRelation: "document_styles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_document_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "backoffice_tenant_crm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_document_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_usage_stats"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "tenant_document_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
