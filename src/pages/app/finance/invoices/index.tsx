@@ -171,9 +171,23 @@ function InvoiceRow({ invoice, paymentLabel, onSend, onMarkPaid, onRectify, onDo
         )}
       </TableCell>
       <TableCell>
-        <p className="text-sm font-medium text-foreground">{invoice.client_name}</p>
-        {invoice.client_tax_id && (
-          <p className="text-xs text-muted-foreground">{invoice.client_tax_id}</p>
+        {invoice.billing_client_id ? (
+          <Link 
+            to={`/app/crm/accounts/${invoice.billing_client_id}`}
+            className="group"
+          >
+            <p className="text-sm font-medium text-foreground group-hover:text-primary group-hover:underline">{invoice.client_name}</p>
+            {invoice.client_tax_id && (
+              <p className="text-xs text-muted-foreground">{invoice.client_tax_id}</p>
+            )}
+          </Link>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-foreground">{invoice.client_name}</p>
+            {invoice.client_tax_id && (
+              <p className="text-xs text-muted-foreground">{invoice.client_tax_id}</p>
+            )}
+          </>
         )}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">

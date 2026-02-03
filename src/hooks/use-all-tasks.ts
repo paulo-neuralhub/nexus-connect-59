@@ -53,82 +53,130 @@ export function useAllTasks(filters: TaskFilters = {}) {
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
 
-      let query = supabase
-        .from('activities')
-        .select(`
-          id, subject, content, due_date, is_completed, completed_at, type, created_at,
-          matter_id, deal_id, contact_id,
-          metadata,
-          matter:matters(id, reference, title),
-          deal:deals(id, title),
-          created_by
-        `)
-        .eq('organization_id', currentOrganization.id)
-        .eq('type', 'task')
-        .order('due_date', { ascending: true, nullsFirst: false });
+      const tasks: UnifiedTask[] = [];
 
-      // Filtro de estado
-      if (filters.status === 'pending') {
-        query = query.eq('is_completed', false);
-      } else if (filters.status === 'completed') {
-        query = query.eq('is_completed', true);
-      }
+      // 1. Get tasks from activities table (matter-linked tasks)
+      if (filters.source !== 'crm') {
+        let query = supabase
+          .from('activities')
+          .select(`
+            id, subject, content, due_date, is_completed, completed_at, type, created_at,
+            matter_id, deal_id, contact_id,
+            metadata,
+            matter:matters(id, reference, title),
+            deal:deals(id, title),
+            created_by
+          `)
+          .eq('organization_id', currentOrganization.id)
+          .eq('type', 'task')
+          .order('due_date', { ascending: true, nullsFirst: false });
 
-      // Filtro de fuente
-      if (filters.source === 'matter') {
-        query = query.not('matter_id', 'is', null);
-      } else if (filters.source === 'crm') {
-        query = query.is('matter_id', null);
-      }
-
-      // Filtro de rango de fecha
-      if (filters.dueDateRange) {
-        query = query
-          .gte('due_date', filters.dueDateRange.from.toISOString())
-          .lte('due_date', filters.dueDateRange.to.toISOString());
-      }
-
-      const { data, error } = await query.limit(100);
-      if (error) throw error;
-
-      // Enriquecer con información de fuente
-      const tasks: UnifiedTask[] = (data || []).map((task: any) => {
-        const hasMatter = !!task.matter_id && task.matter;
-        const hasDeal = !!task.deal_id && task.deal;
-
-        let source: 'matter' | 'crm' | 'other' = 'other';
-        let sourceLabel = 'Sin vincular';
-        let sourceName = '';
-        let sourceUrl = '/app/tareas';
-
-        if (hasMatter) {
-          source = 'matter';
-          sourceLabel = task.matter?.reference || 'Expediente';
-          sourceName = task.matter?.title || '';
-          sourceUrl = `/app/expedientes/${task.matter_id}`;
-        } else if (hasDeal) {
-          source = 'crm';
-          sourceLabel = 'CRM';
-          sourceName = task.deal?.title || '';
-          sourceUrl = `/app/crm/deals/${task.deal_id}`;
+        // Status filter
+        if (filters.status === 'pending') {
+          query = query.eq('is_completed', false);
+        } else if (filters.status === 'completed') {
+          query = query.eq('is_completed', true);
         }
 
-        // Extraer prioridad del metadata si existe
-        const priority = task.metadata?.priority || 'medium';
+        // Date range filter
+        if (filters.dueDateRange) {
+          query = query
+            .gte('due_date', filters.dueDateRange.from.toISOString())
+            .lte('due_date', filters.dueDateRange.to.toISOString());
+        }
 
-        return {
-          ...task,
-          priority,
-          source,
-          sourceLabel,
-          sourceName,
-          sourceUrl,
-        };
+        const { data, error } = await query.limit(100);
+        if (!error && data) {
+          for (const task of data) {
+            const priority = (task.metadata as Record<string, unknown>)?.priority as string || 'medium';
+            
+            tasks.push({
+              ...task,
+              priority,
+              source: 'matter' as const,
+              sourceLabel: task.matter?.reference || 'Expediente',
+              sourceName: task.matter?.title || '',
+              sourceUrl: task.matter_id ? `/app/expedientes/${task.matter_id}` : '/app/tareas',
+              assigned_to: task.created_by, // Use created_by as assigned_to for activities
+            });
+          }
+        }
+      }
+
+      // 2. Get tasks from crm_tasks table
+      if (filters.source !== 'matter') {
+        let crmQuery = supabase
+          .from('crm_tasks')
+          .select(`
+            id, title, description, due_date, status, completed_at, created_at,
+            account_id, deal_id, contact_id, assigned_to, metadata,
+            crm_accounts(id, name),
+            deals(id, title)
+          `)
+          .eq('organization_id', currentOrganization.id)
+          .order('due_date', { ascending: true, nullsFirst: false });
+
+        // Status filter for crm_tasks
+        if (filters.status === 'pending') {
+          crmQuery = crmQuery.in('status', ['pending', 'in_progress']);
+        } else if (filters.status === 'completed') {
+          crmQuery = crmQuery.eq('status', 'completed');
+        }
+
+        // Date range filter
+        if (filters.dueDateRange) {
+          crmQuery = crmQuery
+            .gte('due_date', filters.dueDateRange.from.toISOString())
+            .lte('due_date', filters.dueDateRange.to.toISOString());
+        }
+
+        const { data: crmData, error: crmError } = await crmQuery.limit(100);
+        if (!crmError && crmData) {
+          for (const task of crmData) {
+            const priority = (task.metadata as Record<string, unknown>)?.priority as string || 'medium';
+            
+            tasks.push({
+              id: task.id,
+              subject: task.title,
+              content: task.description,
+              due_date: task.due_date,
+              is_completed: task.status === 'completed',
+              completed_at: task.completed_at,
+              type: 'task',
+              created_at: task.created_at,
+              priority,
+              source: 'crm' as const,
+              sourceLabel: task.crm_accounts?.name || 'CRM',
+              sourceName: task.deals?.title || '',
+              sourceUrl: task.deal_id 
+                ? `/app/crm/deals/${task.deal_id}` 
+                : task.account_id 
+                  ? `/app/crm/accounts/${task.account_id}`
+                  : '/app/tareas',
+              matter_id: null,
+              deal_id: task.deal_id,
+              contact_id: task.contact_id,
+              assigned_to: task.assigned_to,
+              matter: null,
+              deal: task.deals,
+              assigned_user: null,
+              created_by: null,
+            });
+          }
+        }
+      }
+
+      // Sort combined results by due_date
+      tasks.sort((a, b) => {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       });
 
-      // Filtro de asignación (post-query porque created_by no es assigned_to)
+      // Filter by assignedTo if needed
       if (filters.assignedTo === 'me' && user?.id) {
-        return tasks.filter((t) => t.created_by === user.id);
+        return tasks.filter((t) => t.created_by === user.id || t.assigned_to === user.id);
       }
 
       return tasks;
