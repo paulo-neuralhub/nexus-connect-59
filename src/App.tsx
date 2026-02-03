@@ -107,6 +107,7 @@ import ContactListPage from "./pages/app/marketing/lists";
 import AutomationList from "./pages/app/marketing/automations";
 import AutomationEditor from "./pages/app/marketing/automations/AutomationEditor";
 import NewAutomationPage from "./pages/app/marketing/automations/new";
+import DocumentGeneratorPage from "./pages/app/documents/DocumentGeneratorPage";
 import FAQPage from "./pages/app/help/faq";
 import GuidesPage from "./pages/app/help/guides";
 import FinanceLayout from "./pages/app/finance/FinanceLayout";
@@ -468,6 +469,9 @@ const App = () => (
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
                 </Route>
+                {/* Document Generator */}
+                <Route path="documents/new" element={<DocumentGeneratorPage />} />
+                <Route path="documents/generator" element={<DocumentGeneratorPage />} />
                 <Route path="finance" element={<FinanceLayout />}>
                   <Route index element={<FinanceDashboard />} />
                   <Route path="costs" element={<CostsPage />} />
