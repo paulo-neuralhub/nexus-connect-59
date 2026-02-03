@@ -1,9 +1,10 @@
 // ============================================================
 // DOCUMENT PREVIEW - Renderiza el documento con tokens + datos
 // Imports CSS variables y muestra preview en tiempo real
+// REFACTORED: Uses separate template components
 // ============================================================
 
-import { forwardRef, useEffect } from 'react';
+import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { DesignTokens, DocumentType } from '@/lib/document-templates/designTokens';
 import { tokensToCssVars } from '@/lib/document-templates/designTokens';
@@ -12,6 +13,20 @@ import { Loader2 } from 'lucide-react';
 
 // Import document template styles
 import '@/styles/document-templates.css';
+
+// Import all templates
+import {
+  CreditNoteTemplate,
+  ReceiptTemplate,
+  CeaseDesistTemplate,
+  MeetingMinutesTemplate,
+  PortfolioReportTemplate,
+  WatchReportTemplate,
+  NDATemplate,
+  LicenseTemplate,
+  PowerOfAttorneyTemplate,
+  RenewalNoticeTemplate,
+} from '../templates';
 
 interface DocumentPreviewProps {
   style: DesignTokens | null;
@@ -42,7 +57,7 @@ export const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(
     }
 
     const cssVars = tokensToCssVars(style);
-    const headerLayoutClass = getHeaderLayoutClass(style.headerLayout);
+    const layoutClass = getHeaderLayoutClass(style.headerLayout);
 
     return (
       <div className={cn('bg-muted/30 p-6 overflow-auto', className)}>
@@ -52,7 +67,7 @@ export const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(
           className={cn('doc mx-auto', style.isDark && 'dk')}
           style={{ cssText: cssVars } as React.CSSProperties}
         >
-          {renderDocumentContent(documentType.id, style, data)}
+          {renderDocumentContent(documentType.id, style, data, layoutClass)}
         </div>
       </div>
     );
@@ -77,34 +92,61 @@ function getHeaderLayoutClass(layout: string): string {
 function renderDocumentContent(
   typeId: string,
   style: DesignTokens,
-  data: DocumentDataContext
+  data: DocumentDataContext,
+  layoutClass: string
 ): React.ReactNode {
-  // Render different templates based on document type
+  const props = { style, data, layoutClass };
+
   switch (typeId) {
     case 'factura':
-      return <InvoiceContent style={style} data={data} />;
+      return <InvoiceContent {...props} />;
     case 'presupuesto':
-      return <QuoteContent style={style} data={data} />;
+      return <QuoteContent {...props} />;
+    case 'nota-credito':
+      return <CreditNoteTemplate {...props} />;
+    case 'recibo':
+      return <ReceiptTemplate {...props} />;
     case 'carta':
-      return <LetterContent style={style} data={data} />;
+      return <LetterContent {...props} />;
+    case 'cease':
+      return <CeaseDesistTemplate {...props} />;
+    case 'acta':
+      return <MeetingMinutesTemplate {...props} />;
+    case 'informe':
+      return <PortfolioReportTemplate {...props} />;
+    case 'vigilancia':
+      return <WatchReportTemplate {...props} />;
     case 'contrato':
-      return <ContractContent style={style} data={data} />;
+      return <ContractContent {...props} />;
+    case 'nda':
+      return <NDATemplate {...props} />;
+    case 'licencia':
+      return <LicenseTemplate {...props} />;
+    case 'poder':
+      return <PowerOfAttorneyTemplate {...props} />;
     case 'certificado':
-      return <CertificateContent style={style} data={data} />;
+      return <CertificateContent {...props} />;
+    case 'renovacion':
+      return <RenewalNoticeTemplate {...props} />;
     default:
-      return <GenericContent style={style} data={data} typeId={typeId} />;
+      return <GenericContent {...props} typeId={typeId} />;
   }
 }
 
 // ============================================================
-// INVOICE TEMPLATE
+// INLINE TEMPLATES (from original file)
 // ============================================================
-function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDataContext }) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
 
+interface TemplateProps {
+  style: DesignTokens;
+  data: DocumentDataContext;
+  layoutClass: string;
+}
+
+// INVOICE
+function InvoiceContent({ style, data, layoutClass }: TemplateProps) {
   return (
     <>
-      {/* Header */}
       <div className={cn('hdr', layoutClass)}>
         {style.headerLayout === 'sidebar' ? (
           <>
@@ -115,9 +157,7 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
                   {data.company.logoUrl ? (
                     <img src={data.company.logoUrl} alt="Logo" />
                   ) : (
-                    <div className="hdr-logo-placeholder">
-                      {data.company.name.charAt(0)}
-                    </div>
+                    <div className="hdr-logo-placeholder">{data.company.name.charAt(0)}</div>
                   )}
                   <div>
                     <div className="hdr-company">{data.company.name}</div>
@@ -137,9 +177,7 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
               {data.company.logoUrl ? (
                 <img src={data.company.logoUrl} alt="Logo" />
               ) : (
-                <div className="hdr-logo-placeholder">
-                  {data.company.name.charAt(0)}
-                </div>
+                <div className="hdr-logo-placeholder">{data.company.name.charAt(0)}</div>
               )}
               <div>
                 <div className="hdr-company">{data.company.name}</div>
@@ -157,9 +195,7 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
               {data.company.logoUrl ? (
                 <img src={data.company.logoUrl} alt="Logo" />
               ) : (
-                <div className="hdr-logo-placeholder">
-                  {data.company.name.charAt(0)}
-                </div>
+                <div className="hdr-logo-placeholder">{data.company.name.charAt(0)}</div>
               )}
               <div>
                 <div className="hdr-company">{data.company.name}</div>
@@ -174,9 +210,7 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
         )}
       </div>
 
-      {/* Body */}
       <div className="bd">
-        {/* Meta */}
         <div className="mt">
           <div className="ms">
             <div className="ml">Facturar a</div>
@@ -193,7 +227,6 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
           </div>
         </div>
 
-        {/* Table */}
         <table>
           <thead>
             <tr>
@@ -225,7 +258,6 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
           </tbody>
         </table>
 
-        {/* Totals */}
         <div className="tots">
           <div className="tb">
             <span>Subtotal</span>
@@ -242,7 +274,6 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
         </div>
       </div>
 
-      {/* Footer */}
       <div className="ft">
         <div className="ft-grid">
           <div>
@@ -263,12 +294,8 @@ function InvoiceContent({ style, data }: { style: DesignTokens; data: DocumentDa
   );
 }
 
-// ============================================================
-// QUOTE TEMPLATE
-// ============================================================
-function QuoteContent({ style, data }: { style: DesignTokens; data: DocumentDataContext }) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
-
+// QUOTE
+function QuoteContent({ style, data, layoutClass }: TemplateProps) {
   return (
     <>
       <div className={cn('hdr', layoutClass)}>
@@ -370,12 +397,8 @@ function QuoteContent({ style, data }: { style: DesignTokens; data: DocumentData
   );
 }
 
-// ============================================================
-// LETTER TEMPLATE
-// ============================================================
-function LetterContent({ style, data }: { style: DesignTokens; data: DocumentDataContext }) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
-
+// LETTER
+function LetterContent({ style, data, layoutClass }: TemplateProps) {
   return (
     <>
       <div className={cn('hdr', layoutClass)}>
@@ -404,9 +427,7 @@ function LetterContent({ style, data }: { style: DesignTokens; data: DocumentDat
           <div className="mv text-sm">{data.client.fullAddress}</div>
         </div>
 
-        <div className="text-right mb-4 text-sm text-muted">
-          {data.date.todayFormal}
-        </div>
+        <div className="text-right mb-4 text-sm text-muted">{data.date.todayFormal}</div>
 
         <div className="subj">
           <div className="subj-label">Asunto</div>
@@ -455,12 +476,8 @@ function LetterContent({ style, data }: { style: DesignTokens; data: DocumentDat
   );
 }
 
-// ============================================================
-// CONTRACT TEMPLATE
-// ============================================================
-function ContractContent({ style, data }: { style: DesignTokens; data: DocumentDataContext }) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
-
+// CONTRACT
+function ContractContent({ style, data, layoutClass }: TemplateProps) {
   return (
     <>
       <div className={cn('hdr', layoutClass)}>
@@ -532,20 +549,14 @@ function ContractContent({ style, data }: { style: DesignTokens; data: DocumentD
       </div>
 
       <div className="ft">
-        <div className="text-center">
-          {data.date.todayFormal}
-        </div>
+        <div className="text-center">{data.date.todayFormal}</div>
       </div>
     </>
   );
 }
 
-// ============================================================
-// CERTIFICATE TEMPLATE
-// ============================================================
-function CertificateContent({ style, data }: { style: DesignTokens; data: DocumentDataContext }) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
-
+// CERTIFICATE
+function CertificateContent({ style, data, layoutClass }: TemplateProps) {
   return (
     <>
       <div className={cn('hdr', layoutClass)}>
@@ -610,19 +621,8 @@ function CertificateContent({ style, data }: { style: DesignTokens; data: Docume
   );
 }
 
-// ============================================================
-// GENERIC FALLBACK TEMPLATE
-// ============================================================
-function GenericContent({ 
-  style, 
-  data, 
-  typeId 
-}: { 
-  style: DesignTokens; 
-  data: DocumentDataContext; 
-  typeId: string;
-}) {
-  const layoutClass = getHeaderLayoutClass(style.headerLayout);
+// GENERIC FALLBACK
+function GenericContent({ style, data, layoutClass, typeId }: TemplateProps & { typeId: string }) {
   const typeName = typeId.toUpperCase().replace(/-/g, ' ');
 
   return (
@@ -660,7 +660,7 @@ function GenericContent({
 
         <div className="rp-p">
           <p>Contenido del documento de tipo <strong>{typeName}</strong>.</p>
-          <p>Este es un template genérico. Los templates específicos para cada tipo de documento se implementarán próximamente.</p>
+          <p>Este es un template genérico.</p>
         </div>
       </div>
 
