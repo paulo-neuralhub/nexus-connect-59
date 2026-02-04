@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import { 
   useSpiderStats, 
   useWatchResults, 
@@ -34,6 +35,14 @@ const iconMap: Record<string, React.ElementType> = {
   ShoppingBag: Eye,
 };
 
+// Color mapping for Spider KPIs
+const SPIDER_COLORS: Record<string, string> = {
+  purple: '#2563eb',  // blue (replacing purple)
+  blue: '#00b4d8',    // accent cyan
+  red: '#ef4444',     // red
+  orange: '#f59e0b',  // amber
+};
+
 export default function SpiderDashboard() {
   const { data: stats, isLoading: statsLoading } = useSpiderStats();
   const { data: results, isLoading: resultsLoading } = useWatchResults({ status: 'new' });
@@ -47,7 +56,7 @@ export default function SpiderDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Radar className="w-7 h-7 text-purple-500" />
+            <Radar className="w-7 h-7 text-blue-500" />
             IP-SPIDER
             <InlineHelp text="Sistema de vigilancia y monitorización de PI. Crea vigilancias para detectar marcas similares, publicaciones de patentes, cambios de estado en oficinas y amenazas potenciales." />
           </h1>
@@ -61,35 +70,31 @@ export default function SpiderDashboard() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards with NeoBadge */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          icon={<Search className="w-5 h-5 text-purple-500" />}
           label="Vigilancias activas"
           value={stats?.activeWatchlists}
           loading={statsLoading}
-          color="purple"
+          color={SPIDER_COLORS.purple}
         />
         <StatCard
-          icon={<Eye className="w-5 h-5 text-blue-500" />}
           label="Sin revisar"
           value={stats?.unreviewedResults}
           loading={statsLoading}
-          color="blue"
+          color={SPIDER_COLORS.blue}
         />
         <StatCard
-          icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
           label="Amenazas activas"
           value={stats?.activeThreats}
           loading={statsLoading}
-          color="red"
+          color={SPIDER_COLORS.red}
         />
         <StatCard
-          icon={<Bell className="w-5 h-5 text-orange-500" />}
           label="Alertas sin leer"
           value={stats?.unreadAlerts}
           loading={statsLoading}
-          color="orange"
+          color={SPIDER_COLORS.orange}
         />
       </div>
 
@@ -198,7 +203,7 @@ export default function SpiderDashboard() {
                             to={`/app/spider/watchlists/${watchlist.id}`}
                             className="font-medium text-foreground hover:text-primary flex items-center gap-2"
                           >
-                            <IconComponent className="w-4 h-4 text-purple-500" />
+                            <IconComponent className="w-4 h-4 text-blue-500" />
                             {watchlist.name}
                           </Link>
                         </td>
@@ -238,39 +243,39 @@ export default function SpiderDashboard() {
 }
 
 function StatCard({ 
-  icon, 
   label, 
   value, 
   loading, 
   color 
 }: { 
-  icon: React.ReactNode; 
   label: string; 
   value?: number; 
   loading: boolean;
   color: string;
 }) {
-  const bgColors: Record<string, string> = {
-    purple: 'bg-purple-50 dark:bg-purple-950/30',
-    blue: 'bg-blue-50 dark:bg-blue-950/30',
-    red: 'bg-red-50 dark:bg-red-950/30',
-    orange: 'bg-orange-50 dark:bg-orange-950/30',
-  };
-
   return (
-    <Card className={bgColors[color]}>
-      <CardContent className="pt-4">
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-background rounded-lg shadow-sm">
-            {icon}
-          </div>
+          {loading ? (
+            <Skeleton className="h-[46px] w-[46px] rounded-xl" />
+          ) : (
+            <NeoBadge
+              value={value ?? 0}
+              color={(value ?? 0) > 0 ? color : '#94a3b8'}
+              size="md"
+            />
+          )}
           <div>
-            {loading ? (
-              <Skeleton className="h-7 w-12" />
-            ) : (
-              <p className="text-2xl font-bold">{value ?? 0}</p>
-            )}
-            <p className="text-xs text-muted-foreground">{label}</p>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
           </div>
         </div>
       </CardContent>

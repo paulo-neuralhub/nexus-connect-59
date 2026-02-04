@@ -1,19 +1,26 @@
 import { Link } from 'react-router-dom';
-import { 
-  DollarSign, 
-  Receipt, 
-  FileText, 
-  Calendar, 
-  TrendingUp,
-  ArrowRight,
-  Plus
-} from 'lucide-react';
+import { ArrowRight, Plus } from 'lucide-react';
 import { useFinanceStats, useUpcomingRenewals, useMatterCosts, useInvoices } from '@/hooks/use-finance';
 import { formatCurrency, INVOICE_STATUSES, COST_STATUSES } from '@/lib/constants/finance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+// Color mapping for Finance KPIs
+const FINANCE_COLORS: Record<string, string> = {
+  invoiced: '#10b981',     // green
+  pending: '#f59e0b',      // amber/orange
+  costs: '#2563eb',        // blue
+  renewals: '#00b4d8',     // accent cyan
+};
+
+function formatShortCurrency(value: number) {
+  if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
+  return `€${value.toFixed(0)}`;
+}
 
 export default function FinanceDashboard() {
   const { data: stats } = useFinanceStats();
@@ -43,63 +50,28 @@ export default function FinanceDashboard() {
         </div>
       </div>
       
-      {/* Stats Cards */}
+      {/* Stats Cards with NeoBadge */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Facturado este mes</p>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.invoicedThisMonth || 0)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pendiente cobro</p>
-                <p className="text-2xl font-bold text-orange-600">{formatCurrency(stats?.pendingInvoicesTotal || 0)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-950/30 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Costes pendientes</p>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.pendingCostsTotal || 0)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Renovaciones próximas</p>
-                <p className="text-2xl font-bold text-foreground">{stats?.renewalsDue || 0}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Facturado este mes"
+          value={formatShortCurrency(stats?.invoicedThisMonth || 0)}
+          color={FINANCE_COLORS.invoiced}
+        />
+        <StatCard
+          label="Pendiente cobro"
+          value={formatShortCurrency(stats?.pendingInvoicesTotal || 0)}
+          color={FINANCE_COLORS.pending}
+        />
+        <StatCard
+          label="Costes pendientes"
+          value={formatShortCurrency(stats?.pendingCostsTotal || 0)}
+          color={FINANCE_COLORS.costs}
+        />
+        <StatCard
+          label="Renovaciones próximas"
+          value={stats?.renewalsDue || 0}
+          color={FINANCE_COLORS.renewals}
+        />
       </div>
       
       {/* Two column layout */}
@@ -230,5 +202,43 @@ export default function FinanceDashboard() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number | string; 
+  color: string;
+}) {
+  const numericValue = typeof value === 'number' ? value : 0;
+  const hasValue = numericValue > 0 || (typeof value === 'string' && value !== '€0');
+  
+  return (
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={hasValue ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
