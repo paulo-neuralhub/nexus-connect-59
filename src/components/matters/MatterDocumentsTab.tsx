@@ -98,8 +98,31 @@ export function MatterDocumentsTab({
     }
   };
 
-  const handleDownload = (url: string, name: string) => {
-    window.open(url, '_blank');
+  const handleDownload = async (filePath: string, name: string) => {
+    if (!filePath) {
+      toast({ title: 'Documento no disponible', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      // Use signed URL for secure access
+      const { data, error } = await supabase.storage
+        .from('matter-documents')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      if (error || !data?.signedUrl) {
+        // Fallback: file might not be uploaded yet
+        toast({ 
+          title: 'El archivo aún no ha sido subido al sistema',
+          variant: 'destructive' 
+        });
+        return;
+      }
+      
+      window.open(data.signedUrl, '_blank');
+    } catch (err) {
+      toast({ title: 'Error al acceder al documento', variant: 'destructive' });
+    }
   };
 
   const totalDocs = (uploadedDocuments?.length || 0) + generatedDocs.length;

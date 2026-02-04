@@ -71,7 +71,7 @@ export function MatterCommunicationsTab({
 
   return (
     <>
-      <Tabs defaultValue="whatsapp" className="space-y-4">
+      <Tabs defaultValue="email" className="space-y-4">
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="whatsapp" className="gap-1.5">
