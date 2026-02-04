@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { FileText, Download, Trash2, Eye, Plus, File, Sparkles } from 'lucide-react';
+import { FileText, Download, Trash2, Eye, Plus, File, Sparkles, ExternalLink, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +26,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+
+interface PreviewDoc {
+  id: string;
+  name: string;
+  file_path: string;
+  mime_type?: string;
+}
 
 const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
   application: { label: 'Solicitud', color: 'bg-blue-100 text-blue-700' },
@@ -60,6 +73,9 @@ export function MatterDocumentsTab({
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [generatedDocs, setGeneratedDocs] = useState<any[]>([]);
   const [isLoadingGenerated, setIsLoadingGenerated] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState<PreviewDoc | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const { toast } = useToast();
   
   // Uploaded documents
@@ -98,6 +114,37 @@ export function MatterDocumentsTab({
     }
   };
 
+  // Open document preview
+  const handleOpenPreview = async (doc: PreviewDoc) => {
+    if (!doc.file_path) {
+      toast({ title: 'Documento no disponible', variant: 'destructive' });
+      return;
+    }
+    
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from('matter-documents')
+        .createSignedUrl(doc.file_path, 3600);
+      
+      if (error || !data?.signedUrl) {
+        toast({ title: 'Error al cargar vista previa', variant: 'destructive' });
+        setPreviewDoc(null);
+        return;
+      }
+      
+      setPreviewUrl(data.signedUrl);
+    } catch {
+      toast({ title: 'Error al cargar vista previa', variant: 'destructive' });
+      setPreviewDoc(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const handleDownload = async (filePath: string, name: string) => {
     if (!filePath) {
       toast({ title: 'Documento no disponible', variant: 'destructive' });
@@ -119,11 +166,25 @@ export function MatterDocumentsTab({
         return;
       }
       
-      window.open(data.signedUrl, '_blank');
+      // Create download by fetching and saving
+      const response = await fetch(data.signedUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
-      toast({ title: 'Error al acceder al documento', variant: 'destructive' });
+      toast({ title: 'Error al descargar el documento', variant: 'destructive' });
     }
   };
+
+  const isImage = (mimeType?: string) => mimeType?.startsWith('image/');
+  const isPdf = (mimeType?: string) => mimeType === 'application/pdf';
+
 
   const totalDocs = (uploadedDocuments?.length || 0) + generatedDocs.length;
   const isLoading = isLoadingUploaded || isLoadingGenerated;
@@ -257,7 +318,16 @@ export function MatterDocumentsTab({
                     const categoryConfig = CATEGORY_CONFIG[doc.category || 'other'] || CATEGORY_CONFIG.other;
                     
                     return (
-                      <div key={doc.id} className="flex items-center justify-between py-3">
+                      <div 
+                        key={doc.id} 
+                        className="flex items-center justify-between py-3 cursor-pointer hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors"
+                        onClick={() => handleOpenPreview({
+                          id: doc.id,
+                          name: doc.name,
+                          file_path: doc.file_path || doc.storage_path || '',
+                          mime_type: doc.mime_type
+                        })}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
                             <FileText className="h-5 w-5 text-muted-foreground" />
@@ -279,10 +349,24 @@ export function MatterDocumentsTab({
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="icon"
+                            title="Ver"
+                            onClick={() => handleOpenPreview({
+                              id: doc.id,
+                              name: doc.name,
+                              file_path: doc.file_path || doc.storage_path || '',
+                              mime_type: doc.mime_type
+                            })}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Descargar"
                             onClick={() => handleDownload(doc.file_path || doc.storage_path || '', doc.name)}
                           >
                             <Download className="h-4 w-4" />
@@ -291,6 +375,7 @@ export function MatterDocumentsTab({
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:text-destructive"
+                            title="Eliminar"
                             onClick={() => setDeleteId(doc.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -337,6 +422,79 @@ export function MatterDocumentsTab({
         matterId={matterId}
         clientId={clientId}
       />
+
+      {/* Document Preview Modal */}
+      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-4 border-b flex-row items-center justify-between space-y-0">
+            <DialogTitle className="truncate pr-4">
+              {previewDoc?.name}
+            </DialogTitle>
+            <div className="flex items-center gap-2 shrink-0">
+              {previewUrl && (
+                <Button variant="ghost" size="icon" asChild>
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer" title="Abrir en nueva pestaña">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => previewDoc && handleDownload(previewDoc.file_path, previewDoc.name)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Descargar
+              </Button>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto p-4 bg-muted/30" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+            {previewLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : previewUrl ? (
+              <>
+                {isImage(previewDoc?.mime_type) && (
+                  <img
+                    src={previewUrl}
+                    alt={previewDoc?.name}
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
+                  />
+                )}
+
+                {isPdf(previewDoc?.mime_type) && (
+                  <iframe
+                    src={previewUrl}
+                    title={previewDoc?.name}
+                    className="w-full h-[70vh] rounded-lg border bg-white"
+                  />
+                )}
+
+                {!isImage(previewDoc?.mime_type) && !isPdf(previewDoc?.mime_type) && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p>Vista previa no disponible para este tipo de archivo.</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => previewDoc && handleDownload(previewDoc.file_path, previewDoc.name)}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Descargar archivo
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-64 text-muted-foreground">
+                No se pudo cargar la vista previa
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
