@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['DM Sans', 'Segoe UI', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
@@ -141,11 +141,19 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "12px",
+        lg: "var(--radius)",          /* 14px */
+        md: "calc(var(--radius) - 2px)", /* 12px */
+        sm: "calc(var(--radius) - 4px)", /* 10px */
+        xl: "14px",
         "2xl": "16px",
+      },
+      boxShadow: {
+        'neu': '4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff',
+        'neu-sm': '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff',
+        'neu-inset': 'inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff',
+        'neu-shell': '14px 14px 40px #cdd1dc, -14px -14px 40px #ffffff',
+        'accent': '0 3px 12px hsl(193 100% 42% / 0.15)',
+        'glow': '0 0 6px hsl(193 100% 42% / 0.30)',
       },
       keyframes: {
         "accordion-down": {
