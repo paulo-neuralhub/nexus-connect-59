@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  FileText, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
-  Send, Eye, Edit, Trash2, Filter, Search, Download,
-  Building2, Calendar, DollarSign, FileCheck, MoreHorizontal
+  FileText, Plus, Clock, Send, Eye, Edit, Trash2, Search,
+  Building2, MoreHorizontal
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import {
   Select,
   SelectContent,
@@ -37,6 +37,14 @@ import { useFilingApplications, useFilingStats, useDeleteFiling } from '@/hooks/
 import { FILING_TYPES, FILING_STATUS_CONFIG, type FilingStatus, type FilingApplication } from '@/types/filing.types';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
+
+// Color mapping for Filing KPIs
+const FILING_COLORS: Record<string, string> = {
+  total: '#00b4d8',     // accent cyan
+  draft: '#64748b',     // neutral gray
+  ready: '#f59e0b',     // amber
+  submitted: '#10b981', // green
+};
 
 export function FilingDashboard() {
   const navigate = useNavigate();
@@ -79,32 +87,6 @@ export function FilingDashboard() {
     );
   };
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    color 
-  }: { 
-    title: string; 
-    value: number; 
-    icon: React.ElementType; 
-    color: string;
-  }) => (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold mt-1">{value}</p>
-          </div>
-          <div className={`p-3 rounded-full ${color}`}>
-            <Icon className="h-6 w-6 text-white" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -129,31 +111,27 @@ export function FilingDashboard() {
         </Button>
       </div>
 
-      {/* Stats */}
+      {/* Stats with NeoBadge */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Solicitudes"
+          label="Total Solicitudes"
           value={stats?.total || 0}
-          icon={FileText}
-          color="bg-primary"
+          color={FILING_COLORS.total}
         />
         <StatCard
-          title="En Borrador"
+          label="En Borrador"
           value={stats?.draft || 0}
-          icon={Edit}
-          color="bg-slate-500"
+          color={FILING_COLORS.draft}
         />
         <StatCard
-          title="Listas"
+          label="Listas"
           value={stats?.ready || 0}
-          icon={Clock}
-          color="bg-amber-500"
+          color={FILING_COLORS.ready}
         />
         <StatCard
-          title="Presentadas"
+          label="Presentadas"
           value={stats?.submitted || 0}
-          icon={Send}
-          color="bg-emerald-500"
+          color={FILING_COLORS.submitted}
         />
       </div>
 
@@ -255,12 +233,12 @@ export function FilingDashboard() {
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${
                   app.ip_type === 'trademark' ? 'bg-blue-100' :
-                  app.ip_type === 'patent' ? 'bg-purple-100' :
+                  app.ip_type === 'patent' ? 'bg-blue-100' :
                   'bg-green-100'
                 }`}>
                   <FileText className={`h-4 w-4 ${
                     app.ip_type === 'trademark' ? 'text-blue-600' :
-                    app.ip_type === 'patent' ? 'text-purple-600' :
+                    app.ip_type === 'patent' ? 'text-blue-600' :
                     'text-green-600'
                   }`} />
                 </div>
@@ -282,6 +260,42 @@ export function FilingDashboard() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Stat Card with NeoBadge
+function StatCard({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number; 
+  color: string;
+}) {
+  return (
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={value > 0 ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

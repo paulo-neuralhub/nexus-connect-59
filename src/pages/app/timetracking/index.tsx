@@ -1,16 +1,17 @@
 /**
  * Timesheet Page
  * Weekly view for time entry management
- * P57: Time Tracking Module
+ * P57: Time Tracking Module with NeoBadge KPIs
  */
 
 import { useState } from 'react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import {
   Table,
   TableBody,
@@ -23,14 +24,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Clock,
   Calendar,
-  DollarSign,
-  TrendingUp,
 } from 'lucide-react';
 import { useWeeklyTimeEntries, TimeEntry } from '@/hooks/timetracking';
 import { AddTimeEntryDialog, TimeEntryRow } from '@/components/timetracking';
 import { cn } from '@/lib/utils';
+
+// Color mapping for Timesheet KPIs
+const TIME_COLORS: Record<string, string> = {
+  total: '#2563eb',       // blue
+  billable: '#10b981',    // green
+  amount: '#f59e0b',      // amber
+  entries: '#00b4d8',     // accent cyan
+};
 
 export default function TimesheetPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -58,6 +64,14 @@ export default function TimesheetPage() {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return `${h}h ${m}m`;
+  };
+
+  const formatDurationShort = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}:${m.toString().padStart(2, '0')}`;
   };
 
   const goToPreviousWeek = () => setWeekStart(prev => subWeeks(prev, 1));
@@ -106,60 +120,28 @@ export default function TimesheetPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards with NeoBadge */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tiempo total</p>
-                <p className="text-xl font-bold">{formatDuration(totalMinutes)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Facturable</p>
-                <p className="text-xl font-bold">{formatDuration(billableMinutes)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Importe</p>
-                <p className="text-xl font-bold">{totalAmount.toFixed(2)}€</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Entradas</p>
-                <p className="text-xl font-bold">{entries.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Tiempo total"
+          value={formatDurationShort(totalMinutes)}
+          color={TIME_COLORS.total}
+        />
+        <StatCard
+          label="Facturable"
+          value={formatDurationShort(billableMinutes)}
+          color={TIME_COLORS.billable}
+        />
+        <StatCard
+          label="Importe"
+          value={`€${totalAmount.toFixed(0)}`}
+          color={TIME_COLORS.amount}
+        />
+        <StatCard
+          label="Entradas"
+          value={entries.length}
+          color={TIME_COLORS.entries}
+        />
       </div>
 
       {/* Timesheet Table */}
@@ -248,5 +230,43 @@ export default function TimesheetPage() {
         defaultDate={selectedDate}
       />
     </div>
+  );
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number | string; 
+  color: string;
+}) {
+  const numericValue = typeof value === 'number' ? value : 0;
+  const hasValue = numericValue > 0 || (typeof value === 'string' && !value.includes('0h') && value !== '€0');
+  
+  return (
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="pt-4">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={hasValue ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

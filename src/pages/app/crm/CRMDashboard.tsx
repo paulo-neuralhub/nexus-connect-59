@@ -4,8 +4,8 @@ import { usePipelines, useDeals, useCreatePipeline } from '@/hooks/use-crm';
 import { usePageTitle } from '@/contexts/page-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
@@ -14,13 +14,26 @@ import {
 } from '@/components/features/crm';
 import { DEFAULT_PIPELINES } from '@/lib/constants/crm';
 import { toast } from 'sonner';
-import {
-  Plus, TrendingUp, DollarSign, Trophy, XCircle, Percent, Loader2
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Deal, Pipeline } from '@/types/crm';
+
+// Color mapping for CRM KPIs
+const CRM_COLORS: Record<string, string> = {
+  openDeals: '#00b4d8',    // accent cyan
+  pipelineValue: '#2563eb', // blue
+  wonThisMonth: '#10b981',  // green
+  lostThisMonth: '#ef4444', // red
+  conversionRate: '#2563eb', // blue
+};
 
 function formatCurrency(value: number, currency = 'EUR') {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(value);
+}
+
+function formatCurrencyShort(value: number) {
+  if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
+  return `€${value}`;
 }
 
 export default function CRMDashboard() {
@@ -173,73 +186,33 @@ export default function CRMDashboard() {
         </Button>
       </div>
 
-      {/* Stats */}
+      {/* Stats with NeoBadge */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.openDeals}</p>
-                <p className="text-xs text-muted-foreground">Deals abiertos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <DollarSign className="w-5 h-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">{formatCurrency(stats.pipelineValue)}</p>
-                <p className="text-xs text-muted-foreground">Valor pipeline</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <Trophy className="w-5 h-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.wonThisMonth}</p>
-                <p className="text-xs text-muted-foreground">Ganados este mes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <XCircle className="w-5 h-5 text-red-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.lostThisMonth}</p>
-                <p className="text-xs text-muted-foreground">Perdidos este mes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <Percent className="w-5 h-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.conversionRate}%</p>
-                <p className="text-xs text-muted-foreground">Tasa conversión</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Deals abiertos"
+          value={stats.openDeals}
+          color={CRM_COLORS.openDeals}
+        />
+        <StatCard
+          label="Valor pipeline"
+          value={formatCurrencyShort(stats.pipelineValue)}
+          color={CRM_COLORS.pipelineValue}
+        />
+        <StatCard
+          label="Ganados este mes"
+          value={stats.wonThisMonth}
+          color={CRM_COLORS.wonThisMonth}
+        />
+        <StatCard
+          label="Perdidos este mes"
+          value={stats.lostThisMonth}
+          color={CRM_COLORS.lostThisMonth}
+        />
+        <StatCard
+          label="Tasa conversión"
+          value={`${stats.conversionRate}%`}
+          color={CRM_COLORS.conversionRate}
+        />
       </div>
 
       {/* Kanban */}
@@ -286,5 +259,42 @@ export default function CRMDashboard() {
         onUpdate={() => refetchDeals()}
       />
     </div>
+  );
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number | string; 
+  color: string;
+}) {
+  const numericValue = typeof value === 'number' ? value : 0;
+  
+  return (
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={numericValue > 0 || typeof value === 'string' ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

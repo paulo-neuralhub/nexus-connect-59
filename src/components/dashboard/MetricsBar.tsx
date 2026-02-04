@@ -3,26 +3,14 @@
 // Solo para Dashboard - KPIs principales
 // =============================================
 
-import { 
-  Folder, 
-  Users, 
-  AlertTriangle, 
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  Euro,
-  Calendar,
-  Eye,
-  Bell,
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NeoBadge } from '@/components/ui/neo-badge';
 
 interface Metric {
   label: string;
   value: string | number;
   change?: number;
   changeLabel?: string;
-  icon: React.ReactNode;
   color: string;
   href?: string;
 }
@@ -33,7 +21,7 @@ interface MetricsBarProps {
 
 /**
  * SILK Hero Zone - Solo Dashboard
- * Contenedor con gradiente sutil y grid de 4 KPIs principales
+ * Contenedor con gradiente sutil y grid de KPIs principales con NeoBadge
  */
 export function MetricsBar({ metrics }: MetricsBarProps) {
   // Tomar solo los 4 primeros para Hero Zone (KPIs principales)
@@ -70,7 +58,7 @@ export function MetricsBar({ metrics }: MetricsBarProps) {
 }
 
 /**
- * SILK: Card KPI dentro de Hero Zone
+ * SILK: Card KPI dentro de Hero Zone con NeoBadge
  */
 function HeroKPICard({ metric }: { metric: Metric }) {
   return (
@@ -78,26 +66,19 @@ function HeroKPICard({ metric }: { metric: Metric }) {
       className="flex items-center gap-3 py-[13px] px-3 rounded-[14px] border border-black/[0.06] cursor-pointer transition-colors hover:border-[rgba(0,180,216,0.15)]"
       style={{ background: '#f1f4f9' }}
     >
-      {/* Icon container */}
-      <div 
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-        style={{ 
-          backgroundColor: `${metric.color}12`, 
-          color: metric.color 
-        }}
-      >
-        {metric.icon}
-      </div>
+      {/* NeoBadge with value */}
+      <NeoBadge
+        value={metric.value}
+        color={metric.color}
+        size="md"
+      />
       
       {/* Content */}
       <div className="min-w-0 flex-1">
         <p 
-          className="text-xl font-bold truncate"
+          className="text-[11px] font-semibold uppercase tracking-wide truncate"
           style={{ color: '#0a2540' }}
         >
-          {metric.value}
-        </p>
-        <p className="text-[11px] text-[#94a3b8] truncate">
           {metric.label}
         </p>
         {metric.change !== undefined && (
@@ -114,7 +95,7 @@ function HeroKPICard({ metric }: { metric: Metric }) {
 }
 
 /**
- * SILK: Card secundaria (métricas 5-8)
+ * SILK: Card secundaria (métricas 5-8) con NeoBadge
  */
 function SecondaryMetricCard({ metric }: { metric: Metric }) {
   return (
@@ -122,26 +103,19 @@ function SecondaryMetricCard({ metric }: { metric: Metric }) {
       className="flex items-center gap-3 py-3 px-3 rounded-[14px] border border-black/[0.06] cursor-pointer transition-colors hover:border-[rgba(0,180,216,0.15)]"
       style={{ background: '#f1f4f9' }}
     >
-      {/* Icon */}
-      <div 
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-        style={{ 
-          backgroundColor: `${metric.color}10`, 
-          color: metric.color 
-        }}
-      >
-        {metric.icon}
-      </div>
+      {/* NeoBadge with value */}
+      <NeoBadge
+        value={metric.value}
+        color={metric.color}
+        size="sm"
+      />
       
       {/* Content */}
       <div className="min-w-0 flex-1">
         <p 
-          className="text-base font-bold truncate"
+          className="text-[10px] font-semibold uppercase tracking-wide truncate"
           style={{ color: '#0a2540' }}
         >
-          {metric.value}
-        </p>
-        <p className="text-[10px] text-[#94a3b8] truncate">
           {metric.label}
         </p>
       </div>
@@ -255,50 +229,42 @@ export function useDashboardMetrics() {
     {
       label: 'Expedientes',
       value: data?.totalMatters ?? 0,
-      icon: <Folder className="h-5 w-5" />,
-      color: '#3B82F6',
+      color: '#00b4d8', // accent cyan
     },
     {
       label: 'Activos',
       value: data?.activeMatters ?? 0,
-      icon: <CheckCircle className="h-5 w-5" />,
-      color: '#10B981',
+      color: '#10B981', // green
     },
     {
       label: 'Plazos hoy',
       value: data?.deadlinesToday ?? 0,
-      icon: <Calendar className="h-5 w-5" />,
-      color: '#F59E0B',
+      color: '#F59E0B', // amber
     },
     {
       label: 'Urgentes',
       value: data?.urgentDeadlines ?? 0,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      color: '#EF4444',
+      color: '#EF4444', // red
     },
     {
       label: 'Clientes',
       value: data?.totalContacts ?? 0,
-      icon: <Users className="h-5 w-5" />,
-      color: '#8B5CF6',
+      color: '#64748b', // neutral gray
     },
     {
       label: 'Vigilancias',
       value: data?.activeWatchlists ?? 0,
-      icon: <Eye className="h-5 w-5" />,
-      color: '#EC4899',
+      color: '#2563eb', // blue (replacing purple)
     },
     {
       label: 'Alertas Spider',
       value: data?.unreadAlerts ?? 0,
-      icon: <Bell className="h-5 w-5" />,
-      color: '#F97316',
+      color: '#F59E0B', // amber
     },
     {
       label: 'Fact. mes',
       value: `€${(data?.monthlyInvoicing ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 0 })}`,
-      icon: <Euro className="h-5 w-5" />,
-      color: '#059669',
+      color: '#10B981', // green
     },
   ];
 

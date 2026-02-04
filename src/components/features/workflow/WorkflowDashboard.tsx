@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Play, 
-  Pause, 
   Plus, 
   Settings, 
   Activity,
@@ -10,22 +9,20 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  BarChart3,
-  Filter,
   Search,
   MoreVertical,
   Trash2,
   Edit,
   Copy,
   Eye,
-  Bell
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +51,14 @@ import { usePendingApprovalsCount } from '@/hooks/workflow/useWorkflowApprovals'
 import { WORKFLOW_TRIGGER_TYPES } from '@/types/workflow.types';
 import type { WorkflowTemplate, WorkflowExecution } from '@/types/workflow.types';
 import { InlineHelp } from '@/components/help';
+
+// Color mapping for Workflow KPIs
+const WORKFLOW_COLORS: Record<string, string> = {
+  active: '#00b4d8',     // accent cyan
+  executions: '#2563eb', // blue
+  successful: '#10b981', // green
+  failed: '#ef4444',     // red
+};
 
 export function WorkflowDashboard() {
   const navigate = useNavigate();
@@ -97,7 +102,7 @@ export function WorkflowDashboard() {
     const colors: Record<string, string> = {
       onboarding: 'bg-blue-100 text-blue-700',
       deadlines: 'bg-orange-100 text-orange-700',
-      notifications: 'bg-purple-100 text-purple-700',
+      notifications: 'bg-blue-100 text-blue-700',
       crm: 'bg-pink-100 text-pink-700',
       billing: 'bg-amber-100 text-amber-700',
       spider: 'bg-red-100 text-red-700',
@@ -105,6 +110,8 @@ export function WorkflowDashboard() {
     };
     return colors[category] || colors.custom;
   };
+
+  const activeWorkflowsCount = workflows.filter(w => w.is_active).length;
 
   return (
     <div className="space-y-6">
@@ -129,63 +136,28 @@ export function WorkflowDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards with NeoBadge */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Workflows Activos</p>
-                <p className="text-2xl font-bold">{workflows.filter(w => w.is_active).length}</p>
-              </div>
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Zap className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Ejecuciones (30d)</p>
-                <p className="text-2xl font-bold">{stats?.total_executions || 0}</p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Activity className="h-5 w-5 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Exitosas</p>
-                <p className="text-2xl font-bold text-emerald-600">{stats?.successful || 0}</p>
-              </div>
-              <div className="p-3 bg-emerald-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-emerald-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Fallidas</p>
-                <p className="text-2xl font-bold text-red-600">{stats?.failed || 0}</p>
-              </div>
-              <div className="p-3 bg-red-100 rounded-lg">
-                <XCircle className="h-5 w-5 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Workflows Activos"
+          value={activeWorkflowsCount}
+          color={WORKFLOW_COLORS.active}
+        />
+        <StatCard
+          label="Ejecuciones (30d)"
+          value={stats?.total_executions || 0}
+          color={WORKFLOW_COLORS.executions}
+        />
+        <StatCard
+          label="Exitosas"
+          value={stats?.successful || 0}
+          color={WORKFLOW_COLORS.successful}
+        />
+        <StatCard
+          label="Fallidas"
+          value={stats?.failed || 0}
+          color={WORKFLOW_COLORS.failed}
+        />
       </div>
 
       {/* Tabs */}
@@ -414,7 +386,7 @@ export function WorkflowDashboard() {
                           {execution.status}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(execution.created_at).toLocaleString('es-ES')}
+                          {new Date(execution.started_at).toLocaleString('es-ES')}
                         </span>
                       </div>
                     </div>
@@ -426,5 +398,40 @@ export function WorkflowDashboard() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function StatCard({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number; 
+  color: string;
+}) {
+  return (
+    <Card 
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={value > 0 ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p 
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: '#0a2540' }}
+            >
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
