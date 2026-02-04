@@ -47,6 +47,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     const isPrimary = variant === "default" || variant === undefined;
     
+    // When asChild is true, Slot requires exactly ONE child element.
+    // We cannot add the decorative span inside Slot, so skip it for asChild buttons.
+    if (asChild) {
+      return (
+        <Comp 
+          className={cn(buttonVariants({ variant, size, className }))} 
+          ref={ref} 
+          {...props}
+        >
+          {children}
+        </Comp>
+      );
+    }
+    
     return (
       <Comp 
         className={cn(buttonVariants({ variant, size, className }))} 
