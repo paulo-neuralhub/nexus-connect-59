@@ -508,3 +508,233 @@
 .group:hover .icon-rotate-hover {
   transform: rotate(12deg);
 }
+
+/* ===== SILK SECTION 5: COLORES POR CONTEXTO DE NEGOCIO ===== */
+
+/* ----- PLAZOS POR URGENCIA ----- */
+/* ≤5 días: Urgente (rojo) */
+.silk-deadline-urgent {
+  --deadline-color: #ef4444;
+  color: #ef4444;
+}
+.silk-deadline-urgent-bg {
+  background-color: #ef44440a;
+  color: #ef4444;
+}
+
+/* ≤15 días: Warning (ámbar) */
+.silk-deadline-warning {
+  --deadline-color: #f59e0b;
+  color: #f59e0b;
+}
+.silk-deadline-warning-bg {
+  background-color: #f59e0b0a;
+  color: #f59e0b;
+}
+
+/* >15 días: Normal (neutral) */
+.silk-deadline-normal {
+  --deadline-color: #64748b;
+  color: #64748b;
+}
+.silk-deadline-normal-bg {
+  background-color: #64748b0a;
+  color: #64748b;
+}
+
+/* Completado (verde) */
+.silk-deadline-completed {
+  --deadline-color: #10b981;
+  color: #10b981;
+}
+.silk-deadline-completed-bg {
+  background-color: #10b9810a;
+  color: #10b981;
+}
+
+/* Badge urgente */
+.silk-badge-urgent {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ----- RIESGO VIGILANCIA ----- */
+.silk-risk-high {
+  --risk-color: #ef4444;
+  color: #ef4444;
+}
+.silk-risk-high-bg {
+  background-color: #ef44440a;
+  border-left: 3px solid #ef4444;
+}
+
+.silk-risk-medium {
+  --risk-color: #f59e0b;
+  color: #f59e0b;
+}
+.silk-risk-medium-bg {
+  background-color: #f59e0b0a;
+  border-left: 3px solid #f59e0b;
+}
+
+.silk-risk-low {
+  --risk-color: #10b981;
+  color: #10b981;
+}
+.silk-risk-low-bg {
+  background-color: #10b9810a;
+  border-left: 3px solid #10b981;
+}
+
+/* ----- FASES DE EXPEDIENTE ----- */
+/* Fase completada: fondo tintado con color del expediente */
+.silk-phase-completed {
+  background-color: var(--matter-color, #3b82f6);
+  background-color: color-mix(in srgb, var(--matter-color, #3b82f6) 6%, transparent);
+  color: var(--matter-color, #3b82f6);
+}
+
+/* Fase actual: gradiente con sombra */
+.silk-phase-current {
+  background: linear-gradient(135deg, var(--matter-color, #3b82f6), color-mix(in srgb, var(--matter-color, #3b82f6) 80%, #000));
+  color: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--matter-color, #3b82f6) 30%, transparent);
+}
+
+/* Fase futura */
+.silk-phase-future {
+  background-color: rgba(0, 0, 0, 0.02);
+  color: #d0d5dd;
+}
+
+/* ----- CLIENTES CRM (Paleta sin morado) ----- */
+.silk-client-emerald { --client-color: #10b981; }
+.silk-client-blue { --client-color: #3b82f6; }
+.silk-client-amber { --client-color: #f59e0b; }
+.silk-client-indigo { --client-color: #2563eb; }
+.silk-client-pink { --client-color: #ec4899; }
+.silk-client-cyan { --client-color: #06b6d4; }
+
+.silk-client-tag {
+  background-color: color-mix(in srgb, var(--client-color, #3b82f6) 6%, transparent);
+  color: var(--client-color, #3b82f6);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ----- HERRAMIENTAS IA ----- */
+.silk-ai-available {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.silk-ai-beta {
+  --ai-color: #2563eb;
+  opacity: 1;
+  cursor: pointer;
+}
+.silk-ai-beta::after {
+  content: 'BETA';
+  margin-left: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.silk-ai-coming-soon {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+  color: #94a3b8;
+}
+
+/* ----- TAGS TINTADOS (Fórmula genérica) ----- */
+/* Uso: style="--tag-color: #ef4444" + class="silk-tag" */
+.silk-tag {
+  background-color: color-mix(in srgb, var(--tag-color, #64748b) 6%, transparent);
+  color: var(--tag-color, #64748b);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Variantes predefinidas */
+.silk-tag-red { --tag-color: #ef4444; }
+.silk-tag-orange { --tag-color: #f97316; }
+.silk-tag-amber { --tag-color: #f59e0b; }
+.silk-tag-green { --tag-color: #10b981; }
+.silk-tag-blue { --tag-color: #3b82f6; }
+.silk-tag-cyan { --tag-color: #06b6d4; }
+.silk-tag-pink { --tag-color: #ec4899; }
+.silk-tag-gray { --tag-color: #64748b; }
+
+/* ----- TIPOS DE EXPEDIENTE (Matter Types) ----- */
+/* Marcas */
+.silk-matter-trademark { --matter-color: #3b82f6; }
+/* Patentes */
+.silk-matter-patent { --matter-color: #10b981; }
+/* Diseños */
+.silk-matter-design { --matter-color: #f59e0b; }
+/* Dominios */
+.silk-matter-domain { --matter-color: #06b6d4; }
+/* Oposiciones */
+.silk-matter-opposition { --matter-color: #ef4444; }
+/* Vigilancias */
+.silk-matter-watch { --matter-color: #ec4899; }
+/* Litigios */
+.silk-matter-litigation { --matter-color: #dc2626; }
+
+/* Barra lateral de color para cards de expediente */
+.silk-matter-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--matter-color, #3b82f6);
+  border-radius: 4px 0 0 4px;
+}
+
+/* ----- ESTADOS OPERATIVOS ----- */
+.silk-status-active {
+  background-color: #10b9810a;
+  color: #10b981;
+  border: 1px solid #10b98120;
+}
+
+.silk-status-pending {
+  background-color: #f59e0b0a;
+  color: #f59e0b;
+  border: 1px solid #f59e0b20;
+}
+
+.silk-status-completed {
+  background-color: #3b82f60a;
+  color: #3b82f6;
+  border: 1px solid #3b82f620;
+}
+
+.silk-status-cancelled {
+  background-color: #64748b0a;
+  color: #64748b;
+  border: 1px solid #64748b20;
+}
+
+.silk-status-overdue {
+  background-color: #ef44440a;
+  color: #ef4444;
+  border: 1px solid #ef444420;
+}
