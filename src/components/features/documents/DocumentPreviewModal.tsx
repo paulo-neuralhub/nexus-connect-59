@@ -54,23 +54,12 @@ export function DocumentPreviewModal({
           )}
 
           {isPdf && (
-            <object
-              data={url}
-              type="application/pdf"
+            <iframe
+              src={`${url}#toolbar=1&navpanes=0`}
+              title={document.original_filename}
               className="w-full h-[70vh] rounded-lg border bg-white"
-            >
-              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                <p className="mb-4">Tu navegador no puede mostrar el PDF directamente.</p>
-                <Button
-                  variant="outline"
-                  onClick={() => download(document)}
-                  disabled={isDownloading}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Descargar PDF
-                </Button>
-              </div>
-            </object>
+              style={{ minHeight: '500px' }}
+            />
           )}
 
           {!isImage && !isPdf && (

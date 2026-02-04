@@ -471,23 +471,12 @@ export function MatterDocumentsTab({
                 )}
 
                 {isPdf(previewDoc?.mime_type) && (
-                  <object
-                    data={previewUrl}
-                    type="application/pdf"
+                  <iframe
+                    src={`${previewUrl}#toolbar=1&navpanes=0`}
+                    title={previewDoc?.name}
                     className="w-full h-[70vh] rounded-lg border bg-white"
-                  >
-                    {/* Fallback for browsers that can't display PDF inline */}
-                    <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                      <FileText className="h-12 w-12 mb-4 text-muted-foreground/50" />
-                      <p className="mb-4">Tu navegador no puede mostrar el PDF directamente.</p>
-                      <Button
-                        onClick={() => previewDoc && handleDownload(previewDoc.file_path, previewDoc.name)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Descargar PDF
-                      </Button>
-                    </div>
-                  </object>
+                    style={{ minHeight: '500px' }}
+                  />
                 )}
 
                 {!isImage(previewDoc?.mime_type) && !isPdf(previewDoc?.mime_type) && (
