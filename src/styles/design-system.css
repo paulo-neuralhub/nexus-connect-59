@@ -1,7 +1,29 @@
 /* ================================================
    IP-NEXUS DESIGN SYSTEM "SILK"
    Global CSS variables (HSL) + utility classes
-   ================================================ */
+   ================================================
+   
+   ┌─────────────────────────────────────────────────────────────┐
+   │                    SILK CHEAT SHEET                         │
+   ├─────────────────────────────────────────────────────────────┤
+   │  FONDO APP:        #f1f4f9                                  │
+   │  NAVY:             #0a2540                                  │
+   │  ACCENT:           #00b4d8 → #00d4aa                        │
+   │  TEXTOS:           #334155 / #64748b / #94a3b8              │
+   │                                                             │
+   │  CARDS:            solo borde rgba(0,0,0,0.06), SIN sombra  │
+   │  BADGES:           sombra neumórfica SIEMPRE                │
+   │  BOTONES:          primario = gradient + glow               │
+   │                    secundario = neumórfica pequeña          │
+   │  TABS:             contenedor = inset neumórfico            │
+   │                    tab activo = neumórfica pequeña          │
+   │  SIDEBAR:          navy gradient + tongue + badge empresa   │
+   │                                                             │
+   │  ❌ MORADO:        #8b5cf6 → usar #2563eb (indigo)          │
+   │  ❌ SOFTZONES:     ELIMINADO                                │
+   │  ❌ SOMBRAS CARDS: ELIMINADO                                │
+   └─────────────────────────────────────────────────────────────┘
+*/
 
 :root {
     /* ===== FONDOS SILK ===== */
@@ -22,8 +44,16 @@
     /* Teal accent: #00d4aa */
     --ip-sidebar-accent-to: 166 100% 42%;
 
+    /* ===== ACCENT SILK ===== */
+    /* Primary accent: #00b4d8 (cyan) */
+    --ip-accent-primary: 193 100% 42%;
+    /* Secondary accent: #00d4aa (teal) */
+    --ip-accent-secondary: 166 100% 42%;
+    /* Indigo (reemplazo de morado): #2563eb */
+    --ip-accent-indigo: 221 83% 53%;
+
     /* ===== STATS GRADIENTES ===== */
-    /* Blue: #3B82F6 -> #2563EB (reemplaza purple) */
+    /* Blue: #3B82F6 -> #2563EB */
     --ip-stat-blue-from: 217 91% 60%;
     --ip-stat-blue-to: 221 83% 53%;
 
@@ -38,6 +68,10 @@
     /* Orange: #F97316 -> #EA580C */
     --ip-stat-orange-from: 25 95% 53%;
     --ip-stat-orange-to: 20 90% 48%;
+
+    /* Indigo (reemplazo purple): #4F46E5 -> #4338CA */
+    --ip-stat-indigo-from: 243 75% 59%;
+    --ip-stat-indigo-to: 244 59% 51%;
 
     /* ===== BOTONES DE ACCIÓN ===== */
     /* call */
@@ -68,8 +102,9 @@
     --ip-timeline-note-bg: 210 20% 96%;
     --ip-timeline-note-border: 214 32% 91%;
 
-    --ip-timeline-meeting-bg: 270 100% 96%;
-    --ip-timeline-meeting-border: 269 100% 92%;
+    /* Meeting: ahora indigo en lugar de purple */
+    --ip-timeline-meeting-bg: 221 100% 96%;
+    --ip-timeline-meeting-border: 221 94% 92%;
 
     --ip-timeline-task-bg: 48 100% 88%;
     --ip-timeline-task-border: 48 96% 77%;
@@ -98,6 +133,13 @@
     --ip-border-light: 0 0% 0% / 0.06;
     /* rgba(0,180,216,0.15) - active */
     --ip-border-active: 193 100% 42% / 0.15;
+    
+    /* ===== NEUMORPHIC SHADOWS ===== */
+    /* Cards: NO shadow, solo border */
+    /* Badges: siempre neumórficas */
+    --ip-shadow-neu: 4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff;
+    --ip-shadow-neu-sm: 3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff;
+    --ip-shadow-neu-inset: inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff;
 
     /* ===== Wire into existing semantic tokens ===== */
     --background: var(--ip-bg-primary);
