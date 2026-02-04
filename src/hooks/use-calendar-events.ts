@@ -207,6 +207,10 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
       
       // 3. Cargar tareas desde crm_tasks
       if (filters.showTasks) {
+        // Format dates as YYYY-MM-DD for date column comparison
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
         const { data: crmTasks, error: crmTasksError } = await supabase
           .from('crm_tasks')
           .select(`
@@ -218,11 +222,11 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
             account_id,
             deal_id,
             assigned_to,
-            crm_accounts(id, name)
+            account:crm_accounts!account_id(id, name)
           `)
           .eq('organization_id', currentOrganization.id)
-          .gte('due_date', startDate.toISOString())
-          .lte('due_date', endDate.toISOString())
+          .gte('due_date', startDateStr)
+          .lte('due_date', endDateStr)
           .neq('status', 'completed');
         
         if (!crmTasksError && crmTasks) {
@@ -230,7 +234,8 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
             // Filtro "solo mis eventos"
             if (filters.showOnlyMine && task.assigned_to !== user?.id) continue;
             
-            const dueDate = new Date(task.due_date);
+            if (!task.due_date) continue;
+            const dueDate = new Date(task.due_date + 'T00:00:00');
             
             events.push({
               id: `crm-task-${task.id}`,
@@ -239,9 +244,9 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
               end: dueDate,
               type: 'task',
               color: EVENT_COLORS.task,
-              account: task.crm_accounts ? {
-                id: task.crm_accounts.id,
-                name: task.crm_accounts.name,
+              account: task.account ? {
+                id: task.account.id,
+                name: task.account.name,
               } : undefined,
               allDay: true,
               description: task.description,

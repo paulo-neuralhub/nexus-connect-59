@@ -110,8 +110,8 @@ export function useAllTasks(filters: TaskFilters = {}) {
           .select(`
             id, title, description, due_date, status, completed_at, created_at,
             account_id, deal_id, contact_id, assigned_to, metadata,
-            crm_accounts(id, name),
-            deals(id, title)
+            crm_accounts!account_id(id, name),
+            deals!deal_id(id, title)
           `)
           .eq('organization_id', currentOrganization.id)
           .order('due_date', { ascending: true, nullsFirst: false });
@@ -123,11 +123,13 @@ export function useAllTasks(filters: TaskFilters = {}) {
           crmQuery = crmQuery.eq('status', 'completed');
         }
 
-        // Date range filter
+        // Date range filter - use date strings for date column comparison
         if (filters.dueDateRange) {
+          const fromStr = filters.dueDateRange.from.toISOString().split('T')[0];
+          const toStr = filters.dueDateRange.to.toISOString().split('T')[0];
           crmQuery = crmQuery
-            .gte('due_date', filters.dueDateRange.from.toISOString())
-            .lte('due_date', filters.dueDateRange.to.toISOString());
+            .gte('due_date', fromStr)
+            .lte('due_date', toStr);
         }
 
         const { data: crmData, error: crmError } = await crmQuery.limit(100);
