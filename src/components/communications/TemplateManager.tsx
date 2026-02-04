@@ -151,14 +151,19 @@ export function TemplateManager({ onSelectTemplate, selectionMode = false }: Tem
 
   const duplicateTemplate = async (template: Template) => {
     try {
-      // Use any cast to avoid TS overload issues
+      // Get organization_id from memberships (profiles table doesn't exist)
       const client: any = supabase;
-      const { data: profile } = await client
-        .from('profiles')
-        .select('organization_id')
-        .single();
-
-      const orgId = profile?.organization_id ?? null;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      let orgId: string | null = null;
+      if (user) {
+        const { data: membership } = await client
+          .from('memberships')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .single();
+        orgId = membership?.organization_id ?? null;
+      }
 
       const newTemplate = {
         code: `${template.code}_copy_${Date.now()}`,
