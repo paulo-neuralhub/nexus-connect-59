@@ -24,3 +24,4 @@ export {
 } from './TrendCharts';
 export { RecentActivity } from './RecentActivity';
 export { DeadlineCalendar } from './DeadlineCalendar';
+export { DashboardWelcomeHeader } from './DashboardWelcomeHeader';

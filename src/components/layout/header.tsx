@@ -56,87 +56,24 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <TooltipProvider>
+      {/* Header minimalista - Solo separador visual */}
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200">
-        <div className="h-16 px-6 flex items-center justify-between">
+        <div className="h-14 px-6 flex items-center">
           
-          {/* Mobile menu button */}
+          {/* Mobile menu button - Solo visible en móvil */}
           <div className="flex items-center md:hidden">
             <Button
               variant="ghost"
               size="icon"
               onClick={onMenuClick}
-              className="h-8 w-8 shrink-0 mr-3"
+              className="h-8 w-8 shrink-0"
               aria-label="Abrir menú"
             >
               <Menu className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Lado izquierdo: Saludo */}
-          <div className="hidden sm:block">
-            <h2 className="text-slate-800 font-semibold text-base">
-              {getGreeting()}, {userName}
-            </h2>
-            <p className="text-slate-500 text-xs">
-              {getCurrentDate()}
-            </p>
-          </div>
-
-          {/* Lado derecho: Búsqueda + Theme + Notificaciones + Perfil */}
-          <div className="flex items-center gap-4 ml-auto">
-            
-            {/* Búsqueda - Desktop */}
-            <div className="hidden md:block">
-              <GlobalSearchTrigger className="w-64 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white" />
-            </div>
-            
-            {/* Mobile search button */}
-            <div className="md:hidden">
-              <GlobalSearchTrigger variant="compact" />
-            </div>
-            
-            {/* Dark Mode Toggle */}
-            <ThemeToggle />
-            
-            {/* Notificaciones */}
-            <NotificationBell />
-
-            {/* Separador */}
-            <div className="h-6 w-px bg-slate-200 hidden sm:block" />
-
-            {/* User menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 gap-2 px-2 hover:bg-slate-100">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-emerald-400 text-xs text-white font-semibold">
-                      {getInitials(profile?.full_name || profile?.email || 'U')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm font-medium text-slate-700 sm:inline">
-                    {userName}
-                  </span>
-                  <ChevronDown className="h-3 w-3 text-slate-400" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate('/app/settings/profile')}>
-                  <UserCircle className="mr-2 h-4 w-4" />
-                  Mi perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/app/settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Configuración
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar sesión
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          
+          {/* En desktop está vacío - los controles están en el Dashboard */}
         </div>
       </header>
     </TooltipProvider>
