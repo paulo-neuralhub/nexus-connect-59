@@ -1,6 +1,6 @@
 // ============================================================
-// IP-NEXUS - Workflow Cards (L122 + PROMPT 17)
-// Card-based workflow phases with advance functionality
+// IP-NEXUS - Workflow Cards (SILK Design System)
+// Phase bars with neumorphic badges - line-defined style
 // ============================================================
 
 import { useState, useRef } from 'react';
@@ -22,7 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   Tooltip,
@@ -108,278 +108,263 @@ export function WorkflowCards({
     return differenceInDays(new Date(entry.completedAt!), new Date(entry.enteredAt));
   };
 
-  // Scroll horizontal
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-    }
+  // Get type color for current phase (SILK palette)
+  const getTypeColor = (): string => {
+    // Extract color from typeColor prop or default
+    if (typeColor.includes('blue')) return '#00b4d8';
+    if (typeColor.includes('purple')) return '#8b5cf6';
+    if (typeColor.includes('rose') || typeColor.includes('pink')) return '#ec4899';
+    if (typeColor.includes('green') || typeColor.includes('emerald')) return '#10b981';
+    if (typeColor.includes('amber') || typeColor.includes('orange')) return '#f59e0b';
+    return '#00b4d8'; // default cyan
   };
 
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-    }
-  };
-
-  // Get background color class from text color
-  const bgColorClass = typeColor.replace('text-', 'bg-');
-  const bgLightClass = typeColor.replace('text-', 'bg-').replace('-600', '-100') + ' dark:' + typeColor.replace('text-', 'bg-').replace('-600', '-900/50');
+  const accentColor = getTypeColor();
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
+    <div 
+      style={{
+        padding: '16px',
+        borderRadius: '14px',
+        border: '1px solid rgba(0, 0, 0, 0.06)',
+        background: '#f1f4f9',
+      }}
+    >
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Progreso del Expediente</span>
+            <Zap className="h-4 w-4" style={{ color: accentColor }} />
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0a2540' }}>
+              Progreso del Expediente
+            </span>
           </div>
-          <Badge variant="secondary" className="font-mono">
+          <span 
+            style={{ 
+              fontSize: '11px', 
+              fontWeight: 600, 
+              color: accentColor,
+              padding: '4px 10px',
+              borderRadius: '8px',
+              background: `${accentColor}0a`
+            }}
+          >
             {progressPercent}% completado
-          </Badge>
+          </span>
         </div>
 
-        {/* Cards de fases con scroll */}
-        <div className="relative">
-          {/* Botón scroll izquierda */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm border"
-            onClick={scrollLeft}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+        {/* SILK Phase Bars */}
+        <div className="flex gap-2 mb-4">
+          {PHASES_CONFIG.map((phase, index) => {
+            const status = getPhaseStatus(index);
+            const isCompleted = status === 'completed';
+            const isCurrent = status === 'current';
+            const isPending = status === 'pending';
+            const pendingTasks = tasksPerPhase[phase.key] || 0;
 
-          {/* Área de scroll */}
-          <div 
-            ref={scrollContainerRef}
-            className="flex gap-2 overflow-x-auto scrollbar-hide px-10 py-2 scroll-smooth"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {PHASES_CONFIG.map((phase, index) => {
-              const status = getPhaseStatus(index);
-              const phaseTime = getPhaseTime(phase.key);
-              const pendingTasks = tasksPerPhase[phase.key] || 0;
-              const isLast = index === PHASES_CONFIG.length - 1;
-
-              return (
-                <div key={phase.key} className="flex items-center shrink-0">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => onPhaseClick?.(phase.key)}
-                        className={cn(
-                          "relative w-28 h-24 rounded-xl border-2 p-3 transition-all duration-200 flex flex-col",
-                          "hover:shadow-md hover:scale-[1.02] cursor-pointer",
-                          status === 'completed' && "bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-800",
-                          status === 'current' && cn("border-2 shadow-lg", bgLightClass, typeColor.replace('text-', 'border-')),
-                          status === 'pending' && "bg-muted/50 border-border hover:bg-muted"
-                        )}
-                      >
-                        {/* Icono de estado */}
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={cn(
-                            "font-mono text-xs font-bold",
-                            status === 'completed' && "text-green-700 dark:text-green-300",
-                            status === 'current' && typeColor,
-                            status === 'pending' && "text-muted-foreground"
-                          )}>
-                            {phase.key}
-                          </span>
-                          {status === 'completed' && (
-                            <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                          )}
-                          {status === 'current' && (
-                            <Circle className={cn("h-3 w-3 fill-current animate-pulse", typeColor)} />
-                          )}
-                        </div>
-
-                        {/* Nombre de fase */}
-                        <span className={cn(
-                          "text-sm font-semibold truncate text-left",
-                          status === 'completed' && "text-green-800 dark:text-green-200",
-                          status === 'current' && "text-foreground",
-                          status === 'pending' && "text-muted-foreground"
-                        )}>
-                          {phase.label}
-                        </span>
-
-                        {/* Info adicional */}
-                        <div className="mt-auto">
-                          {status === 'completed' && phaseTime !== null && (
-                            <span className="text-[10px] text-green-600 dark:text-green-400 flex items-center gap-1">
-                              <Clock className="h-2.5 w-2.5" />
-                              {phaseTime} días
-                            </span>
-                          )}
-                          {status === 'current' && (
-                            <span className={cn("text-[10px] flex items-center gap-1 font-medium", typeColor)}>
-                              <Clock className="h-2.5 w-2.5" />
-                              {daysInCurrentPhase}d en curso
-                            </span>
-                          )}
-                          {status === 'pending' && (
-                            <span className="text-[10px] text-muted-foreground">Pendiente</span>
-                          )}
-                        </div>
-
-                        {/* Badge de tareas pendientes */}
-                        {pendingTasks > 0 && status === 'current' && (
-                          <div className="absolute -top-2 -right-2">
-                            <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-                              {pendingTasks}
-                            </Badge>
-                          </div>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
-                      <p className="font-semibold">{phase.key}: {phase.label}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{phase.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Conector entre fases */}
-                  {!isLast && (
-                    <div className="flex items-center px-1">
-                      <ChevronRight className={cn(
-                        "h-5 w-5",
-                        status === 'completed' ? "text-green-500" : "text-muted-foreground/40"
-                      )} />
+            return (
+              <Tooltip key={phase.key}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onPhaseClick?.(phase.key)}
+                    className="flex-1 relative cursor-pointer transition-all duration-300"
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      background: isCompleted 
+                        ? `${accentColor}0e` 
+                        : isCurrent 
+                          ? `linear-gradient(135deg, ${accentColor}, ${accentColor}88)`
+                          : 'rgba(0, 0, 0, 0.02)',
+                      color: isCurrent ? '#ffffff' : isCompleted ? accentColor : '#d0d5dd',
+                      boxShadow: isCurrent ? `0 3px 8px ${accentColor}30` : 'none',
+                      textAlign: 'center',
+                      minWidth: '60px',
+                    }}
+                  >
+                    {/* Phase code */}
+                    <div style={{ 
+                      fontSize: '11px', 
+                      fontWeight: 600, 
+                      marginBottom: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px'
+                    }}>
+                      {phase.key}
+                      {isCompleted && <Check className="h-3 w-3" />}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Botón scroll derecha */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm border"
-            onClick={scrollRight}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+                    
+                    {/* Phase name */}
+                    <div style={{ 
+                      fontSize: '9px', 
+                      opacity: 0.8,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {phase.label}
+                    </div>
+                    
+                    {/* Neumorphic badge for current phase */}
+                    {isCurrent && (
+                      <div style={{
+                        position: 'absolute',
+                        top: -14,
+                        left: '50%',
+                        transform: 'translateX(-50%)'
+                      }}>
+                        <NeoBadge 
+                          value={phase.key} 
+                          color={accentColor} 
+                          size="sm" 
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Task count badge */}
+                    {pendingTasks > 0 && isCurrent && (
+                      <div style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -6,
+                        background: '#ef4444',
+                        color: 'white',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        padding: '2px 5px',
+                        borderRadius: '6px',
+                        minWidth: '16px'
+                      }}>
+                        {pendingTasks}
+                      </div>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p className="font-semibold">{phase.key}: {phase.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{phase.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </div>
 
-        {/* Barra de progreso */}
-        <div className="mt-4 mb-4">
-          <Progress 
-            value={progressPercent} 
-            className="h-2"
-          />
-        </div>
-
-        {/* Card de fase actual con acciones */}
-        <div className="bg-muted/50 rounded-lg p-4 border">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0",
-                bgLightClass,
-                "border",
-                typeColor.replace('text-', 'border-')
-              )}>
-                <Circle className={cn("h-4 w-4 fill-current", typeColor)} />
+        {/* Current phase info bar */}
+        <div 
+          style={{
+            padding: '12px 14px',
+            borderRadius: '10px',
+            background: 'rgba(255, 255, 255, 0.6)',
+            border: '1px solid rgba(0, 0, 0, 0.04)'
+          }}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div 
+                style={{ 
+                  width: '36px', 
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: `${accentColor}12`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Circle className="h-4 w-4" style={{ color: accentColor, fill: accentColor }} />
               </div>
 
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm text-muted-foreground">Fase actual:</span>
-                  <span className="font-semibold">
-                    {PHASES_CONFIG[currentIndex]?.label} ({currentPhase})
-                  </span>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0a2540', marginBottom: '2px' }}>
+                  {PHASES_CONFIG[currentIndex]?.label} ({currentPhase})
                 </div>
-                
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-3" style={{ fontSize: '11px', color: '#64748b' }}>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    Tiempo en fase: {daysInCurrentPhase} días
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    Promedio despacho: 5 días
+                    {daysInCurrentPhase}d en fase
                   </span>
                   <span className="flex items-center gap-1">
                     <ListTodo className="h-3 w-3" />
-                    Tareas pendientes: {tasksPerPhase[currentPhase] || 0}
+                    {tasksPerPhase[currentPhase] || 0} tareas
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <History className="h-4 w-4 mr-2" />
-                    Historial
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Historial de Fases</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {phaseHistory.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
-                        Sin historial de cambios de fase
-                      </p>
-                    ) : (
-                      phaseHistory.map((entry, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="font-mono">
-                              {entry.phase}
-                            </Badge>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {PHASES_CONFIG.find(f => f.key === entry.phase)?.label}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {format(new Date(entry.enteredAt), "d MMM yyyy", { locale: es })}
-                                {entry.completedAt && (
-                                  <> → {format(new Date(entry.completedAt), "d MMM yyyy", { locale: es })}</>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          {entry.completedAt ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-blue-500 fill-blue-500 animate-pulse" />
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowHistoryModal(true)}
+                style={{ fontSize: '11px', color: '#64748b' }}
+              >
+                <History className="h-3.5 w-3.5 mr-1.5" />
+                Historial
+              </Button>
 
               {currentIndex < PHASES_CONFIG.length - 1 && (
                 <Button 
                   size="sm" 
                   onClick={() => setShowAdvanceModal(true)}
-                  className={cn(
-                    "gap-2",
-                    "bg-gradient-to-r from-primary to-blue-600",
-                    "hover:from-primary/90 hover:to-blue-600/90",
-                    "shadow-md shadow-primary/20",
-                    "transition-all duration-200",
-                    "hover:shadow-lg hover:scale-[1.02]"
-                  )}
+                  style={{
+                    background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+                    color: 'white',
+                    border: 'none',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    boxShadow: `0 2px 8px ${accentColor}30`
+                  }}
                 >
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
                   Avanzar a {PHASES_CONFIG[currentIndex + 1]?.key}
                 </Button>
               )}
             </div>
           </div>
         </div>
-      </CardContent>
+
+      {/* History Modal */}
+      <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Historial de Fases</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {phaseHistory.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Sin historial de cambios de fase
+              </p>
+            ) : (
+              phaseHistory.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="font-mono">
+                      {entry.phase}
+                    </Badge>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {PHASES_CONFIG.find(f => f.key === entry.phase)?.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(entry.enteredAt), "d MMM yyyy", { locale: es })}
+                        {entry.completedAt && (
+                          <> → {format(new Date(entry.completedAt), "d MMM yyyy", { locale: es })}</>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {entry.completedAt ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Circle className="h-4 w-4 fill-current animate-pulse" style={{ color: accentColor }} />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de avance de fase */}
       <AdvancePhaseModal
@@ -393,6 +378,6 @@ export function WorkflowCards({
           onPhaseClick?.(newPhase);
         }}
       />
-    </Card>
+    </div>
   );
 }
