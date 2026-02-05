@@ -226,107 +226,172 @@ export function WorkflowDashboard() {
                 const triggerInfo = getTriggerInfo(workflow.trigger_type);
                 
                 return (
-                  <Card key={workflow.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={cn(
-                            "p-2.5 rounded-lg",
-                            workflow.is_active ? "bg-primary/10" : "bg-muted"
-                          )}>
-                            <Zap className={cn(
-                              "h-5 w-5",
-                              workflow.is_active ? "text-primary" : "text-muted-foreground"
-                            )} />
-                          </div>
+                  <div 
+                    key={workflow.id}
+                    className="group cursor-pointer transition-all duration-200"
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(0, 0, 0, 0.06)',
+                      background: '#f1f4f9',
+                      marginBottom: '6px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.border = '1px solid rgba(0, 180, 216, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.06)';
+                    }}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Workflow icon - SILK style */}
+                      <div 
+                        style={{ 
+                          width: '32px', 
+                          height: '32px',
+                          borderRadius: '8px',
+                          background: workflow.is_active 
+                            ? 'rgba(0, 180, 216, 0.08)' 
+                            : 'rgba(0, 0, 0, 0.04)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}
+                      >
+                        <Zap 
+                          size={14} 
+                          style={{ 
+                            color: workflow.is_active ? '#00b4d8' : '#94a3b8' 
+                          }} 
+                        />
+                      </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold truncate">{workflow.name}</h3>
-                              {workflow.is_system && (
-                                <Badge variant="secondary" className="text-xs">Sistema</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {workflow.description || `Trigger: ${triggerInfo?.label || workflow.trigger_type}`}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="outline" className={getCategoryColor(workflow.category)}>
-                                {workflow.category}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {workflow.actions?.length || 0} acciones
-                              </span>
-                              {workflow.execution_count > 0 && (
-                                <span className="text-xs text-muted-foreground">
-                                  • {workflow.execution_count} ejecuciones
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">
-                              {workflow.is_active ? 'Activo' : 'Inactivo'}
+                      {/* Main content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span 
+                            style={{ 
+                              fontSize: '14px', 
+                              fontWeight: 700, 
+                              color: '#0a2540' 
+                            }}
+                            className="truncate"
+                          >
+                            {workflow.name}
+                          </span>
+                          
+                          {workflow.is_system && (
+                            <span 
+                              style={{
+                                fontSize: '9px',
+                                fontWeight: 600,
+                                padding: '2px 7px',
+                                borderRadius: '5px',
+                                background: '#10b9810a',
+                                color: '#10b981'
+                              }}
+                            >
+                              Sistema
                             </span>
-                            <Switch
-                              checked={workflow.is_active}
-                              onCheckedChange={(checked) => 
-                                toggleActive.mutate({ id: workflow.id, isActive: checked })
-                              }
-                              disabled={toggleActive.isPending}
-                            />
-                          </div>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/app/workflow/${workflow.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver Detalles
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => navigate(`/app/workflow/${workflow.id}/edit`)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => triggerManually.mutate({ workflowId: workflow.id })}
-                                disabled={!workflow.is_active}
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Ejecutar Manualmente
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={() => {
-                                  if (confirm('¿Eliminar este workflow?')) {
-                                    deleteWorkflow.mutate(workflow.id);
-                                  }
-                                }}
-                                disabled={workflow.is_system}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          )}
+                        </div>
+                        
+                        <div 
+                          style={{ 
+                            fontSize: '12px', 
+                            color: '#64748b',
+                            marginBottom: '6px'
+                          }}
+                          className="truncate"
+                        >
+                          {workflow.description || `Trigger: ${triggerInfo?.label || workflow.trigger_type}`}
+                        </div>
+                        
+                        {/* Tags and info */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span 
+                            style={{
+                              fontSize: '10px',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              background: 'rgba(0, 0, 0, 0.04)',
+                              color: '#94a3b8'
+                            }}
+                          >
+                            {workflow.category}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                            {workflow.actions?.length || 0} acciones
+                          </span>
+                          {workflow.execution_count > 0 && (
+                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                              • {workflow.execution_count} ejecuciones
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+
+                      {/* Toggle and menu */}
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                            {workflow.is_active ? 'Activo' : 'Inactivo'}
+                          </span>
+                          <Switch
+                            checked={workflow.is_active}
+                            onCheckedChange={(checked) => 
+                              toggleActive.mutate({ id: workflow.id, isActive: checked })
+                            }
+                            disabled={toggleActive.isPending}
+                          />
+                        </div>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/app/workflow/${workflow.id}`)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/app/workflow/${workflow.id}/edit`)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => triggerManually.mutate({ workflowId: workflow.id })}
+                              disabled={!workflow.is_active}
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Ejecutar Manualmente
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => {
+                                if (confirm('¿Eliminar este workflow?')) {
+                                  deleteWorkflow.mutate(workflow.id);
+                                }
+                              }}
+                              disabled={workflow.is_system}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           )}
         </TabsContent>
-
         <TabsContent value="executions" className="mt-4">
           {loadingExecutions ? (
             <div className="flex justify-center py-12">
