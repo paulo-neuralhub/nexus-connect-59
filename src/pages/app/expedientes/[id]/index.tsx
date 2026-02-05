@@ -53,6 +53,7 @@ import { MatterChatModal } from '@/components/matters/MatterChatModal';
 import { AddFilingModal } from '@/components/matters/AddFilingModal';
 import { FilingDetailModal } from '@/components/matters/FilingDetailModal';
 import { AddPartyModal } from '@/components/matters/AddPartyModal';
+import { MatterPartiesTab } from '@/components/matters/MatterPartiesTab';
 import { MatterDetailHeader } from '@/components/matters/MatterDetailHeader';
 import { MatterDetailSidebar } from '@/components/matters/MatterDetailSidebar';
 import { MatterRightsInfoCard } from '@/components/matters/MatterRightsInfoCard';
@@ -85,7 +86,7 @@ export default function MatterDetailPage() {
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showFilingModal, setShowFilingModal] = useState(false);
   const [selectedFiling, setSelectedFiling] = useState<any>(null);
-  const [showPartyModal, setShowPartyModal] = useState(false);
+  // showPartyModal moved to MatterPartiesTab component
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedTimelineCommId, setSelectedTimelineCommId] = useState<string | null>(null);
   
@@ -428,41 +429,9 @@ export default function MatterDetailPage() {
                 </Card>
               </TabsContent>
 
-              {/* Parties Tab */}
+              {/* Parties Tab - Enhanced with edit/delete */}
               <TabsContent value="parties">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Partes del Expediente</CardTitle>
-                    <Button size="sm" onClick={() => setShowPartyModal(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Añadir
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {!parties?.length ? (
-                      <p className="text-muted-foreground text-center py-8">
-                        No hay partes registradas
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {parties.map(party => (
-                          <div key={party.id} className="flex items-center justify-between border rounded-lg p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                                <User className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                              <div>
-                                <p className="font-medium">{party.name}</p>
-                                {party.company && <p className="text-sm text-muted-foreground">{party.company}</p>}
-                              </div>
-                            </div>
-                            <Badge variant="outline">{party.party_role}</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <MatterPartiesTab matterId={id!} matterType={matter.matter_type} />
               </TabsContent>
 
               {/* Documents Tab */}
@@ -592,12 +561,7 @@ export default function MatterDetailPage() {
         />
       )}
       
-      <AddPartyModal
-        open={showPartyModal}
-        onOpenChange={setShowPartyModal}
-        matterId={id!}
-        matterType={matter?.matter_type}
-      />
+      {/* AddPartyModal is now handled inside MatterPartiesTab */}
       
       {/* Timeline Communication Sheet */}
       <Sheet open={!!selectedTimelineCommId} onOpenChange={(open) => !open && setSelectedTimelineCommId(null)}>
