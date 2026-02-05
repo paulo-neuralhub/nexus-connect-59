@@ -3,17 +3,14 @@
  // Dashboard principal con diseño SILK
  // =============================================
  
- import { useEffect, useMemo } from "react";
- import { useAuth } from "@/contexts/auth-context";
- import { useOrganization } from "@/contexts/organization-context";
- import { usePageTitle } from "@/contexts/page-context";
- import { Skeleton } from "@/components/ui/skeleton";
- import { useDashboardHome } from "@/hooks/use-dashboard-home";
- import { useDashboardMetrics } from "@/components/dashboard";
- import { FeatureGuide } from "@/components/help";
- import { useContextualHelp } from "@/hooks/useContextualHelp";
- import { format } from "date-fns";
- import { es } from "date-fns/locale";
+import { useEffect, useMemo } from "react";
+import { useOrganization } from "@/contexts/organization-context";
+import { usePageTitle } from "@/contexts/page-context";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDashboardHome } from "@/hooks/use-dashboard-home";
+import { useDashboardMetrics, DashboardWelcomeHeader } from "@/components/dashboard";
+import { FeatureGuide } from "@/components/help";
+import { useContextualHelp } from "@/hooks/useContextualHelp";
  
  // Command Center Components
  import {
@@ -37,35 +34,21 @@
    useTiposChart 
  } from "@/hooks/use-dashboard-charts";
  
- const Dashboard = () => {
-   const { featureKey, currentGuide, shouldShowGuide } = useContextualHelp();
-   const { profile } = useAuth();
-   const { currentOrganization } = useOrganization();
-   const { setTitle } = usePageTitle();
-   const { data, isLoading } = useDashboardHome();
-   const { metrics } = useDashboardMetrics();
- 
-   // Charts data
-   const { data: tiposData } = useTiposChart();
-   const { data: facturacionData } = useFacturacionChart();
-   const { data: expedientesData } = useExpedientesChart();
- 
-   useEffect(() => {
-     setTitle("Dashboard");
-   }, [setTitle]);
- 
-   const firstName = profile?.full_name?.split(" ")[0] || "Usuario";
-   
-   // Saludo según hora del día
-   const getGreeting = () => {
-     const hour = new Date().getHours();
-     if (hour < 12) return "Buenos días";
-     if (hour < 19) return "Buenas tardes";
-     return "Buenas noches";
-   };
- 
-   // Fecha actual formateada
-   const fechaActual = format(new Date(), "EEEE d 'de' MMMM yyyy", { locale: es });
+const Dashboard = () => {
+  const { featureKey, currentGuide, shouldShowGuide } = useContextualHelp();
+  const { currentOrganization } = useOrganization();
+  const { setTitle } = usePageTitle();
+  const { data, isLoading } = useDashboardHome();
+  const { metrics } = useDashboardMetrics();
+
+  // Charts data
+  const { data: tiposData } = useTiposChart();
+  const { data: facturacionData } = useFacturacionChart();
+  const { data: expedientesData } = useExpedientesChart();
+
+  useEffect(() => {
+    setTitle("Dashboard");
+  }, [setTitle]);
  
     // Mapear métricas para badges urgentes
     const urgentMetrics = useMemo(() => {
@@ -191,35 +174,16 @@
          }
        `}</style>
  
-       {currentGuide && shouldShowGuide(featureKey) ? (
-         <FeatureGuide
-           featureKey={featureKey}
-           title={currentGuide.title}
-           steps={currentGuide.steps}
-         />
-       ) : null}
- 
-       {/* Header SILK */}
-       <div className="flex items-start justify-between">
-         <div>
-           <h1 
-             className="text-[23px] font-light m-0"
-             style={{ color: '#0a2540' }}
-           >
-             {getGreeting()}, <span className="font-bold">{firstName}</span>
-           </h1>
-           <p 
-             className="text-[13px] mt-1"
-             style={{ color: '#64748b' }}
-           >
-             <span style={{ color: '#00b4d8', fontWeight: 600 }}>
-               {data?.upcomingDeadlines || 0} plazos esta semana
-             </span>
-             {' · '}
-             <span className="capitalize">{fechaActual}</span>
-           </p>
-         </div>
-       </div>
+        {currentGuide && shouldShowGuide(featureKey) ? (
+          <FeatureGuide
+            featureKey={featureKey}
+            title={currentGuide.title}
+            steps={currentGuide.steps}
+          />
+        ) : null}
+
+        {/* Welcome Header Card - Saludo + Búsqueda + Notificaciones + Perfil */}
+        <DashboardWelcomeHeader plazosEstaSemana={data?.upcomingDeadlines || 0} />
  
         {/* 1. BADGES URGENTES (Solo si hay valores > 0) */}
         <UrgentBadges 
