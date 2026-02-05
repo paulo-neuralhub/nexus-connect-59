@@ -1,10 +1,9 @@
 // ============================================================
-// IP-NEXUS - WIZARD STEPS COMPONENT (IMPACTO BRUTAL)
-// L133: Premium stepper with glow pulse, shimmer progress line,
-//       floating particles, and dark mode support
+// IP-NEXUS - WIZARD STEPS COMPONENT (SILK Design System)
+// L135: Premium stepper with SILK neumorphic design
 // ============================================================
 
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -24,21 +23,28 @@ export function WizardSteps({ steps, currentStep, onStepClick }: WizardStepsProp
   const progressPercent = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
-    <div className="relative px-4 py-10">
+    <div className="relative px-4 py-8">
       <div className="flex items-center justify-between relative">
-        {/* Background line */}
-        <div className="absolute top-8 left-12 right-12 h-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-full backdrop-blur-sm" />
+        {/* Background connector line */}
+        <div 
+          className="absolute top-7 left-16 right-16 h-1 rounded-full"
+          style={{ background: 'hsl(var(--muted))' }}
+        />
         
-        {/* Animated progress line with shimmer */}
+        {/* Animated progress line */}
         <motion.div
-          className="absolute top-8 left-12 h-1.5 bg-gradient-to-r from-primary via-blue-500 to-primary rounded-full overflow-hidden shadow-sm shadow-primary/30"
-          style={{ maxWidth: 'calc(100% - 6rem)' }}
+          className="absolute top-7 left-16 h-1 rounded-full overflow-hidden"
+          style={{ 
+            maxWidth: 'calc(100% - 8rem)',
+            background: 'linear-gradient(90deg, #10b981 0%, #00b4d8 100%)',
+            boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)',
+          }}
           initial={{ width: '0%' }}
           animate={{ width: `${progressPercent}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
           {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
         </motion.div>
 
         {steps.map((step, index) => {
@@ -56,49 +62,23 @@ export function WizardSteps({ steps, currentStep, onStepClick }: WizardStepsProp
               )}
               onClick={() => isClickable && onStepClick?.(step.number)}
             >
-              {/* Floating particles for current step */}
-              {isCurrent && (
-                <>
-                  <motion.div
-                    className="absolute -top-2 -left-2 w-2 h-2 rounded-full bg-primary/60"
-                    animate={{ 
-                      y: [-5, 5, -5],
-                      x: [-3, 3, -3],
-                      opacity: [0.4, 0.8, 0.4]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div
-                    className="absolute -top-1 -right-3 w-1.5 h-1.5 rounded-full bg-purple-400/60"
-                    animate={{ 
-                      y: [3, -5, 3],
-                      x: [2, -2, 2],
-                      opacity: [0.3, 0.7, 0.3]
-                    }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute top-12 right-0 w-1 h-1 rounded-full bg-emerald-400/60"
-                    animate={{ 
-                      y: [-3, 5, -3],
-                      opacity: [0.5, 0.9, 0.5]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  />
-                </>
-              )}
-
-              {/* Step Circle - NIVEL DIOS */}
+              {/* Step Circle - SILK Design */}
               <motion.div
                 className={cn(
-                  "relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
-                  isCompleted
-                    ? "bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/40"
-                    : isCurrent
-                    ? "bg-gradient-to-br from-primary to-blue-600 text-white ring-4 ring-primary/30 dark:ring-primary/50 shadow-xl shadow-primary/50"
-                    : "bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-muted-foreground border-2 border-slate-200/60 dark:border-slate-600/60",
-                  isClickable && "group-hover:ring-2 group-hover:ring-primary/40 group-hover:shadow-lg group-hover:scale-105"
+                  "relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300"
                 )}
+                style={{
+                  background: isCompleted 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : isCurrent
+                    ? 'linear-gradient(135deg, #00b4d8 0%, #0891b2 100%)'
+                    : 'hsl(var(--muted))',
+                  boxShadow: isCompleted
+                    ? '0 8px 24px rgba(16, 185, 129, 0.35)'
+                    : isCurrent
+                    ? '0 8px 24px rgba(0, 180, 216, 0.4), 0 0 0 4px rgba(0, 180, 216, 0.15)'
+                    : 'inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.05)',
+                }}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ 
                   scale: isCurrent ? 1.1 : 1,
@@ -113,12 +93,13 @@ export function WizardSteps({ steps, currentStep, onStepClick }: WizardStepsProp
                   <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
                 )}
                 
-                {/* Glow pulse for current step */}
+                {/* Pulse animation for current step */}
                 {isCurrent && (
                   <motion.div 
-                    className="absolute inset-0 rounded-full bg-primary/20"
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: 'rgba(0, 180, 216, 0.3)' }}
                     animate={{ 
-                      scale: [1, 1.2, 1],
+                      scale: [1, 1.15, 1],
                       opacity: [0.5, 0.2, 0.5]
                     }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -131,31 +112,39 @@ export function WizardSteps({ steps, currentStep, onStepClick }: WizardStepsProp
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ duration: 0.4, delay: 0.1, type: 'spring' }}
                   >
-                    <Check className="h-7 w-7 relative z-10" strokeWidth={3} />
+                    <Check className="h-6 w-6 text-white relative z-10" strokeWidth={3} />
                   </motion.div>
                 ) : (
                   <Icon className={cn(
-                    "h-6 w-6 relative z-10 transition-transform duration-300",
-                    isCurrent && "animate-pulse-subtle"
+                    "h-5 w-5 relative z-10 transition-colors",
+                    isCurrent || isCompleted ? "text-white" : "text-muted-foreground"
                   )} />
                 )}
               </motion.div>
               
               {/* Step Label */}
-              <motion.span
-                className={cn(
-                  "mt-3 text-sm font-semibold transition-all text-center max-w-[90px]",
-                  isCurrent 
-                    ? "text-primary dark:text-primary" 
-                    : isCompleted 
-                    ? "text-foreground" 
-                    : "text-muted-foreground"
-                )}
+              <motion.div
+                className="mt-3 text-center max-w-[100px]"
                 initial={{ opacity: 0.5, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                {step.label}
-              </motion.span>
+                <span
+                  className={cn(
+                    "text-sm font-semibold block transition-colors",
+                    isCurrent 
+                      ? "text-cyan-700" 
+                      : isCompleted 
+                      ? "text-foreground" 
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {step.label}
+                </span>
+                {/* Step number subtitle */}
+                <span className="text-xs text-muted-foreground">
+                  Paso {step.number}
+                </span>
+              </motion.div>
             </div>
           );
         })}

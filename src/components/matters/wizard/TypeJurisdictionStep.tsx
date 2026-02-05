@@ -1,6 +1,6 @@
 // ============================================================
-// IP-NEXUS - TYPE + JURISDICTION COMBINED STEP (EFECTO WOW)
-// L133: Premium selection cards with glow, shimmer and glass effects
+// IP-NEXUS - TYPE + JURISDICTION COMBINED STEP (SILK Design)
+// L135: Premium selection cards with SILK neumorphic design
 // ============================================================
 
 import { useState } from 'react';
@@ -18,26 +18,27 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import type { MatterType } from '@/hooks/use-matters-v2';
+import { TrademarkTypeSelector, type TrademarkType } from './TrademarkTypeSelector';
 
-// Type configuration with icons and descriptions
-const TYPE_CONFIG: Record<string, { icon: string; description: string; popular: boolean; gradient: string }> = {
-  TM: { icon: '®️', description: 'Registro de signos distintivos', popular: true, gradient: 'from-blue-500 to-indigo-600' },
-  TM_NAT: { icon: '®️', description: 'Marca nacional', popular: false, gradient: 'from-blue-500 to-indigo-600' },
-  TM_EU: { icon: '®️', description: 'Marca de la Unión Europea', popular: false, gradient: 'from-blue-500 to-indigo-600' },
-  TM_INT: { icon: '®️', description: 'Marca internacional (Madrid)', popular: false, gradient: 'from-blue-500 to-indigo-600' },
-  PT: { icon: '⚙️', description: 'Invenciones técnicas', popular: true, gradient: 'from-amber-500 to-orange-600' },
-  PT_NAT: { icon: '⚙️', description: 'Patente nacional', popular: false, gradient: 'from-amber-500 to-orange-600' },
-  PT_EU: { icon: '⚙️', description: 'Patente europea (EPO)', popular: false, gradient: 'from-amber-500 to-orange-600' },
-  PT_PCT: { icon: '⚙️', description: 'Solicitud PCT internacional', popular: false, gradient: 'from-amber-500 to-orange-600' },
-  UM: { icon: '🔧', description: 'Mejoras técnicas menores', popular: true, gradient: 'from-teal-500 to-cyan-600' },
-  DS: { icon: '✏️', description: 'Diseños industriales', popular: true, gradient: 'from-pink-500 to-rose-600' },
-  DS_NAT: { icon: '✏️', description: 'Diseño nacional', popular: false, gradient: 'from-pink-500 to-rose-600' },
-  DS_EU: { icon: '®️', description: 'Diseño comunitario', popular: false, gradient: 'from-pink-500 to-rose-600' },
-  NC: { icon: '📜', description: 'Nombre comercial', popular: false, gradient: 'from-violet-500 to-purple-600' },
-  DOM: { icon: '🌐', description: 'Nombres de dominio', popular: false, gradient: 'from-emerald-500 to-green-600' },
-  OPO: { icon: '⚖️', description: 'Oposiciones y defensas', popular: false, gradient: 'from-red-500 to-rose-600' },
-  VIG: { icon: '👁️', description: 'Vigilancia de marcas', popular: false, gradient: 'from-purple-500 to-violet-600' },
-  LIT: { icon: '🏛️', description: 'Litigios y procedimientos', popular: false, gradient: 'from-slate-500 to-gray-600' },
+// Type configuration with icons and descriptions - SILK colors
+const TYPE_CONFIG: Record<string, { icon: string; description: string; popular: boolean; gradient: string; bgGradient: string }> = {
+  TM: { icon: '®️', description: 'Protege nombres, logos, eslóganes y signos distintivos', popular: true, gradient: 'from-cyan-500 to-cyan-600', bgGradient: 'from-cyan-50 to-cyan-100' },
+  TM_NAT: { icon: '®️', description: 'Marca nacional', popular: false, gradient: 'from-cyan-500 to-cyan-600', bgGradient: 'from-cyan-50 to-cyan-100' },
+  TM_EU: { icon: '®️', description: 'Marca de la Unión Europea', popular: false, gradient: 'from-cyan-500 to-cyan-600', bgGradient: 'from-cyan-50 to-cyan-100' },
+  TM_INT: { icon: '®️', description: 'Marca internacional (Madrid)', popular: false, gradient: 'from-cyan-500 to-cyan-600', bgGradient: 'from-cyan-50 to-cyan-100' },
+  PT: { icon: '⚙️', description: 'Protege invenciones técnicas y procesos innovadores', popular: true, gradient: 'from-blue-500 to-blue-600', bgGradient: 'from-blue-50 to-blue-100' },
+  PT_NAT: { icon: '⚙️', description: 'Patente nacional', popular: false, gradient: 'from-blue-500 to-blue-600', bgGradient: 'from-blue-50 to-blue-100' },
+  PT_EU: { icon: '⚙️', description: 'Patente europea (EPO)', popular: false, gradient: 'from-blue-500 to-blue-600', bgGradient: 'from-blue-50 to-blue-100' },
+  PT_PCT: { icon: '⚙️', description: 'Solicitud PCT internacional', popular: false, gradient: 'from-blue-500 to-blue-600', bgGradient: 'from-blue-50 to-blue-100' },
+  UM: { icon: '🔧', description: 'Protege mejoras técnicas y funcionales', popular: true, gradient: 'from-purple-500 to-purple-600', bgGradient: 'from-purple-50 to-purple-100' },
+  DS: { icon: '✏️', description: 'Protege la apariencia estética de productos', popular: true, gradient: 'from-amber-500 to-amber-600', bgGradient: 'from-amber-50 to-amber-100' },
+  DS_NAT: { icon: '✏️', description: 'Diseño nacional', popular: false, gradient: 'from-amber-500 to-amber-600', bgGradient: 'from-amber-50 to-amber-100' },
+  DS_EU: { icon: '✏️', description: 'Diseño comunitario', popular: false, gradient: 'from-amber-500 to-amber-600', bgGradient: 'from-amber-50 to-amber-100' },
+  NC: { icon: '📜', description: 'Nombre comercial', popular: false, gradient: 'from-violet-500 to-violet-600', bgGradient: 'from-violet-50 to-violet-100' },
+  DOM: { icon: '🌐', description: 'Nombres de dominio', popular: false, gradient: 'from-emerald-500 to-emerald-600', bgGradient: 'from-emerald-50 to-emerald-100' },
+  OPO: { icon: '⚖️', description: 'Oposiciones y defensas', popular: false, gradient: 'from-red-500 to-red-600', bgGradient: 'from-red-50 to-red-100' },
+  VIG: { icon: '👁️', description: 'Vigilancia de marcas', popular: false, gradient: 'from-indigo-500 to-indigo-600', bgGradient: 'from-indigo-50 to-indigo-100' },
+  LIT: { icon: '🏛️', description: 'Litigios y procedimientos', popular: false, gradient: 'from-slate-500 to-slate-600', bgGradient: 'from-slate-50 to-slate-100' },
 };
 
 // Jurisdictions configuration
@@ -95,6 +96,9 @@ interface TypeJurisdictionStepProps {
   onSelectJurisdictions: (jurisdictions: string[]) => void;
   isLoading?: boolean;
   singleJurisdiction?: boolean;
+  // NEW: Trademark type selection
+  trademarkType?: TrademarkType;
+  onSelectTrademarkType?: (type: TrademarkType) => void;
 }
 
 export function TypeJurisdictionStep({
@@ -105,6 +109,8 @@ export function TypeJurisdictionStep({
   onSelectJurisdictions,
   isLoading,
   singleJurisdiction = true,
+  trademarkType,
+  onSelectTrademarkType,
 }: TypeJurisdictionStepProps) {
   const [showAllTypes, setShowAllTypes] = useState(false);
   const [showJurisModal, setShowJurisModal] = useState(false);
@@ -116,6 +122,9 @@ export function TypeJurisdictionStep({
   // Separate popular jurisdictions
   const popularJurisdictions = JURISDICTIONS.filter(j => j.popular);
   const otherJurisdictions = JURISDICTIONS.filter(j => !j.popular);
+
+  // Check if current type is a trademark type
+  const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
 
   const toggleJurisdiction = (code: string) => {
     if (singleJurisdiction) {
@@ -285,6 +294,16 @@ export function TypeJurisdictionStep({
               )}
             </Button>
           )}
+
+          {/* TRADEMARK TYPE SELECTOR - Only shows when trademark is selected */}
+          <AnimatePresence>
+            {isTrademarkType && onSelectTrademarkType && (
+              <TrademarkTypeSelector
+                value={trademarkType}
+                onChange={onSelectTrademarkType}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* RIGHT COLUMN: JURISDICTION SELECTION */}

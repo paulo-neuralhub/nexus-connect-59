@@ -54,6 +54,7 @@ export default function NewMatterPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedType, setSelectedType] = useState('');
   const [selectedJurisdictions, setSelectedJurisdictions] = useState<string[]>([]);
+  const [trademarkType, setTrademarkType] = useState<string | undefined>(undefined);
   const [detailsData, setDetailsData] = useState<MatterDetailsData>({
     title: '',
     client_id: '',
@@ -120,11 +121,19 @@ export default function NewMatterPage() {
     [matterTypes, selectedType]
   );
 
+  // Check if type is trademark
+  const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
+
   // Step validation - Now 3 steps
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!selectedType && selectedJurisdictions.length > 0;
+        // If trademark type, also require trademarkType selection
+        const baseValid = !!selectedType && selectedJurisdictions.length > 0;
+        if (isTrademarkType) {
+          return baseValid && !!trademarkType;
+        }
+        return baseValid;
       case 2:
         return detailsData.title.length >= 3;
       case 3:
@@ -190,9 +199,10 @@ export default function NewMatterPage() {
         internal_notes: detailsData.internal_notes || null,
         is_urgent: detailsData.is_urgent,
         is_confidential: detailsData.is_confidential,
-        // Include jurisdiction-specific dynamic fields
+        // Include jurisdiction-specific dynamic fields and trademark type
         custom_fields: {
           jurisdiction_fields: detailsData.jurisdiction_fields || {},
+          trademark_type: trademarkType || null,
         },
       });
 
@@ -263,11 +273,19 @@ export default function NewMatterPage() {
                   <TypeJurisdictionStep
                     types={matterTypes}
                     selectedType={selectedType}
-                    onSelectType={setSelectedType}
+                    onSelectType={(type) => {
+                      setSelectedType(type);
+                      // Reset trademark type when changing matter type
+                      if (!type?.startsWith('TM') && type !== 'NC') {
+                        setTrademarkType(undefined);
+                      }
+                    }}
                     selectedJurisdictions={selectedJurisdictions}
                     onSelectJurisdictions={setSelectedJurisdictions}
                     isLoading={loadingTypes}
                     singleJurisdiction={true}
+                    trademarkType={trademarkType as any}
+                    onSelectTrademarkType={setTrademarkType as any}
                   />
                 </motion.div>
               )}
