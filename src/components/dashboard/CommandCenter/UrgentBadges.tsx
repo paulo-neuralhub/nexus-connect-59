@@ -25,32 +25,32 @@
  }
  
  export function UrgentBadges({ plazosHoy, expedientesUrgentes, alertasSpider }: UrgentBadgesProps) {
-   const badges: UrgentBadgeData[] = [
-     {
-       id: 'plazos-hoy',
-       icon: '⏰',
-       label: 'Plazos HOY',
-       sublabel: 'Requieren atención inmediata',
-       value: plazosHoy,
-       href: '/app/docket',
-     },
-     {
-       id: 'expedientes-urgentes',
-       icon: '🔥',
-       label: 'Expedientes Urgentes',
-       sublabel: 'Marcados como urgentes',
-       value: expedientesUrgentes,
-       href: '/app/docket',
-     },
-     {
-       id: 'alertas-spider',
-       icon: '🕷️',
-       label: 'Alertas Spider',
-       sublabel: 'Conflictos detectados',
-       value: alertasSpider,
-       href: '/app/spider',
-     },
-   ];
+  const badges: UrgentBadgeData[] = [
+    {
+      id: 'plazos-hoy',
+      icon: '⏰',
+      label: 'Plazos HOY',
+      sublabel: 'Requieren atención inmediata',
+      value: plazosHoy,
+      href: '/app/expedientes?tab=plazos&filter=today',
+    },
+    {
+      id: 'expedientes-urgentes',
+      icon: '🔥',
+      label: 'Expedientes Urgentes',
+      sublabel: 'Marcados como urgentes',
+      value: expedientesUrgentes,
+      href: '/app/expedientes?filter=urgent',
+    },
+    {
+      id: 'alertas-spider',
+      icon: '🕷️',
+      label: 'Alertas Spider',
+      sublabel: 'Conflictos detectados',
+      value: alertasSpider,
+      href: '/app/spider',
+    },
+  ];
  
    // Solo mostrar badges que tienen valores > 0
    const activeBadges = badges.filter(b => b.value > 0);

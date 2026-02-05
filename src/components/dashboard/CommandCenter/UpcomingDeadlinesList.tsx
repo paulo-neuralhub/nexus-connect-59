@@ -38,13 +38,13 @@
          >
            Plazos Próximos
          </h3>
-         <Link 
-           to="/app/docket"
-           className="text-[11px] font-medium cursor-pointer hover:opacity-80 transition-opacity"
-           style={{ color: '#00b4d8' }}
-         >
-           Ver todos →
-         </Link>
+        <Link 
+          to="/app/expedientes?tab=plazos"
+          className="text-[11px] font-medium cursor-pointer hover:opacity-80 transition-opacity"
+          style={{ color: '#00b4d8' }}
+        >
+          Ver todos →
+        </Link>
        </div>
  
        {/* Content */}
@@ -136,8 +136,8 @@
      </div>
    );
  
-   if (plazo.matterId) {
-     return <Link to={`/app/docket/${plazo.matterId}`}>{content}</Link>;
-   }
-   return content;
+  if (plazo.matterId) {
+    return <Link to={`/app/expedientes/${plazo.matterId}?tab=plazos`}>{content}</Link>;
+  }
+  return content;
  }
