@@ -40,7 +40,7 @@ export const NeoBadge: React.FC<NeoBadgeProps> = ({
         height: s.height,
         borderRadius: s.radius,
         background: "#f1f4f9",
-        boxShadow: "5px 5px 12px #bfc3ce, -5px -5px 12px #ffffff, inset 0 1px 2px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(0,0,0,0.04)",
+        boxShadow: "6px 6px 14px #b5b9c4, -6px -6px 14px #ffffff, inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.06)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -134,7 +134,7 @@ export const NeoBadgeInline: React.FC<NeoBadgeInlineProps> = ({
         height: 28,
         borderRadius: 8,
         background: "#f1f4f9",
-        boxShadow: "4px 4px 8px #bfc3ce, -4px -4px 8px #ffffff, inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 1px rgba(0,0,0,0.04)",
+        boxShadow: "5px 5px 10px #b5b9c4, -5px -5px 10px #ffffff, inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.05)",
       }}
       {...props}
     >

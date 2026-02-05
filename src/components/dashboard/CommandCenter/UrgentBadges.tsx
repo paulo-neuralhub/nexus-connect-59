@@ -171,7 +171,7 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
               height: 46,
               borderRadius: 12,
               background: '#f1f4f9',
-              boxShadow: '5px 5px 12px #bfc3ce, -5px -5px 12px #ffffff, inset 0 1px 2px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(0,0,0,0.04)',
+              boxShadow: '6px 6px 14px #b5b9c4, -6px -6px 14px #ffffff, inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.06)',
               border: `2px solid ${badge.ledColor}30`,
             }}
           >
