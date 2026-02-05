@@ -5,6 +5,9 @@
 
 import { cn } from '@/lib/utils';
 import { NeoBadge } from '@/components/ui/neo-badge';
+import { useQuery } from '@tanstack/react-query';
+import { fromTable } from '@/lib/supabase';
+import { useOrganization } from '@/hooks/useOrganization';
 
 interface Metric {
   label: string;
@@ -127,9 +130,6 @@ function SecondaryMetricCard({ metric }: { metric: Metric }) {
 // Hook para obtener métricas del dashboard
 // =============================================
 
-import { useQuery } from '@tanstack/react-query';
-import { fromTable } from '@/lib/supabase';
-import { useOrganization } from '@/hooks/useOrganization';
 
 export function useDashboardMetrics() {
   const { organizationId } = useOrganization();
