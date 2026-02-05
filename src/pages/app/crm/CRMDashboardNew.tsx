@@ -76,24 +76,42 @@ export default function CRMDashboardNew() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards - SILK NeoBadge Style */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {/* Leads */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
+          style={{ 
+            background: '#f1f4f9',
+            border: '1px solid rgba(0,0,0,0.06)'
+          }}
           onClick={() => navigate('/app/crm/pipeline?view=leads')}
         >
           <CardContent className="pt-4 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{kpis?.total_leads || 0}</p>
-                <p className="text-sm text-muted-foreground">Leads activos</p>
-                {(kpis?.hot_leads ?? 0) > 0 && (
-                  <p className="text-xs text-primary mt-1">↑ {kpis?.hot_leads} calientes</p>
-                )}
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="w-4 h-4" style={{ color: '#94a3b8' }} />
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Leads activos</span>
+                </div>
+                <p className="text-xs" style={{ color: (kpis?.hot_leads ?? 0) > 0 ? '#00b4d8' : '#94a3b8' }}>
+                  {(kpis?.hot_leads ?? 0) > 0 ? `↑ ${kpis?.hot_leads} calientes` : '📊 Sin actividad'}
+                </p>
               </div>
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Target className="w-6 h-6 text-primary/40" />
+              <div 
+                className="px-3 py-1.5 rounded-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 3px 10px rgba(0, 0, 0, 0.12), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                <span 
+                  className="text-xl font-extrabold" 
+                  style={{ letterSpacing: '-0.02em', color: (kpis?.total_leads || 0) > 0 ? '#1e293b' : '#94a3b8' }}
+                >
+                  {kpis?.total_leads || 0}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -101,20 +119,38 @@ export default function CRMDashboardNew() {
 
         {/* Negociaciones */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
+          style={{ 
+            background: '#f1f4f9',
+            border: '1px solid rgba(0,0,0,0.06)'
+          }}
           onClick={() => navigate('/app/crm/pipeline?view=deals')}
         >
           <CardContent className="pt-4 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{kpis?.deals_closing_this_month || 0}</p>
-                <p className="text-sm text-muted-foreground">Negociaciones</p>
-                <p className="text-xs text-green-600 mt-1">
-                  {formatCurrency(kpis?.total_pipeline_value || 0)}
+                <div className="flex items-center gap-2 mb-1">
+                  <Briefcase className="w-4 h-4" style={{ color: '#94a3b8' }} />
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Negociaciones</span>
+                </div>
+                <p className="text-xs" style={{ color: '#10b981' }}>
+                  💼 {formatCurrency(kpis?.total_pipeline_value || 0)}
                 </p>
               </div>
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <Briefcase className="w-6 h-6 text-blue-500/40" />
+              <div 
+                className="px-3 py-1.5 rounded-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 3px 10px rgba(0, 0, 0, 0.12), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                <span 
+                  className="text-xl font-extrabold" 
+                  style={{ letterSpacing: '-0.02em', color: (kpis?.deals_closing_this_month || 0) > 0 ? '#1e293b' : '#94a3b8' }}
+                >
+                  {kpis?.deals_closing_this_month || 0}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -122,20 +158,38 @@ export default function CRMDashboardNew() {
 
         {/* Clientes */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
+          style={{ 
+            background: '#f1f4f9',
+            border: (kpis?.total_accounts || 0) > 0 ? '1px solid #a7f3d0' : '1px solid rgba(0,0,0,0.06)'
+          }}
           onClick={() => navigate('/app/crm/clients')}
         >
           <CardContent className="pt-4 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{kpis?.total_accounts || 0}</p>
-                <p className="text-sm text-muted-foreground">Clientes</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ↑ {kpis?.active_accounts || 0} activos
+                <div className="flex items-center gap-2 mb-1">
+                  <Building2 className="w-4 h-4" style={{ color: '#10b981' }} />
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Clientes</span>
+                </div>
+                <p className="text-xs" style={{ color: '#10b981' }}>
+                  ✅ {kpis?.active_accounts || 0} activos
                 </p>
               </div>
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <Building2 className="w-6 h-6 text-green-500/40" />
+              <div 
+                className="px-3 py-1.5 rounded-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%)',
+                  border: '1px solid #a7f3d0',
+                  boxShadow: '0 3px 10px rgba(16, 185, 129, 0.15), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(16, 185, 129, 0.05)'
+                }}
+              >
+                <span 
+                  className="text-xl font-extrabold" 
+                  style={{ letterSpacing: '-0.02em', color: '#10b981' }}
+                >
+                  {kpis?.total_accounts || 0}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -143,32 +197,80 @@ export default function CRMDashboardNew() {
 
         {/* Tareas hoy */}
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
+          style={{ 
+            background: '#f1f4f9',
+            border: (kpis?.pending_tasks || 0) > 0 ? '1px solid #fed7aa' : '1px solid rgba(0,0,0,0.06)'
+          }}
           onClick={() => navigate('/app/crm/tasks')}
         >
           <CardContent className="pt-4 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{kpis?.pending_tasks || 0}</p>
-                <p className="text-sm text-muted-foreground">Tareas hoy</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckSquare className="w-4 h-4" style={{ color: '#f97316' }} />
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Tareas hoy</span>
+                </div>
+                <p className="text-xs" style={{ color: '#f97316' }}>
+                  📋 Pendientes
+                </p>
               </div>
-              <div className="p-2 rounded-lg bg-orange-500/10">
-                <CheckSquare className="w-6 h-6 text-orange-500/40" />
+              <div 
+                className="px-3 py-1.5 rounded-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #fff7ed 0%, #ffffff 100%)',
+                  border: '1px solid #fed7aa',
+                  boxShadow: '0 3px 10px rgba(249, 115, 22, 0.15), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(249, 115, 22, 0.05)'
+                }}
+              >
+                <span 
+                  className="text-xl font-extrabold" 
+                  style={{ letterSpacing: '-0.02em', color: '#f97316' }}
+                >
+                  {kpis?.pending_tasks || 0}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Alertas */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
+          style={{ 
+            background: '#f1f4f9',
+            border: (kpis?.at_risk_accounts || 0) > 0 ? '2px solid #f87171' : '1px solid rgba(0,0,0,0.06)'
+          }}
+        >
           <CardContent className="pt-4 pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{kpis?.at_risk_accounts || 0}</p>
-                <p className="text-sm text-muted-foreground">Alertas</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="w-4 h-4" style={{ color: (kpis?.at_risk_accounts || 0) > 0 ? '#ef4444' : '#94a3b8' }} />
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Alertas</span>
+                </div>
+                <p className="text-xs" style={{ color: (kpis?.at_risk_accounts || 0) > 0 ? '#ef4444' : '#94a3b8' }}>
+                  {(kpis?.at_risk_accounts || 0) > 0 ? '⚠️ Requiere atención' : '🔔 Sin alertas'}
+                </p>
               </div>
-              <div className="p-2 rounded-lg bg-destructive/10">
-                <AlertTriangle className="w-6 h-6 text-destructive/40" />
+              <div 
+                className="px-3 py-1.5 rounded-lg"
+                style={{
+                  background: (kpis?.at_risk_accounts || 0) > 0 
+                    ? 'linear-gradient(135deg, #fef2f2 0%, #ffffff 100%)' 
+                    : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                  border: (kpis?.at_risk_accounts || 0) > 0 ? '1px solid #fecaca' : '1px solid #e2e8f0',
+                  boxShadow: (kpis?.at_risk_accounts || 0) > 0 
+                    ? '0 3px 10px rgba(239, 68, 68, 0.15), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(239, 68, 68, 0.05)'
+                    : '0 3px 10px rgba(0, 0, 0, 0.12), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                <span 
+                  className="text-xl font-extrabold" 
+                  style={{ letterSpacing: '-0.02em', color: (kpis?.at_risk_accounts || 0) > 0 ? '#ef4444' : '#94a3b8' }}
+                >
+                  {kpis?.at_risk_accounts || 0}
+                </span>
               </div>
             </div>
           </CardContent>
