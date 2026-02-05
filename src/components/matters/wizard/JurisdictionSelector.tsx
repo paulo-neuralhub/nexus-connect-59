@@ -159,17 +159,17 @@ export function JurisdictionSelector({
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className={cn(
-                  'flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left',
+                  'flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left overflow-hidden',
                   'hover:border-primary/50 hover:shadow-sm',
                   isSelected
                     ? 'border-primary bg-primary/5'
                     : 'border-border bg-card'
                 )}
               >
-                <span className="text-3xl">{j.flag}</span>
-                <div className="flex-1">
-                  <p className="font-medium">{j.name}</p>
-                  <p className="text-sm text-muted-foreground">{j.office}</p>
+                <span className="text-3xl flex-shrink-0">{j.flag}</span>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <p className="font-medium truncate">{j.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">{j.office}</p>
                 </div>
                 {isSelected && (
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
@@ -206,15 +206,15 @@ export function JurisdictionSelector({
                 type="button"
                 onClick={() => toggleJurisdiction(j.code)}
                 className={cn(
-                  'flex items-center gap-2 p-3 rounded-lg border transition-all text-left text-sm',
+                  'flex items-center gap-2 p-3 rounded-lg border transition-all text-left text-sm overflow-hidden',
                   'hover:border-primary/50',
                   isSelected
                     ? 'border-primary bg-primary/5 font-medium'
                     : 'border-border'
                 )}
               >
-                <span className="text-xl">{j.flag}</span>
-                <span className="truncate">{j.name}</span>
+                <span className="text-xl flex-shrink-0">{j.flag}</span>
+                <span className="truncate flex-1 min-w-0">{j.name}</span>
               </button>
             );
           })}

@@ -100,7 +100,7 @@ export function TrademarkTypeSelector({ value, onChange }: TrademarkTypeSelector
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "relative flex items-start gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                  "relative flex items-start gap-3 p-4 rounded-lg border-2 transition-all text-left overflow-hidden",
                   isSelected
                     ? "border-cyan-400 bg-cyan-50/50"
                     : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
@@ -137,14 +137,14 @@ export function TrademarkTypeSelector({ value, onChange }: TrademarkTypeSelector
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pr-6">
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <p className={cn(
-                    "font-medium text-sm",
+                    "font-medium text-sm truncate",
                     isSelected ? "text-cyan-700" : "text-slate-800"
                   )}>
                     {type.label}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                  <p className="text-xs text-slate-500 mt-0.5 break-words">
                     {type.description}
                   </p>
                 </div>
@@ -176,7 +176,7 @@ export function TrademarkTypeSelector({ value, onChange }: TrademarkTypeSelector
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "relative flex items-start gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                  "relative flex items-start gap-3 p-4 rounded-lg border-2 transition-all text-left overflow-hidden",
                   isSelected
                     ? "border-cyan-400 bg-cyan-50/50"
                     : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
@@ -213,14 +213,14 @@ export function TrademarkTypeSelector({ value, onChange }: TrademarkTypeSelector
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pr-6">
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <p className={cn(
-                    "font-medium text-sm",
+                    "font-medium text-sm truncate",
                     isSelected ? "text-cyan-700" : "text-slate-800"
                   )}>
                     {type.label}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                  <p className="text-xs text-slate-500 mt-0.5 break-words">
                     {type.description}
                   </p>
                 </div>
