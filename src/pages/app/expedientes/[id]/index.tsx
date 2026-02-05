@@ -42,7 +42,7 @@ import { MatterDocumentsTab } from '@/components/matters/MatterDocumentsTab';
 import { MatterDeadlinesTab } from '@/components/matters/MatterDeadlinesTab';
 import { MatterTasksTab } from '@/components/matters/MatterTasksTab';
 import { MatterInvoicesTab } from '@/components/matters/MatterInvoicesTab';
-import { MatterCommunicationsTab } from '@/components/matters/MatterCommunicationsTab';
+import { MatterCommunicationsTab } from '@/components/matters/MatterCommunicationsTabEnhanced';
 import { EmailComposeModal } from '@/components/matters/EmailComposeModal';
 import { LogCallModal } from '@/components/matters/LogCallModal';
 import { AddNoteModal } from '@/components/matters/AddNoteModal';
@@ -444,12 +444,18 @@ export default function MatterDetailPage() {
                 <MatterDeadlinesTab matterId={id!} />
               </TabsContent>
 
-              {/* Communications Tab */}
+              {/* Communications Tab - Enhanced with templates and locked reference */}
               <TabsContent value="communications">
                 <MatterCommunicationsTab 
                   matterId={id!} 
+                  matterReference={matter.reference || matter.id}
                   matterTitle={matter.title}
+                  matterType={matter.matter_type}
+                  jurisdiction={(matter as any).jurisdiction}
                   clientId={matter.client_id}
+                  clientName={matter.client_name}
+                  clientEmail={matter.client_email}
+                  clientPhone={matter.client_phone}
                 />
               </TabsContent>
 
