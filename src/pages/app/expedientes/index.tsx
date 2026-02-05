@@ -721,87 +721,130 @@ function MatterCardNew({ matter, onClick }: { matter: MatterWithDeadline; onClic
   const phaseConfig = PHASE_CONFIG[matter.current_phase || 'F0'] || DEFAULT_PHASE;
   const flag = FLAGS[matter.jurisdiction_code || ''] || '🌐';
   
-  const urgencyBorder = {
-    overdue: 'border-red-400',
-    today: 'border-red-400',
-    week: 'border-orange-300',
-    month: 'border-yellow-300',
-    ok: 'border-border',
-  }[matter.urgency_level];
+   // Get color for type badge
+   const getTypeColor = (type: string): string => {
+     const colors: Record<string, string> = {
+       'TM_NAT': '#00b4d8',
+       'TM_EU': '#00b4d8',
+       'TM_INT': '#00b4d8',
+       'trademark': '#00b4d8',
+       'PT_NAT': '#10b981',
+       'PT_EU': '#10b981',
+       'PT_PCT': '#10b981',
+       'UM': '#10b981',
+       'patent': '#10b981',
+       'DS_NAT': '#ec4899',
+       'DS_EU': '#ec4899',
+       'design': '#ec4899',
+     };
+     return colors[type] || '#64748b';
+   };
+   
+   const typeColor = getTypeColor(matter.matter_type);
+   const isUrgent = matter.urgency_level === 'overdue' || matter.urgency_level === 'today';
 
   return (
-    <Card 
+     <div 
       onClick={onClick}
-      className={cn(
-        "group cursor-pointer hover:border-[rgba(0,180,216,0.15)] transition-all duration-200 overflow-hidden border border-[rgba(0,0,0,0.06)] rounded-[14px]",
-        urgencyBorder
-      )}
+       className="group cursor-pointer transition-all duration-200"
+       style={{
+         padding: '14px 16px',
+         borderRadius: '14px',
+         border: '1px solid rgba(0, 0, 0, 0.06)',
+         background: '#f1f4f9',
+         marginBottom: '6px',
+       }}
+       onMouseEnter={(e) => {
+         e.currentTarget.style.border = '1px solid rgba(0, 180, 216, 0.15)';
+       }}
+       onMouseLeave={(e) => {
+         e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.06)';
+       }}
     >
-      <div className={cn("h-2", typeConfig.color)} />
-      
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center text-xl border-2", typeConfig.bgLight)}>
-            {typeConfig.icon}
+       <div className="flex items-center gap-4">
+         {/* Phase badge - neumorphic */}
+         <NeoBadge 
+           value={matter.current_phase || 'F0'} 
+           color={PHASE_COLORS[matter.current_phase || 'F0'] || '#64748b'} 
+           size="md" 
+         />
+         
+         {/* Main content */}
+         <div className="flex-1 min-w-0">
+           <div className="flex items-center gap-3 mb-1">
+             <span 
+               className="truncate"
+               style={{ fontSize: '14px', fontWeight: 700, color: '#0a2540' }}
+             >
+               {matter.mark_name || matter.title}
+             </span>
+             
+             <span 
+               style={{
+                 fontSize: '9px',
+                 fontWeight: 600,
+                 padding: '2px 7px',
+                 borderRadius: '5px',
+                 background: `${typeColor}0a`,
+                 color: typeColor,
+                 flexShrink: 0
+               }}
+             >
+               {typeConfig.label}
+             </span>
+             
+             {isUrgent && (
+               <span 
+                 style={{
+                   fontSize: '9px',
+                   fontWeight: 700,
+                   padding: '2px 7px',
+                   borderRadius: '5px',
+                   background: '#ef44440a',
+                   color: '#ef4444',
+                   flexShrink: 0
+                 }}
+               >
+                 URGENTE
+               </span>
+             )}
+           </div>
+           
+           <div className="flex items-center gap-4">
+             <span style={{ fontSize: '12px', color: '#64748b' }} className="truncate">
+               {matter.client_name || 'Sin cliente'}
+             </span>
+             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+               {matter.matter_number}
+             </span>
+             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+               {flag} {matter.jurisdiction_code}
+             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xl">{flag}</span>
-            <span className="text-xs text-muted-foreground">{matter.jurisdiction_code}</span>
-          </div>
-        </div>
-
-        <p className="font-mono text-sm font-semibold text-primary">
-          {matter.matter_number}
-        </p>
-        
-        <h3 className="font-medium text-foreground line-clamp-2 mt-1 min-h-[2.5rem]">
-          {matter.mark_name || matter.title}
-        </h3>
-
-        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
-          <Building2 className="h-3.5 w-3.5" />
-          <span className="truncate">{matter.client_name || 'Sin cliente'}</span>
-        </p>
-
-        {/* Deadline */}
-        {matter.next_deadline && (
-          <div className={cn(
-            "mt-3 p-2 rounded-lg flex items-center gap-2",
-            matter.urgency_level === 'overdue' || matter.urgency_level === 'today' ? 'bg-red-50 dark:bg-red-950' :
-            matter.urgency_level === 'week' ? 'bg-orange-50 dark:bg-orange-950' :
-            matter.urgency_level === 'month' ? 'bg-yellow-50 dark:bg-yellow-950' :
-            'bg-muted/50'
-          )}>
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs truncate flex-1">{matter.next_deadline.title}</span>
-            <span className={cn(
-              "text-xs font-medium",
-              matter.urgency_level === 'overdue' || matter.urgency_level === 'today' ? 'text-red-600' :
-              matter.urgency_level === 'week' ? 'text-orange-600' :
-              matter.urgency_level === 'month' ? 'text-yellow-600' :
-              'text-muted-foreground'
-            )}>
-              {matter.days_until_deadline !== null && matter.days_until_deadline <= 0 ? 'VENCIDO' :
-               matter.days_until_deadline !== null ? `${matter.days_until_deadline}d` : ''}
-            </span>
-          </div>
-        )}
-
-        {/* Phase */}
-        <div className="mt-3">
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-muted-foreground">{phaseConfig.label}</span>
-            <span className="text-muted-foreground">{phaseConfig.progress}%</span>
-          </div>
-          <div className="relative h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+         </div>
+         
+         {/* Progress */}
+         <div style={{ width: '120px' }}>
+           <div className="flex justify-between items-center mb-1">
+             <span style={{ fontSize: '9px', color: '#94a3b8' }}>Fase</span>
+             <span style={{ fontSize: '9px', fontWeight: 700, color: PHASE_COLORS[matter.current_phase || 'F0'] || '#64748b' }}>
+               {phaseConfig.progress}%
+             </span>
+           </div>
+           <div style={{ height: '4px', borderRadius: '3px', background: 'rgba(0,0,0,0.04)' }}>
             <div 
-              className={cn("absolute inset-y-0 left-0 rounded-full", phaseConfig.color)}
-              style={{ width: `${phaseConfig.progress}%` }}
+               style={{
+                 width: `${phaseConfig.progress}%`,
+                 height: '100%',
+                 borderRadius: '3px',
+                 background: `linear-gradient(90deg, ${PHASE_COLORS[matter.current_phase || 'F0'] || '#64748b'}, ${PHASE_COLORS[matter.current_phase || 'F0'] || '#64748b'}88)`,
+                 boxShadow: `0 0 4px ${PHASE_COLORS[matter.current_phase || 'F0'] || '#64748b'}18`
+               }}
             />
           </div>
         </div>
-      </CardContent>
-    </Card>
+       </div>
+     </div>
   );
 }
 
@@ -837,36 +880,80 @@ function MatterKanbanNew({ matters }: { matters: MatterWithDeadline[] }) {
               <div className="space-y-2 min-h-[200px] bg-muted/30 rounded-lg p-2">
                 {phasedMatters.map((matter) => {
                   const typeConfig = TYPE_CONFIG[matter.matter_type] || DEFAULT_TYPE;
+                   const isUrgent = matter.urgency_level === 'overdue' || matter.urgency_level === 'today';
                   return (
-                    <Card 
+                     <div 
                       key={matter.id}
                       onClick={() => navigate(`/app/expedientes/${matter.id}`)}
-                      className="cursor-pointer hover:border-[rgba(0,180,216,0.15)] transition-colors border border-[rgba(0,0,0,0.06)] rounded-[14px]"
+                       className="cursor-pointer transition-all duration-200"
+                       style={{
+                         padding: '12px 14px',
+                         borderRadius: '14px',
+                         border: '1px solid rgba(0, 0, 0, 0.06)',
+                         background: '#f1f4f9',
+                         marginBottom: '6px',
+                       }}
+                       onMouseEnter={(e) => {
+                         e.currentTarget.style.border = '1px solid rgba(0, 180, 216, 0.15)';
+                       }}
+                       onMouseLeave={(e) => {
+                         e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.06)';
+                       }}
                     >
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span>{typeConfig.icon}</span>
-                          <span className="font-mono text-xs font-medium text-primary truncate">
+                       <div className="flex items-center gap-2 mb-2">
+                         <span style={{ fontSize: '12px' }}>{typeConfig.icon}</span>
+                         <span 
+                           className="truncate"
+                           style={{ fontSize: '11px', fontWeight: 600, color: '#0a2540' }}
+                         >
                             {matter.matter_number}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium line-clamp-2">{matter.mark_name || matter.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          {matter.client_name}
-                        </p>
-                        {matter.next_deadline && (
-                          <div className={cn(
-                            "mt-2 text-xs px-2 py-1 rounded",
-                            matter.urgency_level === 'overdue' || matter.urgency_level === 'today' ? 'bg-red-100 text-red-700' :
-                            matter.urgency_level === 'week' ? 'bg-orange-100 text-orange-700' :
-                            'bg-muted text-muted-foreground'
-                          )}>
-                            {matter.days_until_deadline !== null && matter.days_until_deadline <= 0 ? '⚠️ Vencido' :
-                             `${matter.days_until_deadline}d - ${matter.next_deadline.title}`}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                         </span>
+                         {isUrgent && (
+                           <span 
+                             style={{
+                               fontSize: '8px',
+                               fontWeight: 700,
+                               padding: '1px 5px',
+                               borderRadius: '4px',
+                               background: '#ef44440a',
+                               color: '#ef4444',
+                             }}
+                           >
+                             !
+                           </span>
+                         )}
+                       </div>
+                       <p 
+                         className="line-clamp-2"
+                         style={{ fontSize: '13px', fontWeight: 600, color: '#0a2540' }}
+                       >
+                         {matter.mark_name || matter.title}
+                       </p>
+                       <p 
+                         className="truncate mt-1"
+                         style={{ fontSize: '11px', color: '#64748b' }}
+                       >
+                         {matter.client_name}
+                       </p>
+                       {matter.next_deadline && (
+                         <div 
+                           className="mt-2 flex items-center gap-1"
+                           style={{
+                             fontSize: '10px',
+                             padding: '4px 6px',
+                             borderRadius: '6px',
+                             background: isUrgent ? '#ef44440a' : 'rgba(0,0,0,0.04)',
+                             color: isUrgent ? '#ef4444' : '#94a3b8'
+                           }}
+                         >
+                           <Clock size={10} />
+                           <span className="truncate">
+                             {matter.days_until_deadline !== null && matter.days_until_deadline <= 0 ? 'Vencido' :
+                              `${matter.days_until_deadline}d`}
+                           </span>
+                         </div>
+                       )}
+                     </div>
                   );
                 })}
               </div>
