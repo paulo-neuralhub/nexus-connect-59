@@ -43,13 +43,13 @@
          >
            Agenda HOY
          </h3>
-         <Link 
-           to="/app/calendar"
-           className="text-[11px] font-medium cursor-pointer hover:opacity-80 transition-opacity"
-           style={{ color: '#00b4d8' }}
-         >
-           Ver completa →
-         </Link>
+        <Link 
+          to="/app/calendario"
+          className="text-[11px] font-medium cursor-pointer hover:opacity-80 transition-opacity"
+          style={{ color: '#00b4d8' }}
+        >
+          Ver completa →
+        </Link>
        </div>
  
        {/* Content */}
