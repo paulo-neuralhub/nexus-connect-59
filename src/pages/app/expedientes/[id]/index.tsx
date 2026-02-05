@@ -186,7 +186,7 @@ export default function MatterDetailPage() {
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               {/* SILK Tabs - Neumorphic container with balanced padding */}
-              <TabsList className="mb-4 flex flex-wrap gap-1 h-auto pt-2.5 pb-2 px-2">
+              <TabsList className="mb-4 flex flex-wrap gap-1 h-auto pt-2.5 pb-1.5 px-2">
                   <TabsTrigger 
                     value="general" 
                     className="gap-2 px-4 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-slate-900 text-slate-500 hover:text-slate-700 transition-all relative"
