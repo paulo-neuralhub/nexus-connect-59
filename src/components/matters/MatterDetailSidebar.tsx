@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { MatterV2 } from '@/hooks/use-matters-v2';
+import { ClientInfoCard } from './ClientInfoCard';
 
 interface MatterStats {
   documentos: number;
@@ -190,164 +191,19 @@ export function MatterDetailSidebar({
       )}
 
       {/* ======================================= */}
-      {/* CLIENT - SILK Card */}
+      {/* CLIENT - Enhanced SILK Card */}
       {/* ======================================= */}
-      <div 
-        style={{
-          padding: '20px',
-          borderRadius: '14px',
-          border: '1px solid rgba(0, 0, 0, 0.06)',
-          background: '#f1f4f9'
-        }}
-      >
-        {matter.client_id && matter.client_name ? (
-          <>
-            {/* Corporate badge */}
-            <div 
-              className="flex items-center gap-2 mb-4"
-              style={{
-                padding: '7px 10px',
-                borderRadius: '8px',
-                background: 'rgba(0, 180, 216, 0.06)',
-                border: '1px solid rgba(0, 180, 216, 0.1)'
-              }}
-            >
-              <div 
-                style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: '#00b4d8',
-                  boxShadow: '0 0 8px rgba(0, 180, 216, 0.5)'
-                }}
-              />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#00b4d8' }}>
-                {matter.is_urgent ? 'Cliente VIP' : 'Cliente Corporativo'}
-              </span>
-            </div>
-            
-            {/* Client name */}
-            <h3 style={{ 
-              fontSize: '17px', 
-              fontWeight: 700, 
-              color: '#0a2540',
-              marginBottom: '12px'
-            }}>
-              {matter.client_name}
-            </h3>
-            
-            {/* Client data */}
-            <div style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.8 }}>
-              {matter.client_email && (
-                <div className="flex items-center gap-2 mb-1">
-                  <span style={{ color: '#94a3b8' }}>✉️</span>
-                  <span className="truncate">{matter.client_email}</span>
-                </div>
-              )}
-              {matter.client_phone && (
-                <div className="flex items-center gap-2 mb-1">
-                  <span style={{ color: '#94a3b8' }}>📞</span>
-                  <span>{matter.client_phone}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span style={{ color: '#94a3b8' }}>📅</span>
-                <span>Cliente desde {format(new Date(matter.created_at), 'yyyy')}</span>
-              </div>
-            </div>
-
-            {/* Separator */}
-            <div style={{ height: '1px', background: 'rgba(0, 0, 0, 0.06)', margin: '14px 0' }} />
-
-            {/* Action buttons - SILK style */}
-            <div className="flex gap-2 mb-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={onEmailClick}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all"
-                    style={{
-                      background: 'rgba(59, 130, 246, 0.08)',
-                      border: '1px solid rgba(59, 130, 246, 0.12)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#3b82f6'
-                    }}
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    Email
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Enviar email</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={onWhatsAppClick}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all"
-                    style={{
-                      background: 'rgba(34, 197, 94, 0.08)',
-                      border: '1px solid rgba(34, 197, 94, 0.12)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#22c55e'
-                    }}
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    WA
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Enviar WhatsApp</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={onCallClick}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all"
-                    style={{
-                      background: 'rgba(0, 180, 216, 0.08)',
-                      border: '1px solid rgba(0, 180, 216, 0.12)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#00b4d8'
-                    }}
-                  >
-                    <Phone className="h-3.5 w-3.5" />
-                    Llamar
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Llamar al cliente</TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Link to client */}
-            <button
-              onClick={() => navigate(`/app/crm/clients/${matter.client_id}`)}
-              className="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all"
-              style={{
-                background: 'rgba(0, 0, 0, 0.02)',
-                border: '1px solid rgba(0, 0, 0, 0.04)',
-                fontSize: '11px',
-                color: '#64748b'
-              }}
-            >
-              <span>Ver ficha completa</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </>
-        ) : (
-          <div className="text-center py-4">
-            <Building2 className="h-8 w-8 mx-auto mb-2" style={{ color: '#94a3b8' }} />
-            <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>Sin cliente asignado</p>
-            <Button variant="outline" size="sm" style={{ fontSize: '11px' }}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Asignar cliente
-            </Button>
-          </div>
-        )}
-      </div>
+      <ClientInfoCard
+        clientId={matter.client_id}
+        clientName={matter.client_name}
+        clientEmail={matter.client_email}
+        clientPhone={matter.client_phone}
+        isUrgent={matter.is_urgent}
+        createdAt={matter.created_at}
+        onEmailClick={onEmailClick}
+        onWhatsAppClick={onWhatsAppClick}
+        onCallClick={onCallClick}
+      />
 
       {/* ======================================= */}
       {/* KEY DATES - SILK Card */}
