@@ -1,23 +1,29 @@
 // ============================================================
-// TEMPLATES CATALOG PAGE - Catálogo visual simplificado
-// 15 tipos × 18 estilos = 270 plantillas profesionales
+// TEMPLATES CATALOG PAGE - Catálogo visual de plantillas
+// 15 tipos × 18 estilos = 270 combinaciones
+// SIN enlace al generador - Este ES el catálogo directo
 // ============================================================
 
 import * as React from 'react';
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { 
-  FileText, Palette, Search, LayoutGrid, List, Settings2,
-  Loader2, Sparkles
+  FileText, Search, LayoutGrid, ChevronDown, Check,
+  Loader2, Banknote, Mail, BarChart3, Scale, Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
 import { 
-  TemplateCategoryTabs, 
   TemplateCard, 
   TemplatePreviewModal 
 } from '@/components/features/templates';
@@ -31,11 +37,23 @@ import {
 } from '@/hooks/documents/useTemplatePreferences';
 import type { DocumentType, DocumentCategory, DesignTokens } from '@/lib/document-templates/designTokens';
 
+// Category configuration with icons and emojis
+const CATEGORY_CONFIG: { 
+  key: DocumentCategory; 
+  label: string; 
+  emoji: string;
+  icon: React.ElementType;
+}[] = [
+  { key: 'financiero', label: 'Financiero', emoji: '💰', icon: Banknote },
+  { key: 'comunicacion', label: 'Comunicación', emoji: '📨', icon: Mail },
+  { key: 'informe', label: 'Informes', emoji: '📊', icon: BarChart3 },
+  { key: 'legal', label: 'Legal', emoji: '⚖️', icon: Scale },
+  { key: 'ip', label: 'IP', emoji: '🏆', icon: Award },
+];
+
 export default function TemplateCatalogPage() {
   // State
-  const [activeCategory, setActiveCategory] = useState<'all' | DocumentCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [previewType, setPreviewType] = useState<DocumentType | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
@@ -57,40 +75,27 @@ export default function TemplateCatalogPage() {
   
   const isLoading = typesLoading || stylesLoading;
   
-  // Calculate counts per category
-  const categoryCounts = useMemo(() => {
-    const counts: Record<'all' | DocumentCategory, number> = {
-      all: types?.length || 0,
-      financiero: typesByCategory?.financiero?.length || 0,
-      comunicacion: typesByCategory?.comunicacion?.length || 0,
-      informe: typesByCategory?.informe?.length || 0,
-      legal: typesByCategory?.legal?.length || 0,
-      ip: typesByCategory?.ip?.length || 0,
-    };
-    return counts;
-  }, [types, typesByCategory]);
-  
-  // Filter types by category and search
-  const filteredTypes = useMemo(() => {
-    let filtered = types || [];
+  // Filter types by search
+  const filteredTypesByCategory = useMemo(() => {
+    if (!typesByCategory) return null;
     
-    // Filter by category
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(t => t.category === activeCategory);
-    }
+    if (!searchQuery.trim()) return typesByCategory;
     
-    // Filter by search
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(t => 
+    const query = searchQuery.toLowerCase();
+    const filtered: Record<DocumentCategory, DocumentType[]> = {} as any;
+    
+    Object.entries(typesByCategory).forEach(([cat, typesList]) => {
+      const matching = (typesList as DocumentType[]).filter(t => 
         t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query) ||
-        t.nameEn.toLowerCase().includes(query)
+        t.description.toLowerCase().includes(query)
       );
-    }
+      if (matching.length > 0) {
+        filtered[cat as DocumentCategory] = matching;
+      }
+    });
     
     return filtered;
-  }, [types, activeCategory, searchQuery]);
+  }, [typesByCategory, searchQuery]);
   
   // Handlers
   const handlePreview = (type: DocumentType) => {
@@ -107,93 +112,96 @@ export default function TemplateCatalogPage() {
   };
   
   // Stats
-  const totalCombinations = (styles?.length || 0) * (types?.length || 0);
+  const totalTypes = types?.length || 0;
+  const totalStyles = styles?.length || 0;
+  const totalCombinations = totalTypes * totalStyles;
   const activeCount = types?.filter(t => isTypeEnabled(t.id)).length || 0;
   
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-400 flex items-center justify-center shadow-lg">
+          <div 
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #00b4d8, #00d4aa)',
+              boxShadow: '0 4px 14px rgba(0, 180, 216, 0.25)',
+            }}
+          >
             <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-800">Plantillas de Documentos</h1>
             <p className="text-sm text-slate-500">
               {isLoading ? 'Cargando...' : (
-                <>
-                  <span className="font-semibold text-slate-700">{totalCombinations}</span> plantillas · 
-                  {types?.length || 0} tipos × {styles?.length || 0} estilos. 
-                  Documentos profesionales listos para usar.
-                </>
+                <span>
+                  <span className="font-semibold text-slate-700">{totalTypes}</span> tipos × 
+                  <span className="font-semibold text-slate-700"> {totalStyles}</span> estilos = 
+                  <span className="font-semibold text-cyan-600"> {totalCombinations}</span> combinaciones
+                </span>
               )}
             </p>
           </div>
         </div>
         
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <Link to="/app/settings/templates/branding">
-            <Palette className="w-4 h-4" />
-            Identidad de Marca
-          </Link>
-        </Button>
+        {/* Default Style Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="gap-2 min-w-[200px] justify-between"
+              disabled={isLoading}
+            >
+              <div className="flex items-center gap-2">
+                {currentDefaultStyle && (
+                  <div 
+                    className="w-5 h-7 rounded border shadow-sm overflow-hidden shrink-0"
+                    style={{ backgroundColor: currentDefaultStyle.colors.background }}
+                  >
+                    <div 
+                      className="h-1.5" 
+                      style={{ backgroundColor: currentDefaultStyle.colors.headerBg }}
+                    />
+                  </div>
+                )}
+                <span className="text-sm">
+                  Estilo por defecto: <span className="font-semibold">{currentDefaultStyle?.name || 'Ninguno'}</span>
+                </span>
+              </div>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto">
+            <DropdownMenuLabel>Seleccionar estilo por defecto</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {styles?.map((style) => (
+              <DropdownMenuItem 
+                key={style.id}
+                onClick={() => handleStyleChange(style)}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                {/* Mini preview */}
+                <div 
+                  className="w-6 h-8 rounded border shadow-sm overflow-hidden shrink-0"
+                  style={{ backgroundColor: style.colors.background }}
+                >
+                  <div 
+                    className="h-2" 
+                    style={{ backgroundColor: style.colors.headerBg }}
+                  />
+                </div>
+                <span className="flex-1">{style.name}</span>
+                {currentDefaultStyle?.id === style.id && (
+                  <Check className="h-4 w-4 text-cyan-500" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
-      {/* Default style indicator */}
-      {currentDefaultStyle && (
-        <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50/50 to-transparent">
-          <CardContent className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
-              <div 
-                className="w-10 h-14 rounded-lg overflow-hidden border shadow-sm"
-                style={{ backgroundColor: currentDefaultStyle.colors.background }}
-              >
-                <div 
-                  className="h-3" 
-                  style={{ backgroundColor: currentDefaultStyle.colors.headerBg }}
-                />
-                <div className="p-1.5">
-                  <div 
-                    className="h-1 rounded-full w-2/3 mb-1"
-                    style={{ backgroundColor: currentDefaultStyle.colors.text, opacity: 0.2 }}
-                  />
-                  <div 
-                    className="h-2 rounded-sm"
-                    style={{ backgroundColor: currentDefaultStyle.colors.tableHeadBg }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-cyan-500" />
-                  <span className="text-sm font-semibold text-slate-800">
-                    Estilo por defecto: {currentDefaultStyle.name}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Este estilo se aplica a todos los documentos generados automáticamente
-                </p>
-              </div>
-            </div>
-            <Button asChild variant="ghost" size="sm" className="text-cyan-600 hover:text-cyan-700">
-              <Link to="/app/settings/templates/branding">
-                <Settings2 className="w-4 h-4 mr-2" />
-                Cambiar
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Category Tabs */}
-      <TemplateCategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-        counts={categoryCounts}
-      />
-      
-      {/* Search and View controls */}
+      {/* Search and Stats */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -205,44 +213,25 @@ export default function TemplateCatalogPage() {
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            {activeCount} activas
-          </Badge>
-          
-          <div className="flex items-center border rounded-lg p-1 bg-white">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={cn(
-                'p-1.5 rounded transition-colors',
-                viewMode === 'grid' 
-                  ? 'bg-slate-100 text-slate-700' 
-                  : 'text-slate-400 hover:text-slate-600'
-              )}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={cn(
-                'p-1.5 rounded transition-colors',
-                viewMode === 'list' 
-                  ? 'bg-slate-100 text-slate-700' 
-                  : 'text-slate-400 hover:text-slate-600'
-              )}
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <Badge 
+          variant="outline" 
+          className="text-xs px-3 py-1.5"
+          style={{
+            background: 'linear-gradient(135deg, #f1f4f9, #e8ebf0)',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
+          }}
+        >
+          <span className="text-emerald-600 font-semibold">{activeCount}</span>
+          <span className="text-slate-500 ml-1">activas de {totalTypes}</span>
+        </Badge>
       </div>
       
-      {/* Templates Grid */}
+      {/* Templates Grid by Category */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
         </div>
-      ) : filteredTypes.length === 0 ? (
+      ) : !filteredTypesByCategory || Object.keys(filteredTypesByCategory).length === 0 ? (
         <div className="text-center py-20">
           <FileText className="h-12 w-12 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-500">No se encontraron plantillas</p>
@@ -257,22 +246,47 @@ export default function TemplateCatalogPage() {
           )}
         </div>
       ) : (
-        <div className={cn(
-          'grid gap-5',
-          viewMode === 'grid' 
-            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-            : 'grid-cols-1'
-        )}>
-          {filteredTypes.map((type) => (
-            <TemplateCard
-              key={type.id}
-              documentType={type}
-              defaultStyle={currentDefaultStyle}
-              isEnabled={isTypeEnabled(type.id)}
-              onToggle={(enabled) => handleToggle(type.id, enabled)}
-              onPreview={() => handlePreview(type)}
-            />
-          ))}
+        <div className="space-y-8">
+          {CATEGORY_CONFIG.map(({ key, label, emoji, icon: Icon }) => {
+            const categoryTypes = filteredTypesByCategory[key];
+            if (!categoryTypes || categoryTypes.length === 0) return null;
+            
+            return (
+              <div key={key}>
+                {/* Category Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div 
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                    style={{
+                      background: '#f1f4f9',
+                      boxShadow: 'inset 1px 1px 3px #cdd1dc, inset -1px -1px 3px #ffffff',
+                    }}
+                  >
+                    <span className="text-lg">{emoji}</span>
+                    <span className="font-semibold text-slate-700">{label}</span>
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      {categoryTypes.length}
+                    </Badge>
+                  </div>
+                  <div className="flex-1 h-px bg-slate-200" />
+                </div>
+                
+                {/* Category Grid - 3 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {categoryTypes.map((type) => (
+                    <TemplateCard
+                      key={type.id}
+                      documentType={type}
+                      defaultStyle={currentDefaultStyle}
+                      isEnabled={isTypeEnabled(type.id)}
+                      onToggle={(enabled) => handleToggle(type.id, enabled)}
+                      onPreview={() => handlePreview(type)}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       
