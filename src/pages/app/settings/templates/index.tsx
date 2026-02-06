@@ -1,17 +1,14 @@
 // ============================================================
 // TEMPLATES CATALOG PAGE - Catálogo visual de plantillas
-// 15 tipos × 18 estilos = 270 combinaciones
-// SIN enlace al generador - Este ES el catálogo directo
+// 15 tipos × 18 estilos - Grid organizado por categorías
 // ============================================================
 
 import * as React from 'react';
 import { useState, useMemo } from 'react';
 import { 
-  FileText, Search, LayoutGrid, ChevronDown, Check,
-  Loader2, Banknote, Mail, BarChart3, Scale, Award
+  Loader2, Banknote, Mail, BarChart3, Scale, Award, Eye, ChevronDown, Check
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {
@@ -19,14 +16,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
-import { 
-  TemplateCard, 
-  TemplatePreviewModal 
-} from '@/components/features/templates';
+import { DocumentThumbnail } from '@/components/features/templates/DocumentThumbnail';
+import { TemplatePreviewModal } from '@/components/features/templates/TemplatePreviewModal';
 import { useDocumentTypes, useDocumentTypesByCategory } from '@/hooks/documents/useDocumentTypes';
 import { useDocumentStyles, useDocumentStyle } from '@/hooks/documents/useDocumentStyles';
 import { 
@@ -37,23 +30,91 @@ import {
 } from '@/hooks/documents/useTemplatePreferences';
 import type { DocumentType, DocumentCategory, DesignTokens } from '@/lib/document-templates/designTokens';
 
-// Category configuration with icons and emojis
+// Category configuration
 const CATEGORY_CONFIG: { 
   key: DocumentCategory; 
   label: string; 
-  emoji: string;
   icon: React.ElementType;
+  bgColor: string;
+  iconColor: string;
 }[] = [
-  { key: 'financiero', label: 'Financiero', emoji: '💰', icon: Banknote },
-  { key: 'comunicacion', label: 'Comunicación', emoji: '📨', icon: Mail },
-  { key: 'informe', label: 'Informes', emoji: '📊', icon: BarChart3 },
-  { key: 'legal', label: 'Legal', emoji: '⚖️', icon: Scale },
-  { key: 'ip', label: 'IP', emoji: '🏆', icon: Award },
+  { key: 'financiero', label: 'Financiero', icon: Banknote, bgColor: 'bg-amber-50', iconColor: 'text-amber-600' },
+  { key: 'comunicacion', label: 'Comunicación', icon: Mail, bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
+  { key: 'informe', label: 'Informes', icon: BarChart3, bgColor: 'bg-cyan-50', iconColor: 'text-cyan-600' },
+  { key: 'legal', label: 'Legal', icon: Scale, bgColor: 'bg-violet-50', iconColor: 'text-violet-600' },
+  { key: 'ip', label: 'Propiedad Intelectual', icon: Award, bgColor: 'bg-emerald-50', iconColor: 'text-emerald-600' },
 ];
+
+// Template Card Component
+function TemplateCard({
+  docType,
+  styleName,
+  colors,
+  isEnabled,
+  onToggle,
+  onPreview,
+}: {
+  docType: DocumentType;
+  styleName?: string;
+  colors?: any;
+  isEnabled: boolean;
+  onToggle: (enabled: boolean) => void;
+  onPreview: () => void;
+}) {
+  return (
+    <div className={cn(
+      "group bg-white border rounded-xl overflow-hidden transition-all duration-200 cursor-pointer",
+      isEnabled 
+        ? "border-slate-200 hover:shadow-lg hover:border-cyan-300" 
+        : "border-dashed border-slate-300 opacity-60"
+    )}>
+      {/* MINIATURA */}
+      <div 
+        className="p-5 bg-gradient-to-b from-slate-50 to-white"
+        onClick={onPreview}
+      >
+        <DocumentThumbnail
+          typeId={docType.id}
+          styleName={styleName}
+          colors={colors}
+        />
+      </div>
+      
+      {/* INFO */}
+      <div className="px-5 pb-4">
+        <h3 className="font-semibold text-slate-800 text-sm">{docType.name}</h3>
+        <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{docType.description}</p>
+        
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+          <button 
+            onClick={onPreview}
+            className="text-xs text-cyan-600 font-medium hover:text-cyan-700 flex items-center gap-1 transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" /> Vista previa
+          </button>
+          
+          {/* Toggle ON/OFF */}
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-[10px]",
+              isEnabled ? "text-cyan-600 font-medium" : "text-slate-400"
+            )}>
+              {isEnabled ? 'ON' : 'OFF'}
+            </span>
+            <Switch 
+              checked={isEnabled} 
+              onCheckedChange={onToggle}
+              className="data-[state=checked]:bg-cyan-500"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function TemplateCatalogPage() {
   // State
-  const [searchQuery, setSearchQuery] = useState('');
   const [previewType, setPreviewType] = useState<DocumentType | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
@@ -75,28 +136,6 @@ export default function TemplateCatalogPage() {
   
   const isLoading = typesLoading || stylesLoading;
   
-  // Filter types by search
-  const filteredTypesByCategory = useMemo(() => {
-    if (!typesByCategory) return null;
-    
-    if (!searchQuery.trim()) return typesByCategory;
-    
-    const query = searchQuery.toLowerCase();
-    const filtered: Record<DocumentCategory, DocumentType[]> = {} as any;
-    
-    Object.entries(typesByCategory).forEach(([cat, typesList]) => {
-      const matching = (typesList as DocumentType[]).filter(t => 
-        t.name.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query)
-      );
-      if (matching.length > 0) {
-        filtered[cat as DocumentCategory] = matching;
-      }
-    });
-    
-    return filtered;
-  }, [typesByCategory, searchQuery]);
-  
   // Handlers
   const handlePreview = (type: DocumentType) => {
     setPreviewType(type);
@@ -114,49 +153,34 @@ export default function TemplateCatalogPage() {
   // Stats
   const totalTypes = types?.length || 0;
   const totalStyles = styles?.length || 0;
-  const totalCombinations = totalTypes * totalStyles;
   const activeCount = types?.filter(t => isTypeEnabled(t.id)).length || 0;
   
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+      </div>
+    );
+  }
+  
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <div 
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #00b4d8, #00d4aa)',
-              boxShadow: '0 4px 14px rgba(0, 180, 216, 0.25)',
-            }}
-          >
-            <FileText className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">Plantillas de Documentos</h1>
-            <p className="text-sm text-slate-500">
-              {isLoading ? 'Cargando...' : (
-                <span>
-                  <span className="font-semibold text-slate-700">{totalTypes}</span> tipos × 
-                  <span className="font-semibold text-slate-700"> {totalStyles}</span> estilos = 
-                  <span className="font-semibold text-cyan-600"> {totalCombinations}</span> combinaciones
-                </span>
-              )}
-            </p>
-          </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Plantillas de Documentos</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Selecciona las plantillas que quieres tener activas en tu organización
+          </p>
         </div>
-        
-        {/* Default Style Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="gap-2 min-w-[200px] justify-between"
-              disabled={isLoading}
-            >
-              <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-500">Estilo por defecto:</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium bg-white hover:bg-slate-50 transition-colors">
                 {currentDefaultStyle && (
                   <div 
-                    className="w-5 h-7 rounded border shadow-sm overflow-hidden shrink-0"
+                    className="w-4 h-5 rounded border shadow-sm overflow-hidden shrink-0"
                     style={{ backgroundColor: currentDefaultStyle.colors.background }}
                   >
                     <div 
@@ -165,130 +189,92 @@ export default function TemplateCatalogPage() {
                     />
                   </div>
                 )}
-                <span className="text-sm">
-                  Estilo por defecto: <span className="font-semibold">{currentDefaultStyle?.name || 'Ninguno'}</span>
-                </span>
-              </div>
-              <ChevronDown className="h-4 w-4 text-slate-400" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto">
-            <DropdownMenuLabel>Seleccionar estilo por defecto</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {styles?.map((style) => (
-              <DropdownMenuItem 
-                key={style.id}
-                onClick={() => handleStyleChange(style)}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                {/* Mini preview */}
-                <div 
-                  className="w-6 h-8 rounded border shadow-sm overflow-hidden shrink-0"
-                  style={{ backgroundColor: style.colors.background }}
+                <span>{currentDefaultStyle?.name || 'Seleccionar'}</span>
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto">
+              {styles?.map((style) => (
+                <DropdownMenuItem 
+                  key={style.id}
+                  onClick={() => handleStyleChange(style)}
+                  className="flex items-center gap-3 cursor-pointer"
                 >
                   <div 
-                    className="h-2" 
-                    style={{ backgroundColor: style.colors.headerBg }}
-                  />
-                </div>
-                <span className="flex-1">{style.name}</span>
-                {currentDefaultStyle?.id === style.id && (
-                  <Check className="h-4 w-4 text-cyan-500" />
-                )}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      
-      {/* Search and Stats */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar plantilla..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white"
-          />
-        </div>
-        
-        <Badge 
-          variant="outline" 
-          className="text-xs px-3 py-1.5"
-          style={{
-            background: 'linear-gradient(135deg, #f1f4f9, #e8ebf0)',
-            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
-          }}
-        >
-          <span className="text-emerald-600 font-semibold">{activeCount}</span>
-          <span className="text-slate-500 ml-1">activas de {totalTypes}</span>
-        </Badge>
-      </div>
-      
-      {/* Templates Grid by Category */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-        </div>
-      ) : !filteredTypesByCategory || Object.keys(filteredTypesByCategory).length === 0 ? (
-        <div className="text-center py-20">
-          <FileText className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No se encontraron plantillas</p>
-          {searchQuery && (
-            <Button 
-              variant="link" 
-              onClick={() => setSearchQuery('')}
-              className="mt-2"
-            >
-              Limpiar búsqueda
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {CATEGORY_CONFIG.map(({ key, label, emoji, icon: Icon }) => {
-            const categoryTypes = filteredTypesByCategory[key];
-            if (!categoryTypes || categoryTypes.length === 0) return null;
-            
-            return (
-              <div key={key}>
-                {/* Category Header */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div 
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                    style={{
-                      background: '#f1f4f9',
-                      boxShadow: 'inset 1px 1px 3px #cdd1dc, inset -1px -1px 3px #ffffff',
-                    }}
+                    className="w-5 h-6 rounded border shadow-sm overflow-hidden shrink-0"
+                    style={{ backgroundColor: style.colors.background }}
                   >
-                    <span className="text-lg">{emoji}</span>
-                    <span className="font-semibold text-slate-700">{label}</span>
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {categoryTypes.length}
-                    </Badge>
-                  </div>
-                  <div className="flex-1 h-px bg-slate-200" />
-                </div>
-                
-                {/* Category Grid - 3 columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {categoryTypes.map((type) => (
-                    <TemplateCard
-                      key={type.id}
-                      documentType={type}
-                      defaultStyle={currentDefaultStyle}
-                      isEnabled={isTypeEnabled(type.id)}
-                      onToggle={(enabled) => handleToggle(type.id, enabled)}
-                      onPreview={() => handlePreview(type)}
+                    <div 
+                      className="h-1.5" 
+                      style={{ backgroundColor: style.colors.headerBg }}
                     />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                  </div>
+                  <span className="flex-1 text-sm">{style.name}</span>
+                  {currentDefaultStyle?.id === style.id && (
+                    <Check className="h-4 w-4 text-cyan-500" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
+      </div>
+      
+      {/* STATS BAR */}
+      <div className="flex items-center gap-6 mb-8 p-4 bg-slate-50 rounded-xl">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-cyan-600">{totalTypes}</span>
+          <span className="text-xs text-slate-500 leading-tight">tipos de<br/>documento</span>
+        </div>
+        <div className="w-px h-8 bg-slate-200" />
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-cyan-600">{totalStyles}</span>
+          <span className="text-xs text-slate-500 leading-tight">estilos<br/>visuales</span>
+        </div>
+        <div className="w-px h-8 bg-slate-200" />
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-cyan-600">{activeCount}</span>
+          <span className="text-xs text-slate-500">activas de {totalTypes}</span>
+        </div>
+      </div>
+      
+      {/* CATEGORIES + GRIDS */}
+      <div className="space-y-10">
+        {CATEGORY_CONFIG.map(({ key, label, icon: Icon, bgColor, iconColor }) => {
+          const categoryTypes = typesByCategory?.[key];
+          if (!categoryTypes || categoryTypes.length === 0) return null;
+          
+          return (
+            <div key={key} className="mb-10">
+              {/* Category Header */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", bgColor)}>
+                  <Icon className={cn("w-4 h-4", iconColor)} />
+                </div>
+                <h2 className="font-semibold text-lg text-slate-800">{label}</h2>
+                <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">
+                  {categoryTypes.length} plantillas
+                </span>
+              </div>
+              
+              {/* Grid - 4 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {categoryTypes.map((docType) => (
+                  <TemplateCard
+                    key={docType.id}
+                    docType={docType}
+                    styleName={currentDefaultStyle?.name}
+                    colors={currentDefaultStyle?.colors}
+                    isEnabled={isTypeEnabled(docType.id)}
+                    onToggle={(enabled) => handleToggle(docType.id, enabled)}
+                    onPreview={() => handlePreview(docType)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
       
       {/* Preview Modal */}
       <TemplatePreviewModal
