@@ -1,6 +1,6 @@
 // ============================================================
-// DOCUMENT THUMBNAIL - Miniaturas pixel-perfect por tipo
-// Cada tipo tiene su propia estructura visual reconocible
+// DOCUMENT THUMBNAIL - SVG Mini-documentos reconocibles
+// Cada tipo tiene un SVG único que representa su estructura
 // ============================================================
 
 import * as React from 'react';
@@ -36,502 +36,552 @@ interface DocumentThumbnailProps {
   className?: string;
 }
 
-// Get accent color from style name or colors
 function getAccentColor(styleName?: string, colors?: DesignColors | null): string {
   if (colors?.headerBg) return colors.headerBg;
   if (styleName && STYLE_ACCENT_MAP[styleName]) return STYLE_ACCENT_MAP[styleName];
-  return '#0ea5e9'; // default cyan
+  return '#0ea5e9';
 }
 
 // ============================================================
-// FACTURA / PRESUPUESTO / NOTA CRÉDITO / RECIBO
+// FACTURA SVG - Tabla con header y TOTAL
 // ============================================================
-function FinancialThumbnail({ accent, label }: { accent: string; label: string }) {
+function InvoiceSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="w-12 h-1.5 bg-slate-800 rounded-full mb-1" />
-          <div className="w-8 h-1 bg-slate-300 rounded-full" />
-        </div>
-        <div className="text-right">
-          <div className="text-[6px] font-bold text-slate-700 uppercase tracking-wider">{label}</div>
-          <div className="w-10 h-1 bg-slate-200 rounded-full mt-0.5 ml-auto" />
-        </div>
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      {/* Paper background */}
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
+      {/* Logo area */}
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
+      <rect x="10" y="18" width="14" height="2" rx="0.5" fill="#cbd5e1"/>
+      
+      {/* FACTURA label */}
+      <text x="90" y="16" textAnchor="end" fontSize="5" fontWeight="bold" fill="#475569">FACTURA</text>
+      <rect x="70" y="18" width="20" height="2" rx="0.5" fill="#e2e8f0"/>
       
       {/* Separator */}
-      <div className="h-px bg-slate-100 mb-2" />
+      <line x1="10" y1="26" x2="90" y2="26" stroke="#e2e8f0" strokeWidth="0.5"/>
       
-      {/* Meta: 2 columnas */}
-      <div className="flex justify-between mb-3">
-        <div>
-          <div className="w-6 h-0.5 bg-slate-300 rounded-full mb-1" />
-          <div className="w-14 h-1 bg-slate-700 rounded-full mb-0.5" />
-          <div className="w-10 h-0.5 bg-slate-200 rounded-full" />
-        </div>
-        <div className="text-right">
-          <div className="w-6 h-0.5 bg-slate-300 rounded-full mb-1 ml-auto" />
-          <div className="w-10 h-1 bg-slate-700 rounded-full mb-0.5" />
-        </div>
-      </div>
+      {/* Client info */}
+      <rect x="10" y="30" width="8" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="10" y="34" width="25" height="3" rx="0.5" fill="#334155"/>
+      <rect x="10" y="39" width="18" height="2" rx="0.5" fill="#e2e8f0"/>
       
-      {/* TABLA */}
-      <div className="flex-1">
-        {/* Header de tabla */}
-        <div className="flex gap-1 mb-1">
-          <div className="flex-1 h-2 rounded-sm" style={{ backgroundColor: accent }} />
-          <div className="w-6 h-2 rounded-sm" style={{ backgroundColor: accent }} />
-          <div className="w-6 h-2 rounded-sm" style={{ backgroundColor: accent }} />
-        </div>
-        {/* Filas */}
-        {[1, 2, 3, 4].map((_, i) => (
-          <div key={i} className="flex gap-1 mb-0.5">
-            <div className="flex-1 h-1.5 bg-slate-100 rounded-sm" />
-            <div className="w-6 h-1.5 bg-slate-100 rounded-sm" />
-            <div className="w-6 h-1.5 bg-slate-100 rounded-sm" />
-          </div>
-        ))}
-      </div>
+      {/* Date info */}
+      <rect x="70" y="30" width="10" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="65" y="34" width="25" height="3" rx="0.5" fill="#334155"/>
       
-      {/* TOTAL */}
-      <div className="mt-auto">
-        <div className="flex justify-end">
-          <div className="w-20">
-            <div className="flex justify-between mb-0.5">
-              <div className="w-6 h-0.5 bg-slate-300 rounded-full" />
-              <div className="w-6 h-0.5 bg-slate-300 rounded-full" />
-            </div>
-            <div 
-              className="flex justify-between items-center rounded-sm px-1 py-0.5"
-              style={{ backgroundColor: accent }}
-            >
-              <div className="w-5 h-1 bg-white/60 rounded-full" />
-              <div className="w-6 h-1 bg-white/80 rounded-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* TABLE - This is what makes it recognizable as invoice */}
+      {/* Header row */}
+      <rect x="10" y="50" width="50" height="6" rx="1" fill={accent}/>
+      <rect x="62" y="50" width="12" height="6" rx="1" fill={accent}/>
+      <rect x="76" y="50" width="14" height="6" rx="1" fill={accent}/>
+      
+      {/* Table rows */}
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i}>
+          <rect x="10" y={58 + i * 7} width="50" height="5" rx="0.5" fill="#f1f5f9"/>
+          <rect x="62" y={58 + i * 7} width="12" height="5" rx="0.5" fill="#f1f5f9"/>
+          <rect x="76" y={58 + i * 7} width="14" height="5" rx="0.5" fill="#f1f5f9"/>
+        </g>
+      ))}
+      
+      {/* Subtotals */}
+      <rect x="55" y="90" width="18" height="2" rx="0.5" fill="#cbd5e1"/>
+      <rect x="76" y="90" width="14" height="2" rx="0.5" fill="#cbd5e1"/>
+      <rect x="55" y="95" width="18" height="2" rx="0.5" fill="#cbd5e1"/>
+      <rect x="76" y="95" width="14" height="2" rx="0.5" fill="#cbd5e1"/>
+      
+      {/* TOTAL - The key visual element */}
+      <rect x="55" y="100" width="35" height="8" rx="1" fill={accent}/>
+      <rect x="58" y="103" width="12" height="3" rx="0.5" fill="white" fillOpacity="0.6"/>
+      <rect x="75" y="103" width="12" height="3" rx="0.5" fill="white" fillOpacity="0.9"/>
+    </svg>
   );
 }
 
 // ============================================================
-// CARTA OFICIAL
+// PRESUPUESTO SVG - Similar a factura pero con badge "QUOTE"
 // ============================================================
-function LetterThumbnail({ accent }: { accent: string }) {
+function QuoteSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header simple */}
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="w-12 h-1.5 bg-slate-800 rounded-full mb-1" />
-          <div className="w-8 h-0.5 bg-slate-300 rounded-full" />
-        </div>
-        <div className="w-8 h-8 rounded opacity-20" style={{ backgroundColor: accent }} />
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      <div className="h-px bg-slate-100 mb-3" />
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
+      <rect x="10" y="18" width="14" height="2" rx="0.5" fill="#cbd5e1"/>
       
-      {/* Destinatario */}
-      <div className="mb-3">
-        <div className="w-6 h-0.5 bg-slate-300 rounded-full mb-1" />
-        <div className="w-16 h-1 bg-slate-700 rounded-full mb-0.5" />
-        <div className="w-12 h-0.5 bg-slate-200 rounded-full" />
-      </div>
+      <text x="90" y="16" textAnchor="end" fontSize="4.5" fontWeight="bold" fill="#475569">PRESUPUESTO</text>
+      <rect x="65" y="18" width="25" height="2" rx="0.5" fill="#e2e8f0"/>
       
-      {/* Asunto */}
-      <div className="mb-3 pb-1 border-b-2" style={{ borderColor: accent }}>
-        <div className="w-20 h-1 bg-slate-600 rounded-full" />
-      </div>
+      <line x1="10" y1="26" x2="90" y2="26" stroke="#e2e8f0" strokeWidth="0.5"/>
       
-      {/* Párrafos de texto */}
-      <div className="flex-1 space-y-2">
-        <div className="space-y-0.5">
-          <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-11/12 h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-9/12 h-0.5 bg-slate-200 rounded-full" />
-        </div>
-        <div className="space-y-0.5">
-          <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-10/12 h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-8/12 h-0.5 bg-slate-200 rounded-full" />
-        </div>
-        <div className="space-y-0.5">
-          <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-7/12 h-0.5 bg-slate-200 rounded-full" />
-        </div>
-      </div>
+      <rect x="10" y="30" width="8" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="10" y="34" width="25" height="3" rx="0.5" fill="#334155"/>
       
-      {/* Firma */}
-      <div className="mt-auto pt-2">
-        <div className="w-14 h-px bg-slate-800 mb-1" />
-        <div className="w-12 h-1 bg-slate-600 rounded-full mb-0.5" />
-        <div className="w-8 h-0.5 bg-slate-300 rounded-full" />
-      </div>
-    </div>
+      {/* Validity badge */}
+      <rect x="65" y="32" width="25" height="8" rx="2" fill={accent} fillOpacity="0.1" stroke={accent} strokeWidth="0.5"/>
+      <text x="77.5" y="37.5" textAnchor="middle" fontSize="3.5" fill={accent} fontWeight="bold">Válido 30 días</text>
+      
+      {/* Table */}
+      <rect x="10" y="48" width="50" height="6" rx="1" fill={accent}/>
+      <rect x="62" y="48" width="12" height="6" rx="1" fill={accent}/>
+      <rect x="76" y="48" width="14" height="6" rx="1" fill={accent}/>
+      
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i}>
+          <rect x="10" y={56 + i * 7} width="50" height="5" rx="0.5" fill="#f1f5f9"/>
+          <rect x="62" y={56 + i * 7} width="12" height="5" rx="0.5" fill="#f1f5f9"/>
+          <rect x="76" y={56 + i * 7} width="14" height="5" rx="0.5" fill="#f1f5f9"/>
+        </g>
+      ))}
+      
+      <rect x="55" y="88" width="35" height="8" rx="1" fill={accent}/>
+      <rect x="58" y="91" width="12" height="3" rx="0.5" fill="white" fillOpacity="0.6"/>
+      <rect x="75" y="91" width="12" height="3" rx="0.5" fill="white" fillOpacity="0.9"/>
+      
+      {/* Conditions */}
+      <rect x="10" y="100" width="40" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="104" width="35" height="2" rx="0.5" fill="#e2e8f0"/>
+    </svg>
   );
 }
 
 // ============================================================
-// CEASE & DESIST
+// NOTA DE CRÉDITO SVG - Tabla con saldo negativo
 // ============================================================
-function CeaseDesistThumbnail() {
+function CreditNoteSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header con acento rojo */}
-      <div className="flex justify-between items-start mb-2">
-        <div>
-          <div className="w-12 h-1.5 bg-slate-800 rounded-full mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-300 rounded-full" />
-        </div>
-        <div className="text-[5px] font-bold text-red-600 uppercase">C&D</div>
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      <div className="h-px bg-slate-100 mb-2" />
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
       
-      {/* Asunto en rojo */}
-      <div className="mb-2 pb-1 border-b-2 border-red-500">
-        <div className="w-16 h-1 bg-slate-600 rounded-full" />
-      </div>
+      <text x="90" y="16" textAnchor="end" fontSize="4" fontWeight="bold" fill="#dc2626">NOTA CRÉDITO</text>
       
-      {/* Párrafo intro */}
-      <div className="space-y-0.5 mb-2">
-        <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-        <div className="w-10/12 h-0.5 bg-slate-200 rounded-full" />
-      </div>
+      <line x1="10" y1="24" x2="90" y2="24" stroke="#e2e8f0" strokeWidth="0.5"/>
       
-      {/* Cláusulas con borde izquierdo rojo */}
-      <div className="flex-1 space-y-1">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="border-l-2 border-red-400 pl-1 bg-red-50/50 rounded-r-sm py-0.5">
-            <div className="w-8 h-0.5 bg-red-300 rounded-full mb-0.5" />
-            <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-          </div>
-        ))}
-      </div>
+      {/* Reference to original invoice */}
+      <rect x="10" y="28" width="30" height="8" rx="1" fill="#fef2f2" stroke="#fecaca" strokeWidth="0.5"/>
+      <text x="25" y="33.5" textAnchor="middle" fontSize="3" fill="#dc2626">Ref: FAC-2024-001</text>
       
-      {/* Firma */}
-      <div className="mt-auto pt-2">
-        <div className="w-10 h-px bg-slate-800 mb-0.5" />
-        <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-      </div>
-    </div>
+      <rect x="10" y="40" width="25" height="3" rx="0.5" fill="#334155"/>
+      <rect x="10" y="45" width="18" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      {/* Table with negative amounts */}
+      <rect x="10" y="54" width="50" height="6" rx="1" fill={accent}/>
+      <rect x="62" y="54" width="28" height="6" rx="1" fill={accent}/>
+      
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="10" y={62 + i * 7} width="50" height="5" rx="0.5" fill="#f1f5f9"/>
+          <rect x="62" y={62 + i * 7} width="28" height="5" rx="0.5" fill="#fef2f2"/>
+        </g>
+      ))}
+      
+      {/* TOTAL in red/negative */}
+      <rect x="55" y="90" width="35" height="8" rx="1" fill="#dc2626"/>
+      <text x="72.5" y="95.5" textAnchor="middle" fontSize="4" fill="white" fontWeight="bold">-€1,250.00</text>
+    </svg>
   );
 }
 
 // ============================================================
-// ACTA DE REUNIÓN
+// RECIBO SVG - Simple, con "PAGADO"
 // ============================================================
-function MeetingMinutesThumbnail({ accent }: { accent: string }) {
+function ReceiptSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
+      
+      <text x="90" y="16" textAnchor="end" fontSize="5" fontWeight="bold" fill="#475569">RECIBO</text>
+      
+      <line x1="10" y1="24" x2="90" y2="24" stroke="#e2e8f0" strokeWidth="0.5"/>
+      
+      {/* Receipt number */}
+      <text x="50" y="34" textAnchor="middle" fontSize="4" fill="#64748b">Nº 2024-0125</text>
+      
+      {/* Amount big */}
+      <rect x="20" y="42" width="60" height="16" rx="2" fill={accent} fillOpacity="0.1" stroke={accent} strokeWidth="0.5"/>
+      <text x="50" y="53" textAnchor="middle" fontSize="8" fill={accent} fontWeight="bold">€2,450.00</text>
+      
+      {/* Details */}
+      <rect x="10" y="66" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="25" y="66" width="40" height="2" rx="0.5" fill="#334155"/>
+      
+      <rect x="10" y="72" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="25" y="72" width="30" height="2" rx="0.5" fill="#334155"/>
+      
+      <rect x="10" y="78" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="25" y="78" width="35" height="2" rx="0.5" fill="#334155"/>
+      
+      {/* PAGADO stamp */}
+      <g transform="translate(50, 100) rotate(-15)">
+        <rect x="-18" y="-8" width="36" height="16" rx="2" fill="none" stroke="#22c55e" strokeWidth="1.5"/>
+        <text x="0" y="3" textAnchor="middle" fontSize="7" fill="#22c55e" fontWeight="bold">PAGADO</text>
+      </g>
+    </svg>
+  );
+}
+
+// ============================================================
+// CARTA OFICIAL SVG - Párrafos + firma
+// ============================================================
+function LetterSVG({ accent }: { accent: string }) {
+  return (
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
+      {/* Header with logo */}
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
+      <rect x="10" y="18" width="14" height="2" rx="0.5" fill="#cbd5e1"/>
+      <rect x="75" y="10" width="15" height="10" rx="1" fill={accent} fillOpacity="0.15"/>
+      
+      <line x1="10" y1="26" x2="90" y2="26" stroke="#e2e8f0" strokeWidth="0.5"/>
+      
+      {/* Recipient */}
+      <rect x="10" y="30" width="8" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="10" y="34" width="30" height="3" rx="0.5" fill="#334155"/>
+      <rect x="10" y="39" width="22" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="43" width="18" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      {/* Subject line with accent */}
+      <rect x="10" y="52" width="45" height="3" rx="0.5" fill="#334155"/>
+      <rect x="10" y="56" width="80" height="1" fill={accent}/>
+      
+      {/* Paragraphs */}
+      <rect x="10" y="62" width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="66" width="75" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="70" width="60" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      <rect x="10" y="78" width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="82" width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="86" width="55" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      {/* Signature */}
+      <rect x="10" y="98" width="25" height="1" fill="#334155"/>
+      <rect x="10" y="102" width="20" height="2" rx="0.5" fill="#475569"/>
+      <rect x="10" y="106" width="15" height="2" rx="0.5" fill="#94a3b8"/>
+    </svg>
+  );
+}
+
+// ============================================================
+// CEASE & DESIST SVG - Legal urgency, red accents
+// ============================================================
+function CeaseDesistSVG() {
+  return (
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
+      
+      {/* C&D label in red */}
+      <rect x="70" y="8" width="20" height="10" rx="1" fill="#dc2626"/>
+      <text x="80" y="15" textAnchor="middle" fontSize="5" fill="white" fontWeight="bold">C&D</text>
+      
+      <line x1="10" y1="24" x2="90" y2="24" stroke="#dc2626" strokeWidth="1"/>
+      
+      {/* Subject in red */}
+      <rect x="10" y="30" width="50" height="3" rx="0.5" fill="#334155"/>
+      <rect x="10" y="35" width="80" height="1" fill="#dc2626"/>
+      
+      {/* Intro paragraph */}
+      <rect x="10" y="42" width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="46" width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      {/* Demands with red left border */}
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="10" y={55 + i * 12} width="2" height="10" fill="#dc2626"/>
+          <rect x="15" y={55 + i * 12} width="25" height="2" rx="0.5" fill="#fca5a5"/>
+          <rect x="15" y={59 + i * 12} width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+          <rect x="15" y={63 + i * 12} width="60" height="2" rx="0.5" fill="#e2e8f0"/>
+        </g>
+      ))}
+      
+      {/* Deadline warning */}
+      <rect x="10" y="95" width="80" height="10" rx="1" fill="#fef2f2" stroke="#fecaca" strokeWidth="0.5"/>
+      <text x="50" y="102" textAnchor="middle" fontSize="4" fill="#dc2626" fontWeight="bold">⚠ Responder en 10 días</text>
+      
+      {/* Signature */}
+      <rect x="10" y="110" width="20" height="1" fill="#334155"/>
+      <rect x="10" y="113" width="16" height="2" rx="0.5" fill="#475569"/>
+    </svg>
+  );
+}
+
+// ============================================================
+// ACTA DE REUNIÓN SVG - 2 columnas + puntos numerados
+// ============================================================
+function MeetingMinutesSVG({ accent }: { accent: string }) {
+  return (
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
+      {/* Header bar */}
+      <rect x="5" y="5" width="90" height="14" rx="2" fill={accent}/>
+      <text x="50" y="14" textAnchor="middle" fontSize="5" fill="white" fontWeight="bold">ACTA DE REUNIÓN</text>
+      
+      {/* Date/Time */}
+      <rect x="10" y="24" width="35" height="6" rx="1" fill="#f1f5f9"/>
+      <text x="27.5" y="28.5" textAnchor="middle" fontSize="3.5" fill="#64748b">15 Enero 2026, 10:00</text>
+      
+      {/* Two columns - Attendees */}
+      <rect x="10" y="34" width="38" height="18" rx="1" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.5"/>
+      <text x="12" y="40" fontSize="3" fill="#94a3b8">ASISTENTES</text>
+      <rect x="12" y="43" width="20" height="2" rx="0.5" fill="#475569"/>
+      <rect x="12" y="47" width="18" height="2" rx="0.5" fill="#475569"/>
+      
+      <rect x="52" y="34" width="38" height="18" rx="1" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.5"/>
+      <text x="54" y="40" fontSize="3" fill="#94a3b8">AUSENTES</text>
+      <rect x="54" y="43" width="16" height="2" rx="0.5" fill="#94a3b8"/>
+      
+      {/* Numbered sections */}
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <circle cx="14" cy={60 + i * 16} r="3" fill={accent}/>
+          <text x="14" y={61.5 + i * 16} textAnchor="middle" fontSize="4" fill="white" fontWeight="bold">{i + 1}</text>
+          <rect x="20" y={57 + i * 16} width="40" height="3" rx="0.5" fill="#334155"/>
+          <rect x="20" y={62 + i * 16} width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+          <rect x="20" y={66 + i * 16} width="55" height="2" rx="0.5" fill="#e2e8f0"/>
+        </g>
+      ))}
+      
+      {/* Signature */}
+      <rect x="10" y="110" width="25" height="1" fill="#334155"/>
+      <rect x="10" y="113" width="18" height="2" rx="0.5" fill="#475569"/>
+    </svg>
+  );
+}
+
+// ============================================================
+// INFORME SVG - KPIs + tabla
+// ============================================================
+function ReportSVG({ accent }: { accent: string }) {
+  return (
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
+      
       {/* Header */}
-      <div className="rounded-sm p-1.5 mb-2" style={{ backgroundColor: accent }}>
-        <div className="w-10 h-1 bg-white/80 rounded-full mb-0.5" />
-        <div className="w-6 h-0.5 bg-white/50 rounded-full" />
-      </div>
+      <rect x="5" y="5" width="90" height="14" rx="2" fill={accent}/>
+      <text x="50" y="14" textAnchor="middle" fontSize="5" fill="white" fontWeight="bold">INFORME</text>
       
-      {/* 2 columnas asistentes */}
-      <div className="flex gap-1 mb-2">
-        <div className="flex-1 bg-slate-50 rounded-sm p-1">
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-500 rounded-full mb-0.5" />
-          <div className="w-7 h-0.5 bg-slate-500 rounded-full" />
-        </div>
-        <div className="flex-1 bg-slate-50 rounded-sm p-1">
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-500 rounded-full mb-0.5" />
-          <div className="w-7 h-0.5 bg-slate-500 rounded-full" />
-        </div>
-      </div>
+      {/* 4 KPI boxes - key visual */}
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i}>
+          <rect x={10 + i * 21} y="24" width="18" height="16" rx="1" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.5"/>
+          <rect x={10 + i * 21} y="24" width="2" height="16" fill={accent}/>
+          <text x={19 + i * 21} y="33" textAnchor="middle" fontSize="6" fill="#334155" fontWeight="bold">{[42, 18, 95, 12][i]}</text>
+          <rect x={13 + i * 21} y="36" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+        </g>
+      ))}
       
-      {/* Secciones numeradas */}
-      <div className="flex-1 space-y-1.5">
-        {['1.', '2.', '3.'].map((n, i) => (
-          <div key={i}>
-            <div className="flex items-center gap-1 mb-0.5">
-              <div className="w-6 h-1 rounded-full" style={{ backgroundColor: accent }} />
-            </div>
-            <div className="pl-1 space-y-0.5">
-              <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-              <div className="w-8/12 h-0.5 bg-slate-200 rounded-full" />
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Section title */}
+      <rect x="10" y="46" width="30" height="3" rx="0.5" fill={accent}/>
+      <rect x="10" y="51" width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="55" width="65" height="2" rx="0.5" fill="#e2e8f0"/>
       
-      {/* Firma */}
-      <div className="mt-auto pt-1">
-        <div className="w-10 h-px bg-slate-800 mb-0.5" />
-        <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-      </div>
-    </div>
+      {/* Data table */}
+      <rect x="10" y="64" width="50" height="5" rx="0.5" fill={accent}/>
+      <rect x="62" y="64" width="14" height="5" rx="0.5" fill={accent}/>
+      <rect x="78" y="64" width="12" height="5" rx="0.5" fill={accent}/>
+      
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i}>
+          <rect x="10" y={71 + i * 6} width="50" height="4" rx="0.5" fill="#f8fafc"/>
+          <rect x="62" y={71 + i * 6} width="14" height="4" rx="0.5" fill="#f8fafc"/>
+          <rect x="78" y={71 + i * 6} width="12" height="4" rx="0.5" fill="#f8fafc"/>
+        </g>
+      ))}
+      
+      {/* Chart placeholder */}
+      <rect x="10" y="100" width="80" height="18" rx="1" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.5"/>
+      <polyline points="15,115 30,108 45,112 60,105 75,110 85,103" fill="none" stroke={accent} strokeWidth="1.5"/>
+    </svg>
   );
 }
 
 // ============================================================
-// INFORME / VIGILANCIA
+// CONTRATO SVG - Cláusulas numeradas + doble firma
 // ============================================================
-function ReportThumbnail({ accent }: { accent: string }) {
+function ContractSVG({ accent, label = "CONTRATO" }: { accent: string; label?: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header */}
-      <div className="rounded-sm p-1.5 mb-2" style={{ backgroundColor: accent }}>
-        <div className="w-10 h-1 bg-white/80 rounded-full mb-0.5" />
-        <div className="w-6 h-0.5 bg-white/50 rounded-full" />
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      {/* KPI grid */}
-      <div className="grid grid-cols-4 gap-1 mb-2">
-        {[1, 2, 3, 4].map(i => (
-          <div 
-            key={i} 
-            className="bg-slate-50 rounded-sm p-1 text-center border-l-2"
-            style={{ borderColor: accent }}
-          >
-            <div className="w-3 h-1.5 bg-slate-700 rounded-full mx-auto mb-0.5" />
-            <div className="w-5 h-0.5 bg-slate-300 rounded-full mx-auto" />
-          </div>
-        ))}
-      </div>
+      {/* Centered header */}
+      <text x="50" y="18" textAnchor="middle" fontSize="6" fill="#1e293b" fontWeight="bold">{label}</text>
+      <rect x="35" y="22" width="30" height="1" fill={accent}/>
       
-      {/* Sección */}
-      <div className="mb-2">
-        <div 
-          className="w-10 h-1 rounded-full mb-1"
-          style={{ backgroundColor: accent }}
-        />
-        <div className="space-y-0.5">
-          <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-          <div className="w-9/12 h-0.5 bg-slate-200 rounded-full" />
-        </div>
-      </div>
+      {/* Parties */}
+      <rect x="10" y="30" width="8" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="20" y="30" width="25" height="2" rx="0.5" fill="#334155"/>
+      <rect x="55" y="30" width="8" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="65" y="30" width="25" height="2" rx="0.5" fill="#334155"/>
       
-      {/* Mini tabla */}
-      <div className="flex-1">
-        <div className="flex gap-0.5 mb-0.5">
-          <div className="flex-1 h-1.5 rounded-sm" style={{ backgroundColor: accent }} />
-          <div className="w-4 h-1.5 rounded-sm" style={{ backgroundColor: accent }} />
-          <div className="w-4 h-1.5 rounded-sm" style={{ backgroundColor: accent }} />
-        </div>
-        {[1, 2, 3].map(i => (
-          <div key={i} className="flex gap-0.5 mb-0.5">
-            <div className="flex-1 h-1 bg-slate-100 rounded-sm" />
-            <div className="w-4 h-1 bg-slate-100 rounded-sm" />
-            <div className="w-4 h-1 bg-slate-100 rounded-sm" />
-          </div>
-        ))}
-      </div>
-    </div>
+      <line x1="10" y1="38" x2="90" y2="38" stroke="#e2e8f0" strokeWidth="0.5"/>
+      
+      {/* Numbered clauses - key visual */}
+      {['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA'].map((_, i) => (
+        <g key={i}>
+          <rect x="10" y={42 + i * 14} width="18" height="3" rx="0.5" fill={accent}/>
+          <rect x="10" y={47 + i * 14} width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+          <rect x="10" y={51 + i * 14} width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+        </g>
+      ))}
+      
+      {/* Double signature - key visual */}
+      <g>
+        <rect x="10" y="102" width="30" height="1" fill="#334155"/>
+        <rect x="10" y="106" width="25" height="2" rx="0.5" fill="#475569"/>
+        <text x="25" y="115" textAnchor="middle" fontSize="3" fill="#94a3b8">PARTE A</text>
+      </g>
+      <g>
+        <rect x="60" y="102" width="30" height="1" fill="#334155"/>
+        <rect x="60" y="106" width="25" height="2" rx="0.5" fill="#475569"/>
+        <text x="75" y="115" textAnchor="middle" fontSize="3" fill="#94a3b8">PARTE B</text>
+      </g>
+    </svg>
   );
 }
 
 // ============================================================
-// CONTRATO / NDA / LICENCIA
+// PODER NOTARIAL SVG - Formal, oficinas, sellos
 // ============================================================
-function ContractThumbnail({ accent, label }: { accent: string; label: string }) {
+function PowerOfAttorneySVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header */}
-      <div className="text-center mb-3">
-        <div className="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-1" />
-        <div className="text-[6px] font-bold text-slate-700 uppercase tracking-wider">{label}</div>
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      <div className="h-px bg-slate-100 mb-2" />
+      {/* Formal centered header */}
+      <text x="50" y="16" textAnchor="middle" fontSize="6" fill="#1e293b" fontWeight="bold">PODER</text>
+      <text x="50" y="22" textAnchor="middle" fontSize="3" fill="#64748b">DE REPRESENTACIÓN</text>
+      <rect x="30" y="25" width="40" height="1" fill={accent}/>
       
-      {/* Meta 2 cols */}
-      <div className="flex justify-between mb-3">
-        <div>
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5" />
-          <div className="w-12 h-1 bg-slate-700 rounded-full" />
-        </div>
-        <div className="text-right">
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5 ml-auto" />
-          <div className="w-12 h-1 bg-slate-700 rounded-full" />
-        </div>
-      </div>
+      {/* Principal & Agent */}
+      <rect x="10" y="32" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="10" y="36" width="30" height="3" rx="0.5" fill="#334155"/>
+      <rect x="55" y="32" width="12" height="2" rx="0.5" fill="#94a3b8"/>
+      <rect x="55" y="36" width="30" height="3" rx="0.5" fill="#334155"/>
       
-      {/* Cláusulas */}
-      <div className="flex-1 space-y-2">
-        {['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA'].map((_, i) => (
-          <div key={i}>
-            <div className="w-10 h-1 rounded-full mb-0.5" style={{ backgroundColor: accent }} />
-            <div className="space-y-0.5 pl-1">
-              <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-              <div className="w-10/12 h-0.5 bg-slate-200 rounded-full" />
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Office flags - 3 jurisdictions */}
+      <rect x="25" y="46" width="50" height="14" rx="1" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.5"/>
+      <text x="50" y="52" textAnchor="middle" fontSize="3" fill="#94a3b8">OFICINAS AUTORIZADAS</text>
+      <text x="35" y="58" fontSize="8">🇪🇸</text>
+      <text x="48" y="58" fontSize="8">🇪🇺</text>
+      <text x="61" y="58" fontSize="8">🌐</text>
       
-      {/* Doble firma */}
-      <div className="mt-auto pt-2 flex gap-4">
-        <div>
-          <div className="w-10 h-px bg-slate-800 mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-        </div>
-        <div>
-          <div className="w-10 h-px bg-slate-800 mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-        </div>
-      </div>
-    </div>
+      {/* Text paragraphs */}
+      <rect x="10" y="66" width="80" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="70" width="75" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="74" width="65" height="2" rx="0.5" fill="#e2e8f0"/>
+      <rect x="10" y="78" width="70" height="2" rx="0.5" fill="#e2e8f0"/>
+      
+      {/* Double signature */}
+      <rect x="10" y="90" width="30" height="1" fill="#334155"/>
+      <rect x="10" y="93" width="22" height="2" rx="0.5" fill="#475569"/>
+      <rect x="60" y="90" width="30" height="1" fill="#334155"/>
+      <rect x="60" y="93" width="22" height="2" rx="0.5" fill="#475569"/>
+      
+      {/* Notary seal */}
+      <circle cx="50" cy="112" r="8" fill="none" stroke={accent} strokeWidth="1"/>
+      <circle cx="50" cy="112" r="5" fill="none" stroke={accent} strokeWidth="0.5"/>
+      <text x="50" y="114" textAnchor="middle" fontSize="3" fill={accent} fontWeight="bold">NOTARIO</text>
+    </svg>
   );
 }
 
 // ============================================================
-// PODER NOTARIAL
+// CERTIFICADO SVG - Centered, formal, seals
 // ============================================================
-function PowerOfAttorneyThumbnail() {
+function CertificateSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header centrado */}
-      <div className="text-center mb-2">
-        <div className="w-10 h-1.5 bg-slate-800 rounded-full mx-auto mb-1" />
-        <div className="text-[6px] font-bold text-slate-700 uppercase">PODER</div>
-        <div className="text-[4px] text-slate-400 uppercase">Representación</div>
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      <div className="h-px bg-slate-100 mb-2" />
+      {/* Decorative border */}
+      <rect x="8" y="8" width="84" height="114" rx="1" fill="none" stroke={accent} strokeWidth="0.5" strokeDasharray="2,1"/>
       
-      {/* Meta */}
-      <div className="flex justify-between mb-2">
-        <div>
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5" />
-          <div className="w-12 h-1 bg-slate-700 rounded-full" />
-        </div>
-        <div className="text-right">
-          <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5 ml-auto" />
-          <div className="w-12 h-1 bg-slate-700 rounded-full" />
-        </div>
-      </div>
+      {/* Central logo */}
+      <circle cx="50" cy="28" r="10" fill="none" stroke={accent} strokeWidth="1.5"/>
+      <circle cx="50" cy="28" r="6" fill={accent} fillOpacity="0.1"/>
+      <text x="50" y="31" textAnchor="middle" fontSize="6" fill={accent} fontWeight="bold">✓</text>
       
-      {/* Oficinas — 3 flags */}
-      <div className="flex gap-1 justify-center mb-2">
-        {['🇪🇺', '🇪🇸', '🌐'].map((f, i) => (
-          <div key={i} className="w-6 h-5 bg-slate-50 rounded-sm flex items-center justify-center text-[6px]">
-            {f}
-          </div>
-        ))}
-      </div>
+      {/* Title */}
+      <text x="50" y="50" textAnchor="middle" fontSize="7" fill="#1e293b" fontWeight="bold">CERTIFICADO</text>
+      <rect x="25" y="54" width="50" height="1" fill={accent}/>
       
-      {/* Texto */}
-      <div className="flex-1 space-y-0.5">
-        <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-        <div className="w-11/12 h-0.5 bg-slate-200 rounded-full" />
-        <div className="w-9/12 h-0.5 bg-slate-200 rounded-full" />
-        <div className="w-full h-0.5 bg-slate-200 rounded-full" />
-        <div className="w-8/12 h-0.5 bg-slate-200 rounded-full" />
-      </div>
+      {/* Data grid - 2x2 */}
+      {[0, 1].map((row) => (
+        <g key={row}>
+          {[0, 1].map((col) => (
+            <g key={col}>
+              <rect x={15 + col * 38} y={62 + row * 16} width="32" height="12" rx="1" fill="#f8fafc"/>
+              <rect x={17 + col * 38} y={64 + row * 16} width="12" height="2" rx="0.5" fill="#94a3b8"/>
+              <rect x={17 + col * 38} y={68 + row * 16} width="20" height="3" rx="0.5" fill="#334155"/>
+            </g>
+          ))}
+        </g>
+      ))}
       
-      {/* Doble firma */}
-      <div className="mt-auto pt-2 flex gap-4">
-        <div>
-          <div className="w-10 h-px bg-slate-800 mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-        </div>
-        <div>
-          <div className="w-10 h-px bg-slate-800 mb-0.5" />
-          <div className="w-8 h-0.5 bg-slate-400 rounded-full" />
-        </div>
-      </div>
-    </div>
+      {/* Official seals - 3 circles */}
+      <circle cx="30" cy="108" r="6" fill="none" stroke={accent} strokeWidth="1"/>
+      <text x="30" y="110" textAnchor="middle" fontSize="4" fill={accent}>✓</text>
+      
+      <circle cx="50" cy="108" r="6" fill="none" stroke={accent} strokeWidth="1"/>
+      <text x="50" y="110" textAnchor="middle" fontSize="4" fill={accent}>✓</text>
+      
+      <circle cx="70" cy="108" r="6" fill="none" stroke={accent} strokeWidth="1"/>
+      <text x="70" y="110" textAnchor="middle" fontSize="4" fill={accent}>✓</text>
+    </svg>
   );
 }
 
 // ============================================================
-// CERTIFICADO
+// RENOVACIÓN SVG - Fecha destacada, urgency
 // ============================================================
-function CertificateThumbnail({ accent }: { accent: string }) {
+function RenewalSVG({ accent }: { accent: string }) {
   return (
-    <div className="p-3 h-full flex flex-col items-center justify-center text-center">
-      {/* Logo */}
-      <div 
-        className="w-6 h-6 rounded-full border-2 flex items-center justify-center mb-2"
-        style={{ borderColor: accent }}
-      >
-        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />
-      </div>
+    <svg viewBox="0 0 100 130" className="w-full h-full">
+      <rect x="5" y="5" width="90" height="120" rx="2" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
       
-      {/* Título centrado */}
-      <div className="text-[6px] font-bold text-slate-700 uppercase tracking-wider mb-1">CERTIFICADO</div>
-      <div className="w-16 h-0.5 rounded-full mb-3" style={{ backgroundColor: accent }} />
+      <rect x="10" y="10" width="20" height="6" rx="1" fill="#1e293b"/>
       
-      {/* Grid de datos */}
-      <div className="grid grid-cols-2 gap-1 w-full mb-3">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-slate-50 rounded-sm p-1">
-            <div className="w-5 h-0.5 bg-slate-300 rounded-full mb-0.5" />
-            <div className="w-8 h-1 bg-slate-700 rounded-full" />
-          </div>
-        ))}
-      </div>
+      <text x="90" y="16" textAnchor="end" fontSize="4" fontWeight="bold" fill="#475569">RENOVACIÓN</text>
       
-      {/* Sellos */}
-      <div className="flex gap-3 mt-auto">
-        {[1, 2, 3].map(i => (
-          <div 
-            key={i} 
-            className="w-4 h-4 rounded-full border flex items-center justify-center"
-            style={{ borderColor: accent }}
-          >
-            <span className="text-[4px]" style={{ color: accent }}>✓</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// RENOVACIÓN
-// ============================================================
-function RenewalThumbnail() {
-  return (
-    <div className="p-3 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-2">
-        <div>
-          <div className="w-10 h-1.5 bg-slate-800 rounded-full mb-0.5" />
-          <div className="w-6 h-0.5 bg-slate-300 rounded-full" />
-        </div>
-        <div className="text-[5px] font-bold text-slate-500">RENOVACIÓN</div>
-      </div>
+      <line x1="10" y1="22" x2="90" y2="22" stroke="#e2e8f0" strokeWidth="0.5"/>
       
-      {/* Fecha destacada */}
-      <div className="border-2 border-amber-400 rounded-sm p-2 text-center mb-2">
-        <div className="text-[5px] text-slate-400 uppercase">Vencimiento</div>
-        <div className="text-[8px] font-bold text-slate-700">15 ABR 2026</div>
-        <div className="mt-1 bg-amber-100 rounded-full px-1 py-0.5">
-          <div className="text-[4px] text-amber-700 font-bold">⏳ 71 DÍAS</div>
-        </div>
-      </div>
+      {/* Expiry date box - key visual */}
+      <rect x="20" y="28" width="60" height="28" rx="2" fill="none" stroke="#f59e0b" strokeWidth="2"/>
+      <text x="50" y="38" textAnchor="middle" fontSize="3" fill="#92400e">FECHA DE VENCIMIENTO</text>
+      <text x="50" y="48" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">15 ABR 2026</text>
       
-      {/* Mini tabla */}
-      <div className="flex-1">
-        <div className="flex gap-0.5 mb-0.5">
-          <div className="flex-1 h-1.5 bg-slate-700 rounded-sm" />
-          <div className="w-5 h-1.5 bg-slate-700 rounded-sm" />
-          <div className="w-4 h-1.5 bg-slate-700 rounded-sm" />
-        </div>
-        {[1, 2, 3].map(i => (
-          <div key={i} className="flex gap-0.5 mb-0.5">
-            <div className="flex-1 h-1 bg-slate-100 rounded-sm" />
-            <div className="w-5 h-1 bg-slate-100 rounded-sm" />
-            <div className="w-4 h-1 bg-slate-100 rounded-sm" />
-          </div>
-        ))}
-      </div>
+      {/* Days remaining badge */}
+      <rect x="30" y="58" width="40" height="10" rx="5" fill="#fef3c7"/>
+      <text x="50" y="65" textAnchor="middle" fontSize="4" fill="#92400e" fontWeight="bold">⏳ 71 DÍAS</text>
       
-      {/* Alerta */}
-      <div className="mt-auto bg-amber-50 border-l-2 border-amber-400 rounded-sm p-1">
-        <div className="w-full h-0.5 bg-amber-200 rounded-full mb-0.5" />
-        <div className="w-9/12 h-0.5 bg-amber-200 rounded-full" />
-      </div>
-    </div>
+      {/* Items table */}
+      <rect x="10" y="74" width="50" height="5" rx="0.5" fill="#1e293b"/>
+      <rect x="62" y="74" width="14" height="5" rx="0.5" fill="#1e293b"/>
+      <rect x="78" y="74" width="12" height="5" rx="0.5" fill="#1e293b"/>
+      
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="10" y={81 + i * 6} width="50" height="4" rx="0.5" fill="#f8fafc"/>
+          <rect x="62" y={81 + i * 6} width="14" height="4" rx="0.5" fill="#f8fafc"/>
+          <rect x="78" y={81 + i * 6} width="12" height="4" rx="0.5" fill="#f8fafc"/>
+        </g>
+      ))}
+      
+      {/* Alert */}
+      <rect x="10" y="102" width="80" height="12" rx="1" fill="#fef3c7" stroke="#fcd34d" strokeWidth="0.5"/>
+      <rect x="10" y="102" width="3" height="12" fill="#f59e0b"/>
+      <rect x="16" y="106" width="60" height="2" rx="0.5" fill="#d97706"/>
+      <rect x="16" y="110" width="45" height="2" rx="0.5" fill="#fbbf24"/>
+    </svg>
   );
 }
 
@@ -541,67 +591,36 @@ function RenewalThumbnail() {
 export function DocumentThumbnail({ typeId, styleName, colors, className }: DocumentThumbnailProps) {
   const accent = getAccentColor(styleName, colors);
   
-  // Map type IDs to their thumbnails
   const getThumbnailComponent = () => {
     const id = typeId.toLowerCase();
     
     // Financiero
-    if (id === 'invoice' || id === 'factura') {
-      return <FinancialThumbnail accent={accent} label="FACTURA" />;
-    }
-    if (id === 'quote' || id === 'presupuesto') {
-      return <FinancialThumbnail accent={accent} label="PRESUPUESTO" />;
-    }
-    if (id === 'credit-note' || id === 'nota-credito' || id.includes('credit')) {
-      return <FinancialThumbnail accent={accent} label="NOTA CRÉDITO" />;
-    }
-    if (id === 'receipt' || id === 'recibo') {
-      return <FinancialThumbnail accent={accent} label="RECIBO" />;
-    }
+    if (id === 'invoice' || id === 'factura') return <InvoiceSVG accent={accent} />;
+    if (id === 'quote' || id === 'presupuesto') return <QuoteSVG accent={accent} />;
+    if (id === 'credit-note' || id === 'nota-credito' || id.includes('credit')) return <CreditNoteSVG accent={accent} />;
+    if (id === 'receipt' || id === 'recibo') return <ReceiptSVG accent={accent} />;
     
     // Comunicación
-    if (id === 'official-letter' || id === 'carta' || id.includes('letter')) {
-      return <LetterThumbnail accent={accent} />;
-    }
-    if (id === 'cease-desist' || id === 'cease' || id.includes('cease')) {
-      return <CeaseDesistThumbnail />;
-    }
-    if (id === 'meeting-minutes' || id === 'acta' || id.includes('meeting') || id.includes('minutes')) {
-      return <MeetingMinutesThumbnail accent={accent} />;
-    }
+    if (id === 'official-letter' || id === 'carta' || id.includes('letter')) return <LetterSVG accent={accent} />;
+    if (id === 'cease-desist' || id === 'cease' || id.includes('cease')) return <CeaseDesistSVG />;
+    if (id === 'meeting-minutes' || id === 'acta' || id.includes('meeting') || id.includes('minutes')) return <MeetingMinutesSVG accent={accent} />;
     
     // Informes
-    if (id === 'portfolio-report' || id === 'informe' || id.includes('portfolio')) {
-      return <ReportThumbnail accent={accent} />;
-    }
-    if (id === 'watch-report' || id === 'vigilancia' || id.includes('surveillance') || id.includes('watch')) {
-      return <ReportThumbnail accent={accent} />;
-    }
+    if (id === 'portfolio-report' || id === 'informe' || id.includes('portfolio')) return <ReportSVG accent={accent} />;
+    if (id === 'watch-report' || id === 'vigilancia' || id.includes('surveillance') || id.includes('watch')) return <ReportSVG accent={accent} />;
     
     // Legal
-    if (id === 'contract' || id === 'contrato') {
-      return <ContractThumbnail accent={accent} label="CONTRATO" />;
-    }
-    if (id === 'nda' || id.includes('confidential')) {
-      return <ContractThumbnail accent={accent} label="NDA" />;
-    }
-    if (id === 'license' || id === 'licencia') {
-      return <ContractThumbnail accent={accent} label="LICENCIA" />;
-    }
-    if (id === 'power-of-attorney' || id === 'poder' || id.includes('power')) {
-      return <PowerOfAttorneyThumbnail />;
-    }
+    if (id === 'contract' || id === 'contrato') return <ContractSVG accent={accent} label="CONTRATO" />;
+    if (id === 'nda' || id.includes('confidential')) return <ContractSVG accent={accent} label="NDA" />;
+    if (id === 'license' || id === 'licencia') return <ContractSVG accent={accent} label="LICENCIA" />;
+    if (id === 'power-of-attorney' || id === 'poder' || id.includes('power')) return <PowerOfAttorneySVG accent={accent} />;
     
     // IP
-    if (id === 'certificate' || id === 'certificado') {
-      return <CertificateThumbnail accent={accent} />;
-    }
-    if (id === 'renewal' || id === 'renovacion' || id.includes('renewal')) {
-      return <RenewalThumbnail />;
-    }
+    if (id === 'certificate' || id === 'certificado') return <CertificateSVG accent={accent} />;
+    if (id === 'renewal' || id === 'renovacion' || id.includes('renewal')) return <RenewalSVG accent={accent} />;
     
-    // Default fallback - letter
-    return <LetterThumbnail accent={accent} />;
+    // Default - letter
+    return <LetterSVG accent={accent} />;
   };
   
   return (
