@@ -934,7 +934,7 @@ export default function TemplatesSettingsSection() {
           }}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-6xl flex flex-col"
+            className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-lg flex flex-col"
             style={{ height: '92vh' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -974,20 +974,8 @@ export default function TemplatesSettingsSection() {
 
             {/* Modal body */}
             <div className="flex-1 min-h-0 flex">
-              {/* Document preview — real HTML via iframe */}
-              <div className="flex-1 bg-slate-100 p-6 flex items-stretch justify-center">
-                <div className="w-full max-w-2xl rounded-lg shadow-xl overflow-hidden border border-slate-200 bg-white">
-                  <iframe
-                    srcDoc={previewHTML}
-                    title="Document preview"
-                    className="w-full h-full border-0"
-                    sandbox="allow-same-origin"
-                  />
-                </div>
-              </div>
-
-              {/* Sidebar with tabs */}
-              <div className="w-72 border-l border-slate-100 flex flex-col bg-white">
+              {/* Sidebar — full width, no preview */}
+              <div className="flex-1 flex flex-col bg-white">
                 {/* Tab buttons */}
                 <div className="flex border-b border-slate-100 flex-shrink-0">
                   <button
