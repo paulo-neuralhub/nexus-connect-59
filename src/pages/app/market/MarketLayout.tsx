@@ -3,20 +3,27 @@ import { Outlet, NavLink, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   Globe, Send, MessageSquare, ArrowLeftRight, User, 
-  Plus, Bell
+  Plus
 } from 'lucide-react';
 import { ModuleGate } from '@/components/common/ModuleGate';
+import { MarketNotificationBell } from '@/components/features/market/MarketNotificationPanel';
+import { useMarketNotificationRealtime } from '@/hooks/market/useMarketNotifications';
+import { useMarketTabCounts } from '@/hooks/market/useMarketNotifications';
 
 const tabs = [
-  { to: '/app/market', label: 'Explorar', icon: Globe, exact: true },
-  { to: '/app/market/rfq', label: 'Mis Solicitudes', icon: Send },
-  { to: '/app/market/offers', label: 'Mis Ofertas', icon: MessageSquare },
-  { to: '/app/market/transactions', label: 'Transacciones', icon: ArrowLeftRight },
-  { to: '/app/market/profile', label: 'Mi Perfil', icon: User },
+  { to: '/app/market', label: 'Explorar', icon: Globe, exact: true, badgeKey: null },
+  { to: '/app/market/rfq', label: 'Mis Solicitudes', icon: Send, badgeKey: 'rfq' as const },
+  { to: '/app/market/offers', label: 'Mis Ofertas', icon: MessageSquare, badgeKey: 'offers' as const },
+  { to: '/app/market/transactions', label: 'Transacciones', icon: ArrowLeftRight, badgeKey: 'transactions' as const },
+  { to: '/app/market/profile', label: 'Mi Perfil', icon: User, badgeKey: null },
 ];
 
 export default function MarketLayout() {
   const location = useLocation();
+  const tabCounts = useMarketTabCounts();
+  
+  // Activate real-time subscription for market notifications
+  useMarketNotificationRealtime();
   
   // Check if we're on a detail page (hide tabs for cleaner detail views)
   const isDetailPage = /\/(rfq|transactions|listings|agents|work|assets|kyc)\/[^/]+/.test(location.pathname) 
@@ -53,11 +60,8 @@ export default function MarketLayout() {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Notification bell */}
-            <button className="relative w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#f1f4f9', boxShadow: '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff' }}>
-              <Bell className="w-4 h-4" style={{ color: '#64748b' }} />
-            </button>
+            {/* Notification bell with dropdown */}
+            <MarketNotificationBell />
             
             {/* CTA */}
             <Link
@@ -72,7 +76,7 @@ export default function MarketLayout() {
           </div>
         </div>
 
-        {/* ═══ SILK Neumorphic Tabs — hidden on detail pages ═══ */}
+        {/* ═══ SILK Neumorphic Tabs with badges — hidden on detail pages ═══ */}
         {!isDetailPage && (
           <div className="flex items-center gap-1 p-1 rounded-xl mb-6 overflow-x-auto"
             style={{ 
@@ -80,28 +84,44 @@ export default function MarketLayout() {
               boxShadow: 'inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff',
               display: 'inline-flex',
             }}>
-            {tabs.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.to}
-                end={tab.exact}
-                className="whitespace-nowrap no-underline"
-              >
-                {({ isActive }) => (
-                  <div
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                    style={isActive ? {
-                      background: '#f1f4f9',
-                      boxShadow: '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff',
-                      color: '#0a2540',
-                    } : { color: '#94a3b8' }}
-                  >
-                    <tab.icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </div>
-                )}
-              </NavLink>
-            ))}
+            {tabs.map((tab) => {
+              const badgeCount = tab.badgeKey ? tabCounts[tab.badgeKey] : 0;
+              return (
+                <NavLink
+                  key={tab.to}
+                  to={tab.to}
+                  end={tab.exact}
+                  className="whitespace-nowrap no-underline"
+                >
+                  {({ isActive }) => (
+                    <div
+                      className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                      style={isActive ? {
+                        background: '#f1f4f9',
+                        boxShadow: '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff',
+                        color: '#0a2540',
+                      } : { color: '#94a3b8' }}
+                    >
+                      <tab.icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                      {badgeCount > 0 && (
+                        <span
+                          className="min-w-[16px] h-4 rounded-full flex items-center justify-center text-white"
+                          style={{
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            background: '#ef4444',
+                            padding: '0 4px',
+                          }}
+                        >
+                          {badgeCount > 99 ? '99+' : badgeCount}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </NavLink>
+              );
+            })}
           </div>
         )}
 
