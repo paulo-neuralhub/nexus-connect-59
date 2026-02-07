@@ -887,11 +887,12 @@ export default function TemplatesSettingsSection() {
           }}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-6xl flex flex-col"
+            style={{ height: '92vh' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{previewDoc.icon}</span>
                 <div>
@@ -925,10 +926,10 @@ export default function TemplatesSettingsSection() {
             </div>
 
             {/* Modal body */}
-            <div className="flex-1 overflow-y-auto flex">
+            <div className="flex-1 min-h-0 flex">
               {/* Document preview — real HTML via iframe */}
-              <div className="flex-1 bg-slate-100 p-8 flex items-start justify-center overflow-y-auto">
-                <div className="w-full max-w-lg rounded-lg shadow-xl overflow-hidden border border-slate-200 bg-white" style={{ height: '70vh' }}>
+              <div className="flex-1 bg-slate-100 p-6 flex items-stretch justify-center">
+                <div className="w-full max-w-2xl rounded-lg shadow-xl overflow-hidden border border-slate-200 bg-white">
                   <iframe
                     srcDoc={previewHTML}
                     title="Document preview"
