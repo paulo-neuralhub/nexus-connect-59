@@ -12,3 +12,4 @@ export * from './useMarketUserReviews';
 export * from './useMarketBids';
 export * from './useWorkflow';
 export * from './useRfqWorkflow';
+export * from './useServiceTransactions';
