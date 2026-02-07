@@ -126,6 +126,32 @@ export function DynamicSidebar({
   // Expandir/contraer módulos con sub-items
   const [expandedModules, setExpandedModules] = React.useState<Set<string>>(new Set(["docket"]));
 
+  // Auto-expand modules and sections when a child route is active
+  React.useEffect(() => {
+    if (!sections) return;
+    sections.forEach(section => {
+      section.modules.forEach(mod => {
+        if (mod.moduleMenuItems.length > 0) {
+          const isModActive = mod.moduleMenuItems.some(item => isPathActive(item.path));
+          if (isModActive) {
+            setExpandedModules(prev => {
+              if (prev.has(mod.moduleCode)) return prev;
+              const next = new Set(prev);
+              next.add(mod.moduleCode);
+              return next;
+            });
+            setExpandedSections(prev => {
+              if (prev.has(section.sectionCode)) return prev;
+              const next = new Set(prev);
+              next.add(section.sectionCode);
+              return next;
+            });
+          }
+        }
+      });
+    });
+  }, [location.pathname, sections]);
+
   // Badge counts map
   const badgeCounts: Record<string, number> = {
     signatures: pendingSignaturesCount,
@@ -188,7 +214,7 @@ export function DynamicSidebar({
           "flex items-center gap-2 text-[11px] transition-colors",
           collapsed ? "px-2 py-2 justify-center rounded-xl" : "py-[7px] px-3 ml-[26px] rounded-lg",
           isActive
-            ? "text-white/90"
+            ? "text-white font-semibold bg-white/10"
             : "text-white/[0.28] hover:text-white/50"
         )}
       >
@@ -387,7 +413,7 @@ export function DynamicSidebar({
                 />
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-[1px]">
+            <CollapsibleContent className="space-y-[1px]" style={{ overflow: 'visible' }}>
               {hasModules ? section.modules.map(renderModule) : (
                 <p className="text-[11px] text-white/[0.28] px-4 py-2">Sin módulos</p>
               )}
