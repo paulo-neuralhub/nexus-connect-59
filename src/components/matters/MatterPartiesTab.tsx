@@ -75,7 +75,7 @@ export function MatterPartiesTab({ matterId, matterType }: MatterPartiesTabProps
 
   // Flatten all parties for total count
   const allParties = groupedParties 
-    ? [...groupedParties.ownership, ...groupedParties.creation, ...groupedParties.representation, ...groupedParties.other]
+    ? [...(groupedParties.ownership || []), ...(groupedParties.creation || []), ...(groupedParties.representation || []), ...(groupedParties.other || [])]
     : [];
 
   // Copy party data to clipboard
