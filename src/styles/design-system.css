@@ -322,10 +322,15 @@
 }
 
 /* Force Collapsible wrappers in sidebar to not clip pseudo-elements */
-.silk-sidebar-collapsible {
+.silk-sidebar-collapsible,
+.silk-sidebar-collapsible > [data-state],
+.silk-sidebar-collapsible [data-state="open"],
+.silk-sidebar-collapsible [data-state="closed"] {
   overflow: visible !important;
 }
-.silk-sidebar-collapsible > [data-state] {
+
+/* Ensure section-level CollapsibleContent also doesn't clip */
+nav [data-state] {
   overflow: visible !important;
 }
 
