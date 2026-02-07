@@ -143,20 +143,21 @@ export function CompactTimerBadge() {
           type="button"
           className={cn(
             "w-full inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
-            "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]",
-            hasActiveTimer && "border-cyan-500/30 bg-cyan-500/10"
+            hasActiveTimer
+              ? "border-cyan-500/30 bg-cyan-500/10"
+              : "bg-cyan-500/[0.06] border border-cyan-400/[0.12] hover:bg-cyan-500/[0.12]"
           )}
         >
           {/* Icon */}
           <Clock className={cn(
             "w-4 h-4 shrink-0",
-            hasActiveTimer ? "text-cyan-400" : "text-white/40"
+            hasActiveTimer ? "text-cyan-400" : "text-cyan-300/40"
           )} />
           
           {/* Text */}
           <span className={cn(
             "text-sm font-medium flex-1 text-left",
-            hasActiveTimer ? "text-cyan-400" : "text-white/50"
+            hasActiveTimer ? "text-cyan-400" : "text-cyan-300/50"
           )}>
             {hasActiveTimer ? formatTime(elapsed) : 'Timer'}
           </span>
