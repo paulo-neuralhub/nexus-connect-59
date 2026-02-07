@@ -1,354 +1,496 @@
+import * as React from 'react';
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  User, 
-  Shield, 
-  Star,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Upload,
-  Building2,
-  Globe,
-  Mail,
-  Phone,
-  FileText,
-  Award
+import {
+  Star, CheckCircle, Clock, Shield, Globe, Briefcase,
+  Edit3, Save, X, User, Building2, ExternalLink,
+  Award, MessageSquare,
 } from 'lucide-react';
+import { useCurrentMarketUser, useUpdateMarketUser } from '@/hooks/market/useMarketUsers';
+import { useMarketUserReviews, useReviewsSummary } from '@/hooks/market/useMarketUserReviews';
 import { useMarketProfile, useUpdateMarketProfile } from '@/hooks/use-market';
 import { KYC_LEVEL_CONFIG, type KycLevel } from '@/types/market.types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
-export default function ProfilePage() {
-  const { data: profile, isLoading } = useMarketProfile();
-  const updateProfile = useUpdateMarketProfile();
-  const [activeTab, setActiveTab] = useState('profile');
+// ── Helpers ──
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-48 bg-muted animate-pulse rounded-lg" />
-        <div className="h-96 bg-muted animate-pulse rounded-lg" />
-      </div>
-    );
-  }
+function formatDate(dateStr?: string | null) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+}
 
-  const kycLevel = (profile?.kyc_level || 'none') as KycLevel;
-  const kycConfig = KYC_LEVEL_CONFIG[kycLevel];
-  const kycProgress = {
-    none: 0,
-    basic: 25,
-    verified: 50,
-    enhanced: 75,
-    institutional: 100,
-  }[kycLevel] || 0;
-
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={profile?.avatar_url || undefined} />
-                <AvatarFallback className="text-2xl">
-                  {profile?.display_name?.[0] || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-xl font-bold">{profile?.display_name || 'Usuario'}</h2>
-                <p className="text-muted-foreground">
-                  {profile?.company_name || 'Sin empresa configurada'}
-                </p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline">
-                    <Shield className="h-3 w-3 mr-1" />
-                    {kycConfig?.name || 'Sin verificar'}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">{profile?.total_transactions || 0}</p>
-                <p className="text-xs text-muted-foreground">Transacciones</p>
-              </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">0</p>
-                <p className="text-xs text-muted-foreground">Compras</p>
-              </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold flex items-center justify-center">
-                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                  -
-                </p>
-                <p className="text-xs text-muted-foreground">0 reviews</p>
-              </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">€0K</p>
-                <p className="text-xs text-muted-foreground">Volumen</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* KYC Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Estado de Verificación (KYC)
-          </CardTitle>
-          <CardDescription>
-            Mayor nivel de verificación = Mayor confianza y límites de transacción
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Nivel actual: {kycConfig?.name}</span>
-              <span className="text-sm text-muted-foreground">
-                Límite: €{kycConfig?.transactionLimit?.toLocaleString() || '∞'}
-              </span>
-            </div>
-            <Progress value={kycProgress} className="h-2" />
-            <div className="grid grid-cols-5 gap-2 text-xs text-center">
-              {Object.entries(KYC_LEVEL_CONFIG).map(([level, config]) => (
-                <div 
-                  key={level}
-                  className={`p-2 rounded ${
-                    level === kycLevel 
-                      ? 'bg-primary/10 border border-primary' 
-                      : 'bg-muted'
-                  }`}
-                >
-                  {config.name}
-                </div>
-              ))}
-            </div>
-            {kycLevel !== 'institutional' as any && (
-              <Button className="w-full mt-4">
-                <Upload className="h-4 w-4 mr-2" />
-                Subir de Nivel
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">
-            <User className="h-4 w-4 mr-2" />
-            Perfil
-          </TabsTrigger>
-          <TabsTrigger value="company">
-            <Building2 className="h-4 w-4 mr-2" />
-            Empresa
-          </TabsTrigger>
-          <TabsTrigger value="reviews">
-            <Star className="h-4 w-4 mr-2" />
-            Reviews
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile" className="mt-4">
-          <ProfileForm profile={profile} onUpdate={updateProfile.mutate} />
-        </TabsContent>
-
-        <TabsContent value="company" className="mt-4">
-          <CompanyForm profile={profile} onUpdate={updateProfile.mutate} />
-        </TabsContent>
-
-        <TabsContent value="reviews" className="mt-4">
-          <ReviewsSection profile={profile} />
-        </TabsContent>
-      </Tabs>
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map(s => (
+        <Star
+          key={s}
+          className="shrink-0"
+          style={{
+            width: size, height: size,
+            color: s <= Math.round(rating) ? '#f59e0b' : '#e2e8f0',
+            fill: s <= Math.round(rating) ? '#f59e0b' : 'none',
+          }}
+        />
+      ))}
     </div>
   );
 }
 
-function ProfileForm({ profile, onUpdate }: { profile: any; onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState({
-    display_name: profile?.display_name || '',
-    bio: profile?.bio || '',
-    website: profile?.website || '',
-    linkedin_url: profile?.linkedin_url || '',
-    preferred_contact: profile?.preferred_contact || 'email',
-  });
+// ── Main Component ──
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(formData);
-  };
+export default function ProfilePage() {
+  const { data: marketUser, isLoading: loadingUser } = useCurrentMarketUser();
+  const { data: legacyProfile, isLoading: loadingProfile } = useMarketProfile();
+  const { data: reviews } = useMarketUserReviews(marketUser?.id);
+  const { data: reviewsSummary } = useReviewsSummary(marketUser?.id);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Información Personal</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="display_name">Nombre público</Label>
-            <Input
-              id="display_name"
-              value={formData.display_name}
-              onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="bio">Biografía</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Cuéntanos sobre ti y tu experiencia en PI..."
-              rows={4}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="website">Sitio web</Label>
-              <Input
-                id="website"
-                type="url"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="linkedin_url">LinkedIn</Label>
-              <Input
-                id="linkedin_url"
-                type="url"
-                value={formData.linkedin_url}
-                onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                placeholder="https://linkedin.com/in/..."
-              />
-            </div>
-          </div>
-          <Button type="submit">Guardar Cambios</Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
+  const [editing, setEditing] = useState(false);
 
-function CompanyForm({ profile, onUpdate }: { profile: any; onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState({
-    company_name: profile?.company_name || '',
-    company_type: profile?.company_type || '',
-    tax_id: profile?.tax_id || '',
-    company_address: profile?.company_address || {},
-    specializations: profile?.specializations || [],
-  });
+  if (loadingUser || loadingProfile) return <LoadingSkeleton />;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(formData);
-  };
+  // Merge data from both sources
+  const profile = marketUser || legacyProfile;
+  const displayName = (marketUser?.display_name || legacyProfile?.display_name || 'Usuario');
+  const companyName = (marketUser?.company_name || legacyProfile?.company_name || '');
+  const bio = (marketUser?.bio || legacyProfile?.bio || '');
+  const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const isVerified = marketUser?.is_verified_agent || false;
+  const jurisdictions: string[] = marketUser?.jurisdictions || [];
+  const specializations: string[] = marketUser?.specializations || [];
+  const ratingAvg = reviewsSummary?.avgOverall || marketUser?.rating_avg || 0;
+  const ratingsCount = reviewsSummary?.count || marketUser?.ratings_count || 0;
+  const kycLevel = ((legacyProfile as any)?.kyc_level || 'none') as KycLevel;
+  const kycConfig = KYC_LEVEL_CONFIG[kycLevel];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Información de Empresa</CardTitle>
-        <CardDescription>
-          Requerido para transacciones B2B y niveles de KYC avanzados
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="company_name">Nombre de la empresa</Label>
-              <Input
-                id="company_name"
-                value={formData.company_name}
-                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tax_id">NIF/CIF</Label>
-              <Input
-                id="tax_id"
-                value={formData.tax_id}
-                onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
-              />
-            </div>
+    <div className="space-y-5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* ═══ Profile Header Card ═══ */}
+      <div className="rounded-2xl p-6" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="flex items-start gap-5">
+          {/* Avatar */}
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0"
+            style={{ background: 'linear-gradient(135deg, #0a2540, #1e3a5f)' }}
+          >
+            {marketUser?.avatar_url ? (
+              <img src={marketUser.avatar_url} alt="" className="w-full h-full rounded-2xl object-cover" />
+            ) : (
+              initials
+            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="company_type">Tipo de empresa</Label>
-            <Input
-              id="company_type"
-              value={formData.company_type}
-              onChange={(e) => setFormData({ ...formData, company_type: e.target.value })}
-              placeholder="Ej: Despacho de abogados, Consultora PI, Startup..."
-            />
-          </div>
-          <Button type="submit">Guardar Cambios</Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
 
-function ReviewsSection({ profile }: { profile: any }) {
-  // TODO: Fetch actual reviews
-  const reviews: any[] = [];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reviews Recibidas</CardTitle>
-        <CardDescription>
-          {profile?.rating_count || 0} valoraciones · Puntuación media: {profile?.rating_average?.toFixed(1) || '-'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {reviews.length > 0 ? (
-          <div className="space-y-4">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star 
-                        key={star}
-                        className={`h-4 w-4 ${
-                          star <= review.rating 
-                            ? 'text-yellow-500 fill-yellow-500' 
-                            : 'text-muted'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(review.created_at).toLocaleDateString()}
-                  </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0a2540' }}>{displayName}</h2>
+              {isVerified && (
+                <div
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md"
+                  style={{ background: 'rgba(0,180,216,0.08)' }}
+                >
+                  <CheckCircle className="w-3.5 h-3.5" style={{ color: '#00b4d8' }} />
+                  <span style={{ fontSize: '9px', fontWeight: 700, color: '#00b4d8' }}>AGENTE VERIFICADO</span>
                 </div>
-                <p className="text-sm">{review.comment}</p>
+              )}
+              {/* Edit toggle */}
+              <button
+                onClick={() => setEditing(!editing)}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
+                style={{ background: '#f1f4f9', border: '1px solid rgba(0,0,0,0.06)', color: '#334155' }}
+              >
+                <Edit3 className="w-3 h-3" /> {editing ? 'Cancelar' : 'Editar perfil'}
+              </button>
+            </div>
+            {companyName && (
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>{companyName}</p>
+            )}
+            {bio && (
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', maxWidth: '600px' }}>{bio}</p>
+            )}
+
+            {/* Agent metrics strip */}
+            <div className="flex items-center gap-5 flex-wrap">
+              <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5" style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#0a2540' }}>
+                  {ratingAvg > 0 ? ratingAvg.toFixed(1) : '—'}
+                </span>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>({ratingsCount} valoraciones)</span>
+              </div>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                <strong style={{ color: '#0a2540' }}>{marketUser?.successful_transactions || 0}</strong> trabajos
+              </span>
+              {marketUser?.response_time_avg != null && marketUser.response_time_avg > 0 && (
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  Responde en <strong style={{ color: '#0a2540' }}>{Math.round(marketUser.response_time_avg / 60)}h</strong>
+                </span>
+              )}
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                Miembro desde <strong style={{ color: '#0a2540' }}>{formatDate(marketUser?.created_at)}</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Jurisdictions */}
+        {jurisdictions.length > 0 && (
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+            <h4 style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Jurisdicciones
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {jurisdictions.map(j => (
+                <span
+                  key={j}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold"
+                  style={{ background: '#f1f4f9', border: '1px solid rgba(0,0,0,0.04)', color: '#334155' }}
+                >
+                  <Globe className="w-3 h-3" style={{ color: '#94a3b8' }} /> {j}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Specializations / Services */}
+        {specializations.length > 0 && (
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+            <h4 style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Servicios
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {specializations.map(s => (
+                <span
+                  key={s}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold"
+                  style={{ background: 'rgba(0,180,216,0.06)', color: '#00b4d8' }}
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ Edit Form (conditional) ═══ */}
+      {editing && (
+        <EditProfileForm
+          marketUser={marketUser}
+          legacyProfile={legacyProfile}
+          onClose={() => setEditing(false)}
+        />
+      )}
+
+      {/* ═══ KYC Status Card ═══ */}
+      <div className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: '#f1f4f9', boxShadow: '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff' }}
+          >
+            <Shield className="w-5 h-5" style={{ color: '#00b4d8' }} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0a2540' }}>Verificación KYC</h3>
+            <p style={{ fontSize: '11px', color: '#64748b' }}>
+              Nivel actual: <strong style={{ color: '#0a2540' }}>{kycConfig?.name || 'Sin verificar'}</strong>
+              {kycConfig?.transactionLimit && (
+                <> · Límite: <strong style={{ color: '#0a2540' }}>€{kycConfig.transactionLimit.toLocaleString()}</strong></>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* KYC level steps */}
+        <div className="flex items-center gap-1">
+          {Object.entries(KYC_LEVEL_CONFIG).map(([level, config], i, arr) => {
+            const isActive = level === kycLevel;
+            const isPast = Object.keys(KYC_LEVEL_CONFIG).indexOf(kycLevel) >= i;
+            return (
+              <React.Fragment key={level}>
+                <div
+                  className="flex-1 py-2 rounded-lg text-center text-[10px] font-bold uppercase tracking-wider transition-all"
+                  style={
+                    isActive
+                      ? {
+                          background: '#f1f4f9',
+                          boxShadow: '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff',
+                          color: '#00b4d8',
+                          border: '1px solid rgba(0,180,216,0.15)',
+                        }
+                      : isPast
+                      ? { background: 'rgba(0,180,216,0.06)', color: '#00b4d8' }
+                      : { background: '#f8fafc', color: '#94a3b8' }
+                  }
+                >
+                  {config.name}
+                </div>
+                {i < arr.length - 1 && (
+                  <div
+                    className="w-4 h-0.5 rounded-full"
+                    style={{ background: isPast ? '#00b4d8' : '#e8ecf3' }}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ═══ Reviews Section ═══ */}
+      <div className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0a2540' }}>
+            Valoraciones recientes
+          </h3>
+          {reviewsSummary && reviewsSummary.count > 0 && (
+            <div className="flex items-center gap-2">
+              <StarRating rating={reviewsSummary.avgOverall} size={14} />
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#0a2540' }}>
+                {reviewsSummary.avgOverall.toFixed(1)}
+              </span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                ({reviewsSummary.count})
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Rating distribution */}
+        {reviewsSummary && reviewsSummary.count > 0 && (
+          <div className="grid grid-cols-5 gap-3 mb-5 p-3 rounded-xl" style={{ background: '#f8fafc' }}>
+            {[
+              { label: 'General', value: reviewsSummary.avgOverall },
+              { label: 'Comunicación', value: reviewsSummary.avgCommunication },
+              { label: 'Calidad', value: reviewsSummary.avgQuality },
+              { label: 'Puntualidad', value: reviewsSummary.avgTimeliness },
+              { label: 'Valor', value: reviewsSummary.avgValue },
+            ].map(cat => (
+              <div key={cat.label} className="text-center">
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#0a2540', display: 'block' }}>
+                  {cat.value > 0 ? cat.value.toFixed(1) : '—'}
+                </span>
+                <span style={{ fontSize: '9px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>
+                  {cat.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Individual reviews */}
+        {reviews && reviews.length > 0 ? (
+          <div className="space-y-3">
+            {reviews.slice(0, 5).map((review: any) => (
+              <div
+                key={review.id}
+                className="p-4 rounded-xl"
+                style={{ background: '#f8fafc', border: '1px solid rgba(0,0,0,0.03)' }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #334155, #475569)' }}
+                  >
+                    {(review.reviewer?.display_name || 'A')[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#0a2540' }}>
+                      {review.reviewer?.display_name || 'Anónimo'}
+                    </span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', marginLeft: '8px' }}>
+                      {formatDate(review.created_at)}
+                    </span>
+                  </div>
+                  <StarRating rating={review.rating_overall || 0} size={12} />
+                </div>
+                {review.title && (
+                  <h4 style={{ fontSize: '12px', fontWeight: 600, color: '#0a2540', marginBottom: '4px' }}>
+                    {review.title}
+                  </h4>
+                )}
+                {review.comment && (
+                  <p style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>{review.comment}</p>
+                )}
+                {review.response && (
+                  <div className="mt-3 ml-4 pl-3" style={{ borderLeft: '2px solid rgba(0,180,216,0.2)' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: '#00b4d8' }}>Respuesta:</span>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{review.response}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <Star className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Aún no tienes reviews</p>
+          <div className="text-center py-10">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+              style={{ background: '#f1f4f9', boxShadow: '4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff' }}
+            >
+              <Star className="w-5 h-5" style={{ color: '#94a3b8' }} />
+            </div>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>Aún sin valoraciones</p>
+            <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+              Las valoraciones de tus clientes aparecerán aquí tras completar transacciones
+            </p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Edit Profile Form ──
+
+function EditProfileForm({
+  marketUser,
+  legacyProfile,
+  onClose,
+}: {
+  marketUser: any;
+  legacyProfile: any;
+  onClose: () => void;
+}) {
+  const updateMarketUser = useUpdateMarketUser();
+  const updateLegacy = useUpdateMarketProfile();
+
+  const [form, setForm] = useState({
+    display_name: marketUser?.display_name || legacyProfile?.display_name || '',
+    bio: marketUser?.bio || legacyProfile?.bio || '',
+    company_name: marketUser?.company_name || legacyProfile?.company_name || '',
+    website: legacyProfile?.website || '',
+    linkedin_url: legacyProfile?.linkedin_url || '',
+  });
+
+  const handleSave = async () => {
+    try {
+      if (marketUser?.id) {
+        await updateMarketUser.mutateAsync({
+          id: marketUser.id,
+          display_name: form.display_name,
+          bio: form.bio,
+          company_name: form.company_name,
+        } as any);
+      }
+      // Also update legacy profile if exists
+      if (legacyProfile) {
+        await updateLegacy.mutateAsync({
+          display_name: form.display_name,
+          bio: form.bio,
+          company_name: form.company_name,
+          website: form.website,
+          linkedin_url: form.linkedin_url,
+        } as any);
+      }
+      toast.success('Perfil actualizado');
+      onClose();
+    } catch {
+      toast.error('Error al guardar');
+    }
+  };
+
+  const isSaving = updateMarketUser.isPending || updateLegacy.isPending;
+
+  return (
+    <div className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#0a2540' }}>Editar perfil</h3>
+        <button onClick={onClose}>
+          <X className="w-4 h-4" style={{ color: '#94a3b8' }} />
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <FormField label="Nombre público" value={form.display_name} onChange={v => setForm({ ...form, display_name: v })} />
+        <FormField label="Empresa" value={form.company_name} onChange={v => setForm({ ...form, company_name: v })} />
+        <FormField label="Biografía" value={form.bio} onChange={v => setForm({ ...form, bio: v })} multiline />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Sitio web" value={form.website} onChange={v => setForm({ ...form, website: v })} placeholder="https://" />
+          <FormField label="LinkedIn" value={form.linkedin_url} onChange={v => setForm({ ...form, linkedin_url: v })} placeholder="https://linkedin.com/in/..." />
+        </div>
+
+        <div className="flex gap-2 justify-end pt-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: '#f1f4f9', border: '1px solid rgba(0,0,0,0.06)', color: '#334155' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #00b4d8, #00d4aa)' }}
+          >
+            <Save className="w-3 h-3" /> {isSaving ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Form Field ──
+
+function FormField({
+  label, value, onChange, multiline, placeholder,
+}: {
+  label: string; value: string; onChange: (v: string) => void; multiline?: boolean; placeholder?: string;
+}) {
+  const shared = {
+    value,
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
+    placeholder,
+    className: 'w-full px-3 py-2 rounded-lg text-sm outline-none',
+    style: {
+      background: '#f8fafc',
+      border: '1px solid rgba(0,0,0,0.06)',
+      color: '#0a2540',
+      fontSize: '13px',
+    } as React.CSSProperties,
+  };
+
+  return (
+    <div>
+      <label style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' as const, display: 'block', marginBottom: '4px' }}>
+        {label}
+      </label>
+      {multiline ? <textarea {...shared} rows={3} /> : <input {...shared} />}
+    </div>
+  );
+}
+
+// ── Loading Skeleton ──
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl p-6" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="flex items-start gap-5">
+          <Skeleton className="w-20 h-20 rounded-2xl" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-72" />
+            <div className="flex gap-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <Skeleton className="h-4 w-40 mb-4" />
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="flex-1 h-8 rounded-lg" />)}
+        </div>
+      </div>
+      <div className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+        <Skeleton className="h-4 w-48 mb-4" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    </div>
   );
 }
