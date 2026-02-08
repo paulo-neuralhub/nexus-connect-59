@@ -1,238 +1,178 @@
 // ============================================================
-// IP-NEXUS APP - HELP ARTICLE DETAIL PAGE
+// IP-NEXUS APP - HELP ARTICLE DETAIL (Static content support)
 // ============================================================
 
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Clock, Eye, Calendar, Tag, FileQuestion } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Clock, Calendar, Tag, FileQuestion, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
+import { useHelpArticle, useSubmitArticleFeedback } from '@/hooks/help';
 import { toast } from '@/hooks/use-toast';
-import {
-  useHelpArticle,
-  useRelatedArticles,
-  useSubmitArticleFeedback,
-} from '@/hooks/help';
-import { HelpArticleCard } from '@/components/features/help/HelpArticleCard';
 import { EmptyState } from '@/components/ui/empty-state';
+import { getStaticArticle, getStaticCategory, getStaticArticlesByCategory } from '@/lib/helpStaticContent';
 
 export default function HelpArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-  const [feedbackComment, setFeedbackComment] = useState('');
-  const [pendingFeedback, setPendingFeedback] = useState<'helpful' | 'not_helpful' | null>(null);
+  const [feedbackGiven, setFeedbackGiven] = useState<'up' | 'down' | null>(null);
 
-  const { data: article, isLoading } = useHelpArticle(slug || '');
-  const { data: relatedArticles = [] } = useRelatedArticles(article?.id || '', {
-    enabled: !!article?.id,
-  });
+  // Try DB first
+  const { data: dbArticle, isLoading } = useHelpArticle(slug || '');
   const submitFeedback = useSubmitArticleFeedback();
 
-  const handleFeedback = (isHelpful: boolean) => {
-    if (feedbackSubmitted) return;
-    setPendingFeedback(isHelpful ? 'helpful' : 'not_helpful');
-    setShowFeedbackForm(true);
-  };
+  // Fallback to static
+  const staticArticle = getStaticArticle(slug || '');
+  const staticCategory = staticArticle ? getStaticCategory(staticArticle.categorySlug) : undefined;
+  const relatedStatic = staticArticle
+    ? getStaticArticlesByCategory(staticArticle.categorySlug).filter(a => a.slug !== slug).slice(0, 3)
+    : [];
 
-  const handleSubmitFeedback = () => {
-    if (!article || !pendingFeedback) return;
-
-    submitFeedback.mutate(
-      {
-        articleId: article.id,
-        isHelpful: pendingFeedback === 'helpful',
-        feedbackText: feedbackComment || undefined,
-      },
-      {
-        onSuccess: () => {
-          setFeedbackSubmitted(true);
-          setShowFeedbackForm(false);
-          toast({
-            title: '¡Gracias por tu feedback!',
-            description: 'Tu opinión nos ayuda a mejorar.',
-          });
-        },
-      }
-    );
-  };
+  // Use DB article if available, otherwise static
+  const hasDbArticle = !!dbArticle;
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-24" />
-        <Skeleton className="h-12 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
+      <div className="max-w-3xl mx-auto space-y-6">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-10 w-3/4" />
+        <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
-  if (!article) {
+  // If DB article exists, render it (existing behavior)
+  if (hasDbArticle) {
+    const article = dbArticle;
+    const wordCount = article.content.split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
     return (
-      <div className="space-y-6">
-        <Link to="/app/help">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Centro de Ayuda
-          </Button>
-        </Link>
-        <EmptyState
-          icon={<FileQuestion className="h-12 w-12" />}
-          title="Artículo no encontrado"
-          description="El artículo que buscas no existe o ha sido eliminado."
-        />
+      <div className="max-w-3xl mx-auto space-y-6">
+        <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Link to="/app/help" className="hover:text-foreground">Centro de Ayuda</Link>
+          <ChevronRight className="w-3 h-3" />
+          {article.category && (
+            <>
+              <Link to={`/app/help/category/${article.category.slug}`} className="hover:text-foreground">
+                {article.category.name}
+              </Link>
+              <ChevronRight className="w-3 h-3" />
+            </>
+          )}
+          <span className="text-foreground truncate">{article.title}</span>
+        </nav>
+        <h1 className="text-[26px] font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>{article.title}</h1>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{readingTime} min</span>
+        </div>
+        <div className="prose prose-slate dark:prose-invert max-w-none">
+          <ReactMarkdown>{article.content}</ReactMarkdown>
+        </div>
       </div>
     );
   }
 
-  // Estimate reading time: ~200 words per minute
-  const wordCount = article.content.split(/\s+/).length;
-  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+  // Static article
+  if (!staticArticle) {
+    return (
+      <div className="space-y-6">
+        <Link to="/app/help"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Volver</Button></Link>
+        <EmptyState icon={<FileQuestion className="h-12 w-12" />} title="Artículo no encontrado" description="El artículo que buscas no existe." />
+      </div>
+    );
+  }
+
+  const categoryPath = `/app/help/category/${staticArticle.categorySlug}`;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link to="/app/help" className="hover:text-foreground">
-          Centro de Ayuda
-        </Link>
-        <span>/</span>
-        {article.category && (
+      <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Link to="/app/help" className="hover:text-foreground transition-colors">Centro de Ayuda</Link>
+        <ChevronRight className="w-3 h-3" />
+        {staticCategory && (
           <>
-            <Link
-              to={`/app/help/category/${article.category.slug}`}
-              className="hover:text-foreground"
-            >
-              {article.category.name}
-            </Link>
-            <span>/</span>
+            <Link to={categoryPath} className="hover:text-foreground transition-colors">{staticCategory.name}</Link>
+            <ChevronRight className="w-3 h-3" />
           </>
         )}
-        <span className="text-foreground truncate">{article.title}</span>
-      </div>
+        <span className="text-foreground truncate max-w-[200px]">{staticArticle.title}</span>
+      </nav>
 
-      {/* Article Header */}
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            {format(new Date(article.updated_at || article.created_at), "d 'de' MMMM, yyyy", {
-              locale: es,
-            })}
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {readingTime} min de lectura
-          </div>
-          <div className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
-            {article.view_count || 0} vistas
-          </div>
+        <div className="flex items-center gap-3 mb-3">
+          <Badge variant="outline" className="text-xs">{staticArticle.articleType === 'guide' ? 'Guía' : staticArticle.articleType === 'tutorial' ? 'Tutorial' : staticArticle.articleType}</Badge>
+          {staticCategory && <span className="text-xs text-muted-foreground">{staticCategory.name}</span>}
         </div>
-        {article.tags && article.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            {article.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
-              </Badge>
-            ))}
+        <h1 className="text-[26px] font-bold text-foreground leading-tight mb-3" style={{ letterSpacing: '-0.02em' }}>
+          {staticArticle.title}
+        </h1>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{staticArticle.readTime}</span>
+          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Febrero 2026</span>
+        </div>
+        {staticArticle.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <Tag className="h-3 w-3 text-muted-foreground" />
+            {staticArticle.tags.map(t => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
           </div>
         )}
       </div>
 
-      {/* Article Content */}
-      <Card>
-        <CardContent className="prose prose-slate dark:prose-invert max-w-none p-6">
-          <ReactMarkdown>{article.content}</ReactMarkdown>
-        </CardContent>
-      </Card>
+      {/* Content */}
+      <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-semibold prose-h2:text-xl prose-h3:text-lg prose-p:leading-relaxed prose-table:text-sm">
+        <ReactMarkdown>{staticArticle.content}</ReactMarkdown>
+      </div>
 
-      {/* Feedback Section */}
-      <Card>
-        <CardContent className="p-6">
-          {feedbackSubmitted ? (
-            <div className="text-center py-4">
-              <p className="text-lg font-medium text-primary">
-                ¡Gracias por tu feedback!
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Tu opinión nos ayuda a mejorar nuestro contenido.
-              </p>
+      {/* Feedback */}
+      <div className="p-6 rounded-2xl bg-muted/50 border border-border">
+        {feedbackGiven ? (
+          <p className="text-sm font-medium text-foreground text-center">
+            {feedbackGiven === 'up' ? '¡Gracias por tu feedback! 🎉' : 'Gracias. Trabajaremos en mejorar este artículo.'}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-foreground text-center mb-3">¿Te ha resultado útil este artículo?</p>
+            <div className="flex items-center justify-center gap-3">
+              <button onClick={() => setFeedbackGiven('up')}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-background border border-border hover:border-emerald-300 hover:bg-emerald-50 transition-all">
+                <ThumbsUp className="w-4 h-4 text-emerald-500" /> Sí, me ayudó
+              </button>
+              <button onClick={() => setFeedbackGiven('down')}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-background border border-border hover:border-red-300 hover:bg-red-50 transition-all">
+                <ThumbsDown className="w-4 h-4 text-red-400" /> No del todo
+              </button>
             </div>
-          ) : showFeedbackForm ? (
-            <div className="space-y-4">
-              <p className="font-medium">
-                {pendingFeedback === 'helpful'
-                  ? '¿Qué te resultó más útil?'
-                  : '¿Cómo podemos mejorar este artículo?'}
-              </p>
-              <Textarea
-                placeholder="Tu comentario (opcional)..."
-                value={feedbackComment}
-                onChange={(e) => setFeedbackComment(e.target.value)}
-                rows={3}
-              />
-              <div className="flex gap-2">
-                <Button onClick={handleSubmitFeedback} disabled={submitFeedback.isPending}>
-                  Enviar feedback
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowFeedbackForm(false);
-                    setPendingFeedback(null);
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <p className="font-medium">¿Te resultó útil este artículo?</p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleFeedback(true)}
-                >
-                  <ThumbsUp className="mr-2 h-4 w-4" />
-                  Sí
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleFeedback(false)}
-                >
-                  <ThumbsDown className="mr-2 h-4 w-4" />
-                  No
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        )}
+      </div>
 
-      {/* Related Articles */}
-      {relatedArticles.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Artículos Relacionados</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {relatedArticles.slice(0, 4).map((related) => (
-              <HelpArticleCard key={related.id} article={related} />
+      {/* Related */}
+      {relatedStatic.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Artículos relacionados</h3>
+          <div className="space-y-1">
+            {relatedStatic.map((r) => (
+              <Link key={r.slug} to={`/app/help/article/${r.slug}`}
+                className="flex items-center gap-2 p-3 rounded-xl text-sm text-foreground/80 hover:bg-background hover:shadow-sm transition-all">
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                {r.title}
+              </Link>
             ))}
           </div>
         </div>
       )}
+
+      {/* Back */}
+      <div className="pt-6 border-t border-border">
+        <Link to={categoryPath} className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80">
+          <ArrowLeft className="w-4 h-4" /> Volver a {staticCategory?.name || 'categoría'}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -111,6 +111,8 @@ import NewAutomationPage from "./pages/app/marketing/automations/new";
 import DocumentGeneratorPage from "./pages/app/documents/DocumentGeneratorPage";
 import FAQPage from "./pages/app/help/faq";
 import GuidesPage from "./pages/app/help/guides";
+import GlossaryPage from "./pages/app/help/glossary";
+import ShortcutsPage from "./pages/app/help/shortcuts";
 import FinanceLayout from "./pages/app/finance/FinanceLayout";
 import TimetrackingLayout from "./pages/app/timetracking/TimetrackingLayout";
 import TimesheetPage from "./pages/app/timetracking";
@@ -519,6 +521,9 @@ const App = () => (
                   <Route path="tickets/new" element={<NewTicketPage />} />
                   <Route path="tickets/:id" element={<TicketDetailPage />} />
                   <Route path="announcements" element={<HelpAnnouncementsPage />} />
+                  <Route path="glossary" element={<GlossaryPage />} />
+                  <Route path="shortcuts" element={<ShortcutsPage />} />
+                  <Route path="article/:slug" element={<HelpArticleDetailPage />} />
                 </Route>
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/team" element={<TeamSettingsPage />} />

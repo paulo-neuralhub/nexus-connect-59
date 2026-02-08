@@ -1,103 +1,78 @@
 // ============================================================
-// IP-NEXUS APP - HELP CATEGORY PAGE
+// IP-NEXUS APP - HELP CATEGORY PAGE (Static content fallback)
 // ============================================================
 
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, FileQuestion } from 'lucide-react';
+import { ArrowLeft, FileText, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { HelpArticleCard } from '@/components/features/help/HelpArticleCard';
-import { useHelpCategories, useHelpArticles } from '@/hooks/help';
-import { EmptyState } from '@/components/ui/empty-state';
+import { Badge } from '@/components/ui/badge';
+import { getStaticCategory, getStaticArticlesByCategory, HELP_CATEGORIES } from '@/lib/helpStaticContent';
+
+const typeBadge: Record<string, string> = {
+  guide: 'Guía', tutorial: 'Tutorial', faq: 'FAQ',
+  troubleshooting: 'Solución', reference: 'Referencia',
+};
 
 export default function HelpCategoryPage() {
   const { slug } = useParams<{ slug: string }>();
-  
-  const { data: categories = [], isLoading: loadingCategories } = useHelpCategories();
-  const category = categories.find((c) => c.slug === slug);
-
-  const { data: articles = [], isLoading: loadingArticles } = useHelpArticles(
-    category?.id ? { categoryId: category.id } : undefined
-  );
-
-  if (loadingCategories) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-96" />
-        <div className="grid gap-4 md:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const category = getStaticCategory(slug || '');
+  const articles = getStaticArticlesByCategory(slug || '');
 
   if (!category) {
     return (
       <div className="space-y-6">
         <Link to="/app/help">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Centro de Ayuda
-          </Button>
+          <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Volver</Button>
         </Link>
-        <EmptyState
-          icon={<FileQuestion className="h-12 w-12" />}
-          title="Categoría no encontrada"
-          description="La categoría que buscas no existe o ha sido eliminada."
-        />
+        <div className="text-center py-10 bg-muted/30 rounded-xl border border-border">
+          <p className="text-muted-foreground">Categoría no encontrada.</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <Link to="/app/help">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al Centro de Ayuda
-        </Button>
+        <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Centro de Ayuda</Button>
       </Link>
 
-      {/* Category Header */}
       <div className="flex items-start gap-4">
-        <div
-          className="p-3 rounded-lg"
-          style={{ backgroundColor: `${category.color}20` }}
-        >
-          <span className="text-2xl">{category.icon}</span>
+        <div className="p-3 rounded-xl" style={{ backgroundColor: `${category.color}15` }}>
+          <span className="text-2xl" style={{ color: category.color }}>📚</span>
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{category.name}</h1>
-          {category.description && (
-            <p className="text-muted-foreground mt-1">{category.description}</p>
-          )}
-          <p className="text-sm text-muted-foreground mt-2">
-            {articles.length} artículos
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{category.name}</h1>
+          <p className="text-muted-foreground mt-1">{category.description}</p>
+          <p className="text-sm text-muted-foreground mt-2">{articles.length} artículos</p>
         </div>
       </div>
 
-      {/* Articles */}
-      {loadingArticles ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+      {articles.length === 0 ? (
+        <div className="text-center py-10 bg-muted/30 rounded-xl border border-border">
+          <p className="text-muted-foreground">Esta categoría aún no tiene artículos.</p>
         </div>
-      ) : articles.length === 0 ? (
-        <EmptyState
-          icon={<FileQuestion className="h-12 w-12" />}
-          title="Sin artículos"
-          description="Esta categoría aún no tiene artículos publicados."
-        />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {articles.map((article) => (
-            <HelpArticleCard key={article.id} article={article} />
+        <div className="space-y-3">
+          {articles.map((a) => (
+            <Link key={a.slug} to={`/app/help/article/${a.slug}`} className="group block">
+              <div className="p-5 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                    <FileText className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1">{a.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{a.summary}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-[10px]">{typeBadge[a.articleType] || 'Guía'}</Badge>
+                      <span>{a.readTime}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
       )}
