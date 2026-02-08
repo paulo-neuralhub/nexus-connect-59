@@ -227,7 +227,7 @@ function RequestCard({ request }: { request: RfqRequest }) {
     : '';
 
   return (
-    <Link to={`/app/market/rfq/${request.id}`} className="block no-underline">
+    <Link to={`/app/market/rfq/${request.id}?from=marketplace`} className="block no-underline">
       <div className="rounded-2xl p-5 transition-all hover:translate-y-[-1px] cursor-pointer"
         style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
         

@@ -162,7 +162,7 @@ export default function CreateRfqRequestPage() {
       } as any);
 
       await publishMutation.mutateAsync(request.id);
-      navigate(`/app/market/rfq/${request.id}`);
+      navigate(`/app/market/rfq/${request.id}?from=mis-pedidos`);
     } catch (error) {
       console.error(error);
     }
