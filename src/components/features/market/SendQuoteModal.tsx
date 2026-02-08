@@ -299,8 +299,13 @@ export default function SendQuoteModal({ open, onClose, requestId, requestTitle,
                         <Info className="w-3.5 h-3.5" />
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent side="bottom" align="start" className="w-80 p-4 rounded-xl border-0"
-                      style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={8}
+                      className="w-80 p-4 rounded-xl"
+                      style={{ zIndex: 9999, background: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)' }}
+                    >
                       <h5 style={{ fontSize: '13px', fontWeight: 700, color: '#0a2540', marginBottom: '8px' }}>
                         ¿Qué son las fases del servicio?
                       </h5>
