@@ -113,7 +113,7 @@ function QuoteCard({ quote }: { quote: RfqQuote }) {
 
   return (
     <Link 
-      to={`/app/market/rfq/${quote.request_id}`}
+      to={`/app/market/rfq/${quote.request_id}?from=mis-propuestas`}
       className="block no-underline"
     >
       <div className="rounded-2xl p-5 transition-all hover:translate-y-[-1px]"

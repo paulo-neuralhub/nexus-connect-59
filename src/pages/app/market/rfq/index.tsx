@@ -155,7 +155,7 @@ function RequestCard({ request: req, onNavigate }: { request: RfqRequestWithQuot
       <div
         className="flex items-center justify-between px-5 py-4 cursor-pointer"
         style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}
-        onClick={() => onNavigate(`/app/market/rfq/${req.id}`)}
+        onClick={() => onNavigate(`/app/market/rfq/${req.id}?from=mis-pedidos`)}
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: serviceColor + '12' }}>
@@ -301,7 +301,7 @@ function QuoteRow({ quote, idx, total, requestId, requestStatus }: {
       </div>
 
       <div className="flex gap-2 shrink-0">
-        <Link to={`/app/market/rfq/${quote.request_id}`}
+        <Link to={`/app/market/rfq/${quote.request_id}?from=mis-pedidos`}
           className="px-3 py-1.5 rounded-lg text-[11px] font-semibold no-underline"
           style={{ background: '#f1f4f9', border: '1px solid rgba(0,0,0,0.06)', color: '#334155' }}>
           Detalle
