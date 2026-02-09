@@ -1,60 +1,139 @@
-import { HelpCallout } from '../HelpCallout';
-import { Brain, MessageSquare, FileText, Search, Scale, BarChart3 } from 'lucide-react';
+// ============================================================
+// Genius001 — NEXUS Genius: tus asistentes de IA (PREMIUM)
+// ============================================================
+
+import { Brain, Cpu, MessageSquare, Lightbulb } from 'lucide-react';
+import { ArticleLayout } from '../ArticleLayout';
+import { ArticleSection } from '../ArticleSection';
+import { StepByStep } from '../StepByStep';
+import { InfoCallout } from '../InfoCallout';
+import { FeatureGrid } from '../FeatureGrid';
+import { IllustrationAI } from '../illustrations';
+
+const ACCENT = '#F59E0B';
 
 export function Genius001Content() {
   return (
-    <>
-      <p>
-        <strong>IP-Genius</strong> es la suite de inteligencia artificial integrada en IP-NEXUS.
-        No es un único asistente, sino un conjunto de agentes especializados, cada uno diseñado
-        para una tarea concreta de la gestión de PI.
-      </p>
-
-      <HelpCallout type="info">
-        IP-Genius está disponible en los planes Professional y superiores. En el plan Starter
-        puedes usar NEXUS Guide (asistente de ayuda) de forma ilimitada.
-      </HelpCallout>
-
-      <h2 className="text-lg font-semibold text-foreground mt-8 mb-4">Agentes disponibles</h2>
-
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
-        {[
-          { icon: MessageSquare, name: 'NEXUS Guide', desc: 'Asistente de ayuda. Responde preguntas sobre cómo usar IP-NEXUS y te guía por la aplicación.', color: '#0EA5E9' },
-          { icon: Scale, name: 'NEXUS Legal', desc: 'Consultas de legislación IP. Responde preguntas sobre normativa de marcas, patentes y diseños.', color: '#8B5CF6' },
-          { icon: Search, name: 'NEXUS Watch', desc: 'Análisis de alertas de vigilancia. Evalúa el riesgo de marcas similares detectadas por Spider.', color: '#F59E0B' },
-          { icon: FileText, name: 'NEXUS Ops', desc: 'Automatización de tareas. Completa campos, sugiere clasificaciones y genera documentos.', color: '#10B981' },
-          { icon: BarChart3, name: 'NEXUS Analyst', desc: 'Análisis estratégico. Evalúa tu portfolio y sugiere oportunidades de protección.', color: '#EC4899' },
-          { icon: Brain, name: 'NEXUS Strategist', desc: 'Estrategia de PI. Recomienda jurisdicciones, timing y enfoque de protección.', color: '#F97316' },
-        ].map((agent) => (
-          <div key={agent.name} className="p-4 rounded-xl border border-border bg-card">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${agent.color}15` }}>
-                <agent.icon className="w-4.5 h-4.5" style={{ color: agent.color }} />
-              </div>
-              <span className="text-sm font-semibold text-foreground">{agent.name}</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{agent.desc}</p>
-          </div>
-        ))}
+    <ArticleLayout
+      title="NEXUS Genius: tus asistentes de IA"
+      subtitle="Descubre cómo la inteligencia artificial puede acelerar tu trabajo en Propiedad Intelectual."
+      icon={Brain}
+      accentColor={ACCENT}
+      category="Genius AI"
+      categorySlug="genius-ai"
+      readTime="5 min"
+      lastUpdated="Febrero 2026"
+      tags={['IA', 'genius', 'asistentes', 'automatización']}
+      tocSections={[
+        { id: 'que-es', title: '¿Qué es Genius?' },
+        { id: 'agentes', title: 'Agentes disponibles' },
+        { id: 'como-usar', title: 'Cómo usar Genius' },
+        { id: 'consejos', title: 'Consejos avanzados' },
+      ]}
+      relatedArticles={[
+        { title: 'Proceso de registro de marca', path: '/app/help/article/proceso-registro', readTime: '5 min' },
+        { title: 'Introducción al CRM', path: '/app/help/article/introduccion-crm', readTime: '5 min' },
+      ]}
+    >
+      <div className="flex justify-center mb-8">
+        <IllustrationAI size={160} />
       </div>
 
-      <h2 className="text-lg font-semibold text-foreground mt-8 mb-4">¿Cómo funciona?</h2>
-      <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-2 mb-6">
-        <li>Abre el chat de Genius desde el botón flotante o el sidebar</li>
-        <li>Selecciona el agente adecuado (o deja que el sistema elija automáticamente)</li>
-        <li>Escribe tu consulta en lenguaje natural</li>
-        <li>Recibe una respuesta contextualizada con fuentes y referencias</li>
-      </ol>
+      <ArticleSection id="que-es" title="¿Qué es Genius?" icon={Brain} accentColor={ACCENT}>
+        <p className="text-foreground/80">
+          NEXUS Genius es el sistema de inteligencia artificial de IP-NEXUS. Incluye varios agentes
+          especializados que te ayudan en diferentes tareas de gestión de PI — desde consultas legales
+          hasta análisis financieros automatizados.
+        </p>
+        <InfoCallout type="info">
+          NEXUS Genius está incluido en los planes Professional y Enterprise.
+          En el plan Starter, tienes acceso limitado a 10 consultas/mes.{' '}
+          <a href="/app/help/article/planes-precios" className="underline font-semibold">Ver planes →</a>
+        </InfoCallout>
+      </ArticleSection>
 
-      <HelpCallout type="tip">
-        Para obtener mejores resultados, sé específico en tus consultas. En lugar de "¿puedo registrar esto?",
-        prueba con "¿Puedo registrar la marca AURORA en clase 9 en la UE si ya existe una marca AURA registrada?".
-      </HelpCallout>
+      <ArticleSection id="agentes" title="Agentes disponibles" icon={Cpu} accentColor={ACCENT} variant="highlighted">
+        <p className="text-foreground/80 mb-2">
+          Cada agente está especializado en un área. IP-NEXUS selecciona automáticamente el mejor según
+          tu consulta, o puedes elegir uno manualmente.
+        </p>
+        <FeatureGrid features={[
+          {
+            emoji: '⚖️', title: 'NEXUS Legal',
+            description: 'El abogado de PI que nunca duerme.',
+            items: ['Consultas sobre legislación', 'Análisis de registrabilidad', 'Comparación de marcas', 'Informes de anterioridades'],
+            accentColor: '#EF4444',
+          },
+          {
+            emoji: '📊', title: 'NEXUS Analyst',
+            description: 'Análisis inteligente de tu portfolio.',
+            items: ['Análisis de portfolio', 'Tendencias del mercado', 'Benchmarking competitivo', 'Informes automatizados'],
+            accentColor: '#3B82F6',
+          },
+          {
+            emoji: '🔍', title: 'NEXUS Watch',
+            description: 'Vigilancia inteligente de marcas.',
+            items: ['Análisis de alertas Spider', 'Evaluación de riesgo', 'Recomendaciones de acción', 'Priorización de amenazas'],
+            accentColor: '#8B5CF6',
+          },
+          {
+            emoji: '⚙️', title: 'NEXUS Ops',
+            description: 'Automatización de tareas repetitivas.',
+            items: ['Generación de documentos', 'Actualización masiva', 'Clasificación automática', 'Workflows inteligentes'],
+            accentColor: '#10B981',
+          },
+          {
+            emoji: '💰', title: 'NEXUS Finance',
+            description: 'Análisis financiero de PI.',
+            items: ['Estimación de costes', 'Optimización de presupuestos', 'ROI de la cartera', 'Proyecciones'],
+            accentColor: '#F59E0B',
+          },
+          {
+            emoji: '📝', title: 'NEXUS Drafter',
+            description: 'Redacción inteligente de documentos.',
+            items: ['Descripciones de productos', 'Escritos de oposición', 'Cartas a clientes', 'Informes profesionales'],
+            accentColor: '#6366F1',
+          },
+        ]} />
+      </ArticleSection>
 
-      <HelpCallout type="warning">
-        IP-Genius es una herramienta de asistencia, no sustituye el asesoramiento legal profesional.
-        Siempre revisa las respuestas y consulta con un abogado para decisiones importantes.
-      </HelpCallout>
-    </>
+      <ArticleSection id="como-usar" title="Cómo usar Genius" icon={MessageSquare} accentColor={ACCENT}>
+        <StepByStep accentColor={ACCENT} steps={[
+          {
+            title: 'Abre el panel de Genius',
+            description: 'En el sidebar, haz click en "IA y Análisis", o usa el atajo ⌘+J desde cualquier pantalla.',
+            tip: 'Si estás dentro de un expediente, Genius ya tiene el contexto — no necesitas repetir datos.',
+          },
+          {
+            title: 'Escribe tu consulta',
+            description: 'Escribe en lenguaje natural. Ejemplo: "¿Puedo registrar AURORA en clase 9 en la UE?" o "Genera un informe de anterioridades".',
+          },
+          {
+            title: 'Revisa la respuesta',
+            description: 'Genius responde con análisis detallado, fuentes y recomendaciones. Incluye enlaces directos a datos de tu portfolio.',
+            warning: 'Las respuestas de IA son orientativas. Siempre verifica antes de tomar decisiones legales.',
+          },
+          {
+            title: 'Genera un informe (opcional)',
+            description: 'Click en "Generar informe PDF" para crear un documento profesional con tu marca, datos de contacto y el análisis.',
+          },
+        ]} />
+      </ArticleSection>
+
+      <ArticleSection id="consejos" title="Consejos para mejores resultados" icon={Lightbulb} accentColor={ACCENT} variant="highlighted">
+        <InfoCallout type="tip" title="Sé específico">
+          En lugar de "analiza esta marca", prueba: "Analiza la registrabilidad de AURORA
+          en clase 9 para la UE, comparando con anterioridades existentes."
+        </InfoCallout>
+        <InfoCallout type="tip" title="Usa el contexto">
+          Si abres Genius desde dentro de un expediente, el agente ya conoce todos los datos del caso.
+          Solo necesitas hacer tu pregunta directa.
+        </InfoCallout>
+        <InfoCallout type="note" title="Historial de chats">
+          Todas tus conversaciones con Genius se guardan automáticamente.
+          Puedes revisarlas en cualquier momento desde el panel de IA.
+        </InfoCallout>
+      </ArticleSection>
+    </ArticleLayout>
   );
 }

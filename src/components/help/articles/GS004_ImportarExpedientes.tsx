@@ -1,80 +1,98 @@
-import { HelpStep } from '../HelpStep';
-import { HelpCallout } from '../HelpCallout';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+// ============================================================
+// GS004 — Importar expedientes existentes (PREMIUM)
+// ============================================================
+
+import { Upload, FileSpreadsheet, CheckCircle } from 'lucide-react';
+import { ArticleLayout } from '../ArticleLayout';
+import { ArticleSection } from '../ArticleSection';
+import { StepByStep } from '../StepByStep';
+import { InfoCallout } from '../InfoCallout';
+import { DataTable } from '../DataTable';
+import { FeatureGrid } from '../FeatureGrid';
+
+const ACCENT = '#0EA5E9';
 
 export function GS004Content() {
   return (
-    <>
-      <p>
+    <ArticleLayout
+      title="Importar expedientes existentes"
+      subtitle="Migra tus datos desde Excel, CSV u otro sistema de PI a IP-NEXUS de forma masiva."
+      icon={Upload}
+      accentColor={ACCENT}
+      category="Primeros Pasos"
+      categorySlug="getting-started"
+      readTime="4 min"
+      lastUpdated="Febrero 2026"
+      tags={['importar', 'migración', 'Excel', 'CSV']}
+      tocSections={[
+        { id: 'formatos', title: 'Formatos soportados' },
+        { id: 'columnas', title: 'Columnas requeridas' },
+        { id: 'pasos', title: 'Paso a paso' },
+      ]}
+      relatedArticles={[
+        { title: 'Crear tu primer expediente', path: '/app/help/article/primer-expediente', readTime: '5 min' },
+        { title: 'Configurar plazos y alertas', path: '/app/help/article/configurar-alertas', readTime: '4 min' },
+      ]}
+    >
+      <p className="text-[15px] text-foreground/80 leading-relaxed">
         Si ya gestionas expedientes de PI en otro software o en hojas de cálculo, IP-NEXUS te
         permite <strong>importarlos de forma masiva</strong> para que no tengas que empezar de cero.
       </p>
 
-      <h2 className="text-lg font-semibold text-foreground mt-8 mb-4">Formatos soportados</h2>
-      <ul className="list-disc list-inside text-sm text-foreground/80 space-y-1 mb-6">
-        <li><strong>Excel</strong> (.xlsx, .xls)</li>
-        <li><strong>CSV</strong> (separado por comas o punto y coma)</li>
-        <li><strong>Migración asistida</strong> desde otros sistemas IP (consulta con soporte)</li>
-      </ul>
+      <ArticleSection id="formatos" title="Formatos soportados" icon={FileSpreadsheet} accentColor={ACCENT}>
+        <FeatureGrid features={[
+          { emoji: '📊', title: 'Excel', description: 'Archivos .xlsx y .xls con una fila por expediente.', accentColor: '#10B981' },
+          { emoji: '📄', title: 'CSV', description: 'Separado por comas o punto y coma. Codificación UTF-8.', accentColor: '#3B82F6' },
+          { emoji: '🔄', title: 'Migración asistida', description: 'Desde otros sistemas IP. Contacta con soporte para una importación guiada.', accentColor: '#8B5CF6' },
+        ]} columns={3} />
+      </ArticleSection>
 
-      <h2 className="text-lg font-semibold text-foreground mt-8 mb-4">Paso a paso</h2>
+      <ArticleSection id="columnas" title="Columnas requeridas" icon={FileSpreadsheet} accentColor={ACCENT} variant="highlighted">
+        <DataTable
+          headers={['Columna', 'Obligatoria', 'Ejemplo']}
+          rows={[
+            ['Referencia', 'Sí', 'MRC-2024-001'],
+            ['Tipo', 'Sí', 'Marca'],
+            ['Denominación', 'Sí', 'AURORA'],
+            ['Titular', 'Sí', 'Tech Corp S.L.'],
+            ['Jurisdicción', 'Sí', 'EUIPO'],
+            ['Estado', 'No', 'En trámite'],
+            ['Fecha solicitud', 'No', '2024-01-15'],
+            ['Clases', 'No', '9, 35, 42'],
+          ]}
+          caption="Estructura del archivo de importación"
+        />
+      </ArticleSection>
 
-      <HelpStep
-        number={1}
-        title="Prepara tu archivo"
-        description="Organiza tus datos en un archivo Excel o CSV con una fila por expediente. Asegúrate de incluir al menos las columnas obligatorias."
-      />
-
-      <h3 className="text-base font-semibold text-foreground mt-4 mb-3">Columnas requeridas</h3>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Columna</TableHead>
-            <TableHead>Obligatoria</TableHead>
-            <TableHead>Ejemplo</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow><TableCell className="font-medium">Referencia</TableCell><TableCell>Sí</TableCell><TableCell>MRC-2024-001</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Tipo</TableCell><TableCell>Sí</TableCell><TableCell>Marca</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Denominación</TableCell><TableCell>Sí</TableCell><TableCell>AURORA</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Titular</TableCell><TableCell>Sí</TableCell><TableCell>Tech Corp S.L.</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Jurisdicción</TableCell><TableCell>Sí</TableCell><TableCell>EUIPO</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Estado</TableCell><TableCell>No</TableCell><TableCell>En trámite</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Fecha solicitud</TableCell><TableCell>No</TableCell><TableCell>2024-01-15</TableCell></TableRow>
-          <TableRow><TableCell className="font-medium">Clases</TableCell><TableCell>No</TableCell><TableCell>9, 35, 42</TableCell></TableRow>
-        </TableBody>
-      </Table>
-
-      <HelpStep
-        number={2}
-        title="Sube el archivo"
-        description="Ve a Configuración → Importar datos → Importar expedientes. Arrastra o selecciona tu archivo. IP-NEXUS detectará automáticamente las columnas."
-      />
-
-      <HelpStep
-        number={3}
-        title="Mapea los campos"
-        description="Revisa que cada columna de tu archivo se corresponde con el campo correcto en IP-NEXUS. El sistema sugiere el mapeo automáticamente, pero puedes ajustarlo."
-      />
-
-      <HelpStep
-        number={4}
-        title="Revisa y confirma"
-        description="Antes de importar, verás una preview de los datos con los expedientes a importar, advertencias sobre datos incompletos y opciones para duplicados."
-        warning="La importación masiva no se puede deshacer automáticamente. Revisa bien los datos antes de confirmar."
-      />
-
-      <HelpStep
-        number={5}
-        title="Importa"
-        description="Haz click en 'Importar' y espera a que el proceso finalice. Recibirás un informe con expedientes importados correctamente, advertencias y errores."
-      />
-
-      <HelpCallout type="tip">
-        Si tienes más de 500 expedientes, contacta con nuestro equipo para una <strong>migración asistida gratuita</strong>.
-        Nos encargamos de importar y validar todos tus datos.
-      </HelpCallout>
-    </>
+      <ArticleSection id="pasos" title="Paso a paso" icon={CheckCircle} accentColor={ACCENT}>
+        <StepByStep accentColor={ACCENT} steps={[
+          {
+            title: 'Prepara tu archivo',
+            description: 'Organiza tus datos con una fila por expediente. Asegúrate de incluir al menos las columnas obligatorias.',
+          },
+          {
+            title: 'Sube el archivo',
+            description: 'Ve a Configuración → Importar datos → Importar expedientes. Arrastra o selecciona tu archivo.',
+          },
+          {
+            title: 'Mapea los campos',
+            description: 'Revisa que cada columna se corresponde con el campo correcto. El sistema sugiere el mapeo automáticamente.',
+          },
+          {
+            title: 'Revisa y confirma',
+            description: 'Verás una preview con los expedientes a importar, advertencias sobre datos incompletos y opciones para duplicados.',
+            warning: 'La importación masiva no se puede deshacer automáticamente. Revisa bien los datos antes de confirmar.',
+          },
+          {
+            title: 'Importa',
+            description: 'Haz click en "Importar" y espera. Recibirás un informe con expedientes importados, advertencias y errores.',
+          },
+        ]} />
+        <InfoCallout type="tip">
+          Si tienes más de 500 expedientes, contacta con nuestro equipo para una{' '}
+          <strong>migración asistida gratuita</strong>. Nos encargamos de todo.
+        </InfoCallout>
+      </ArticleSection>
+    </ArticleLayout>
   );
 }
