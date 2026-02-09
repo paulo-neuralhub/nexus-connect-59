@@ -1,90 +1,110 @@
-import { HelpStep } from '../HelpStep';
-import { HelpCallout } from '../HelpCallout';
+// ============================================================
+// Fix001 — No puedo acceder a mi cuenta (PREMIUM)
+// ============================================================
+
+import { ShieldAlert, KeyRound, Lock, Monitor } from 'lucide-react';
+import { ArticleLayout } from '../ArticleLayout';
+import { ArticleSection } from '../ArticleSection';
+import { StepByStep } from '../StepByStep';
+import { InfoCallout } from '../InfoCallout';
+import { FeatureGrid } from '../FeatureGrid';
+
+const ACCENT = '#EF4444';
 
 export function Fix001Content() {
   return (
-    <>
-      <p>
-        Si no puedes acceder a tu cuenta de IP-NEXUS, sigue estos pasos para solucionar
-        el problema. La mayoría de los casos se resuelven en menos de 2 minutos.
+    <ArticleLayout
+      title="No puedo acceder a mi cuenta"
+      subtitle="Soluciones rápidas para problemas de acceso. La mayoría se resuelven en menos de 2 minutos."
+      icon={ShieldAlert}
+      accentColor={ACCENT}
+      category="Solución de problemas"
+      categorySlug="troubleshooting"
+      readTime="3 min"
+      lastUpdated="Febrero 2026"
+      tags={['acceso', 'contraseña', 'login', 'bloqueo']}
+      tocSections={[
+        { id: 'contrasena', title: 'Contraseña olvidada' },
+        { id: 'bloqueada', title: 'Cuenta bloqueada' },
+        { id: 'invitacion', title: 'Invitación no recibida' },
+        { id: 'error', title: 'Error al cargar' },
+      ]}
+      relatedArticles={[
+        { title: 'Configurar tu organización', path: '/app/help/article/configurar-organizacion', readTime: '4 min' },
+        { title: 'Invitar a tu equipo', path: '/app/help/article/invitar-equipo', readTime: '3 min' },
+      ]}
+    >
+      <p className="text-[15px] text-foreground/80 leading-relaxed">
+        Si no puedes acceder a tu cuenta de IP-NEXUS, sigue los pasos según tu situación.
+        La mayoría de los casos se resuelven en menos de <strong>2 minutos</strong>.
       </p>
 
-      <h2 className="text-lg font-semibold text-foreground mt-8 mb-4">Soluciones por problema</h2>
+      <ArticleSection id="contrasena" title="He olvidado mi contraseña" icon={KeyRound} accentColor={ACCENT}>
+        <StepByStep accentColor={ACCENT} steps={[
+          {
+            title: 'Ve a la pantalla de login',
+            description: 'Abre app.ip-nexus.com y haz click en "¿Olvidaste tu contraseña?".',
+          },
+          {
+            title: 'Introduce tu email',
+            description: 'Escribe el email con el que te registraste. Recibirás un enlace para restablecer la contraseña.',
+            tip: 'Revisa la carpeta de spam si no encuentras el email en tu bandeja de entrada.',
+          },
+          {
+            title: 'Crea una nueva contraseña',
+            description: 'Haz click en el enlace del email y crea una contraseña nueva. Debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.',
+          },
+        ]} />
+      </ArticleSection>
 
-      <h3 className="text-base font-semibold text-foreground mt-6 mb-3">He olvidado mi contraseña</h3>
+      <ArticleSection id="bloqueada" title="Mi cuenta está bloqueada" icon={Lock} accentColor={ACCENT} variant="highlighted">
+        <InfoCallout type="warning">
+          Después de 5 intentos fallidos de login, tu cuenta se bloquea temporalmente durante
+          <strong> 15 minutos</strong> como medida de seguridad.
+        </InfoCallout>
+        <StepByStep accentColor={ACCENT} steps={[
+          {
+            title: 'Espera 15 minutos',
+            description: 'El bloqueo se levanta automáticamente. No intentes acceder durante este tiempo.',
+          },
+          {
+            title: 'Restablece tu contraseña',
+            description: 'Si no recuerdas la contraseña, usa la opción de restablecimiento para evitar volver a bloquearte.',
+          },
+        ]} />
+      </ArticleSection>
 
-      <HelpStep
-        number={1}
-        title="Ve a la pantalla de login"
-        description="Abre app.ip-nexus.com y haz click en '¿Olvidaste tu contraseña?'."
-      />
+      <ArticleSection id="invitacion" title="No recibí la invitación" icon={ShieldAlert} accentColor={ACCENT}>
+        <StepByStep accentColor={ACCENT} steps={[
+          {
+            title: 'Verifica el email',
+            description: 'Asegúrate de que tu administrador envió la invitación al email correcto.',
+          },
+          {
+            title: 'Revisa spam y promociones',
+            description: 'Los emails de IP-NEXUS pueden terminar en carpetas de spam, especialmente la primera vez.',
+            tip: 'Añade noreply@ip-nexus.com a tus contactos para evitar que futuros emails vayan a spam.',
+          },
+          {
+            title: 'Solicita reenvío',
+            description: 'Pide a tu administrador que reenvíe desde Configuración → Usuarios. Las invitaciones expiran a los 7 días.',
+          },
+        ]} />
+      </ArticleSection>
 
-      <HelpStep
-        number={2}
-        title="Introduce tu email"
-        description="Escribe el email con el que te registraste. Recibirás un enlace para restablecer la contraseña."
-        tip="Revisa la carpeta de spam si no encuentras el email en tu bandeja de entrada."
-      />
-
-      <HelpStep
-        number={3}
-        title="Crea una nueva contraseña"
-        description="Haz click en el enlace del email y crea una contraseña nueva. Debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial."
-      />
-
-      <h3 className="text-base font-semibold text-foreground mt-8 mb-3">Mi cuenta está bloqueada</h3>
-
-      <HelpCallout type="warning">
-        Después de 5 intentos fallidos de login, tu cuenta se bloquea temporalmente durante 15 minutos
-        como medida de seguridad.
-      </HelpCallout>
-
-      <HelpStep
-        number={1}
-        title="Espera 15 minutos"
-        description="El bloqueo se levanta automáticamente después de 15 minutos. No intentes acceder durante este tiempo."
-      />
-
-      <HelpStep
-        number={2}
-        title="Restablece tu contraseña"
-        description="Si no recuerdas la contraseña, usa la opción de restablecimiento para evitar volver a bloquearte."
-      />
-
-      <h3 className="text-base font-semibold text-foreground mt-8 mb-3">No recibí la invitación</h3>
-
-      <HelpStep
-        number={1}
-        title="Verifica el email"
-        description="Asegúrate de que tu administrador envió la invitación al email correcto."
-      />
-
-      <HelpStep
-        number={2}
-        title="Revisa spam y promociones"
-        description="Los emails de IP-NEXUS pueden terminar en carpetas de spam, especialmente la primera vez."
-        tip="Añade noreply@ip-nexus.com a tus contactos para evitar que futuros emails vayan a spam."
-      />
-
-      <HelpStep
-        number={3}
-        title="Solicita reenvío"
-        description="Pide a tu administrador que reenvíe la invitación desde Configuración → Usuarios. Las invitaciones expiran a los 7 días."
-      />
-
-      <h3 className="text-base font-semibold text-foreground mt-8 mb-3">Veo un error al cargar</h3>
-
-      <ul className="list-disc list-inside text-sm text-foreground/80 space-y-1.5 mb-4">
-        <li>Limpia la caché del navegador (Ctrl+Shift+Delete)</li>
-        <li>Prueba en una ventana de incógnito</li>
-        <li>Desactiva las extensiones del navegador</li>
-        <li>Prueba con otro navegador (Chrome, Firefox, Safari)</li>
-      </ul>
-
-      <HelpCallout type="danger">
-        Si ninguna de estas soluciones funciona, <a href="/app/help/article/contactar-soporte" className="text-primary underline">contacta con soporte</a>.
-        Incluye capturas de pantalla del error y el navegador que estás usando.
-      </HelpCallout>
-    </>
+      <ArticleSection id="error" title="Veo un error al cargar" icon={Monitor} accentColor={ACCENT} variant="highlighted">
+        <FeatureGrid features={[
+          { emoji: '🗑️', title: 'Limpia la caché', description: 'Usa Ctrl+Shift+Delete para limpiar la caché del navegador.' },
+          { emoji: '🕶️', title: 'Modo incógnito', description: 'Prueba en una ventana de incógnito para descartar extensiones.' },
+          { emoji: '🔌', title: 'Desactiva extensiones', description: 'Algunas extensiones pueden interferir con la carga de IP-NEXUS.' },
+          { emoji: '🌐', title: 'Otro navegador', description: 'Prueba con Chrome, Firefox o Safari para descartar problemas.' },
+        ]} />
+        <InfoCallout type="danger">
+          Si ninguna solución funciona,{' '}
+          <a href="/app/help/article/contactar-soporte" className="underline font-semibold">contacta con soporte</a>.
+          Incluye capturas de pantalla del error y el navegador que estás usando.
+        </InfoCallout>
+      </ArticleSection>
+    </ArticleLayout>
   );
 }

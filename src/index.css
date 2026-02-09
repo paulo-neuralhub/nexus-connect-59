@@ -343,4 +343,65 @@
     background: #f1f5f9;
     transform: scale(1.1);
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     HELP CENTER — Article content typography
+     ═══════════════════════════════════════════════════════════ */
+
+  .article-content {
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .article-content p {
+    margin-bottom: 1rem;
+  }
+
+  .article-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .article-content strong {
+    font-weight: 700;
+    color: hsl(var(--foreground));
+  }
+
+  .article-content a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: hsl(var(--primary) / 0.3);
+    transition: text-decoration-color 0.2s;
+  }
+
+  .article-content a:hover {
+    text-decoration-color: hsl(var(--primary));
+  }
+
+  .article-content code {
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 0.88em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: hsl(var(--foreground) / 0.8);
+  }
+}
+
+/* Smooth scroll for TOC links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Thin scrollbar for pipeline overflow */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 100px;
 }
