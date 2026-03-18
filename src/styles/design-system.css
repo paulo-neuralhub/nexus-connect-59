@@ -1,0 +1,847 @@
+/* ================================================
+   IP-NEXUS DESIGN SYSTEM "SILK"
+   Global CSS variables (HSL) + utility classes
+   ================================================
+   
+   ┌─────────────────────────────────────────────────────────────┐
+   │                    SILK CHEAT SHEET                         │
+   ├─────────────────────────────────────────────────────────────┤
+   │  FONDO APP:        #f1f4f9                                  │
+   │  NAVY:             #0a2540                                  │
+   │  ACCENT:           #00b4d8 → #00d4aa                        │
+   │  TEXTOS:           #334155 / #64748b / #94a3b8              │
+   │                                                             │
+   │  CARDS:            solo borde rgba(0,0,0,0.06), SIN sombra  │
+   │  BADGES:           sombra neumórfica SIEMPRE                │
+   │  BOTONES:          primario = gradient + glow               │
+   │                    secundario = neumórfica pequeña          │
+   │  TABS:             contenedor = inset neumórfico            │
+   │                    tab activo = neumórfica pequeña          │
+   │  SIDEBAR:          navy gradient + tongue + badge empresa   │
+   │                                                             │
+   │  ❌ MORADO:        #8b5cf6 → usar #2563eb (indigo)          │
+   │  ❌ SOFTZONES:     ELIMINADO                                │
+   │  ❌ SOMBRAS CARDS: ELIMINADO                                │
+   └─────────────────────────────────────────────────────────────┘
+*/
+
+:root {
+    /* ===== FONDOS SILK ===== */
+    /* #f1f4f9 - Fondo principal */
+    --ip-bg-primary: 216 33% 97%;
+    /* #FFFFFF */
+    --ip-bg-white: 0 0% 100%;
+    --ip-bg-card: 216 33% 97%;
+
+    /* ===== SIDEBAR SILK ===== */
+    /* Navy-Teal gradient: #0a2540 -> #0f4c75 -> #145374 */
+    --ip-sidebar-from: 210 75% 15%;     /* #0a2540 */
+    --ip-sidebar-mid: 205 77% 26%;      /* #0f4c75 */
+    --ip-sidebar-to: 200 71% 27%;       /* #145374 */
+    
+    /* Cyan accent: #00b4d8 */
+    --ip-sidebar-accent-from: 193 100% 42%;
+    /* Teal accent: #00d4aa */
+    --ip-sidebar-accent-to: 166 100% 42%;
+
+    /* ===== ACCENT SILK ===== */
+    /* Primary accent: #00b4d8 (cyan) */
+    --ip-accent-primary: 193 100% 42%;
+    /* Secondary accent: #00d4aa (teal) */
+    --ip-accent-secondary: 166 100% 42%;
+    /* Indigo (reemplazo de morado): #2563eb */
+    --ip-accent-indigo: 221 83% 53%;
+
+    /* ===== STATS GRADIENTES ===== */
+    /* Blue: #3B82F6 -> #2563EB */
+    --ip-stat-blue-from: 217 91% 60%;
+    --ip-stat-blue-to: 221 83% 53%;
+
+    /* Emerald: #10B981 -> #059669 */
+    --ip-stat-emerald-from: 160 84% 39%;
+    --ip-stat-emerald-to: 163 94% 30%;
+
+    /* Cyan: #00b4d8 -> #00d4aa */
+    --ip-stat-cyan-from: 193 100% 42%;
+    --ip-stat-cyan-to: 166 100% 42%;
+
+    /* Orange: #F97316 -> #EA580C */
+    --ip-stat-orange-from: 25 95% 53%;
+    --ip-stat-orange-to: 20 90% 48%;
+
+    /* Indigo (reemplazo purple): #4F46E5 -> #4338CA */
+    --ip-stat-indigo-from: 243 75% 59%;
+    --ip-stat-indigo-to: 244 59% 51%;
+
+    /* ===== BOTONES DE ACCIÓN ===== */
+    /* call */
+    --ip-action-call-bg: 204 100% 97%;
+    --ip-action-call-text: 199 98% 39%;
+    --ip-action-call-hover: 204 94% 94%;
+
+    /* email */
+    --ip-action-email-bg: 214 100% 97%;
+    --ip-action-email-text: 221 83% 53%;
+    --ip-action-email-hover: 214 95% 93%;
+
+    /* whatsapp */
+    --ip-action-whatsapp-bg: 138 76% 97%;
+    --ip-action-whatsapp-text: 142 76% 36%;
+    --ip-action-whatsapp-hover: 138 76% 92%;
+
+    /* ===== TIMELINE COLORS ===== */
+    --ip-timeline-email-bg: 214 95% 93%;
+    --ip-timeline-email-border: 213 94% 87%;
+
+    --ip-timeline-call-bg: 204 94% 94%;
+    --ip-timeline-call-border: 199 89% 85%;
+
+    --ip-timeline-whatsapp-bg: 138 76% 92%;
+    --ip-timeline-whatsapp-border: 141 73% 84%;
+
+    --ip-timeline-note-bg: 210 20% 96%;
+    --ip-timeline-note-border: 214 32% 91%;
+
+    /* Meeting: ahora indigo en lugar de purple */
+    --ip-timeline-meeting-bg: 221 100% 96%;
+    --ip-timeline-meeting-border: 221 94% 92%;
+
+    --ip-timeline-task-bg: 48 100% 88%;
+    --ip-timeline-task-border: 48 96% 77%;
+
+    /* ===== PENDING ACTIVITIES ===== */
+    --ip-pending-bg: 48 100% 96%;
+    --ip-pending-border: 48 96% 77%;
+    --ip-pending-text: 32 91% 35%;
+
+    /* ===== BADGES ===== */
+    --ip-badge-vip-bg: 48 100% 88%;
+    --ip-badge-vip-text: 32 91% 35%;
+
+    /* ===== TEXTO SILK ===== */
+    /* #0a2540 - Navy headings */
+    --ip-text-heading: 210 75% 15%;
+    /* #334155 */
+    --ip-text-primary: 215 28% 27%;
+    /* #64748b */
+    --ip-text-secondary: 215 16% 47%;
+    /* #94a3b8 */
+    --ip-text-muted: 215 16% 65%;
+
+    /* ===== BORDES SILK ===== */
+    /* rgba(0,0,0,0.06) */
+    --ip-border-light: 0 0% 0% / 0.06;
+    /* rgba(0,180,216,0.15) - active */
+    --ip-border-active: 193 100% 42% / 0.15;
+    
+    /* ===== NEUMORPHIC SHADOWS ===== */
+    /* Cards: NO shadow, solo border */
+    /* Badges: siempre neumórficas */
+    --ip-shadow-neu: 4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff;
+    --ip-shadow-neu-sm: 3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff;
+    --ip-shadow-neu-inset: inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff;
+
+    /* ===== Wire into existing semantic tokens ===== */
+    --background: var(--ip-bg-primary);
+    --background-card: var(--ip-bg-card);
+    --card: var(--ip-bg-card);
+    --foreground: var(--ip-text-primary);
+    --muted-foreground: var(--ip-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SILK CARDS: Sin sombra, solo borde sutil
+   Aplica globalmente a todos los cards/paneles
+   
+   EXCEPCIONES que SÍ mantienen sombra:
+   - .silk-badge, .shadow-neu, .shadow-neu-sm (badges)
+   - .btn-primary, button[data-primary] (botones primarios)
+   - [role="tablist"], [data-tabs] (tabs)
+   - .silk-sidebar, nav.sidebar (sidebar)
+   - .silk-shell (shell principal)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* SILK Card base: border only, no shadow */
+.silk-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: hsl(var(--ip-bg-card));
+  box-shadow: none !important;
+}
+
+/* SILK Card row/list item */
+.silk-card-row {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: hsl(var(--ip-bg-primary));
+  box-shadow: none !important;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.silk-card-row:hover {
+  border-color: rgba(0, 180, 216, 0.15);
+}
+
+/* ═══════ GLOBAL SHADOW REMOVAL FOR CARDS ═══════ */
+
+/* Remove shadow-sm from ALL cards and card-like elements */
+.shadow-sm:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu):not(.shadow-neu-sm):not(.silk-shell):not([data-radix-popper-content-wrapper] *):not([data-state="open"]):not([class*="Dialog"]):not([class*="Popover"]):not([class*="Dropdown"]):not([class*="Menu"]) {
+  box-shadow: none !important;
+}
+
+/* Remove shadow-md from ALL cards */
+.shadow-md:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu):not(.shadow-neu-sm):not([data-radix-popper-content-wrapper] *) {
+  box-shadow: none !important;
+}
+
+/* Remove shadow-lg from cards (keep for modals/dropdowns) */
+.shadow-lg:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu):not([data-radix-popper-content-wrapper] *):not([class*="Dialog"]):not([class*="Popover"]):not([class*="Dropdown"]):not([class*="Sheet"]) {
+  box-shadow: none !important;
+}
+
+/* Ensure all Card components have proper SILK styling */
+[class*="bg-card"]:not(button):not([role="button"]):not([data-radix-popper-content-wrapper] *) {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+}
+
+/* ═══════ HOVER EFFECTS: Border instead of shadow ═══════ */
+
+.hover\:shadow-md:hover:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu) {
+  box-shadow: none !important;
+  border-color: rgba(0, 180, 216, 0.15) !important;
+}
+
+.hover\:shadow-lg:hover:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu) {
+  box-shadow: none !important;
+  border-color: rgba(0, 180, 216, 0.15) !important;
+}
+
+.hover\:shadow-xl:hover:not(button):not([role="button"]):not([role="tab"]):not(.shadow-neu) {
+  box-shadow: none !important;
+  border-color: rgba(0, 180, 216, 0.15) !important;
+}
+
+/* ═══════ SPECIFIC OVERRIDES ═══════ */
+
+/* Market cards */
+.group.bg-card:hover {
+  box-shadow: none !important;
+  border-color: rgba(0, 180, 216, 0.15) !important;
+}
+
+/* Module cards - no shadow */
+[class*="ModuleCard"],
+[class*="module-card"] {
+  box-shadow: none !important;
+}
+
+/* ===== CLASES DE UTILIDAD SILK ===== */
+
+/* Gradientes para Stats */
+.ip-stat-blue {
+  background: linear-gradient(135deg, hsl(var(--ip-stat-blue-from)), hsl(var(--ip-stat-blue-to)));
+}
+
+.ip-stat-emerald {
+  background: linear-gradient(135deg, hsl(var(--ip-stat-emerald-from)), hsl(var(--ip-stat-emerald-to)));
+}
+
+.ip-stat-cyan {
+  background: linear-gradient(135deg, hsl(var(--ip-stat-cyan-from)), hsl(var(--ip-stat-cyan-to)));
+}
+
+.ip-stat-orange {
+  background: linear-gradient(135deg, hsl(var(--ip-stat-orange-from)), hsl(var(--ip-stat-orange-to)));
+}
+
+/* SILK Sidebar gradient: Navy -> Teal */
+.ip-sidebar-gradient {
+  background: linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%);
+  position: relative;
+}
+
+/* SILK Sidebar ambient glow */
+.ip-sidebar-gradient::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: radial-gradient(ellipse at bottom, rgba(0,180,216,0.06), transparent);
+  pointer-events: none;
+}
+
+/* SILK Sidebar accent (logo icon) */
+.ip-sidebar-accent {
+  background: linear-gradient(135deg, #00b4d8, #00d4aa);
+  box-shadow: 0 3px 14px rgba(0, 180, 216, 0.30);
+}
+
+/* SILK Menu item active - TONGUE CONNECTOR */
+.silk-menu-active {
+  position: relative;
+  background: #f1f4f9 !important;
+  border-radius: 14px 0 0 14px !important;
+  margin-right: 0 !important;
+  z-index: 10;
+  isolation: isolate;
+}
+
+/* Tongue curves removed — clean active state without legs */
+
+/* SILK Accent bar for active item */
+.silk-accent-bar {
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  background: #00b4d8;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 10px rgba(0, 180, 216, 0.30);
+}
+
+/* SILK Company badge */
+.silk-company-badge {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(0, 180, 216, 0.06);
+  border: 1px solid rgba(0, 180, 216, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* SILK Luminous dot */
+.silk-dot-glow {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00b4d8;
+  box-shadow: 0 0 6px rgba(0, 180, 216, 0.30);
+}
+
+/* SILK Menu badge active */
+.silk-badge-active {
+  background: #00b4d8;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 180, 216, 0.30);
+}
+
+/* SILK Menu badge inactive */
+.silk-badge-inactive {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* SILK Quick actions grid */
+.silk-quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 12px 16px 0 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.silk-quick-action {
+  padding: 6px 4px;
+  border-radius: 7px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* SILK User avatar */
+.silk-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #00b4d8, #0088cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Avatar gradient */
+.ip-avatar-gradient {
+  background: linear-gradient(135deg, hsl(var(--ip-stat-blue-from)), hsl(var(--ip-stat-purple-from)));
+}
+
+/* Timeline item styles */
+.ip-timeline-email {
+  background-color: hsl(var(--ip-timeline-email-bg));
+  border-color: hsl(var(--ip-timeline-email-border));
+}
+
+.ip-timeline-call {
+  background-color: hsl(var(--ip-timeline-call-bg));
+  border-color: hsl(var(--ip-timeline-call-border));
+}
+
+.ip-timeline-whatsapp {
+  background-color: hsl(var(--ip-timeline-whatsapp-bg));
+  border-color: hsl(var(--ip-timeline-whatsapp-border));
+}
+
+.ip-timeline-note {
+  background-color: hsl(var(--ip-timeline-note-bg));
+  border-color: hsl(var(--ip-timeline-note-border));
+}
+
+.ip-timeline-meeting {
+  background-color: hsl(var(--ip-timeline-meeting-bg));
+  border-color: hsl(var(--ip-timeline-meeting-border));
+}
+
+.ip-timeline-task {
+  background-color: hsl(var(--ip-timeline-task-bg));
+  border-color: hsl(var(--ip-timeline-task-border));
+}
+
+/* Pending activities */
+.ip-pending-section {
+  background-color: hsl(var(--ip-pending-bg));
+  border-color: hsl(var(--ip-pending-border));
+  color: hsl(var(--ip-pending-text));
+}
+
+/* Action buttons */
+.ip-btn-call {
+  background-color: hsl(var(--ip-action-call-bg));
+  color: hsl(var(--ip-action-call-text));
+}
+.ip-btn-call:hover {
+  background-color: hsl(var(--ip-action-call-hover));
+}
+
+.ip-btn-email {
+  background-color: hsl(var(--ip-action-email-bg));
+  color: hsl(var(--ip-action-email-text));
+}
+.ip-btn-email:hover {
+  background-color: hsl(var(--ip-action-email-hover));
+}
+
+.ip-btn-whatsapp {
+  background-color: hsl(var(--ip-action-whatsapp-bg));
+  color: hsl(var(--ip-action-whatsapp-text));
+}
+.ip-btn-whatsapp:hover {
+  background-color: hsl(var(--ip-action-whatsapp-hover));
+}
+
+/* ===== EFECTO WOW - ANIMACIONES PREMIUM ===== */
+
+/* Glow pulsante para elementos importantes */
+@keyframes glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+  }
+}
+
+/* Pulse lento para orbes de fondo */
+@keyframes pulse-slow {
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 0.5; 
+    transform: scale(1.05); 
+  }
+}
+
+/* Pulse sutil para urgencias */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Shimmer para líneas de progreso */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Float para elementos destacados */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Glow pulse for danger/urgent elements */
+@keyframes glow-pulse-danger {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* Clases de utilidad para animaciones */
+.animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-glow-pulse-danger { animation: glow-pulse-danger 2s ease-in-out infinite; }
+.animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+.animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+.animate-shimmer { animation: shimmer 2s infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+/* Animation delays */
+.animation-delay-1000 { animation-delay: 1s; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-3000 { animation-delay: 3s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+/* Transición premium por defecto */
+.transition-premium {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass effect premium */
+.glass-premium {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    inset 0 1px 1px rgba(255,255,255,0.4),
+    inset 0 -1px 1px rgba(0,0,0,0.05),
+    0 25px 50px -12px rgba(0,0,0,0.1);
+}
+
+/* Dark mode glass */
+.dark .glass-premium {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    inset 0 1px 1px rgba(255,255,255,0.1),
+    inset 0 -1px 1px rgba(0,0,0,0.2),
+    0 25px 50px -12px rgba(0,0,0,0.4);
+}
+
+/* Colored glow shadows */
+.glow-primary { box-shadow: 0 20px 50px -12px rgba(59, 130, 246, 0.4); }
+.glow-success { box-shadow: 0 20px 50px -12px rgba(16, 185, 129, 0.4); }
+.glow-warning { box-shadow: 0 20px 50px -12px rgba(249, 115, 22, 0.4); }
+.glow-danger { box-shadow: 0 20px 50px -12px rgba(239, 68, 68, 0.4); }
+.glow-purple { box-shadow: 0 20px 50px -12px rgba(147, 51, 234, 0.4); }
+
+/* Hover glow effects */
+.hover-glow-primary:hover { box-shadow: 0 25px 60px -12px rgba(59, 130, 246, 0.5); }
+.hover-glow-success:hover { box-shadow: 0 25px 60px -12px rgba(16, 185, 129, 0.5); }
+.hover-glow-warning:hover { box-shadow: 0 25px 60px -12px rgba(249, 115, 22, 0.5); }
+.hover-glow-danger:hover { box-shadow: 0 25px 60px -12px rgba(239, 68, 68, 0.5); }
+
+/* ===== DARK MODE ENHANCEMENTS ===== */
+
+/* Dark mode background adjustments */
+.dark {
+  --ip-bg-primary: 224 71% 4%;
+  --ip-bg-card: 224 71% 8%;
+  --ip-text-primary: 213 31% 91%;
+  --ip-text-secondary: 215 20% 65%;
+  --ip-border-light: 217 33% 17%;
+}
+
+/* Dark mode orb colors - more vibrant */
+.dark .bg-blue-500\/20 { background-color: rgba(59, 130, 246, 0.3); }
+.dark .bg-purple-500\/15 { background-color: rgba(139, 92, 246, 0.25); }
+.dark .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.2); }
+
+/* Button micro-interactions */
+.btn-micro {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-micro:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+.btn-micro:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Input focus glow */
+.input-glow:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+.dark .input-glow:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Card breathing animation */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.005); }
+}
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Skeleton shimmer for loading */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Icon rotate on hover */
+.icon-rotate-hover {
+  transition: transform 0.3s ease;
+}
+.group:hover .icon-rotate-hover {
+  transform: rotate(12deg);
+}
+
+/* ===== SILK SECTION 5: COLORES POR CONTEXTO DE NEGOCIO ===== */
+
+/* ----- PLAZOS POR URGENCIA ----- */
+/* ≤5 días: Urgente (rojo) */
+.silk-deadline-urgent {
+  --deadline-color: #ef4444;
+  color: #ef4444;
+}
+.silk-deadline-urgent-bg {
+  background-color: #ef44440a;
+  color: #ef4444;
+}
+
+/* ≤15 días: Warning (ámbar) */
+.silk-deadline-warning {
+  --deadline-color: #f59e0b;
+  color: #f59e0b;
+}
+.silk-deadline-warning-bg {
+  background-color: #f59e0b0a;
+  color: #f59e0b;
+}
+
+/* >15 días: Normal (neutral) */
+.silk-deadline-normal {
+  --deadline-color: #64748b;
+  color: #64748b;
+}
+.silk-deadline-normal-bg {
+  background-color: #64748b0a;
+  color: #64748b;
+}
+
+/* Completado (verde) */
+.silk-deadline-completed {
+  --deadline-color: #10b981;
+  color: #10b981;
+}
+.silk-deadline-completed-bg {
+  background-color: #10b9810a;
+  color: #10b981;
+}
+
+/* Badge urgente */
+.silk-badge-urgent {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ----- RIESGO VIGILANCIA ----- */
+.silk-risk-high {
+  --risk-color: #ef4444;
+  color: #ef4444;
+}
+.silk-risk-high-bg {
+  background-color: #ef44440a;
+  border-left: 3px solid #ef4444;
+}
+
+.silk-risk-medium {
+  --risk-color: #f59e0b;
+  color: #f59e0b;
+}
+.silk-risk-medium-bg {
+  background-color: #f59e0b0a;
+  border-left: 3px solid #f59e0b;
+}
+
+.silk-risk-low {
+  --risk-color: #10b981;
+  color: #10b981;
+}
+.silk-risk-low-bg {
+  background-color: #10b9810a;
+  border-left: 3px solid #10b981;
+}
+
+/* ----- FASES DE EXPEDIENTE ----- */
+/* Fase completada: fondo tintado con color del expediente */
+.silk-phase-completed {
+  background-color: var(--matter-color, #3b82f6);
+  background-color: color-mix(in srgb, var(--matter-color, #3b82f6) 6%, transparent);
+  color: var(--matter-color, #3b82f6);
+}
+
+/* Fase actual: gradiente con sombra */
+.silk-phase-current {
+  background: linear-gradient(135deg, var(--matter-color, #3b82f6), color-mix(in srgb, var(--matter-color, #3b82f6) 80%, #000));
+  color: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--matter-color, #3b82f6) 30%, transparent);
+}
+
+/* Fase futura */
+.silk-phase-future {
+  background-color: rgba(0, 0, 0, 0.02);
+  color: #d0d5dd;
+}
+
+/* ----- CLIENTES CRM (Paleta sin morado) ----- */
+.silk-client-emerald { --client-color: #10b981; }
+.silk-client-blue { --client-color: #3b82f6; }
+.silk-client-amber { --client-color: #f59e0b; }
+.silk-client-indigo { --client-color: #2563eb; }
+.silk-client-pink { --client-color: #ec4899; }
+.silk-client-cyan { --client-color: #06b6d4; }
+
+.silk-client-tag {
+  background-color: color-mix(in srgb, var(--client-color, #3b82f6) 6%, transparent);
+  color: var(--client-color, #3b82f6);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ----- HERRAMIENTAS IA ----- */
+.silk-ai-available {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.silk-ai-beta {
+  --ai-color: #2563eb;
+  opacity: 1;
+  cursor: pointer;
+}
+.silk-ai-beta::after {
+  content: 'BETA';
+  margin-left: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.silk-ai-coming-soon {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+  color: #94a3b8;
+}
+
+/* ----- TAGS TINTADOS (Fórmula genérica) ----- */
+/* Uso: style="--tag-color: #ef4444" + class="silk-tag" */
+.silk-tag {
+  background-color: color-mix(in srgb, var(--tag-color, #64748b) 6%, transparent);
+  color: var(--tag-color, #64748b);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Variantes predefinidas */
+.silk-tag-red { --tag-color: #ef4444; }
+.silk-tag-orange { --tag-color: #f97316; }
+.silk-tag-amber { --tag-color: #f59e0b; }
+.silk-tag-green { --tag-color: #10b981; }
+.silk-tag-blue { --tag-color: #3b82f6; }
+.silk-tag-cyan { --tag-color: #06b6d4; }
+.silk-tag-pink { --tag-color: #ec4899; }
+.silk-tag-gray { --tag-color: #64748b; }
+
+/* ----- TIPOS DE EXPEDIENTE (Matter Types) ----- */
+/* Marcas */
+.silk-matter-trademark { --matter-color: #3b82f6; }
+/* Patentes */
+.silk-matter-patent { --matter-color: #10b981; }
+/* Diseños */
+.silk-matter-design { --matter-color: #f59e0b; }
+/* Dominios */
+.silk-matter-domain { --matter-color: #06b6d4; }
+/* Oposiciones */
+.silk-matter-opposition { --matter-color: #ef4444; }
+/* Vigilancias */
+.silk-matter-watch { --matter-color: #ec4899; }
+/* Litigios */
+.silk-matter-litigation { --matter-color: #dc2626; }
+
+/* Barra lateral de color para cards de expediente */
+.silk-matter-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--matter-color, #3b82f6);
+  border-radius: 4px 0 0 4px;
+}
+
+/* ----- ESTADOS OPERATIVOS ----- */
+.silk-status-active {
+  background-color: #10b9810a;
+  color: #10b981;
+  border: 1px solid #10b98120;
+}
+
+.silk-status-pending {
+  background-color: #f59e0b0a;
+  color: #f59e0b;
+  border: 1px solid #f59e0b20;
+}
+
+.silk-status-completed {
+  background-color: #3b82f60a;
+  color: #3b82f6;
+  border: 1px solid #3b82f620;
+}
+
+.silk-status-cancelled {
+  background-color: #64748b0a;
+  color: #64748b;
+  border: 1px solid #64748b20;
+}
+
+.silk-status-overdue {
+  background-color: #ef44440a;
+  color: #ef4444;
+  border: 1px solid #ef444420;
+}

@@ -1,0 +1,639 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "all": "Todos",
+    "view": "Ver",
+    "download": "Descargar",
+    "upload": "Subir",
+    "actions": "Acciones",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión",
+    "noResults": "Sin resultados",
+    "required": "Requerido",
+    "add": "Añadir",
+    "new": "Nuevo",
+    "duplicate": "Duplicar",
+    "send": "Enviar",
+    "preview": "Vista previa",
+    "name": "Nombre",
+    "email": "Email",
+    "phone": "Teléfono",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "date": "Fecha",
+    "total": "Total"
+  },
+  
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "fullName": "Nombre completo",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetPassword": "Restablecer contraseña",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInSubtitle": "Inicia sesión para continuar en IP-NEXUS",
+    "signUpSubtitle": "Crea tu cuenta para comenzar",
+    "resetSubtitle": "Ingresa tu email para restablecer tu contraseña",
+    "sendResetLink": "Enviar enlace",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "updatePassword": "Actualizar contraseña"
+  },
+  
+  "nav": {
+    "dashboard": "Dashboard",
+    "docket": "Expedientes",
+    "matters": "Expedientes",
+    "dataHub": "Data Hub",
+    "spider": "Spider",
+    "crm": "CRM",
+    "contacts": "Contactos",
+    "deals": "Oportunidades",
+    "pipelines": "Pipelines",
+    "marketing": "Marketing",
+    "campaigns": "Campañas",
+    "templates": "Plantillas",
+    "automations": "Automatizaciones",
+    "lists": "Listas",
+    "market": "Market",
+    "genius": "Genius",
+    "finance": "Finanzas",
+    "help": "Ayuda",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "organization": "Organización",
+    "team": "Equipo"
+  },
+  
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bienvenido, {{name}}",
+    "totalMatters": "Total Expedientes",
+    "activeMatters": "Activos",
+    "expiringMatters": "Por Vencer",
+    "atRisk": "En Riesgo",
+    "recentActivity": "Actividad Reciente",
+    "upcomingDeadlines": "Próximos Vencimientos",
+    "quickActions": "Acciones Rápidas",
+    "newMatter": "Nuevo Expediente",
+    "newContact": "Nuevo Contacto",
+    "newDeal": "Nueva Oportunidad"
+  },
+  
+  "docket": {
+    "title": "Expedientes",
+    "newMatter": "Nuevo Expediente",
+    "editMatter": "Editar Expediente",
+    "reference": "Referencia",
+    "matterTitle": "Título",
+    "type": "Tipo",
+    "status": "Estado",
+    "jurisdiction": "Jurisdicción",
+    "filingDate": "Fecha Presentación",
+    "expiryDate": "Fecha Vencimiento",
+    "registrationDate": "Fecha Registro",
+    "renewalDate": "Próxima Renovación",
+    "applicationNumber": "Nº Solicitud",
+    "registrationNumber": "Nº Registro",
+    "owner": "Titular",
+    "documents": "Documentos",
+    "history": "Historial",
+    "costs": "Costes",
+    "notes": "Notas",
+    "tags": "Etiquetas",
+    "types": {
+      "trademark": "Marca",
+      "patent": "Patente",
+      "design": "Diseño",
+      "domain": "Dominio",
+      "copyright": "Copyright",
+      "other": "Otro"
+    },
+    "statuses": {
+      "draft": "Borrador",
+      "pending": "Pendiente",
+      "filed": "Presentado",
+      "published": "Publicado",
+      "granted": "Concedido",
+      "active": "Activo",
+      "opposed": "En Oposición",
+      "expired": "Expirado",
+      "abandoned": "Abandonado"
+    },
+    "trademark": {
+      "markName": "Nombre de Marca",
+      "markType": "Tipo de Marca",
+      "niceClasses": "Clases Niza",
+      "goodsServices": "Productos y Servicios",
+      "markImage": "Imagen de Marca"
+    }
+  },
+  
+  "crm": {
+    "title": "CRM",
+    "contacts": "Contactos",
+    "newContact": "Nuevo Contacto",
+    "editContact": "Editar Contacto",
+    "deals": "Oportunidades",
+    "newDeal": "Nueva Oportunidad",
+    "editDeal": "Editar Oportunidad",
+    "pipelines": "Pipelines",
+    "activities": "Actividades",
+    "addActivity": "Añadir Actividad",
+    "company": "Empresa",
+    "jobTitle": "Cargo",
+    "source": "Origen",
+    "value": "Valor",
+    "expectedClose": "Cierre Esperado",
+    "assignedTo": "Asignado a",
+    "lifecycleStage": "Etapa del Ciclo",
+    "lifecycleStages": {
+      "subscriber": "Suscriptor",
+      "lead": "Lead",
+      "mql": "Cualificado Marketing",
+      "sql": "Cualificado Ventas",
+      "opportunity": "Oportunidad",
+      "customer": "Cliente",
+      "evangelist": "Evangelista"
+    },
+    "priorities": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "urgent": "Urgente"
+    },
+    "activityTypes": {
+      "note": "Nota",
+      "email": "Email",
+      "call": "Llamada",
+      "meeting": "Reunión",
+      "task": "Tarea",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  
+  "marketing": {
+    "title": "Marketing",
+    "dashboard": "Dashboard",
+    "campaigns": "Campañas",
+    "newCampaign": "Nueva Campaña",
+    "editCampaign": "Editar Campaña",
+    "templates": "Plantillas",
+    "newTemplate": "Nueva Plantilla",
+    "editTemplate": "Editar Plantilla",
+    "automations": "Automatizaciones",
+    "newAutomation": "Nueva Automatización",
+    "editAutomation": "Editar Automatización",
+    "lists": "Listas",
+    "newList": "Nueva Lista",
+    "subject": "Asunto",
+    "previewText": "Texto de Vista Previa",
+    "fromName": "Nombre del Remitente",
+    "fromEmail": "Email del Remitente",
+    "recipients": "Destinatarios",
+    "schedule": "Programar",
+    "sendNow": "Enviar Ahora",
+    "scheduleSend": "Programar Envío",
+    "emailEditor": "Editor de Email",
+    "addBlock": "Añadir Bloque",
+    "metrics": {
+      "sent": "Enviados",
+      "delivered": "Entregados",
+      "opened": "Abiertos",
+      "clicked": "Clicks",
+      "bounced": "Rebotados",
+      "unsubscribed": "Bajas",
+      "openRate": "Tasa de Apertura",
+      "clickRate": "Tasa de Clicks",
+      "deliveryRate": "Tasa de Entrega"
+    },
+    "statuses": {
+      "draft": "Borrador",
+      "scheduled": "Programada",
+      "sending": "Enviando",
+      "sent": "Enviada",
+      "paused": "Pausada",
+      "cancelled": "Cancelada"
+    },
+    "blocks": {
+      "header": "Cabecera",
+      "text": "Texto",
+      "image": "Imagen",
+      "button": "Botón",
+      "divider": "Divisor",
+      "spacer": "Espaciador",
+      "columns": "Columnas",
+      "social": "Redes Sociales",
+      "footer": "Pie de Página",
+      "html": "HTML"
+    }
+  },
+  
+  "settings": {
+    "title": "Configuración",
+    "profile": "Perfil",
+    "language": "Idioma",
+    "timezone": "Zona Horaria",
+    "organization": "Organización",
+    "team": "Equipo",
+    "billing": "Facturación",
+    "notifications": "Notificaciones",
+    "security": "Seguridad",
+    "integrations": "Integraciones"
+  },
+  
+  "jurisdictions": {
+    "ES": "España (OEPM)",
+    "EU": "Unión Europea (EUIPO)",
+    "WO": "Internacional (OMPI)",
+    "US": "Estados Unidos (USPTO)",
+    "GB": "Reino Unido (UKIPO)",
+    "DE": "Alemania (DPMA)",
+    "FR": "Francia (INPI)",
+    "IT": "Italia (UIBM)",
+    "PT": "Portugal (INPI)",
+    "CN": "China (CNIPA)",
+    "JP": "Japón (JPO)",
+    "KR": "Corea del Sur (KIPO)"
+  },
+  
+  "errors": {
+    "generic": "Algo salió mal",
+    "notFound": "No encontrado",
+    "unauthorized": "No autorizado",
+    "forbidden": "Acceso denegado",
+    "networkError": "Error de red",
+    "validationError": "Por favor revisa los campos del formulario",
+    "saveError": "No se pudieron guardar los cambios",
+    "deleteError": "No se pudo eliminar",
+    "loadError": "No se pudieron cargar los datos"
+  },
+  
+  "onboarding": {
+    "title": "Bienvenido a IP-NEXUS",
+    "subtitle": "Vamos a configurar tu organización",
+    "orgName": "Nombre de la Organización",
+    "orgNamePlaceholder": "Nombre de tu empresa o despacho",
+    "createOrg": "Crear Organización",
+    "skip": "Saltar por ahora"
+  },
+
+  "portal": {
+    "login": {
+      "title": "Acceso al Portal",
+      "subtitle": "Introduzca su email para recibir un enlace de acceso",
+      "email_placeholder": "su@email.com",
+      "submit": "Acceder al portal",
+      "sending": "Enviando...",
+      "check_email": "Revise su email",
+      "link_sent": "Hemos enviado un enlace de acceso a",
+      "link_expires": "El enlace expira en 15 minutos",
+      "use_another": "Usar otro email",
+      "secure_link": "Le enviaremos un enlace seguro para acceder",
+      "authorized_only": "Acceso exclusivo para clientes autorizados",
+      "contact_rep": "Si no tiene acceso, contacte con su representante",
+      "verifying": "Verificando acceso...",
+      "validating": "Estamos validando su enlace de acceso",
+      "not_available": "Portal no disponible",
+      "not_available_desc": "Este portal no existe o ha sido desactivado. Por favor, contacte con su representante.",
+      "error": {
+        "invalid_email": "Email inválido",
+        "user_not_found": "Usuario no encontrado o sin acceso a este portal",
+        "link_expired": "Enlace inválido o expirado",
+        "verify_error": "Error al verificar enlace"
+      }
+    },
+    "layout": {
+      "logout": "Cerrar sesión",
+      "footer": "Portal de cliente"
+    },
+    "nav": {
+      "dashboard": "Inicio",
+      "matters": "Mis Expedientes",
+      "documents": "Documentos",
+      "invoices": "Facturas",
+      "messages": "Mensajes"
+    },
+    "dashboard": {
+      "welcome": "Bienvenido",
+      "subtitle": "Aquí puede consultar el estado de sus asuntos y comunicarse con nosotros",
+      "active_matters": "Expedientes activos",
+      "pending_deadlines": "Plazos próximos",
+      "new_documents": "Documentos nuevos",
+      "unread_messages": "Mensajes sin leer",
+      "upcoming_deadlines": "Próximos plazos",
+      "recent_activity": "Actividad reciente",
+      "days": "días",
+      "no_deadlines": "No hay plazos próximos",
+      "no_activity": "No hay actividad reciente",
+      "pending_approvals": "Tiene {{count}} documento(s) pendiente(s) de aprobación",
+      "view_documents": "Ver documentos"
+    },
+    "matters": {
+      "title": "Mis Expedientes",
+      "subtitle": "Estado actual de todos sus asuntos",
+      "view_details": "Ver detalles",
+      "progress": "Progreso",
+      "next_deadline": "Próximo plazo",
+      "no_matters": "No se encontraron expedientes",
+      "info": {
+        "type": "Tipo",
+        "jurisdiction": "Jurisdicción",
+        "start_date": "Fecha inicio",
+        "responsible": "Responsable"
+      },
+      "tabs": {
+        "overview": "Resumen",
+        "documents": "Documentos",
+        "timeline": "Historial",
+        "deadlines": "Plazos"
+      },
+      "status": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "completed": "Completado",
+        "on_hold": "En espera"
+      }
+    },
+    "documents": {
+      "title": "Documentos",
+      "subtitle": "Documentos asociados a sus expedientes",
+      "download": "Descargar",
+      "no_documents": "No hay documentos disponibles",
+      "filter_pending": "Pendientes de aprobación"
+    },
+    "invoices": {
+      "title": "Facturas",
+      "number": "Factura #",
+      "download_pdf": "PDF",
+      "pay": "Pagar",
+      "no_invoices": "No se encontraron facturas",
+      "status": {
+        "paid": "Pagada",
+        "pending": "Pendiente",
+        "overdue": "Vencida"
+      }
+    },
+    "messages": {
+      "title": "Mensajes",
+      "conversations": "Conversaciones",
+      "general_inquiry": "Consulta general",
+      "placeholder": "Escriba su mensaje...",
+      "send": "Enviar",
+      "select_conversation": "Seleccione una conversación",
+      "no_messages": "No hay mensajes aún"
+    },
+    "sign": {
+      "title": "Firma de documento",
+      "document_to_sign": "Documento a firmar",
+      "requested_by": "Solicitado por",
+      "signer": "Firmante",
+      "expires": "Expira",
+      "preview": "Vista previa del documento",
+      "download_document": "Descargar documento",
+      "your_signature": "Su firma",
+      "signature_instructions": "Dibuje su firma en el área de abajo usando el ratón o su dedo (en pantallas táctiles).",
+      "clear": "Limpiar firma",
+      "accept_terms": "Confirmo que he leído y entendido el documento. Acepto que mi firma electrónica es legalmente vinculante y tiene el mismo efecto que una firma manuscrita según la legislación aplicable.",
+      "decline": "Rechazar",
+      "sign_document": "Firmar documento",
+      "signing": "Firmando...",
+      "signed_success": "¡Documento firmado!",
+      "signed_message": "Su firma ha sido registrada correctamente. Recibirá una copia del documento firmado por email.",
+      "close_window": "Cerrar esta ventana",
+      "already_signed": "Ya firmado",
+      "already_signed_message": "Este documento ya fue firmado el {{date}}.",
+      "decline_title": "Rechazar firma",
+      "decline_message": "¿Está seguro de que desea rechazar firmar este documento? Esta acción notificará al remitente.",
+      "decline_reason": "Motivo del rechazo (opcional)",
+      "decline_reason_placeholder": "Indique por qué rechaza firmar...",
+      "confirm_decline": "Confirmar rechazo",
+      "error": "Error",
+      "draw_signature": "Por favor, dibuje su firma",
+      "accept_required": "Debe aceptar los términos para firmar"
+    }
+  },
+
+  "signatures": {
+    "title": "Firmas Electrónicas",
+    "subtitle": "Gestiona las solicitudes de firma de documentos",
+    "new_request": "Nueva solicitud",
+    "request_signature": "Solicitar firma",
+    "document": "Documento",
+    "signers": "Firmantes",
+    "add_signer": "Añadir firmante",
+    "signer_email": "Email del firmante",
+    "signer_name": "Nombre completo",
+    "role": {
+      "signer": "Firmante",
+      "approver": "Aprobador",
+      "cc": "Solo copia"
+    },
+    "email_subject": "Asunto del email",
+    "email_message": "Mensaje para firmantes (opcional)",
+    "expires_in": "Expira en",
+    "days": "días",
+    "send_request": "Enviar solicitud",
+    "cancel": "Cancelar",
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviada",
+      "viewed": "Vista",
+      "partially_signed": "Parcialmente firmada",
+      "completed": "Completada",
+      "declined": "Rechazada",
+      "expired": "Expirada",
+      "voided": "Anulada"
+    },
+    "actions": {
+      "view_details": "Ver detalles",
+      "download_signed": "Descargar firmado",
+      "send_reminder": "Enviar recordatorio",
+      "void_request": "Anular solicitud"
+    },
+    "signed_count": "{{signed}}/{{total}} firmantes",
+    "created": "Creada",
+    "expires": "Expira",
+    "reminder_sent": "Recordatorio enviado",
+    "request_voided": "Solicitud anulada"
+  },
+
+  "timetracking": {
+    "title": "Control de Tiempo",
+    "subtitle": "Semana del {{start}} al {{end}}",
+    "new_entry": "Añadir entrada manual",
+    "timer": {
+      "start": "Iniciar temporizador",
+      "stop": "Parar",
+      "pause": "Pausar",
+      "recording": "Grabando",
+      "new_record": "Nuevo registro",
+      "matter_required": "Selecciona un expediente",
+      "description_placeholder": "¿Qué estás haciendo?",
+      "billable": "Facturable"
+    },
+    "stats": {
+      "total_hours": "Horas totales",
+      "billable": "Facturables",
+      "non_billable": "No facturables",
+      "amount": "Importe"
+    },
+    "entry": {
+      "matter": "Expediente",
+      "date": "Fecha",
+      "duration": "Duración",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "description": "Descripción del trabajo",
+      "activity_type": "Tipo de actividad",
+      "save": "Guardar"
+    },
+    "activity_types": {
+      "research": "Investigación",
+      "drafting": "Redacción",
+      "review": "Revisión",
+      "meeting": "Reunión",
+      "call": "Llamada",
+      "email": "Email/Correspondencia",
+      "filing": "Presentación",
+      "court": "Juzgado/Vista",
+      "travel": "Desplazamiento",
+      "admin": "Administrativo",
+      "other": "Otro"
+    },
+    "invoice": {
+      "generate": "Generar factura",
+      "from_time": "Generar factura desde tiempo",
+      "select_entries": "Selecciona las entradas de tiempo a incluir",
+      "entries": "Entradas",
+      "unbilled": "Sin facturar",
+      "no_unbilled": "No hay tiempo sin facturar"
+    },
+    "widget": {
+      "title": "Tiempo registrado",
+      "total": "Total",
+      "unbilled_amount": "Sin facturar"
+    }
+  },
+
+  "finance": {
+    "title": "Finanzas",
+    "dashboard": "Dashboard",
+    "invoices": "Facturas",
+    "payments": "Pagos",
+    "reports": "Informes",
+    "invoice": {
+      "new": "Nueva factura",
+      "number": "Factura #",
+      "date": "Fecha",
+      "due_date": "Fecha vencimiento",
+      "client": "Cliente",
+      "matter": "Expediente",
+      "subtotal": "Subtotal",
+      "tax": "IVA",
+      "total": "Total",
+      "notes": "Notas",
+      "status": {
+        "draft": "Borrador",
+        "sent": "Enviada",
+        "paid": "Pagada",
+        "overdue": "Vencida",
+        "cancelled": "Cancelada"
+      },
+      "actions": {
+        "send": "Enviar",
+        "download": "Descargar PDF",
+        "mark_paid": "Marcar como pagada",
+        "void": "Anular"
+      }
+    },
+    "stats": {
+      "revenue": "Ingresos",
+      "pending": "Pendiente",
+      "overdue": "Vencido",
+      "this_month": "Este mes"
+    }
+  },
+
+  "api": {
+    "title": "API & Webhooks",
+    "keys": {
+      "title": "Claves de API",
+      "subtitle": "Crea claves para integrar aplicaciones externas con IP-NEXUS",
+      "new": "Nueva API Key",
+      "create_title": "Nueva API Key",
+      "create_description": "La clave solo se mostrará una vez. Guárdala en un lugar seguro.",
+      "name": "Nombre",
+      "name_placeholder": "Ej: Integración Zapier",
+      "description": "Descripción",
+      "description_placeholder": "Para qué se usará esta API Key",
+      "permissions": "Permisos",
+      "expiration": "Expiración",
+      "never": "Nunca",
+      "days_30": "30 días",
+      "days_90": "90 días",
+      "months_6": "6 meses",
+      "year_1": "1 año",
+      "created": "API Key creada",
+      "copy_now": "Copia esta clave ahora. No podrás verla de nuevo.",
+      "copied": "He copiado la clave, cerrar",
+      "revoke": "Revocar",
+      "revoke_confirm": "¿Revocar esta API Key? No podrá usarse más.",
+      "last_used": "Último uso",
+      "no_keys": "No hay API Keys",
+      "no_keys_desc": "Crea una API Key para integrar con sistemas externos"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "subtitle": "Recibe notificaciones en tiempo real cuando ocurran eventos",
+      "new": "Nuevo Webhook",
+      "create_title": "Nuevo Webhook",
+      "name": "Nombre",
+      "url": "URL de destino",
+      "events": "Eventos",
+      "test": "Probar",
+      "test_sent": "Webhook de prueba enviado",
+      "no_webhooks": "No hay webhooks configurados",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "docs": {
+      "title": "Documentación de la API",
+      "subtitle": "Explora todos los endpoints disponibles para integrar con IP-NEXUS",
+      "base_url": "URL Base",
+      "authentication": "Autenticación",
+      "auth_description": "Incluye tu API key en el header de cada petición",
+      "endpoints": "Endpoints disponibles",
+      "response_codes": "Códigos de respuesta"
+    },
+    "logs": {
+      "title": "Logs de actividad",
+      "subtitle": "Últimas peticiones a la API",
+      "all": "Todas",
+      "success": "Exitosas",
+      "errors": "Errores",
+      "no_logs": "No hay logs de actividad"
+    }
+  }
+}
