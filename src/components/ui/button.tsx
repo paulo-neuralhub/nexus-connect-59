@@ -4,28 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-/**
- * SILK Design System - Button
- * Botones con gradiente accent y variante neumórfica
- */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        // SILK: Botón primario con gradiente cyan-teal
-        default: "relative bg-gradient-to-br from-[#00b4d8] to-[#00d4aa] text-white font-semibold shadow-accent rounded-[11px] overflow-hidden",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-[11px]",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-[11px]",
-        // SILK: Botón secundario neumórfico
-        secondary: "bg-background text-[#64748b] font-normal shadow-neu-sm rounded-[11px]",
-        ghost: "hover:bg-accent hover:text-accent-foreground rounded-[11px]",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2 text-[13px]",
-        sm: "h-9 px-3 text-[13px]",
-        lg: "h-11 px-8 text-[13px]",
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
       },
     },
@@ -43,40 +37,9 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    const isPrimary = variant === "default" || variant === undefined;
-    
-    // When asChild is true, Slot requires exactly ONE child element.
-    // We cannot add the decorative span inside Slot, so skip it for asChild buttons.
-    if (asChild) {
-      return (
-        <Comp 
-          className={cn(buttonVariants({ variant, size, className }))} 
-          ref={ref} 
-          {...props}
-        >
-          {children}
-        </Comp>
-      );
-    }
-    
-    return (
-      <Comp 
-        className={cn(buttonVariants({ variant, size, className }))} 
-        ref={ref} 
-        {...props}
-      >
-        {children}
-        {/* SILK: Línea decorativa blanca inferior para botón primario */}
-        {isPrimary && (
-          <span 
-            className="absolute bottom-0 left-[22%] right-[22%] h-0.5 bg-white/40 rounded-full pointer-events-none"
-            aria-hidden="true"
-          />
-        )}
-      </Comp>
-    );
+    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
   },
 );
 Button.displayName = "Button";

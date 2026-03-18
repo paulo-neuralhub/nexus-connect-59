@@ -13,51 +13,23 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        sans: ['DM Sans', 'Segoe UI', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: {
-          DEFAULT: "hsl(var(--background))",
-          card: "hsl(var(--background-card))",
-          warm: "hsl(var(--background-warm))",
-          sidebar: "hsl(var(--background-sidebar))",
-        },
+        background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
-          hover: "hsl(var(--primary-hover))",
-          light: "hsl(var(--primary-light))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
-          light: "hsl(var(--secondary-light))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
-          light: "hsl(var(--destructive-light))",
           foreground: "hsl(var(--destructive-foreground))",
-        },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          light: "hsl(var(--success-light))",
-          foreground: "hsl(var(--success-foreground))",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          light: "hsl(var(--warning-light))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        info: {
-          DEFAULT: "hsl(var(--info))",
-          light: "hsl(var(--info-light))",
-          foreground: "hsl(var(--info-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -75,34 +47,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Module colors for APP
-        module: {
-          dashboard: "hsl(var(--module-dashboard))",
-          docket: "hsl(var(--module-docket))",
-          datahub: "hsl(var(--module-datahub))",
-          spider: "hsl(var(--module-spider))",
-          market: "hsl(var(--module-market))",
-          genius: "hsl(var(--module-genius))",
-          finance: "hsl(var(--module-finance))",
-          crm: "hsl(var(--module-crm))",
-          marketing: "hsl(var(--module-marketing))",
-          help: "hsl(var(--module-help))",
-        },
-        // Direct module color access
-        market: "hsl(var(--module-market))",
-        // Backoffice colors
-        backoffice: {
-          dashboard: "hsl(var(--backoffice-dashboard))",
-          ai: "hsl(var(--backoffice-ai))",
-          tenants: "hsl(var(--backoffice-tenants))",
-          billing: "hsl(var(--backoffice-billing))",
-          analytics: "hsl(var(--backoffice-analytics))",
-          crm: "hsl(var(--backoffice-crm))",
-          marketing: "hsl(var(--backoffice-marketing))",
-          calendar: "hsl(var(--backoffice-calendar))",
-          docs: "hsl(var(--backoffice-docs))",
-          killswitch: "hsl(var(--backoffice-killswitch))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -113,76 +57,33 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-
-        // IP-NEXUS (P-UI-01) - design system tokens (HSL variables)
-        ip: {
-          bg: {
-            DEFAULT: "hsl(var(--ip-bg-primary))",
-            secondary: "hsl(var(--ip-bg-white))",
-            card: "hsl(var(--ip-bg-card))",
-          },
-          sidebar: {
-            from: "hsl(var(--ip-sidebar-from))",
-            to: "hsl(var(--ip-sidebar-to))",
-            "accent-from": "hsl(var(--ip-sidebar-accent-from))",
-            "accent-to": "hsl(var(--ip-sidebar-accent-to))",
-          },
-          stats: {
-            blue: "hsl(var(--ip-stat-blue-from))",
-            emerald: "hsl(var(--ip-stat-emerald-from))",
-            purple: "hsl(var(--ip-stat-purple-from))",
-            orange: "hsl(var(--ip-stat-orange-from))",
-          },
-          action: {
-            call: "hsl(var(--ip-action-call-text))",
-            email: "hsl(var(--ip-action-email-text))",
-            whatsapp: "hsl(var(--ip-action-whatsapp-text))",
-          },
-        },
       },
       borderRadius: {
-        lg: "var(--radius)",          /* 14px */
-        md: "calc(var(--radius) - 2px)", /* 12px */
-        sm: "calc(var(--radius) - 4px)", /* 10px */
-        xl: "14px",
-        "2xl": "16px",
-      },
-      boxShadow: {
-        'neu': '4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff',
-        'neu-sm': '3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff',
-        'neu-inset': 'inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff',
-        'neu-shell': '14px 14px 40px #cdd1dc, -14px -14px 40px #ffffff',
-        'accent': '0 3px 12px hsl(193 100% 42% / 0.15)',
-        'glow': '0 0 6px hsl(193 100% 42% / 0.30)',
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(10px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        "slide-in-right": {
-          from: { opacity: "0", transform: "translateX(20px)" },
-          to: { opacity: "1", transform: "translateX(0)" },
-        },
-        "pulse-soft": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.7" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-in-right": "slide-in-right 0.3s ease-out",
-        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
       },
     },
   },

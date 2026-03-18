@@ -1,192 +1,96 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@200;300;400;500;600;700;800&display=swap');
-@import './styles/design-system.css';
-@import './styles/landing.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════
-   SILK SCROLLBAR - Minimal, no track, just a small grey handle
-   ═══════════════════════════════════════════════════════════ */
-
-/* WebKit browsers (Chrome, Safari, Edge) */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
-}
-
-/* IP-NEXUS Design System "SILK" */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
 
 @layer base {
   :root {
-    /* ═══════════════════════════════════════════════════════════
-       SILK DESIGN SYSTEM — TOKENS GLOBALES
-       ═══════════════════════════════════════════════════════════ */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    /* Primary (Cyan Accent) */
-    --primary: 193 100% 42%;           /* #00b4d8 */
-    --primary-hover: 193 100% 36%;
-    --primary-light: 193 100% 95%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    /* Secondary (Teal Accent) */
-    --secondary: 166 100% 42%;         /* #00d4aa */
-    --secondary-light: 166 100% 90%;
-    --secondary-foreground: 0 0% 100%;
-
-    /* Background Colors - SILK */
-    --background: 216 33% 97%;         /* #f1f4f9 - Fondo principal */
-    --background-card: 216 33% 97%;    /* #f1f4f9 - Cards sin sombra */
-    --background-warm: 35 100% 98%;
-    --background-sidebar: 210 75% 15%; /* #0a2540 - Navy */
-    --foreground: 210 75% 15%;         /* #0a2540 - Navy para headings */
-
-    /* Card & Popover */
-    --card: 216 33% 97%;               /* #f1f4f9 */
-    --card-foreground: 210 75% 15%;    /* #0a2540 */
     --popover: 0 0% 100%;
-    --popover-foreground: 210 75% 15%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Text Colors - SILK */
-    --text-heading: 210 75% 15%;       /* #0a2540 - Navy */
-    --text-primary: 215 28% 27%;       /* #334155 */
-    --text-secondary: 215 16% 47%;     /* #64748b */
-    --text-tertiary: 215 16% 65%;      /* #94a3b8 */
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    /* Muted */
-    --muted: 216 33% 97%;              /* #f1f4f9 */
-    --muted-foreground: 215 16% 47%;   /* #64748b */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    /* Accent (Cyan) */
-    --accent: 193 100% 42%;            /* #00b4d8 */
-    --accent-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Destructive / Error */
-    --destructive: 0 84% 60%;          /* #ef4444 */
-    --destructive-light: 0 86% 97%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    /* Success */
-    --success: 160 84% 39%;            /* #10b981 */
-    --success-light: 160 84% 95%;
-    --success-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Warning */
-    --warning: 38 92% 50%;             /* #f59e0b */
-    --warning-light: 38 100% 95%;
-    --warning-foreground: 20 14% 4%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
-    /* Info (Blue - reemplaza purple) */
-    --info: 221 83% 53%;               /* #2563eb */
-    --info-light: 213 94% 95%;         /* #60a5fa light */
-    --info-foreground: 0 0% 100%;
+    --radius: 0.5rem;
 
-    /* Module Colors - APP (sin purple) */
-    --module-dashboard: 193 100% 42%;  /* #00b4d8 - Cyan */
-    --module-docket: 199 89% 48%;
-    --module-datahub: 210 75% 15%;     /* Navy */
-    --module-spider: 221 83% 53%;      /* #2563eb - Blue (era purple) */
-    --module-market: 160 84% 39%;
-    --module-genius: 38 92% 50%;
-    --module-finance: 173 80% 40%;
-    --module-crm: 330 81% 60%;
-    --module-marketing: 25 95% 53%;
-    --module-help: 220 9% 46%;
+    --sidebar-background: 0 0% 98%;
 
-    /* Module Colors - Backoffice (sin purple) */
-    --backoffice-dashboard: 193 100% 42%;
-    --backoffice-ai: 221 83% 53%;      /* Blue (era purple) */
-    --backoffice-tenants: 160 84% 39%;
-    --backoffice-billing: 38 92% 50%;
-    --backoffice-analytics: 199 89% 48%;
-    --backoffice-crm: 330 81% 60%;
-    --backoffice-marketing: 25 95% 53%;
-    --backoffice-calendar: 173 80% 40%;
-    --backoffice-docs: 220 9% 46%;
-    --backoffice-killswitch: 0 84% 60%;
+    --sidebar-foreground: 240 5.3% 26.1%;
 
-    /* Borders & Inputs - SILK */
-    --border: 0 0% 0% / 0.06;          /* rgba(0,0,0,0.06) */
-    --border-active: 193 100% 42% / 0.15;
-    --input: 0 0% 0% / 0.06;
-    --ring: 193 100% 42%;              /* Cyan */
-    --radius: 0.875rem;                /* 14px */
+    --sidebar-primary: 240 5.9% 10%;
 
-    /* Sidebar - SILK Navy-Teal Gradient */
-    --sidebar-background: 210 75% 15%; /* #0a2540 */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 193 100% 42%;   /* Cyan */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 193 100% 42% / 0.06;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.04;
-    --sidebar-ring: 193 100% 42%;
+    --sidebar-primary-foreground: 0 0% 98%;
 
-    /* SILK Shadows (neumorphic) */
-    --shadow-neu: 4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff;
-    --shadow-neu-sm: 3px 3px 7px #cdd1dc, -3px -3px 7px #ffffff;
-    --shadow-neu-inset: inset 2px 2px 5px #cdd1dc, inset -2px -2px 5px #ffffff;
-    --shadow-neu-shell: 14px 14px 40px #cdd1dc, -14px -14px 40px #ffffff;
-    --shadow-accent: 0 3px 12px hsl(193 100% 42% / 0.15);
-    --shadow-glow: 0 0 6px hsl(193 100% 42% / 0.30);
+    --sidebar-accent: 240 4.8% 95.9%;
 
-    /* SILK Accent Gradients */
-    --gradient-accent: linear-gradient(135deg, hsl(193 100% 42%), hsl(166 100% 42%));
-    --gradient-sidebar: linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%);
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
+
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 193 100% 42%;           /* Cyan */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 166 100% 42%;         /* Teal */
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 193 100% 42%;            /* Cyan */
+
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 193 100% 42%;              /* Cyan */
-    --sidebar-background: 210 75% 10%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 193 100% 42%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 193 100% 42% / 0.1;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.06;
-    --sidebar-ring: 193 100% 42%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -196,212 +100,6 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    @apply bg-background text-foreground;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
-    color: hsl(var(--text-heading));
-  }
-}
-
-@layer utilities {
-  .gradient-primary {
-    @apply bg-gradient-to-r from-primary to-blue-600;
-  }
-
-  .gradient-module-spider {
-    @apply bg-gradient-to-br from-violet-500 to-purple-600;
-  }
-
-  .gradient-module-genius {
-    @apply bg-gradient-to-br from-amber-400 to-orange-500;
-  }
-
-  .glass-effect {
-    @apply backdrop-blur-xl bg-white/80 border border-white/20;
-  }
-
-  /* SILK: Cards sin sombra, solo borde */
-  .card-shadow {
-    box-shadow: none;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-  }
-
-  .card-shadow-lg {
-    box-shadow: none;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-  }
-
-  /* SILK Card: border only */
-  .silk-card {
-    box-shadow: none !important;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 14px;
-  }
-
-  /* Market Terminal Theme */
-  .terminal-bg {
-    background-color: hsl(240 10% 4%);
-  }
-
-  .terminal-card {
-    background-color: hsl(240 10% 5%);
-    border-color: hsl(0 0% 100% / 0.1);
-  }
-
-  .terminal-card:hover {
-    border-color: hsl(0 0% 100% / 0.2);
-  }
-
-  .terminal-border {
-    border-color: hsl(0 0% 100% / 0.1);
-  }
-
-  .terminal-text {
-    color: hsl(0 0% 100%);
-  }
-
-  .terminal-text-muted {
-    color: hsl(0 0% 100% / 0.6);
-  }
-
-  .terminal-text-dim {
-    color: hsl(0 0% 100% / 0.4);
-  }
-
-  .terminal-hover:hover {
-    background-color: hsl(0 0% 100% / 0.05);
-  }
-
-  .terminal-skeleton {
-    background-color: hsl(0 0% 100% / 0.05);
-  }
-
-  /* ═══════════════════════════════════════════════════════════
-     SILK LED ANIMATIONS — For urgent badges
-     ═══════════════════════════════════════════════════════════ */
-  
-  @keyframes led-pulse {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.6;
-      transform: scale(1.02);
-    }
-  }
-
-  @keyframes led-ping {
-    0% {
-      opacity: 0.5;
-      transform: scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.15);
-    }
-  }
-
-  /* Shimmer animation for progress bars */
-  @keyframes shimmer {
-    0% { background-position: -100% 0; }
-    100% { background-position: 200% 0; }
-  }
-
-  .progress-shimmer {
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-
-  /* ═══════════════════════════════════════════════════════════
-     SILK CALENDAR ANIMATIONS — Pulse for today
-     ═══════════════════════════════════════════════════════════ */
-  
-  @keyframes pulse-slow {
-    0%, 100% { 
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% { 
-      opacity: 0.7;
-      transform: scale(1.08);
-    }
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 3s ease-in-out infinite;
-  }
-
-  /* Calendar day hover */
-  .calendar-day-hover {
-    transition: all 0.2s ease;
-  }
-  .calendar-day-hover:hover {
-    background: #f1f5f9;
-    transform: scale(1.1);
-  }
-
-  /* ═══════════════════════════════════════════════════════════
-     HELP CENTER — Article content typography
-     ═══════════════════════════════════════════════════════════ */
-
-  .article-content {
-    font-size: 14px;
-    line-height: 1.75;
-  }
-
-  .article-content p {
-    margin-bottom: 1rem;
-  }
-
-  .article-content p:last-child {
-    margin-bottom: 0;
-  }
-
-  .article-content strong {
-    font-weight: 700;
-    color: hsl(var(--foreground));
-  }
-
-  .article-content a {
-    color: hsl(var(--primary));
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: hsl(var(--primary) / 0.3);
-    transition: text-decoration-color 0.2s;
-  }
-
-  .article-content a:hover {
-    text-decoration-color: hsl(var(--primary));
-  }
-
-  .article-content code {
-    background: hsl(var(--muted));
-    border: 1px solid hsl(var(--border));
-    border-radius: 6px;
-    padding: 1px 6px;
-    font-size: 0.88em;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    color: hsl(var(--foreground) / 0.8);
-  }
-}
-
-/* Smooth scroll for TOC links */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Thin scrollbar for pipeline overflow */
-.scrollbar-thin::-webkit-scrollbar {
-  height: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 100px;
 }
