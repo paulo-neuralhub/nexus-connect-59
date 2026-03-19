@@ -154,7 +154,7 @@ function DeadlineItem({ deadline, onComplete, onPostpone }: DeadlineItemProps) {
 
   const dueDate = deadline.deadline_date || '';
   const { label: dueDateLabel, colorClass, isOverdue } = getDueDateInfo(dueDate);
-  const criticality = (deadline.priority || deadline.criticality || 'normal') as DeadlineCriticality;
+  const criticality = (deadline.priority || (deadline as any).criticality || 'normal') as DeadlineCriticality;
   const critStyle = CRITICALITY_STYLES[criticality];
   const isCompleted = deadline.status === 'completed';
 
