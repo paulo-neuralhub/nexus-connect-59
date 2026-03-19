@@ -1186,6 +1186,57 @@ export type Database = {
           },
         ]
       }
+      exchange_rates: {
+        Row: {
+          base_currency: string
+          change_pct: number | null
+          currency_name: string | null
+          expires_at: string | null
+          fetched_at: string | null
+          id: string
+          manual_override: number | null
+          previous_rate: number | null
+          rate: number
+          region: string | null
+          source: string
+          symbol: string | null
+          target_currency: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_currency?: string
+          change_pct?: number | null
+          currency_name?: string | null
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          manual_override?: number | null
+          previous_rate?: number | null
+          rate: number
+          region?: string | null
+          source?: string
+          symbol?: string | null
+          target_currency: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_currency?: string
+          change_pct?: number | null
+          currency_name?: string | null
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          manual_override?: number | null
+          previous_rate?: number | null
+          rate?: number
+          region?: string | null
+          source?: string
+          symbol?: string | null
+          target_currency?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       extraction_suggestion_log: {
         Row: {
           accepted_value: string | null
@@ -1730,78 +1781,563 @@ export type Database = {
       }
       ipo_offices: {
         Row: {
+          accepted_languages: Json | null
+          accepted_mark_types: Json | null
+          address: string | null
+          agent_required: boolean | null
+          agent_required_for_foreign: boolean | null
+          annual_filing_volume: number | null
+          api_authentication_type: string | null
+          api_base_url: string | null
           api_config: Json | null
+          api_credentials: Json | null
+          api_documentation_url: string | null
+          api_sandbox_available: boolean | null
+          api_type: string | null
           api_url: string | null
+          api_version: string | null
+          appeal_procedure: Json | null
+          approval_rate_pct: number | null
+          auth_type: string | null
+          automation_level: string | null
+          automation_percentage: number | null
+          avg_days_to_decision: number | null
+          avg_days_to_first_action: number | null
           avg_response_time_ms: number | null
+          best_practices: Json | null
+          bulk_data_available: boolean | null
+          cancellation_procedure: Json | null
+          capabilities: Json | null
+          city: string | null
           code: string
+          code_alt: string | null
+          common_mistakes: Json | null
+          common_rejection_reasons: Json | null
+          connection_config: Json | null
+          connection_status: string | null
+          contact_appeals_dept: string | null
+          contact_trademarks_dept: string | null
+          contact_urgent: string | null
           country_code: string | null
+          country_flag: string | null
           country_name: string | null
           created_at: string
           credentials_encrypted: string | null
+          currency: string | null
+          data_confidence: string | null
+          data_last_verified_at: string | null
+          data_last_verified_by: string | null
+          data_quality_flag: string | null
+          data_quality_notes: string | null
+          data_source_config: Json | null
+          data_source_notes: string | null
           data_source_type: string | null
+          digital_score: number | null
+          director_name: string | null
+          director_title: string | null
+          display_order: number | null
+          documents_required: Json | null
+          e_filing_available: boolean | null
+          e_filing_url: string | null
+          electronic_signature: boolean | null
+          email_general: string | null
+          fax: string | null
+          fee_last_verified_at: string | null
+          fees_source_notes: string | null
+          fees_url: string | null
+          flag: string | null
           flag_emoji: string | null
+          grace_period_days: number | null
+          has_api: boolean | null
           id: string
+          internal_notes: string | null
+          ip_types: string[] | null
           is_active: boolean | null
+          is_connected: boolean | null
+          languages: string[] | null
           last_health_check: string | null
+          last_interaction_at: string | null
+          last_sync_at: string | null
+          last_sync_status: string | null
+          last_sync_type: string | null
+          latam_relevance_score: number | null
+          linkedin_page: string | null
+          member_madrid_protocol: boolean | null
+          name: string | null
+          name_en: string | null
+          name_es: string | null
           name_official: string
           name_short: string | null
+          nice_version: string | null
           notes: string | null
+          office_acronym: string | null
+          office_hours: string | null
           office_type: string | null
+          online_payment: boolean | null
+          open_data_available: boolean | null
           operational_status: string | null
+          opposition_procedure: Json | null
+          paris_convention_member: boolean | null
+          payment_methods: Json | null
+          phone_general: string | null
+          preparation_tips: string | null
+          priority_claim_months: number | null
+          priority_score: number | null
+          product_id: string | null
+          rate_limit_per_day: number | null
+          rate_limit_per_minute: number | null
           region: string | null
+          rejection_rate_pct: number | null
+          renewal_procedure: Json | null
+          search_url: string | null
+          spanish_companies_active: boolean | null
+          special_requirements: Json | null
+          stats_tm_applications: number | null
+          stats_tm_registrations: number | null
+          status: string | null
+          support_email: string | null
+          support_phone: string | null
           supported_ip_types: string[] | null
+          supported_mark_types: Json | null
+          supports_documents: boolean | null
+          supports_events: boolean | null
+          supports_fees: boolean | null
+          supports_search: boolean | null
+          supports_status: boolean | null
+          sync_frequency: string | null
           tier: string | null
+          timezone: string | null
+          tm_appeal_fee: number | null
+          tm_class_extra_fee: number | null
+          tm_estimated_registration_months: number | null
+          tm_expedited_fee: number | null
+          tm_fee_change_pct_last: number | null
+          tm_fee_currency: string | null
+          tm_fee_last_change_date: string | null
+          tm_fee_next_review_date: string | null
+          tm_filing_fee: number | null
+          tm_multi_class: boolean | null
+          tm_online_filing_url: string | null
+          tm_opposition_fee: number | null
+          tm_opposition_period_days: number | null
+          tm_recordal_fee: number | null
+          tm_registration_duration_years: number | null
+          tm_renewal_fee: number | null
+          tm_search_url: string | null
+          tm_use_requirement: boolean | null
+          tmview_available: boolean | null
+          translation_languages: Json | null
+          translation_required: boolean | null
           updated_at: string
+          url_status: string | null
+          uses_nice_classification: boolean | null
+          website_official: string | null
+          website_search: string | null
+          wipo_madrid_code: string | null
+          working_hours: Json | null
         }
         Insert: {
+          accepted_languages?: Json | null
+          accepted_mark_types?: Json | null
+          address?: string | null
+          agent_required?: boolean | null
+          agent_required_for_foreign?: boolean | null
+          annual_filing_volume?: number | null
+          api_authentication_type?: string | null
+          api_base_url?: string | null
           api_config?: Json | null
+          api_credentials?: Json | null
+          api_documentation_url?: string | null
+          api_sandbox_available?: boolean | null
+          api_type?: string | null
           api_url?: string | null
+          api_version?: string | null
+          appeal_procedure?: Json | null
+          approval_rate_pct?: number | null
+          auth_type?: string | null
+          automation_level?: string | null
+          automation_percentage?: number | null
+          avg_days_to_decision?: number | null
+          avg_days_to_first_action?: number | null
           avg_response_time_ms?: number | null
+          best_practices?: Json | null
+          bulk_data_available?: boolean | null
+          cancellation_procedure?: Json | null
+          capabilities?: Json | null
+          city?: string | null
           code: string
+          code_alt?: string | null
+          common_mistakes?: Json | null
+          common_rejection_reasons?: Json | null
+          connection_config?: Json | null
+          connection_status?: string | null
+          contact_appeals_dept?: string | null
+          contact_trademarks_dept?: string | null
+          contact_urgent?: string | null
           country_code?: string | null
+          country_flag?: string | null
           country_name?: string | null
           created_at?: string
           credentials_encrypted?: string | null
+          currency?: string | null
+          data_confidence?: string | null
+          data_last_verified_at?: string | null
+          data_last_verified_by?: string | null
+          data_quality_flag?: string | null
+          data_quality_notes?: string | null
+          data_source_config?: Json | null
+          data_source_notes?: string | null
           data_source_type?: string | null
+          digital_score?: number | null
+          director_name?: string | null
+          director_title?: string | null
+          display_order?: number | null
+          documents_required?: Json | null
+          e_filing_available?: boolean | null
+          e_filing_url?: string | null
+          electronic_signature?: boolean | null
+          email_general?: string | null
+          fax?: string | null
+          fee_last_verified_at?: string | null
+          fees_source_notes?: string | null
+          fees_url?: string | null
+          flag?: string | null
           flag_emoji?: string | null
+          grace_period_days?: number | null
+          has_api?: boolean | null
           id?: string
+          internal_notes?: string | null
+          ip_types?: string[] | null
           is_active?: boolean | null
+          is_connected?: boolean | null
+          languages?: string[] | null
           last_health_check?: string | null
+          last_interaction_at?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          last_sync_type?: string | null
+          latam_relevance_score?: number | null
+          linkedin_page?: string | null
+          member_madrid_protocol?: boolean | null
+          name?: string | null
+          name_en?: string | null
+          name_es?: string | null
           name_official: string
           name_short?: string | null
+          nice_version?: string | null
           notes?: string | null
+          office_acronym?: string | null
+          office_hours?: string | null
           office_type?: string | null
+          online_payment?: boolean | null
+          open_data_available?: boolean | null
           operational_status?: string | null
+          opposition_procedure?: Json | null
+          paris_convention_member?: boolean | null
+          payment_methods?: Json | null
+          phone_general?: string | null
+          preparation_tips?: string | null
+          priority_claim_months?: number | null
+          priority_score?: number | null
+          product_id?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_minute?: number | null
           region?: string | null
+          rejection_rate_pct?: number | null
+          renewal_procedure?: Json | null
+          search_url?: string | null
+          spanish_companies_active?: boolean | null
+          special_requirements?: Json | null
+          stats_tm_applications?: number | null
+          stats_tm_registrations?: number | null
+          status?: string | null
+          support_email?: string | null
+          support_phone?: string | null
           supported_ip_types?: string[] | null
+          supported_mark_types?: Json | null
+          supports_documents?: boolean | null
+          supports_events?: boolean | null
+          supports_fees?: boolean | null
+          supports_search?: boolean | null
+          supports_status?: boolean | null
+          sync_frequency?: string | null
           tier?: string | null
+          timezone?: string | null
+          tm_appeal_fee?: number | null
+          tm_class_extra_fee?: number | null
+          tm_estimated_registration_months?: number | null
+          tm_expedited_fee?: number | null
+          tm_fee_change_pct_last?: number | null
+          tm_fee_currency?: string | null
+          tm_fee_last_change_date?: string | null
+          tm_fee_next_review_date?: string | null
+          tm_filing_fee?: number | null
+          tm_multi_class?: boolean | null
+          tm_online_filing_url?: string | null
+          tm_opposition_fee?: number | null
+          tm_opposition_period_days?: number | null
+          tm_recordal_fee?: number | null
+          tm_registration_duration_years?: number | null
+          tm_renewal_fee?: number | null
+          tm_search_url?: string | null
+          tm_use_requirement?: boolean | null
+          tmview_available?: boolean | null
+          translation_languages?: Json | null
+          translation_required?: boolean | null
           updated_at?: string
+          url_status?: string | null
+          uses_nice_classification?: boolean | null
+          website_official?: string | null
+          website_search?: string | null
+          wipo_madrid_code?: string | null
+          working_hours?: Json | null
         }
         Update: {
+          accepted_languages?: Json | null
+          accepted_mark_types?: Json | null
+          address?: string | null
+          agent_required?: boolean | null
+          agent_required_for_foreign?: boolean | null
+          annual_filing_volume?: number | null
+          api_authentication_type?: string | null
+          api_base_url?: string | null
           api_config?: Json | null
+          api_credentials?: Json | null
+          api_documentation_url?: string | null
+          api_sandbox_available?: boolean | null
+          api_type?: string | null
           api_url?: string | null
+          api_version?: string | null
+          appeal_procedure?: Json | null
+          approval_rate_pct?: number | null
+          auth_type?: string | null
+          automation_level?: string | null
+          automation_percentage?: number | null
+          avg_days_to_decision?: number | null
+          avg_days_to_first_action?: number | null
           avg_response_time_ms?: number | null
+          best_practices?: Json | null
+          bulk_data_available?: boolean | null
+          cancellation_procedure?: Json | null
+          capabilities?: Json | null
+          city?: string | null
           code?: string
+          code_alt?: string | null
+          common_mistakes?: Json | null
+          common_rejection_reasons?: Json | null
+          connection_config?: Json | null
+          connection_status?: string | null
+          contact_appeals_dept?: string | null
+          contact_trademarks_dept?: string | null
+          contact_urgent?: string | null
           country_code?: string | null
+          country_flag?: string | null
           country_name?: string | null
           created_at?: string
           credentials_encrypted?: string | null
+          currency?: string | null
+          data_confidence?: string | null
+          data_last_verified_at?: string | null
+          data_last_verified_by?: string | null
+          data_quality_flag?: string | null
+          data_quality_notes?: string | null
+          data_source_config?: Json | null
+          data_source_notes?: string | null
           data_source_type?: string | null
+          digital_score?: number | null
+          director_name?: string | null
+          director_title?: string | null
+          display_order?: number | null
+          documents_required?: Json | null
+          e_filing_available?: boolean | null
+          e_filing_url?: string | null
+          electronic_signature?: boolean | null
+          email_general?: string | null
+          fax?: string | null
+          fee_last_verified_at?: string | null
+          fees_source_notes?: string | null
+          fees_url?: string | null
+          flag?: string | null
           flag_emoji?: string | null
+          grace_period_days?: number | null
+          has_api?: boolean | null
           id?: string
+          internal_notes?: string | null
+          ip_types?: string[] | null
           is_active?: boolean | null
+          is_connected?: boolean | null
+          languages?: string[] | null
           last_health_check?: string | null
+          last_interaction_at?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          last_sync_type?: string | null
+          latam_relevance_score?: number | null
+          linkedin_page?: string | null
+          member_madrid_protocol?: boolean | null
+          name?: string | null
+          name_en?: string | null
+          name_es?: string | null
           name_official?: string
           name_short?: string | null
+          nice_version?: string | null
           notes?: string | null
+          office_acronym?: string | null
+          office_hours?: string | null
           office_type?: string | null
+          online_payment?: boolean | null
+          open_data_available?: boolean | null
           operational_status?: string | null
+          opposition_procedure?: Json | null
+          paris_convention_member?: boolean | null
+          payment_methods?: Json | null
+          phone_general?: string | null
+          preparation_tips?: string | null
+          priority_claim_months?: number | null
+          priority_score?: number | null
+          product_id?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_minute?: number | null
           region?: string | null
+          rejection_rate_pct?: number | null
+          renewal_procedure?: Json | null
+          search_url?: string | null
+          spanish_companies_active?: boolean | null
+          special_requirements?: Json | null
+          stats_tm_applications?: number | null
+          stats_tm_registrations?: number | null
+          status?: string | null
+          support_email?: string | null
+          support_phone?: string | null
           supported_ip_types?: string[] | null
+          supported_mark_types?: Json | null
+          supports_documents?: boolean | null
+          supports_events?: boolean | null
+          supports_fees?: boolean | null
+          supports_search?: boolean | null
+          supports_status?: boolean | null
+          sync_frequency?: string | null
           tier?: string | null
+          timezone?: string | null
+          tm_appeal_fee?: number | null
+          tm_class_extra_fee?: number | null
+          tm_estimated_registration_months?: number | null
+          tm_expedited_fee?: number | null
+          tm_fee_change_pct_last?: number | null
+          tm_fee_currency?: string | null
+          tm_fee_last_change_date?: string | null
+          tm_fee_next_review_date?: string | null
+          tm_filing_fee?: number | null
+          tm_multi_class?: boolean | null
+          tm_online_filing_url?: string | null
+          tm_opposition_fee?: number | null
+          tm_opposition_period_days?: number | null
+          tm_recordal_fee?: number | null
+          tm_registration_duration_years?: number | null
+          tm_renewal_fee?: number | null
+          tm_search_url?: string | null
+          tm_use_requirement?: boolean | null
+          tmview_available?: boolean | null
+          translation_languages?: Json | null
+          translation_required?: boolean | null
           updated_at?: string
+          url_status?: string | null
+          uses_nice_classification?: boolean | null
+          website_official?: string | null
+          website_search?: string | null
+          wipo_madrid_code?: string | null
+          working_hours?: Json | null
         }
         Relationships: []
+      }
+      ipo_official_fees: {
+        Row: {
+          amount: number
+          amount_eur: number | null
+          channel: string | null
+          created_at: string | null
+          currency: string
+          description: string | null
+          effective_from: string | null
+          effective_until: string | null
+          fee_base_includes: number | null
+          fee_per_additional: number | null
+          fee_type: string
+          id: string
+          ip_type: string
+          is_active: boolean | null
+          notes: string | null
+          office_id: string
+          online_discount_pct: number | null
+          service_category: string
+          service_name: string
+          sme_discount_pct: number | null
+          source_url: string | null
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount?: number
+          amount_eur?: number | null
+          channel?: string | null
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          fee_base_includes?: number | null
+          fee_per_additional?: number | null
+          fee_type?: string
+          id?: string
+          ip_type?: string
+          is_active?: boolean | null
+          notes?: string | null
+          office_id: string
+          online_discount_pct?: number | null
+          service_category?: string
+          service_name?: string
+          sme_discount_pct?: number | null
+          source_url?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount?: number
+          amount_eur?: number | null
+          channel?: string | null
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          fee_base_includes?: number | null
+          fee_per_additional?: number | null
+          fee_type?: string
+          id?: string
+          ip_type?: string
+          is_active?: boolean | null
+          notes?: string | null
+          office_id?: string
+          online_discount_pct?: number | null
+          service_category?: string
+          service_name?: string
+          sme_discount_pct?: number | null
+          source_url?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ipo_official_fees_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ipo_sync_logs: {
         Row: {
@@ -1859,6 +2395,437 @@ export type Database = {
           {
             foreignKeyName: "ipo_sync_logs_office_id_fkey"
             columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ipo_treaty_status: {
+        Row: {
+          created_at: string | null
+          declarations: string | null
+          entry_into_force_date: string | null
+          has_reservations: boolean | null
+          id: string
+          member_since: string | null
+          notes: string | null
+          office_id: string
+          ratification_date: string | null
+          reservations_text: string | null
+          source_url: string | null
+          status: string
+          treaty_code: string | null
+          treaty_full_name: string | null
+          treaty_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          declarations?: string | null
+          entry_into_force_date?: string | null
+          has_reservations?: boolean | null
+          id?: string
+          member_since?: string | null
+          notes?: string | null
+          office_id: string
+          ratification_date?: string | null
+          reservations_text?: string | null
+          source_url?: string | null
+          status?: string
+          treaty_code?: string | null
+          treaty_full_name?: string | null
+          treaty_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          declarations?: string | null
+          entry_into_force_date?: string | null
+          has_reservations?: boolean | null
+          id?: string
+          member_since?: string | null
+          notes?: string | null
+          office_id?: string
+          ratification_date?: string | null
+          reservations_text?: string | null
+          source_url?: string | null
+          status?: string
+          treaty_code?: string | null
+          treaty_full_name?: string | null
+          treaty_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ipo_treaty_status_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdiction_change_patterns: {
+        Row: {
+          advance_notice_days: number | null
+          announcement_url: string | null
+          avg_change_interval_days: number | null
+          change_type: string
+          confidence_in_pattern: number | null
+          created_at: string | null
+          gives_advance_notice: boolean | null
+          id: string
+          interval_variance_days: number | null
+          ipo_office_id: string
+          known_change_dates: string[] | null
+          last_pattern_review: string | null
+          legal_framework: string | null
+          notes: string | null
+          requires_legislative_change: boolean | null
+          signal_search_terms: string[] | null
+          typical_change_magnitude_pct: number | null
+          typical_change_months: number[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          advance_notice_days?: number | null
+          announcement_url?: string | null
+          avg_change_interval_days?: number | null
+          change_type: string
+          confidence_in_pattern?: number | null
+          created_at?: string | null
+          gives_advance_notice?: boolean | null
+          id?: string
+          interval_variance_days?: number | null
+          ipo_office_id: string
+          known_change_dates?: string[] | null
+          last_pattern_review?: string | null
+          legal_framework?: string | null
+          notes?: string | null
+          requires_legislative_change?: boolean | null
+          signal_search_terms?: string[] | null
+          typical_change_magnitude_pct?: number | null
+          typical_change_months?: number[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          advance_notice_days?: number | null
+          announcement_url?: string | null
+          avg_change_interval_days?: number | null
+          change_type?: string
+          confidence_in_pattern?: number | null
+          created_at?: string | null
+          gives_advance_notice?: boolean | null
+          id?: string
+          interval_variance_days?: number | null
+          ipo_office_id?: string
+          known_change_dates?: string[] | null
+          last_pattern_review?: string | null
+          legal_framework?: string | null
+          notes?: string | null
+          requires_legislative_change?: boolean | null
+          signal_search_terms?: string[] | null
+          typical_change_magnitude_pct?: number | null
+          typical_change_months?: number[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdiction_change_patterns_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdiction_change_signals: {
+        Row: {
+          change_type: string
+          confirmed_change: boolean | null
+          created_at: string | null
+          detected_by: string
+          expires_at: string | null
+          id: string
+          ipo_office_id: string
+          is_active: boolean | null
+          signal_date: string
+          signal_description: string | null
+          signal_title: string
+          signal_type: string
+          signal_url: string | null
+          triggered_check_frequency_hours: number
+          updated_at: string | null
+          urgency_level: string
+        }
+        Insert: {
+          change_type: string
+          confirmed_change?: boolean | null
+          created_at?: string | null
+          detected_by?: string
+          expires_at?: string | null
+          id?: string
+          ipo_office_id: string
+          is_active?: boolean | null
+          signal_date: string
+          signal_description?: string | null
+          signal_title: string
+          signal_type: string
+          signal_url?: string | null
+          triggered_check_frequency_hours: number
+          updated_at?: string | null
+          urgency_level?: string
+        }
+        Update: {
+          change_type?: string
+          confirmed_change?: boolean | null
+          created_at?: string | null
+          detected_by?: string
+          expires_at?: string | null
+          id?: string
+          ipo_office_id?: string
+          is_active?: boolean | null
+          signal_date?: string
+          signal_description?: string | null
+          signal_title?: string
+          signal_type?: string
+          signal_url?: string | null
+          triggered_check_frequency_hours?: number
+          updated_at?: string | null
+          urgency_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdiction_change_signals_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdiction_extraction_config: {
+        Row: {
+          api_auth_header: string | null
+          api_endpoint: string | null
+          api_requires_auth: boolean | null
+          check_frequency_hours: number
+          consecutive_failures: number | null
+          created_at: string | null
+          extraction_method: string
+          extraction_prompt_hint: string
+          id: string
+          ipo_office_id: string
+          is_active: boolean | null
+          last_checked_at: string | null
+          last_error: string | null
+          last_success_at: string | null
+          next_check_at: string | null
+          office_code: string
+          office_name: string
+          primary_url: string
+          updated_at: string | null
+          verification_url: string | null
+        }
+        Insert: {
+          api_auth_header?: string | null
+          api_endpoint?: string | null
+          api_requires_auth?: boolean | null
+          check_frequency_hours?: number
+          consecutive_failures?: number | null
+          created_at?: string | null
+          extraction_method: string
+          extraction_prompt_hint: string
+          id?: string
+          ipo_office_id: string
+          is_active?: boolean | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          next_check_at?: string | null
+          office_code: string
+          office_name: string
+          primary_url: string
+          updated_at?: string | null
+          verification_url?: string | null
+        }
+        Update: {
+          api_auth_header?: string | null
+          api_endpoint?: string | null
+          api_requires_auth?: boolean | null
+          check_frequency_hours?: number
+          consecutive_failures?: number | null
+          created_at?: string | null
+          extraction_method?: string
+          extraction_prompt_hint?: string
+          id?: string
+          ipo_office_id?: string
+          is_active?: boolean | null
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          next_check_at?: string | null
+          office_code?: string
+          office_name?: string
+          primary_url?: string
+          updated_at?: string | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdiction_extraction_config_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdiction_risk_windows: {
+        Row: {
+          calculated_at: string | null
+          calculation_basis: string | null
+          change_date: string | null
+          change_occurred: boolean | null
+          change_probability: number | null
+          change_type: string
+          check_frequency_in_window_hours: number
+          check_frequency_stable_hours: number
+          created_at: string | null
+          id: string
+          ipo_office_id: string
+          is_currently_in_window: boolean | null
+          pattern_id: string
+          updated_at: string | null
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          calculated_at?: string | null
+          calculation_basis?: string | null
+          change_date?: string | null
+          change_occurred?: boolean | null
+          change_probability?: number | null
+          change_type: string
+          check_frequency_in_window_hours: number
+          check_frequency_stable_hours: number
+          created_at?: string | null
+          id?: string
+          ipo_office_id: string
+          is_currently_in_window?: boolean | null
+          pattern_id: string
+          updated_at?: string | null
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          calculated_at?: string | null
+          calculation_basis?: string | null
+          change_date?: string | null
+          change_occurred?: boolean | null
+          change_probability?: number | null
+          change_type?: string
+          check_frequency_in_window_hours?: number
+          check_frequency_stable_hours?: number
+          created_at?: string | null
+          id?: string
+          ipo_office_id?: string
+          is_currently_in_window?: boolean | null
+          pattern_id?: string
+          updated_at?: string | null
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdiction_risk_windows_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jurisdiction_risk_windows_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "jurisdiction_change_patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdiction_update_queue: {
+        Row: {
+          admin_notified: boolean | null
+          attempt_count: number | null
+          auto_approved_count: number | null
+          changes_detected: Json | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          extracted_data: Json | null
+          extraction_config_id: string
+          id: string
+          ipo_office_id: string
+          max_attempts: number | null
+          needs_review_count: number | null
+          rejected_count: number | null
+          scheduled_for: string
+          started_at: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notified?: boolean | null
+          attempt_count?: number | null
+          auto_approved_count?: number | null
+          changes_detected?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          extracted_data?: Json | null
+          extraction_config_id: string
+          id?: string
+          ipo_office_id: string
+          max_attempts?: number | null
+          needs_review_count?: number | null
+          rejected_count?: number | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notified?: boolean | null
+          attempt_count?: number | null
+          auto_approved_count?: number | null
+          changes_detected?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          extracted_data?: Json | null
+          extraction_config_id?: string
+          id?: string
+          ipo_office_id?: string
+          max_attempts?: number | null
+          needs_review_count?: number | null
+          rejected_count?: number | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdiction_update_queue_extraction_config_id_fkey"
+            columns: ["extraction_config_id"]
+            isOneToOne: false
+            referencedRelation: "jurisdiction_extraction_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jurisdiction_update_queue_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
             isOneToOne: false
             referencedRelation: "ipo_offices"
             referencedColumns: ["id"]
