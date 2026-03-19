@@ -100,7 +100,8 @@ const sidebarSections: SidebarSection[] = [
     icon: Building,
     items: [
       { label: 'Dashboard', path: '/backoffice/ipo', icon: LayoutDashboard },
-      { label: 'Lista', path: '/backoffice/ipo/lista', icon: Globe },
+      { label: 'Directorio de Oficinas', path: '/backoffice/ipo/directory', icon: Globe },
+      { label: 'Lista', path: '/backoffice/ipo/lista', icon: Database },
       { label: 'Mappings', path: '/backoffice/ipo/mappings', icon: GitBranch },
       { label: 'Tasas', path: '/backoffice/ipo/fees', icon: DollarSign },
       { label: 'Monitor', path: '/backoffice/ipo/monitor', icon: Activity },

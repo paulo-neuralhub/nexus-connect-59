@@ -644,6 +644,7 @@ const App = () => (
                 <Route path="ipo/fees" element={<IPOFeesPage />} />
                 <Route path="ipo/monitor" element={<IPOMonitorPage />} />
                 <Route path="ipo/logs" element={<IPOLogsPage />} />
+                <Route path="ipo/directory" element={<IpOfficesDirectoryPage />} />
                 {/* Nice Classes Admin */}
                 <Route path="nice-classes" element={<NiceClassesAdminPage />} />
                 {/* AI Brain */}
