@@ -258,6 +258,13 @@ export function useNetworkStatus(): NetworkStatus {
     rtt: null,
   });
 
+  // In Lovable preview/iframe environments, always report online to prevent false negatives
+  const isPreviewEnv = typeof window !== 'undefined' && (
+    window.location.hostname.includes('lovable.app') ||
+    window.location.hostname.includes('lovableproject.com') ||
+    window.location.hostname === 'localhost'
+  );
+
   useEffect(() => {
     // Only trust navigator.onLine after initial render to avoid iframe issues
     const checkOnline = async () => {
