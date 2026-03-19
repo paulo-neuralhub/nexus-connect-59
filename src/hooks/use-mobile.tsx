@@ -266,6 +266,9 @@ export function useNetworkStatus(): NetworkStatus {
   );
 
   useEffect(() => {
+    // In preview environments, skip all offline detection
+    if (isPreviewEnv) return;
+
     // Only trust navigator.onLine after initial render to avoid iframe issues
     const checkOnline = async () => {
       // If browser says offline, verify with a real ping
