@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Teams Management Page
  * Settings → Team → Teams

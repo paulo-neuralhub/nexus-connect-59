@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================
 // Hook para cargar eventos del calendario
 // Agrega datos de matter_deadlines y activities

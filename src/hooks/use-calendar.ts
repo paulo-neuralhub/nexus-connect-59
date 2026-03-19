@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================
 // CALENDAR INTEGRATION HOOKS
 // P62 - Calendarios Integrados

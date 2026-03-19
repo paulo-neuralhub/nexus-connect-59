@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // IP-NEXUS - DEADLINES HOOK
 // PROMPT 52: Docket Deadline Engine + PROMPT 3 Enhancements

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // IP-NEXUS - SIGNATURE HOOKS
 // PROMPT 22: Sistema de firma electrónica

@@ -33,25 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const isMountedRef = useRef(true);
 
-  // Fetch user profile from public.users table
+  // Fetch user profile from public.profiles table
   const fetchProfile = async (userId: string, signal?: AbortSignal): Promise<UserProfile | null> => {
     try {
       let query = supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId);
-
-      // Only attach abort signal when provided (avoids edge cases with undefined).
-      if (signal) {
-        query = query.abortSignal(signal);
-      }
-
-      let query = supabase
         .from("profiles")
-        .select("*")
+        .select("id, first_name, last_name, avatar_url")
         .eq("id", userId);
 
-      // Only attach abort signal when provided (avoids edge cases with undefined).
       if (signal) {
         query = query.abortSignal(signal);
       }
@@ -59,17 +48,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await query.maybeSingle();
 
       if (error) {
-        // Ignore AbortError - expected during hot-reload/unmount
-        if (error.message?.includes('AbortError') || error.code === 'ABORT_ERR') {
+        if (error.message?.includes("AbortError") || error.code === "ABORT_ERR") {
           return null;
         }
         console.error("Error fetching profile:", error);
         return null;
       }
-      return data as UserProfile | null;
+
+      if (!data) {
+        return null;
+      }
+
+      const fullName = [data.first_name, data.last_name].filter(Boolean).join(" ").trim();
+
+      return {
+        id: data.id,
+        email: user?.email ?? "",
+        full_name: fullName || null,
+        avatar_url: data.avatar_url,
+        phone: null,
+      };
     } catch (err) {
-      // Ignore abort errors
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof Error && err.name === "AbortError") {
         return null;
       }
       console.error("Error fetching profile:", err);

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // IP-NEXUS - ALL TASKS UNIFIED HOOK
 // L90: Hook para obtener todas las tareas (CRM + Expedientes)

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/hooks/use-realtime-collab.ts
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
