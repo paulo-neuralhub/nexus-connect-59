@@ -144,6 +144,12 @@ const Onboarding = () => {
         return;
       }
 
+      // 4. Update profile with organization_id
+      await supabase
+        .from("profiles")
+        .update({ organization_id: orgId })
+        .eq("id", user.id);
+
       // Ya con la membership creada, ahora sí podemos leer la organización.
       const { error: orgFetchError } = await supabase
         .from("organizations")
