@@ -1786,6 +1786,7 @@ export type Database = {
           address: string | null
           agent_required: boolean | null
           agent_required_for_foreign: boolean | null
+          agent_requirement_type: string | null
           annual_filing_volume: number | null
           api_authentication_type: string | null
           api_base_url: string | null
@@ -1824,6 +1825,7 @@ export type Database = {
           created_at: string
           credentials_encrypted: string | null
           currency: string | null
+          data_completeness_score: number | null
           data_confidence: string | null
           data_last_verified_at: string | null
           data_last_verified_by: string | null
@@ -1832,7 +1834,9 @@ export type Database = {
           data_source_config: Json | null
           data_source_notes: string | null
           data_source_type: string | null
+          digital_maturity_score: number | null
           digital_score: number | null
+          digitalization_level: string | null
           director_name: string | null
           director_title: string | null
           display_order: number | null
@@ -1848,6 +1852,10 @@ export type Database = {
           flag: string | null
           flag_emoji: string | null
           grace_period_days: number | null
+          handles_designs: boolean | null
+          handles_patents: boolean | null
+          handles_trademarks: boolean | null
+          handles_utility_models: boolean | null
           has_api: boolean | null
           id: string
           internal_notes: string | null
@@ -1889,6 +1897,7 @@ export type Database = {
           region: string | null
           rejection_rate_pct: number | null
           renewal_procedure: Json | null
+          requires_local_agent: boolean | null
           search_url: string | null
           spanish_companies_active: boolean | null
           special_requirements: Json | null
@@ -1931,6 +1940,7 @@ export type Database = {
           updated_at: string
           url_status: string | null
           uses_nice_classification: boolean | null
+          website_main: string | null
           website_official: string | null
           website_search: string | null
           wipo_madrid_code: string | null
@@ -1942,6 +1952,7 @@ export type Database = {
           address?: string | null
           agent_required?: boolean | null
           agent_required_for_foreign?: boolean | null
+          agent_requirement_type?: string | null
           annual_filing_volume?: number | null
           api_authentication_type?: string | null
           api_base_url?: string | null
@@ -1980,6 +1991,7 @@ export type Database = {
           created_at?: string
           credentials_encrypted?: string | null
           currency?: string | null
+          data_completeness_score?: number | null
           data_confidence?: string | null
           data_last_verified_at?: string | null
           data_last_verified_by?: string | null
@@ -1988,7 +2000,9 @@ export type Database = {
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
+          digital_maturity_score?: number | null
           digital_score?: number | null
+          digitalization_level?: string | null
           director_name?: string | null
           director_title?: string | null
           display_order?: number | null
@@ -2004,6 +2018,10 @@ export type Database = {
           flag?: string | null
           flag_emoji?: string | null
           grace_period_days?: number | null
+          handles_designs?: boolean | null
+          handles_patents?: boolean | null
+          handles_trademarks?: boolean | null
+          handles_utility_models?: boolean | null
           has_api?: boolean | null
           id?: string
           internal_notes?: string | null
@@ -2045,6 +2063,7 @@ export type Database = {
           region?: string | null
           rejection_rate_pct?: number | null
           renewal_procedure?: Json | null
+          requires_local_agent?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
@@ -2087,6 +2106,7 @@ export type Database = {
           updated_at?: string
           url_status?: string | null
           uses_nice_classification?: boolean | null
+          website_main?: string | null
           website_official?: string | null
           website_search?: string | null
           wipo_madrid_code?: string | null
@@ -2098,6 +2118,7 @@ export type Database = {
           address?: string | null
           agent_required?: boolean | null
           agent_required_for_foreign?: boolean | null
+          agent_requirement_type?: string | null
           annual_filing_volume?: number | null
           api_authentication_type?: string | null
           api_base_url?: string | null
@@ -2136,6 +2157,7 @@ export type Database = {
           created_at?: string
           credentials_encrypted?: string | null
           currency?: string | null
+          data_completeness_score?: number | null
           data_confidence?: string | null
           data_last_verified_at?: string | null
           data_last_verified_by?: string | null
@@ -2144,7 +2166,9 @@ export type Database = {
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
+          digital_maturity_score?: number | null
           digital_score?: number | null
+          digitalization_level?: string | null
           director_name?: string | null
           director_title?: string | null
           display_order?: number | null
@@ -2160,6 +2184,10 @@ export type Database = {
           flag?: string | null
           flag_emoji?: string | null
           grace_period_days?: number | null
+          handles_designs?: boolean | null
+          handles_patents?: boolean | null
+          handles_trademarks?: boolean | null
+          handles_utility_models?: boolean | null
           has_api?: boolean | null
           id?: string
           internal_notes?: string | null
@@ -2201,6 +2229,7 @@ export type Database = {
           region?: string | null
           rejection_rate_pct?: number | null
           renewal_procedure?: Json | null
+          requires_local_agent?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
@@ -2243,6 +2272,7 @@ export type Database = {
           updated_at?: string
           url_status?: string | null
           uses_nice_classification?: boolean | null
+          website_main?: string | null
           website_official?: string | null
           website_search?: string | null
           wipo_madrid_code?: string | null
