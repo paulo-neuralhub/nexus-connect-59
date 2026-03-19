@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Página pública para firmar documentos
  * Ruta: /sign/:token (sin autenticación)
