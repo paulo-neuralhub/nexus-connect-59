@@ -98,7 +98,7 @@ const Onboarding = () => {
           id: orgId,
           name: orgName.trim(),
           slug,
-          plan: "starter",
+          plan: "free",
           status: "active",
         });
 
