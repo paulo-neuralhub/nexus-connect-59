@@ -66,22 +66,22 @@ const Onboarding = () => {
     setIsLoading(true);
 
     try {
-      // 1. Ensure user profile exists (in case trigger failed)
-      const { data: existingUser } = await supabase
-        .from("users")
+      // 1. Ensure user profile exists (trigger should have created it)
+      const { data: existingProfile } = await supabase
+        .from("profiles")
         .select("id")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (!existingUser) {
-        const { error: userError } = await supabase.from("users").insert({
+      if (!existingProfile) {
+        const { error: profileError } = await supabase.from("profiles").insert({
           id: user.id,
-          email: user.email || "",
-          full_name: user.user_metadata?.full_name || null,
+          first_name: user.user_metadata?.full_name?.split(" ")[0] || "",
+          last_name: user.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "",
         });
 
-        if (userError) {
-          console.error("Error creating user profile:", userError);
+        if (profileError) {
+          console.error("Error creating user profile:", profileError);
           // Continue anyway - trigger might have created it
         }
       }
