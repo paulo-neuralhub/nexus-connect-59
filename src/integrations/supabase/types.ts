@@ -6198,21 +6198,317 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_accounts: {
+        Row: {
+          account_type: string | null
+          address: string | null
+          annual_ip_budget_eur: number | null
+          assigned_to: string | null
+          city: string | null
+          client_token: string | null
+          client_type_id: string | null
+          country_code: string | null
+          created_at: string
+          health_score: number | null
+          id: string
+          industry: string | null
+          ip_portfolio_size: number | null
+          is_active: boolean | null
+          last_interaction_at: string | null
+          legal_name: string | null
+          lifecycle_stage: string | null
+          name: string
+          notes: string | null
+          organization_id: string
+          payment_classification_id: string | null
+          preferred_language: string | null
+          rating_stars: number | null
+          status: string | null
+          tags: string[] | null
+          tax_id: string | null
+          tier: string | null
+          updated_at: string
+          vat_number: string | null
+        }
+        Insert: {
+          account_type?: string | null
+          address?: string | null
+          annual_ip_budget_eur?: number | null
+          assigned_to?: string | null
+          city?: string | null
+          client_token?: string | null
+          client_type_id?: string | null
+          country_code?: string | null
+          created_at?: string
+          health_score?: number | null
+          id?: string
+          industry?: string | null
+          ip_portfolio_size?: number | null
+          is_active?: boolean | null
+          last_interaction_at?: string | null
+          legal_name?: string | null
+          lifecycle_stage?: string | null
+          name: string
+          notes?: string | null
+          organization_id: string
+          payment_classification_id?: string | null
+          preferred_language?: string | null
+          rating_stars?: number | null
+          status?: string | null
+          tags?: string[] | null
+          tax_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Update: {
+          account_type?: string | null
+          address?: string | null
+          annual_ip_budget_eur?: number | null
+          assigned_to?: string | null
+          city?: string | null
+          client_token?: string | null
+          client_type_id?: string | null
+          country_code?: string | null
+          created_at?: string
+          health_score?: number | null
+          id?: string
+          industry?: string | null
+          ip_portfolio_size?: number | null
+          is_active?: boolean | null
+          last_interaction_at?: string | null
+          legal_name?: string | null
+          lifecycle_stage?: string | null
+          name?: string
+          notes?: string | null
+          organization_id?: string
+          payment_classification_id?: string | null
+          preferred_language?: string | null
+          rating_stars?: number | null
+          status?: string | null
+          tags?: string[] | null
+          tax_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_activities: {
+        Row: {
+          account_id: string | null
+          activity_date: string
+          activity_type: string
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          next_action: string | null
+          next_action_date: string | null
+          organization_id: string
+          outcome: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          activity_date?: string
+          activity_type?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          organization_id: string
+          outcome?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          activity_date?: string
+          activity_type?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          organization_id?: string
+          outcome?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          account_id: string | null
+          assigned_to: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          is_lead: boolean | null
+          is_primary: boolean | null
+          job_title: string | null
+          last_interaction_at: string | null
+          lead_score: number | null
+          lead_status: string | null
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          portal_access_enabled: boolean | null
+          preferred_language: string | null
+          role: string | null
+          tags: string[] | null
+          updated_at: string
+          whatsapp_phone: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          is_lead?: boolean | null
+          is_primary?: boolean | null
+          job_title?: string | null
+          last_interaction_at?: string | null
+          lead_score?: number | null
+          lead_status?: string | null
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          portal_access_enabled?: boolean | null
+          preferred_language?: string | null
+          role?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_lead?: boolean | null
+          is_primary?: boolean | null
+          job_title?: string | null
+          last_interaction_at?: string | null
+          lead_score?: number | null
+          lead_status?: string | null
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          portal_access_enabled?: boolean | null
+          preferred_language?: string | null
+          role?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          whatsapp_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_deals: {
         Row: {
           account_id: string | null
+          account_name_cache: string | null
           actual_close_date: string | null
           amount: number | null
+          amount_eur: number | null
+          assigned_to: string | null
           close_reason: string | null
           contact_id: string | null
           created_at: string
+          deal_type: string | null
           expected_close_date: string | null
           id: string
+          jurisdiction_code: string | null
+          lost_reason: string | null
           lost_to_competitor: string | null
+          matter_id: string | null
           name: string
+          nice_classes: number[] | null
+          official_fees_eur: number | null
           opportunity_type: string | null
           organization_id: string
           owner_id: string | null
+          pipeline_id: string | null
+          pipeline_stage_id: string | null
+          probability_pct: number | null
+          professional_fees_eur: number | null
           stage: string
           stage_entered_at: string | null
           stage_history: Json | null
@@ -6221,18 +6517,31 @@ export type Database = {
         }
         Insert: {
           account_id?: string | null
+          account_name_cache?: string | null
           actual_close_date?: string | null
           amount?: number | null
+          amount_eur?: number | null
+          assigned_to?: string | null
           close_reason?: string | null
           contact_id?: string | null
           created_at?: string
+          deal_type?: string | null
           expected_close_date?: string | null
           id?: string
+          jurisdiction_code?: string | null
+          lost_reason?: string | null
           lost_to_competitor?: string | null
+          matter_id?: string | null
           name: string
+          nice_classes?: number[] | null
+          official_fees_eur?: number | null
           opportunity_type?: string | null
           organization_id: string
           owner_id?: string | null
+          pipeline_id?: string | null
+          pipeline_stage_id?: string | null
+          probability_pct?: number | null
+          professional_fees_eur?: number | null
           stage?: string
           stage_entered_at?: string | null
           stage_history?: Json | null
@@ -6241,18 +6550,31 @@ export type Database = {
         }
         Update: {
           account_id?: string | null
+          account_name_cache?: string | null
           actual_close_date?: string | null
           amount?: number | null
+          amount_eur?: number | null
+          assigned_to?: string | null
           close_reason?: string | null
           contact_id?: string | null
           created_at?: string
+          deal_type?: string | null
           expected_close_date?: string | null
           id?: string
+          jurisdiction_code?: string | null
+          lost_reason?: string | null
           lost_to_competitor?: string | null
+          matter_id?: string | null
           name?: string
+          nice_classes?: number[] | null
+          official_fees_eur?: number | null
           opportunity_type?: string | null
           organization_id?: string
           owner_id?: string | null
+          pipeline_id?: string | null
+          pipeline_stage_id?: string | null
+          probability_pct?: number | null
+          professional_fees_eur?: number | null
           stage?: string
           stage_entered_at?: string | null
           stage_history?: Json | null
@@ -6269,6 +6591,266 @@ export type Database = {
           },
           {
             foreignKeyName: "crm_deals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_pipeline_stage_id_fkey"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          assigned_to: string | null
+          company_name: string | null
+          converted_account_id: string | null
+          converted_at: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          lead_score: number | null
+          lead_status: string | null
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          source: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_account_id?: string | null
+          converted_at?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          lead_score?: number | null
+          lead_status?: string | null
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_account_id?: string | null
+          converted_at?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          lead_score?: number | null
+          lead_status?: string | null
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_converted_account_id_fkey"
+            columns: ["converted_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_pipeline_stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_lost_stage: boolean | null
+          is_won_stage: boolean | null
+          name: string
+          pipeline_id: string
+          position: number | null
+          probability: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_lost_stage?: boolean | null
+          is_won_stage?: boolean | null
+          name: string
+          pipeline_id: string
+          position?: number | null
+          probability?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_lost_stage?: boolean | null
+          is_won_stage?: boolean | null
+          name?: string
+          pipeline_id?: string
+          position?: number | null
+          probability?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_pipeline_stages_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_pipelines: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          organization_id: string
+          pipeline_type: string | null
+          position: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          organization_id: string
+          pipeline_type?: string | null
+          position?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string
+          pipeline_type?: string | null
+          position?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_pipelines_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tasks: {
+        Row: {
+          account_id: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          organization_id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -17560,6 +18142,7 @@ export type Database = {
     }
     Functions: {
       apply_research_data: { Args: { p_queue_id: string }; Returns: Json }
+      get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
