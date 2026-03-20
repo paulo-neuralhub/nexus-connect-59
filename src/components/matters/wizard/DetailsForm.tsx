@@ -101,6 +101,8 @@ interface DetailsFormProps {
   previewNumber?: string;
   isGeneratingNumber?: boolean;
   trademarkType?: string;
+  /** 'basic' = step 2 (title, client, refs, flags), 'specific' = step 3 (Nice, jurisdiction fields) */
+  section?: 'basic' | 'specific';
 }
 
 export function DetailsForm({
