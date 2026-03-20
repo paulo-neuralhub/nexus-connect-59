@@ -57,6 +57,7 @@ export function SendEmailModal({ open, onOpenChange, contact, dealId }: SendEmai
   const [toEmail, setToEmail] = useState(contact?.email || '');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   useEffect(() => {
     setToEmail(contact?.email || '');
