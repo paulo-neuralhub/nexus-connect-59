@@ -15,6 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import type { CRMPipeline, CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import { useUpdateDealStage } from "@/hooks/crm/v2/deals";
+import { useExecuteAutomations } from "@/hooks/crm/v2/automations";
 import { KanbanColumn } from "./kanban-column";
 import { DealKanbanCard } from "./deal-kanban-card";
 
@@ -81,6 +82,7 @@ type Props = {
 export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const updateStage = useUpdateDealStage();
+  const executeAutomations = useExecuteAutomations();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -104,7 +106,6 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
       }
       map[sid].push(d);
     }
-    // Si hay deals sin stage_id, los metemos en la primera columna con advertencia
     if (orphans.length > 0 && stages.length > 0) {
       map[stages[0].id] = [...orphans, ...map[stages[0].id]];
     }
@@ -130,10 +131,32 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     const deal = deals.find((d) => d.id === dealId);
     if (!deal || deal.stage_id === newStageId) return;
 
+    const newStage = stages.find((s) => s.id === newStageId);
+
     try {
       await updateStage.mutateAsync({ dealId, newStageId });
-      const stageName = stages.find((s) => s.id === newStageId)?.name ?? "";
+      const stageName = newStage?.name ?? "";
       toast.success(`Deal movido a "${stageName}"`);
+
+      // Determine trigger type based on stage properties
+      let triggerType = "stage_entered";
+      if (newStage?.is_won_stage) triggerType = "deal_won";
+      else if (newStage?.is_lost_stage) triggerType = "deal_lost";
+
+      // Execute automations asynchronously — don't block UI
+      executeAutomations.mutate({
+        dealId,
+        accountId: deal.account?.id ?? null,
+        dealName: deal.name,
+        accountName: deal.account?.name ?? undefined,
+        stageId: newStageId,
+        triggerType,
+        triggerData: {
+          from_stage_id: deal.stage_id,
+          to_stage_id: newStageId,
+          to_stage_name: stageName,
+        },
+      });
     } catch {
       toast.error("No se pudo mover el deal");
     }
