@@ -48,7 +48,7 @@ export function useIPCoPilot(contextType: string, contextId: string | undefined)
   });
 
   const generateMutation = useMutation({
-    mutationFn: async (forceRegenerate = false) => {
+    mutationFn: async (forceRegenerate: boolean) => {
       if (!organizationId || !contextId) throw new Error("Missing context");
       const { data, error } = await supabase.functions.invoke("crm-copilot", {
         body: {
