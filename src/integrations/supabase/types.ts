@@ -2615,7 +2615,10 @@ export type Database = {
           legal_framework: string | null
           notes: string | null
           requires_legislative_change: boolean | null
+          research_sources: Json | null
+          researched_at: string | null
           signal_search_terms: string[] | null
+          source: string | null
           typical_change_magnitude_pct: number | null
           typical_change_months: number[] | null
           updated_at: string | null
@@ -2636,7 +2639,10 @@ export type Database = {
           legal_framework?: string | null
           notes?: string | null
           requires_legislative_change?: boolean | null
+          research_sources?: Json | null
+          researched_at?: string | null
           signal_search_terms?: string[] | null
+          source?: string | null
           typical_change_magnitude_pct?: number | null
           typical_change_months?: number[] | null
           updated_at?: string | null
@@ -2657,7 +2663,10 @@ export type Database = {
           legal_framework?: string | null
           notes?: string | null
           requires_legislative_change?: boolean | null
+          research_sources?: Json | null
+          researched_at?: string | null
           signal_search_terms?: string[] | null
+          source?: string | null
           typical_change_magnitude_pct?: number | null
           typical_change_months?: number[] | null
           updated_at?: string | null

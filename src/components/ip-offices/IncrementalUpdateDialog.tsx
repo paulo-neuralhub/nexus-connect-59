@@ -76,8 +76,8 @@ export function IncrementalUpdateDialog({ open, onOpenChange }: IncrementalUpdat
     if (codes.length === 0) { toast.error("No se encontraron oficinas con esos criterios"); setPhase("config"); return; }
 
     const functions: { name: string; label: string }[] = [];
-    if (updateFees) functions.push({ name: "research-ip-office", label: "Investigación IP" });
-    if (updateIntel) functions.push({ name: "jurisdiction-data-extractor", label: "Extracción de datos" });
+    if (updateFees) functions.push({ name: "research-ip-office", label: "Tasas oficiales" });
+    if (updateIntel) functions.push({ name: "enrich-ipo-intelligence", label: "Inteligencia" });
 
     if (functions.length === 0) { toast.error("Selecciona al menos un tipo de datos"); setPhase("config"); return; }
 

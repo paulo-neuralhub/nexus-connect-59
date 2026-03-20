@@ -3,7 +3,7 @@
  * Réplica exacta de UmbrellaBrandsV2, adaptada al design system SILK de IP-NEXUS
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { IpOfficeStats } from "@/components/ip-offices/IpOfficeStats";
 import { IpOfficeFilters, REGIONS, IP_TYPES } from "@/components/ip-offices/IpOfficeFilters";
 import { IpOfficeLevelDescriptions } from "@/components/ip-offices/IpOfficeLevelDescriptions";
 import { IpOfficeAuditPanel } from "@/components/ip-offices/IpOfficeAuditPanel";
+import { IncrementalUpdateDialog } from "@/components/ip-offices/IncrementalUpdateDialog";
 
 function getNextMonthFirstDay(): string {
   const now = new Date();
@@ -43,6 +44,7 @@ function DirectoryContent() {
   const [webFilter, setWebFilter] = useState("ALL");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const navigate = useNavigate();
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const { data: offices, isLoading } = useIpOfficesDirectory();
 
   const freshness = getFreshnessIndicator(null);
@@ -155,6 +157,9 @@ function DirectoryContent() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={() => setUpdateDialogOpen(true)}>
+                <RefreshCw className="h-4 w-4 mr-2" />Actualizar Directorio
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredOffices.length === 0}><Download className="h-4 w-4 mr-2" />Exportar</Button>
             </div>
           </div>
@@ -242,6 +247,7 @@ function DirectoryContent() {
           </div>
         )}
       </div>
+      <IncrementalUpdateDialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen} />
     </>
   );
 }
