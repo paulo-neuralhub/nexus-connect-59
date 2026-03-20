@@ -53,82 +53,61 @@ export interface PlatformModule {
   base_price_yearly: number | null;
 }
 
-// Hook para obtener todos los módulos disponibles
-export function usePlatformModules() {
-  return useQuery({
-    queryKey: ['platform-modules'],
-    queryFn: async (): Promise<PlatformModule[]> => {
-      const { data, error } = await supabase
-        .from('platform_modules')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
+// Mapping from ModuleCode to tenant_feature_flags column
+const MODULE_FLAG_MAP: Record<string, string> = {
+  crm: 'has_crm',
+  docket: 'has_docket',
+  spider: 'has_spider',
+  genius: 'has_genius',
+  market: 'has_market',
+  finance: 'has_finance_basic',
+  analytics: 'has_analytics',
+  api: 'has_api_access',
+};
 
-      if (error) throw error;
-      return (data || []).map((m: any) => ({
-        ...m,
-        tiers: m.tiers || [],
-      })) as PlatformModule[];
-    },
-  });
-}
-
-// Hook para obtener todas las licencias de la organización
-export function useOrganizationLicenses() {
+// Hook to get tenant feature flags (the REAL source of truth)
+export function useTenantFeatureFlags() {
   const { currentOrganization } = useOrganization();
 
   return useQuery({
-    queryKey: ['organization-licenses', currentOrganization?.id],
-    queryFn: async (): Promise<ModuleLicense[]> => {
+    queryKey: ['tenant-feature-flags', currentOrganization?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
-        .from('organization_module_licenses')
-        .select(`
-          *,
-          module:platform_modules(*)
-        `)
+        .from('tenant_feature_flags')
+        .select('*')
         .eq('organization_id', currentOrganization!.id)
-        .eq('status', 'active');
+        .maybeSingle();
 
       if (error) throw error;
-
-      return (data || []).map((license: any) => {
-        const tier = license.module?.tiers?.find(
-          (t: any) => t.code === license.tier_code
-        );
-
-        return {
-          module_code: license.module?.code as ModuleCode,
-          module_name: license.module?.name || '',
-          tier_code: license.tier_code as TierCode,
-          tier_name: tier?.name || license.tier_code,
-          license_type: license.license_type,
-          status: license.status,
-          expires_at: license.expires_at,
-          trial_ends_at: license.trial_ends_at,
-          features: tier?.features || [],
-          limits: license.limits_override || {},
-        };
-      });
+      return data;
     },
     enabled: !!currentOrganization?.id,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
 // Hook para verificar acceso a un módulo específico
+// Now uses tenant_feature_flags (which actually exists) instead of organization_module_licenses
 export function useModuleAccess(moduleCode: ModuleCode) {
-  const { data: licenses, isLoading } = useOrganizationLicenses();
+  const { data: flags, isLoading } = useTenantFeatureFlags();
 
-  const license = licenses?.find(l => l.module_code === moduleCode);
+  const flagColumn = MODULE_FLAG_MAP[moduleCode];
+  // If no mapping exists (core, marketing, datahub, legalops, migrator), grant access by default
+  const hasAccess = !flagColumn
+    ? true
+    : flags
+      ? (flags as any)[flagColumn] === true
+      : false;
 
   return {
-    hasAccess: !!license,
-    license,
+    hasAccess,
+    license: null as ModuleLicense | null,
     isLoading,
-    tier: license?.tier_code || null,
-    features: license?.features || [],
-    isTrialing: license?.trial_ends_at !== null,
-    trialDaysLeft: license?.trial_ends_at
-      ? Math.ceil((new Date(license.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    tier: null as TierCode | null,
+    features: [] as string[],
+    isTrialing: flags?.is_in_trial === true,
+    trialDaysLeft: flags?.trial_ends_at
+      ? Math.ceil((new Date(flags.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : null,
   };
 }
