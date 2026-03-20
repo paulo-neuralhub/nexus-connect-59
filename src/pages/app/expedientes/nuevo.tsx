@@ -14,8 +14,7 @@ import { useOrganization } from '@/contexts/organization-context';
 import { 
   useCreateMatterV2, 
   useGenerateMatterNumber,
-  usePreviewMatterNumber,
-  useMatterTypes 
+  usePreviewMatterNumber
 } from '@/hooks/use-matters-v2';
 import { useGenerateInternalReference } from '@/hooks/use-internal-reference-config';
 import { Button } from '@/components/ui/button';
@@ -47,7 +46,7 @@ export default function NewMatterPage() {
   
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
-  const { data: matterTypes = [], isLoading: loadingTypes } = useMatterTypes();
+  const matterTypes: any[] = [];
   const createMatter = useCreateMatterV2();
   const generateNumber = useGenerateMatterNumber();
   const previewNumberMutation = usePreviewMatterNumber();
@@ -132,10 +131,17 @@ export default function NewMatterPage() {
   }, [selectedType, selectedJurisdictions, detailsData.client_id]);
 
   // Get type info
-  const selectedTypeInfo = useMemo(
-    () => matterTypes.find(t => t.code === selectedType),
-    [matterTypes, selectedType]
-  );
+  const selectedTypeInfo = useMemo(() => {
+    const labels: Record<string, { name_es: string }> = {
+      trademark: { name_es: 'Marca' },
+      patent: { name_es: 'Patente' },
+      design: { name_es: 'Diseño Industrial' },
+      domain: { name_es: 'Dominio' },
+      copyright: { name_es: 'Derecho de Autor' },
+      trade_secret: { name_es: 'Secreto Empresarial' },
+    };
+    return labels[selectedType] as any;
+  }, [selectedType]);
 
   // Check if type is trademark
   const isTrademarkType = selectedType === 'trademark';
@@ -144,9 +150,7 @@ export default function NewMatterPage() {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        const baseValid = !!selectedType && selectedJurisdictions.length > 0;
-        if (isTrademarkType) return baseValid && !!trademarkType;
-        return baseValid;
+        return !!selectedType && selectedJurisdictions.length > 0;
       case 2:
         return detailsData.title.length >= 3;
       case 3:
@@ -288,18 +292,17 @@ export default function NewMatterPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <TypeJurisdictionStep
-                    types={matterTypes}
+                    types={matterTypes as any}
                     selectedType={selectedType}
                     onSelectType={(type) => {
                       setSelectedType(type);
-                      // Reset trademark type when changing matter type
                       if (type !== 'trademark') {
                         setTrademarkType(undefined);
                       }
                     }}
                     selectedJurisdictions={selectedJurisdictions}
                     onSelectJurisdictions={setSelectedJurisdictions}
-                    isLoading={loadingTypes}
+                    isLoading={false}
                     singleJurisdiction={true}
                     trademarkType={trademarkType as any}
                     onSelectTrademarkType={setTrademarkType as any}
