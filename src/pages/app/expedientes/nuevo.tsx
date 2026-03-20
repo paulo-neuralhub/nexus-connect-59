@@ -131,10 +131,17 @@ export default function NewMatterPage() {
   }, [selectedType, selectedJurisdictions, detailsData.client_id]);
 
   // Get type info
-  const selectedTypeInfo = useMemo(
-    () => matterTypes.find(t => t.code === selectedType),
-    [matterTypes, selectedType]
-  );
+  const selectedTypeInfo = useMemo(() => {
+    const labels: Record<string, { name_es: string }> = {
+      trademark: { name_es: 'Marca' },
+      patent: { name_es: 'Patente' },
+      design: { name_es: 'Diseño Industrial' },
+      domain: { name_es: 'Dominio' },
+      copyright: { name_es: 'Derecho de Autor' },
+      trade_secret: { name_es: 'Secreto Empresarial' },
+    };
+    return labels[selectedType] as any;
+  }, [selectedType]);
 
   // Check if type is trademark
   const isTrademarkType = selectedType === 'trademark';
