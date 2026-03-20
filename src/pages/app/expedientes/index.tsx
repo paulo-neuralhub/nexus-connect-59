@@ -179,12 +179,15 @@ export default function ExpedientesPage() {
   
   // Type counts
   const typeCounts = useMemo(() => {
-    if (!allMatters) return { all: 0, trademark: 0, patent: 0, design: 0 };
+    if (!allMatters) return { all: 0, trademark: 0, patent: 0, design: 0, domain: 0, copyright: 0, trade_secret: 0 };
     return {
       all: allMatters.length,
-      trademark: allMatters.filter(m => m.matter_type.startsWith('TM_') || m.matter_type === 'trademark').length,
+      trademark: allMatters.filter(m => m.matter_type.startsWith('TM_') || m.matter_type === 'trademark' || m.matter_type === 'NC').length,
       patent: allMatters.filter(m => m.matter_type.startsWith('PT_') || m.matter_type === 'UM' || m.matter_type === 'patent').length,
       design: allMatters.filter(m => m.matter_type.startsWith('DS_') || m.matter_type === 'design').length,
+      domain: allMatters.filter(m => m.matter_type === 'DOM' || m.matter_type === 'domain').length,
+      copyright: allMatters.filter(m => m.matter_type === 'copyright').length,
+      trade_secret: allMatters.filter(m => m.matter_type === 'trade_secret').length,
     };
   }, [allMatters]);
 
