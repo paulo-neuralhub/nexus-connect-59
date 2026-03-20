@@ -18,6 +18,7 @@ import { IpOfficeStats } from "@/components/ip-offices/IpOfficeStats";
 import { IpOfficeFilters, REGIONS, IP_TYPES } from "@/components/ip-offices/IpOfficeFilters";
 import { IpOfficeLevelDescriptions } from "@/components/ip-offices/IpOfficeLevelDescriptions";
 import { IpOfficeAuditPanel } from "@/components/ip-offices/IpOfficeAuditPanel";
+import { IncrementalUpdateDialog } from "@/components/ip-offices/IncrementalUpdateDialog";
 
 function getNextMonthFirstDay(): string {
   const now = new Date();
