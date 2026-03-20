@@ -139,14 +139,15 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
                 const typeConfig = DEADLINE_TYPE_CONFIG[deadline.deadline_type || 'internal'] || DEADLINE_TYPE_CONFIG.internal;
                 
                 return (
-                  <div 
-                    key={deadline.id} 
-                    className={cn(
-                      "flex items-start justify-between p-4 border rounded-lg",
-                      deadline.is_completed && "opacity-60",
-                      status.urgent && !deadline.is_completed && "border-destructive/50 bg-destructive/5"
-                    )}
-                  >
+                    <div 
+                      key={deadline.id} 
+                      className={cn(
+                        "flex items-start justify-between p-4 border rounded-lg",
+                        deadline.is_completed && "opacity-60",
+                        status.urgent && !deadline.is_completed && "border-destructive/50 bg-destructive/5"
+                      )}
+                      style={status.ledEffect && !deadline.is_completed ? { boxShadow: '0 0 8px rgba(239, 68, 68, 0.4)' } : undefined}
+                    >
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         "h-10 w-10 rounded-lg flex items-center justify-center",
