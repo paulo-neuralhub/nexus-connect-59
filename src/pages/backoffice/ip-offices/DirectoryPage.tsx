@@ -247,6 +247,7 @@ function DirectoryContent() {
           </div>
         )}
       </div>
+      <IncrementalUpdateDialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen} />
     </>
   );
 }
