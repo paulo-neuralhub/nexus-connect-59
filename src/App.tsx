@@ -400,9 +400,9 @@ const App = () => (
                 </Route>
                 <Route path="crm" element={<CRMLayout />}>
                   <Route index element={<CRMDashboardNew />} />
-                  <Route path="kanban" element={<CRMPipelinePage />} />
+                  <Route path="kanban" element={<CRMKanbanPageV2 />} />
                   <Route path="pipeline" element={<Navigate to="/app/crm/kanban" replace />} />
-                  <Route path="leads" element={<Navigate to="/app/crm/kanban?view=leads" replace />} />
+                  <Route path="leads" element={<CRMLeadsPage />} />
                   <Route path="leads/:id" element={<CRMLeadDetailPage />} />
                   <Route path="deals" element={<Navigate to="/app/crm/kanban?view=deals" replace />} />
                   <Route path="negocios" element={<Navigate to="/app/crm/kanban?view=deals" replace />} />
