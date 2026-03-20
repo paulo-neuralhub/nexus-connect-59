@@ -30,13 +30,16 @@ import {
   type WizardStep,
   type MatterDetailsData,
 } from '@/components/matters/wizard';
+import { WizardDatesStep, type WizardDatesData } from '@/components/matters/wizard/WizardDatesStep';
 import { toast } from 'sonner';
 
-// Steps configuration - Now 3 steps instead of 4
+// Steps configuration - 5 steps
 const WIZARD_STEPS: WizardStep[] = [
-  { number: 1, label: 'Tipo y Jurisdicción', icon: Tag },
-  { number: 2, label: 'Detalles', icon: FileText },
-  { number: 3, label: 'Revisar', icon: Eye },
+  { number: 1, label: 'Tipo', icon: Tag },
+  { number: 2, label: 'Info', icon: FileText },
+  { number: 3, label: 'Detalles', icon: Sparkles },
+  { number: 4, label: 'Fechas', icon: Calendar },
+  { number: 5, label: 'Revisar', icon: Eye },
 ];
 
 export default function NewMatterPage() {
