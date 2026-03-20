@@ -46,7 +46,7 @@ export default function NewMatterPage() {
   
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
-  const { data: matterTypes = [], isLoading: loadingTypes } = useMatterTypes();
+  const matterTypes: any[] = [];
   const createMatter = useCreateMatterV2();
   const generateNumber = useGenerateMatterNumber();
   const previewNumberMutation = usePreviewMatterNumber();
