@@ -44,6 +44,7 @@ function DirectoryContent() {
   const [webFilter, setWebFilter] = useState("ALL");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const navigate = useNavigate();
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const { data: offices, isLoading } = useIpOfficesDirectory();
 
   const freshness = getFreshnessIndicator(null);
