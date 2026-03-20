@@ -62,15 +62,20 @@ import { cn } from '@/lib/utils';
 import { useCommunication } from '@/hooks/legal-ops/useCommunications';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Borrador', color: 'bg-slate-100 text-slate-700' },
-  pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-700' },
-  filed: { label: 'Presentado', color: 'bg-blue-100 text-blue-700' },
-  published: { label: 'Publicado', color: 'bg-purple-100 text-purple-700' },
+  draft: { label: 'Borrador', color: 'bg-slate-100 text-slate-600' },
+  pending: { label: 'Pendiente', color: 'bg-slate-100 text-slate-600' },
+  filed: { label: 'En tramitación', color: 'bg-blue-100 text-blue-700' },
+  filing: { label: 'En tramitación', color: 'bg-blue-100 text-blue-700' },
+  examining: { label: 'Examinación', color: 'bg-amber-100 text-amber-700' },
+  published: { label: 'Publicado', color: 'bg-indigo-100 text-indigo-700' },
   granted: { label: 'Concedido', color: 'bg-green-100 text-green-700' },
+  registered: { label: 'Registrado', color: 'bg-green-100 text-green-700' },
   active: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
-  opposed: { label: 'En oposición', color: 'bg-red-100 text-red-700' },
+  renewal: { label: 'Renovación', color: 'bg-teal-100 text-teal-700' },
+  opposed: { label: 'En oposición', color: 'bg-orange-100 text-orange-700' },
   expired: { label: 'Expirado', color: 'bg-gray-100 text-gray-500' },
   abandoned: { label: 'Abandonado', color: 'bg-gray-100 text-gray-500' },
+  archived: { label: 'Archivado', color: 'bg-gray-100 text-gray-500' },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
 };
 
