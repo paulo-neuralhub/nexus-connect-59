@@ -6348,6 +6348,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "crm_accounts_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "crm_accounts_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
