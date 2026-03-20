@@ -192,7 +192,10 @@ export default function CRMV2AccountDetail() {
             </TabsContent>
 
             <TabsContent value="activities">
-              <AccountActivitiesTab activities={activities as any} />
+              <AccountActivitiesTab
+                accountId={id}
+                onAddActivity={() => setShowActivityModal(true)}
+              />
             </TabsContent>
 
             <TabsContent value="documents">
