@@ -43,21 +43,21 @@ const MATTER_TYPE_ICONS: Record<string, {
   borderColor: string;
   shadowColor: string;
 }> = {
-  // Trademarks
-  TM_NAT: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  TM_EU: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  TM_INT: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  trademark: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  // Patents
-  PT_NAT: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  PT_EU: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  PT_PCT: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  patent: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
+  // Trademarks — violet #8B5CF6
+  TM_NAT: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  TM_EU: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  TM_INT: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  trademark: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  // Patents — sky #0EA5E9
+  PT_NAT: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  PT_EU: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  PT_PCT: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  patent: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
   // Utility Model
-  UM: { icon: Wrench, gradientFrom: '#8b5cf6', gradientTo: '#7c3aed', borderColor: '#a78bfa', shadowColor: 'rgba(139, 92, 246, 0.4)' },
-  utility_model: { icon: Wrench, gradientFrom: '#8b5cf6', gradientTo: '#7c3aed', borderColor: '#a78bfa', shadowColor: 'rgba(139, 92, 246, 0.4)' },
-  // Designs
-  DS_NAT: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
+  UM: { icon: Wrench, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  utility_model: { icon: Wrench, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  // Designs — indigo #6366F1
+  DS_NAT: { icon: Palette, gradientFrom: '#6366F1', gradientTo: '#4F46E5', borderColor: '#818CF8', shadowColor: 'rgba(99, 102, 241, 0.4)' },
   DS_EU: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
   design: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
   // Trade Name
