@@ -407,7 +407,7 @@ export default function NewMatterPage() {
             Anterior
           </Button>
 
-          {currentStep < 3 ? (
+          {currentStep < 5 ? (
             <Button
               onClick={nextStep}
               disabled={!isStepValid(currentStep)}
