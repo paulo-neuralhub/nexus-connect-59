@@ -4478,6 +4478,94 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          all_day: boolean | null
+          attendees: Json | null
+          color: string | null
+          contact_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_at: string | null
+          event_type: string | null
+          id: string
+          location: string | null
+          matter_id: string | null
+          organization_id: string
+          recurrence_rule: string | null
+          reminder_minutes: number | null
+          start_at: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          all_day?: boolean | null
+          attendees?: Json | null
+          color?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_at?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          matter_id?: string | null
+          organization_id: string
+          recurrence_rule?: string | null
+          reminder_minutes?: number | null
+          start_at: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          all_day?: boolean | null
+          attendees?: Json | null
+          color?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_at?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          matter_id?: string | null
+          organization_id?: string
+          recurrence_rule?: string | null
+          reminder_minutes?: number | null
+          start_at?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classification_sync_logs: {
         Row: {
           created_at: string | null
@@ -5202,6 +5290,160 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      communication_messages: {
+        Row: {
+          attachments: Json | null
+          bcc_addresses: string[] | null
+          body_html: string | null
+          body_text: string | null
+          cc_addresses: string[] | null
+          created_at: string | null
+          direction: string | null
+          external_message_id: string | null
+          from_address: string | null
+          id: string
+          organization_id: string
+          read_at: string | null
+          sender_user_id: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          thread_id: string
+          to_addresses: string[] | null
+        }
+        Insert: {
+          attachments?: Json | null
+          bcc_addresses?: string[] | null
+          body_html?: string | null
+          body_text?: string | null
+          cc_addresses?: string[] | null
+          created_at?: string | null
+          direction?: string | null
+          external_message_id?: string | null
+          from_address?: string | null
+          id?: string
+          organization_id: string
+          read_at?: string | null
+          sender_user_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          thread_id: string
+          to_addresses?: string[] | null
+        }
+        Update: {
+          attachments?: Json | null
+          bcc_addresses?: string[] | null
+          body_html?: string | null
+          body_text?: string | null
+          cc_addresses?: string[] | null
+          created_at?: string | null
+          direction?: string | null
+          external_message_id?: string | null
+          from_address?: string | null
+          id?: string
+          organization_id?: string
+          read_at?: string | null
+          sender_user_id?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          thread_id?: string
+          to_addresses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_threads: {
+        Row: {
+          assigned_to: string | null
+          channel: string
+          contact_id: string | null
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          matter_id: string | null
+          message_count: number | null
+          metadata: Json | null
+          organization_id: string
+          priority: string | null
+          status: string | null
+          subject: string | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          channel?: string
+          contact_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          metadata?: Json | null
+          organization_id: string
+          priority?: string | null
+          status?: string | null
+          subject?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          channel?: string
+          contact_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          metadata?: Json | null
+          organization_id?: string
+          priority?: string | null
+          status?: string | null
+          subject?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_threads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_threads_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_threads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       communications: {
         Row: {
@@ -8953,6 +9195,193 @@ export type Database = {
           },
         ]
       }
+      ip_chain_records: {
+        Row: {
+          algorithm: string | null
+          block_number: number | null
+          blockchain_network: string | null
+          content_hash: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          matter_id: string | null
+          metadata: Json | null
+          organization_id: string
+          record_type: string
+          status: string | null
+          transaction_hash: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          algorithm?: string | null
+          block_number?: number | null
+          blockchain_network?: string | null
+          content_hash: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          matter_id?: string | null
+          metadata?: Json | null
+          organization_id: string
+          record_type?: string
+          status?: string | null
+          transaction_hash?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          algorithm?: string | null
+          block_number?: number | null
+          blockchain_network?: string | null
+          content_hash?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          matter_id?: string | null
+          metadata?: Json | null
+          organization_id?: string
+          record_type?: string
+          status?: string | null
+          transaction_hash?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_chain_records_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_chain_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_filing_submissions: {
+        Row: {
+          applicant_id: string | null
+          applicant_name: string | null
+          application_number: string | null
+          application_status: string | null
+          created_at: string | null
+          created_by: string | null
+          filing_date: string | null
+          filing_type: string
+          first_language: string | null
+          id: string
+          last_status_check: string | null
+          mark_feature: string | null
+          mark_name: string | null
+          matter_id: string | null
+          nice_classes: number[] | null
+          office_id: string | null
+          organization_id: string
+          payment_amount: number | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          representative_id: string | null
+          representative_name: string | null
+          second_language: string | null
+          status: string | null
+          submission_date: string | null
+          submission_errors: Json | null
+          submission_payload: Json
+          updated_at: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          applicant_name?: string | null
+          application_number?: string | null
+          application_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          filing_date?: string | null
+          filing_type: string
+          first_language?: string | null
+          id?: string
+          last_status_check?: string | null
+          mark_feature?: string | null
+          mark_name?: string | null
+          matter_id?: string | null
+          nice_classes?: number[] | null
+          office_id?: string | null
+          organization_id: string
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          representative_id?: string | null
+          representative_name?: string | null
+          second_language?: string | null
+          status?: string | null
+          submission_date?: string | null
+          submission_errors?: Json | null
+          submission_payload?: Json
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          applicant_id?: string | null
+          applicant_name?: string | null
+          application_number?: string | null
+          application_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          filing_date?: string | null
+          filing_type?: string
+          first_language?: string | null
+          id?: string
+          last_status_check?: string | null
+          mark_feature?: string | null
+          mark_name?: string | null
+          matter_id?: string | null
+          nice_classes?: number[] | null
+          office_id?: string | null
+          organization_id?: string
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          representative_id?: string | null
+          representative_name?: string | null
+          second_language?: string | null
+          status?: string | null
+          submission_date?: string | null
+          submission_errors?: Json | null
+          submission_payload?: Json
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_filing_submissions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_filing_submissions_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_filing_submissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ip_nice_classification: {
         Row: {
           class_id: string | null
@@ -9232,6 +9661,66 @@ export type Database = {
           source?: string | null
         }
         Relationships: []
+      }
+      ip_trademark_searches: {
+        Row: {
+          created_at: string | null
+          id: string
+          nice_classes: number[] | null
+          notes: string | null
+          office_code: string
+          organization_id: string
+          related_matter_id: string | null
+          results_snapshot: Json | null
+          search_term: string
+          status_filter: string[] | null
+          total_results: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nice_classes?: number[] | null
+          notes?: string | null
+          office_code: string
+          organization_id: string
+          related_matter_id?: string | null
+          results_snapshot?: Json | null
+          search_term: string
+          status_filter?: string[] | null
+          total_results?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nice_classes?: number[] | null
+          notes?: string | null
+          office_code?: string
+          organization_id?: string
+          related_matter_id?: string | null
+          results_snapshot?: Json | null
+          search_term?: string
+          status_filter?: string[] | null
+          total_results?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_trademark_searches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_trademark_searches_related_matter_id_fkey"
+            columns: ["related_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ipc_classes: {
         Row: {
@@ -11797,6 +12286,80 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "market_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          campaign_type: string | null
+          click_count: number | null
+          content: Json | null
+          conversion_count: number | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          open_count: number | null
+          organization_id: string
+          sent_count: number | null
+          start_date: string | null
+          status: string | null
+          target_audience: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          campaign_type?: string | null
+          click_count?: number | null
+          content?: Json | null
+          conversion_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          open_count?: number | null
+          organization_id: string
+          sent_count?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          campaign_type?: string | null
+          click_count?: number | null
+          content?: Json | null
+          conversion_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          open_count?: number | null
+          organization_id?: string
+          sent_count?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -15504,51 +16067,360 @@ export type Database = {
       }
       surveillance_alerts: {
         Row: {
+          action_notes: string | null
+          action_taken: string | null
+          ai_analysis: string | null
           alert_type: string | null
+          applicant_name: string | null
           confidence: number | null
+          config_id: string | null
           created_at: string | null
           description: string | null
+          detected_trademark: string | null
+          filing_date: string | null
+          filing_number: string | null
           id: string
+          jurisdiction: string | null
           matter_id: string | null
           metadata: Json | null
+          nice_classes: number[] | null
           organization_id: string | null
           resolved_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           severity: string | null
+          similarity_score: number | null
           source: string | null
           status: string | null
           title: string | null
         }
         Insert: {
+          action_notes?: string | null
+          action_taken?: string | null
+          ai_analysis?: string | null
           alert_type?: string | null
+          applicant_name?: string | null
           confidence?: number | null
+          config_id?: string | null
           created_at?: string | null
           description?: string | null
+          detected_trademark?: string | null
+          filing_date?: string | null
+          filing_number?: string | null
           id?: string
+          jurisdiction?: string | null
           matter_id?: string | null
           metadata?: Json | null
+          nice_classes?: number[] | null
           organization_id?: string | null
           resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           severity?: string | null
+          similarity_score?: number | null
           source?: string | null
           status?: string | null
           title?: string | null
         }
         Update: {
+          action_notes?: string | null
+          action_taken?: string | null
+          ai_analysis?: string | null
           alert_type?: string | null
+          applicant_name?: string | null
           confidence?: number | null
+          config_id?: string | null
           created_at?: string | null
           description?: string | null
+          detected_trademark?: string | null
+          filing_date?: string | null
+          filing_number?: string | null
           id?: string
+          jurisdiction?: string | null
           matter_id?: string | null
           metadata?: Json | null
+          nice_classes?: number[] | null
           organization_id?: string | null
           resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           severity?: string | null
+          similarity_score?: number | null
           source?: string | null
           status?: string | null
           title?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "surveillance_alerts_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "surveillance_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveillance_configs: {
+        Row: {
+          countries: string[]
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_scan_at: string | null
+          matter_id: string | null
+          next_scan_at: string | null
+          nice_classes: number[]
+          organization_id: string
+          plan_type: string
+          search_name: string
+          search_phonetic: boolean | null
+          search_variants: string[] | null
+          updated_at: string | null
+          watch_all_classes: boolean | null
+        }
+        Insert: {
+          countries?: string[]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scan_at?: string | null
+          matter_id?: string | null
+          next_scan_at?: string | null
+          nice_classes?: number[]
+          organization_id: string
+          plan_type?: string
+          search_name: string
+          search_phonetic?: boolean | null
+          search_variants?: string[] | null
+          updated_at?: string | null
+          watch_all_classes?: boolean | null
+        }
+        Update: {
+          countries?: string[]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scan_at?: string | null
+          matter_id?: string | null
+          next_scan_at?: string | null
+          nice_classes?: number[]
+          organization_id?: string
+          plan_type?: string
+          search_name?: string
+          search_phonetic?: boolean | null
+          search_variants?: string[] | null
+          updated_at?: string | null
+          watch_all_classes?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveillance_configs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveillance_configs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveillance_notification_settings: {
+        Row: {
+          created_at: string | null
+          digest_medium_low: string | null
+          email_address: string | null
+          email_enabled: boolean | null
+          id: string
+          notify_immediately_critical: boolean | null
+          notify_immediately_high: boolean | null
+          organization_id: string
+          push_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+          whatsapp_enabled: boolean | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          digest_medium_low?: string | null
+          email_address?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          notify_immediately_critical?: boolean | null
+          notify_immediately_high?: boolean | null
+          organization_id: string
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          digest_medium_low?: string | null
+          email_address?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          notify_immediately_critical?: boolean | null
+          notify_immediately_high?: boolean | null
+          organization_id?: string
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveillance_notification_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveillance_scans: {
+        Row: {
+          config_id: string
+          created_at: string | null
+          error_details: Json | null
+          error_message: string | null
+          id: string
+          new_alerts_created: number | null
+          scan_completed_at: string | null
+          scan_started_at: string
+          scan_status: string | null
+          sources_checked: string[] | null
+          total_results_found: number | null
+        }
+        Insert: {
+          config_id: string
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          new_alerts_created?: number | null
+          scan_completed_at?: string | null
+          scan_started_at?: string
+          scan_status?: string | null
+          sources_checked?: string[] | null
+          total_results_found?: number | null
+        }
+        Update: {
+          config_id?: string
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          new_alerts_created?: number | null
+          scan_completed_at?: string | null
+          scan_started_at?: string
+          scan_status?: string | null
+          sources_checked?: string[] | null
+          total_results_found?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveillance_scans_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "surveillance_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveillance_subscriptions: {
+        Row: {
+          alert_threshold: number | null
+          created_at: string | null
+          end_date: string | null
+          frequency: string | null
+          id: string
+          jurisdictions: string[] | null
+          last_scan_at: string | null
+          matter_id: string | null
+          monthly_price: number | null
+          next_scan_at: string | null
+          nice_classes: number[] | null
+          organization_id: string
+          search_term: string
+          search_type: string | null
+          start_date: string | null
+          status: string | null
+          subscription_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_threshold?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          jurisdictions?: string[] | null
+          last_scan_at?: string | null
+          matter_id?: string | null
+          monthly_price?: number | null
+          next_scan_at?: string | null
+          nice_classes?: number[] | null
+          organization_id: string
+          search_term: string
+          search_type?: string | null
+          start_date?: string | null
+          status?: string | null
+          subscription_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_threshold?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          jurisdictions?: string[] | null
+          last_scan_at?: string | null
+          matter_id?: string | null
+          monthly_price?: number | null
+          next_scan_at?: string | null
+          nice_classes?: number[] | null
+          organization_id?: string
+          search_term?: string
+          search_type?: string | null
+          start_date?: string | null
+          status?: string | null
+          subscription_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveillance_subscriptions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveillance_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_settings: {
         Row: {
@@ -15678,6 +16550,97 @@ export type Database = {
           ticket_id?: string | null
         }
         Relationships: []
+      }
+      time_entries: {
+        Row: {
+          activity_type: string | null
+          contact_id: string | null
+          created_at: string | null
+          currency: string | null
+          date: string
+          description: string | null
+          duration_minutes: number
+          end_time: string | null
+          hourly_rate: number | null
+          id: string
+          invoice_id: string | null
+          is_billable: boolean | null
+          is_billed: boolean | null
+          matter_id: string | null
+          organization_id: string
+          start_time: string | null
+          tags: string[] | null
+          total_amount: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string | null
+          duration_minutes?: number
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoice_id?: string | null
+          is_billable?: boolean | null
+          is_billed?: boolean | null
+          matter_id?: string | null
+          organization_id: string
+          start_time?: string | null
+          tags?: string[] | null
+          total_amount?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string | null
+          duration_minutes?: number
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoice_id?: string | null
+          is_billable?: boolean | null
+          is_billed?: boolean | null
+          matter_id?: string | null
+          organization_id?: string
+          start_time?: string | null
+          tags?: string[] | null
+          total_amount?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trademark_searches: {
         Row: {
@@ -16089,6 +17052,131 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_definitions: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          job_types: string[] | null
+          name: string
+          organization_id: string | null
+          retry_on_failure: boolean | null
+          timeout_seconds: number | null
+          trigger_type: string | null
+          updated_at: string | null
+          webhook_path: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          job_types?: string[] | null
+          name: string
+          organization_id?: string | null
+          retry_on_failure?: boolean | null
+          timeout_seconds?: number | null
+          trigger_type?: string | null
+          updated_at?: string | null
+          webhook_path?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          job_types?: string[] | null
+          name?: string
+          organization_id?: string | null
+          retry_on_failure?: boolean | null
+          timeout_seconds?: number | null
+          trigger_type?: string | null
+          updated_at?: string | null
+          webhook_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          input_data: Json | null
+          organization_id: string
+          output_data: Json | null
+          started_at: string | null
+          status: string | null
+          steps_completed: number | null
+          steps_total: number | null
+          trigger_type: string | null
+          triggered_by: string | null
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          organization_id: string
+          output_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          steps_completed?: number | null
+          steps_total?: number | null
+          trigger_type?: string | null
+          triggered_by?: string | null
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          organization_id?: string
+          output_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          steps_completed?: number | null
+          steps_total?: number | null
+          trigger_type?: string | null
+          triggered_by?: string | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
             referencedColumns: ["id"]
           },
         ]
