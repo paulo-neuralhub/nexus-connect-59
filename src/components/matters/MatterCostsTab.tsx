@@ -56,7 +56,7 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
       const { error } = await client.from('matter_costs').insert({
         matter_id: matterId,
         organization_id: currentOrganization!.id,
-        concept: newCost.concept,
+        description: newCost.description,
         cost_type: newCost.cost_type,
         amount: parseFloat(newCost.amount),
         currency: newCost.currency,
@@ -67,7 +67,7 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matter-costs', matterId] });
       setShowAddModal(false);
-      setNewCost({ concept: '', cost_type: 'official_fee', amount: '', currency: 'EUR', date: new Date().toISOString().split('T')[0] });
+      setNewCost({ description: '', cost_type: 'official_fee', amount: '', currency: 'EUR', date: new Date().toISOString().split('T')[0] });
       toast.success('Coste añadido');
     },
     onError: () => toast.error('Error al añadir coste'),
