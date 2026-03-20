@@ -209,6 +209,7 @@ export interface CRMLead {
   full_name: string;
   email: string | null;
   phone: string | null;
+  whatsapp_phone?: string | null;
   company_name: string | null;
   source: string | null;
   lead_score: number | null;
@@ -220,6 +221,9 @@ export interface CRMLead {
   converted_at: string | null;
   created_at: string;
   updated_at: string;
+  // Joined (optional)
+  account?: { id: string; name?: string | null } | null;
+  assigned_user?: { id: string; full_name?: string | null; avatar_url?: string | null } | null;
 }
 
 // ── crm_tasks ──
