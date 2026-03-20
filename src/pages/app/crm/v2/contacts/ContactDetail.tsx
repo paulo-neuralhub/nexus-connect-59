@@ -12,6 +12,8 @@ import { ContactHeader360 } from "@/pages/app/crm/v2/contacts/components/Contact
 import { ContactTabs360 } from "@/pages/app/crm/v2/contacts/components/ContactTabs360";
 import { ContactTimelinePanel } from "@/pages/app/crm/v2/contacts/components/ContactTimelinePanel";
 import { DealMiniListWithPanel } from "@/components/features/crm/v2/deal-panel";
+import { AccountActivitiesTab } from "@/pages/app/crm/v2/accounts/tabs/AccountActivitiesTab";
+import { AccountDocumentsTab } from "@/pages/app/crm/v2/accounts/tabs/AccountDocumentsTab";
 
 type Contact = {
   id: string;
@@ -86,6 +88,47 @@ export default function CRMV2ContactDetail() {
 
   const pipelineValue = deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "deals":
+        return (
+          <div className="rounded-xl border border-border bg-background-card p-5">
+            {loadingDeals ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+            ) : (
+              <DealMiniListWithPanel deals={deals} emptyLabel="Este contacto no tiene deals todavía." />
+            )}
+          </div>
+        );
+      case "documents":
+        return contact.account_id ? (
+          <AccountDocumentsTab accountId={contact.account_id} />
+        ) : (
+          <div className="text-sm text-muted-foreground p-4">Sin cuenta asociada para mostrar documentos.</div>
+        );
+      case "info":
+        return (
+          <div className="rounded-xl border border-border bg-background-card p-5 text-sm text-muted-foreground space-y-2">
+            {contact.email && <p><strong>Email:</strong> {contact.email}</p>}
+            {contact.phone && <p><strong>Teléfono:</strong> {contact.phone}</p>}
+            {contact.account?.name && <p><strong>Cuenta:</strong> {contact.account.name}</p>}
+            {contact.lead_status && <p><strong>Lead status:</strong> {contact.lead_status}</p>}
+            {!contact.email && !contact.phone && <p>Sin información adicional disponible.</p>}
+          </div>
+        );
+      default:
+        return (
+          <div className="rounded-xl border border-border bg-background-card p-5 text-sm text-muted-foreground">
+            Próximamente.
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -113,21 +156,9 @@ export default function CRMV2ContactDetail() {
             counts={{
               deals: deals.length,
             }}
-          />
-
-          {activeTab === "deals" ? (
-            <div className="rounded-xl border border-border bg-background-card p-5">
-              {loadingDeals ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-24 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <DealMiniListWithPanel deals={deals} emptyLabel="Este contacto no tiene deals todavía." />
-              )}
-            </div>
-          ) : null}
+          >
+            {renderTabContent()}
+          </ContactTabs360>
         </div>
 
         {/* Right */}

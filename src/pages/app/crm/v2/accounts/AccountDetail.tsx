@@ -204,6 +204,12 @@ export default function CRMV2AccountDetail() {
           </Tabs>
         </div>
       </div>
+
+      <InteractionFormModal
+        open={showActivityModal}
+        onClose={() => setShowActivityModal(false)}
+        defaultAccountId={id}
+      />
     </div>
   );
 }

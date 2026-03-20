@@ -35,6 +35,7 @@ export function useCRMDeals(filters?: DealFilters) {
       if (filters?.pipeline_stage_id) query = query.eq("pipeline_stage_id", filters.pipeline_stage_id);
       if (filters?.assigned_to) query = query.eq("assigned_to", filters.assigned_to);
       if (filters?.account_id) query = query.eq("account_id", filters.account_id);
+      if (filters?.contact_id) query = query.eq("contact_id", filters.contact_id);
       if (filters?.deal_type) query = query.eq("deal_type", filters.deal_type);
       if (filters?.search) query = query.ilike("name", `%${filters.search}%`);
 
