@@ -690,6 +690,7 @@ export function useCreateMatterV2() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matters-v2'] });
+      queryClient.invalidateQueries({ queryKey: ['matters'] });
     },
   });
 }

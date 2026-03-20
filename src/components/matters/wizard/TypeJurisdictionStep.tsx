@@ -164,268 +164,250 @@ export function TypeJurisdictionStep({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold mb-2">Tipo y Jurisdicción</h2>
-        <p className="text-muted-foreground">Selecciona el tipo de expediente y dónde quieres protegerlo</p>
-      </div>
-
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* LEFT COLUMN: TYPE SELECTION */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <span className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-primary/30">1</span>
-            Tipo de expediente
-          </div>
-
-          {/* Popular Types Grid - EFECTO WOW */}
-          <div className="grid grid-cols-2 gap-3">
-            {popularTypes.map((type, index) => {
-              const config = TYPE_CONFIG[type.code] || { icon: '📁', description: '', popular: false, gradient: 'from-slate-500 to-gray-600' };
-              const isSelected = selectedType === type.code;
-
-              return (
-                <motion.button
-                  key={type.code}
-                  type="button"
-                  onClick={() => onSelectType(type.code)}
-                  whileHover={{ scale: 1.03, y: -4 }}
-                  whileTap={{ scale: 0.97 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={cn(
-                    "p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden group",
-                    isSelected
-                      ? "border-primary bg-white/80 ring-2 ring-primary/30 shadow-[0_20px_50px_-12px_rgba(59,130,246,0.35)]"
-                      : "border-white/60 bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:border-primary/40"
-                  )}
-                >
-                  {/* Shimmer on hover */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-                  
-                  {/* Selection check badge */}
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/40"
-                    >
-                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                    </motion.div>
-                  )}
-                  
-                  <div className="flex items-center gap-3 relative z-10">
-                    {/* Icon with gradient background when selected */}
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center transition-all relative",
-                      isSelected 
-                        ? `bg-gradient-to-br ${config.gradient} shadow-lg` 
-                        : "bg-slate-100"
-                    )}>
-                      {isSelected && (
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/25 to-transparent" />
-                      )}
-                      <span className="text-2xl relative z-10">{config.icon}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={cn(
-                        "font-semibold text-sm truncate",
-                        isSelected && "text-primary"
-                      )}>{type.name_es}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{config.description}</p>
-                    </div>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Other Types - Collapsible */}
-          <AnimatePresence>
-            {showAllTypes && otherTypes.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="grid grid-cols-2 gap-2"
-              >
-                {otherTypes.map((type) => {
-                  const config = TYPE_CONFIG[type.code] || { icon: '📁', description: '', popular: false, gradient: 'from-slate-500 to-gray-600' };
-                  const isSelected = selectedType === type.code;
-
-                  return (
-                    <motion.button
-                      key={type.code}
-                      type="button"
-                      onClick={() => onSelectType(type.code)}
-                      whileHover={{ scale: 1.02 }}
-                      className={cn(
-                        "flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left text-sm",
-                        "hover:shadow-md",
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-white/60 bg-white/50 hover:bg-white/70"
-                      )}
-                    >
-                      <span className="text-lg">{config.icon}</span>
-                      <span className="font-medium truncate">{type.name_es}</span>
-                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                    </motion.button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Toggle Button */}
-          {otherTypes.length > 0 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full bg-white/50 hover:bg-white/70"
-              onClick={() => setShowAllTypes(!showAllTypes)}
-            >
-              {showAllTypes ? (
-                <>Ver menos <ChevronUp className="h-3 w-3 ml-1" /></>
-              ) : (
-                <>Ver más tipos ({otherTypes.length}) <ChevronDown className="h-3 w-3 ml-1" /></>
-              )}
-            </Button>
-          )}
+      {/* ============ SECTION 1: TYPE SELECTION (full width) ============ */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
+          <span className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-primary/30">1</span>
+          ¿Qué tipo de expediente vas a crear?
         </div>
 
-        {/* RIGHT COLUMN: JURISDICTION SELECTION */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <span className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-emerald-500/30">2</span>
-            Jurisdicción
-          </div>
+        {/* Popular Types Grid - 3 columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {popularTypes.map((type, index) => {
+            const config = TYPE_CONFIG[type.code] || { icon: '📁', description: '', popular: false, gradient: 'from-slate-500 to-gray-600' };
+            const isSelected = selectedType === type.code;
 
-          {/* Popular Jurisdictions - EFECTO WOW */}
-          <div className="space-y-3">
-            {popularJurisdictions.map((j, index) => {
-              const isSelected = selectedJurisdictions.includes(j.code);
-              return (
-                <motion.div
-                  key={j.code}
-                  onClick={() => toggleJurisdiction(j.code)}
-                  whileHover={{ scale: 1.02, x: 6 }}
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all relative overflow-hidden group",
-                    isSelected
-                      ? "border-emerald-500 bg-white/80 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.35)] ring-2 ring-emerald-500/30"
-                      : "border-white/60 bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:border-emerald-400/50"
-                  )}
-                >
-                  {/* Shimmer on hover */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-                  
-                  {/* Selection check badge */}
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/40"
-                    >
-                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                    </motion.div>
-                  )}
-                  
-                  {singleJurisdiction ? (
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                      isSelected 
-                        ? "border-emerald-500 bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/40" 
-                        : "border-slate-300 bg-white"
-                    )}>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="w-2.5 h-2.5 rounded-full bg-white"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <Checkbox checked={isSelected} className="data-[state=checked]:bg-emerald-500" />
-                  )}
-                  
-                  <span className="text-3xl">{j.flag}</span>
-                  <div className="flex-1 min-w-0 relative z-10">
-                    <p className={cn(
-                      "font-semibold text-sm",
-                      isSelected && "text-emerald-700"
-                    )}>{j.name}</p>
-                    <p className="text-xs text-muted-foreground">{j.office}</p>
+            return (
+              <motion.button
+                key={type.code}
+                type="button"
+                onClick={() => onSelectType(type.code)}
+                whileHover={{ scale: 1.03, y: -4 }}
+                whileTap={{ scale: 0.97 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className={cn(
+                  "p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden group",
+                  isSelected
+                    ? "border-primary bg-white/80 ring-2 ring-primary/30 shadow-[0_20px_50px_-12px_rgba(59,130,246,0.35)]"
+                    : "border-white/60 bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:border-primary/40"
+                )}
+              >
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/40"
+                  >
+                    <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                  </motion.div>
+                )}
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all relative",
+                    isSelected 
+                      ? `bg-gradient-to-br ${config.gradient} shadow-lg` 
+                      : "bg-slate-100"
+                  )}>
+                    {isSelected && (
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/25 to-transparent" />
+                    )}
+                    <span className="text-2xl relative z-10">{config.icon}</span>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={cn(
+                      "font-semibold text-sm truncate",
+                      isSelected && "text-primary"
+                    )}>{type.name_es}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{config.description}</p>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
 
-          {/* More Jurisdictions Button */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full bg-white/50 hover:bg-white/70 border-white/60"
-            onClick={() => setShowJurisModal(true)}
-          >
-            <Globe className="h-4 w-4 mr-2" />
-            Más jurisdicciones ({otherJurisdictions.length})
-          </Button>
-
-          {/* Selected Jurisdictions Pills */}
-          {selectedJurisdictions.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-white/60 space-y-2"
+        {/* Other Types - Collapsible */}
+        <AnimatePresence>
+          {showAllTypes && otherTypes.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3"
             >
-              <p className="text-xs font-semibold text-muted-foreground">Seleccionadas:</p>
-              <div className="flex flex-wrap gap-2">
-                {selectedJurisdictions.map((code) => {
-                  const j = JURISDICTIONS.find(x => x.code === code);
-                  return (
-                    <Badge 
-                      key={code} 
-                      className="gap-1.5 pr-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white border-0 shadow-md shadow-emerald-500/30"
-                    >
-                      {j?.flag} {j?.name}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeJurisdiction(code);
-                        }}
-                        className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  );
-                })}
-              </div>
+              {otherTypes.map((type) => {
+                const config = TYPE_CONFIG[type.code] || { icon: '📁', description: '', popular: false, gradient: 'from-slate-500 to-gray-600' };
+                const isSelected = selectedType === type.code;
+                return (
+                  <motion.button
+                    key={type.code}
+                    type="button"
+                    onClick={() => onSelectType(type.code)}
+                    whileHover={{ scale: 1.02 }}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-left text-sm",
+                      "hover:shadow-md",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-white/60 bg-white/50 hover:bg-white/70"
+                    )}
+                  >
+                    <span className="text-lg">{config.icon}</span>
+                    <span className="font-medium truncate">{type.name_es}</span>
+                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </motion.button>
+                );
+              })}
             </motion.div>
           )}
-        </div>
+        </AnimatePresence>
+
+        {otherTypes.length > 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full bg-white/50 hover:bg-white/70 mt-3"
+            onClick={() => setShowAllTypes(!showAllTypes)}
+          >
+            {showAllTypes ? (
+              <>Ver menos <ChevronUp className="h-3 w-3 ml-1" /></>
+            ) : (
+              <>Ver más tipos ({otherTypes.length}) <ChevronDown className="h-3 w-3 ml-1" /></>
+            )}
+          </Button>
+        )}
       </div>
 
-      {/* TRADEMARK TYPE SELECTOR - Full width below both columns */}
+      {/* ============ SECTION 2: TRADEMARK SUB-SELECTOR (conditional) ============ */}
       <AnimatePresence>
         {isTrademarkType && onSelectTrademarkType && (
-          <TrademarkTypeSelector
-            value={trademarkType}
-            onChange={onSelectTrademarkType}
-          />
+          <div className="mb-8">
+            <TrademarkTypeSelector
+              value={trademarkType}
+              onChange={onSelectTrademarkType}
+            />
+          </div>
         )}
       </AnimatePresence>
+
+      {/* ============ SECTION 3: JURISDICTION (full width, below type) ============ */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <span className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-emerald-500/30">{isTrademarkType ? '3' : '2'}</span>
+          Jurisdicción
+        </div>
+
+        {/* Popular Jurisdictions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {popularJurisdictions.map((j, index) => {
+            const isSelected = selectedJurisdictions.includes(j.code);
+            return (
+              <motion.div
+                key={j.code}
+                onClick={() => toggleJurisdiction(j.code)}
+                whileHover={{ scale: 1.02, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className={cn(
+                  "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all relative overflow-hidden group",
+                  isSelected
+                    ? "border-emerald-500 bg-white/80 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.35)] ring-2 ring-emerald-500/30"
+                    : "border-white/60 bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg hover:border-emerald-400/50"
+                )}
+              >
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/40"
+                  >
+                    <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                  </motion.div>
+                )}
+                {singleJurisdiction ? (
+                  <div className={cn(
+                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                    isSelected 
+                      ? "border-emerald-500 bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/40" 
+                      : "border-slate-300 bg-white"
+                  )}>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 rounded-full bg-white"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <Checkbox checked={isSelected} className="data-[state=checked]:bg-emerald-500" />
+                )}
+                <span className="text-3xl">{j.flag}</span>
+                <div className="flex-1 min-w-0 relative z-10">
+                  <p className={cn(
+                    "font-semibold text-sm",
+                    isSelected && "text-emerald-700"
+                  )}>{j.name}</p>
+                  <p className="text-xs text-muted-foreground">{j.office}</p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* More Jurisdictions Button */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full bg-white/50 hover:bg-white/70 border-white/60"
+          onClick={() => setShowJurisModal(true)}
+        >
+          <Globe className="h-4 w-4 mr-2" />
+          Más jurisdicciones ({otherJurisdictions.length})
+        </Button>
+
+        {/* Selected Jurisdictions Pills */}
+        {selectedJurisdictions.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-white/60 space-y-2"
+          >
+            <p className="text-xs font-semibold text-muted-foreground">Seleccionadas:</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedJurisdictions.map((code) => {
+                const j = JURISDICTIONS.find(x => x.code === code);
+                return (
+                  <Badge 
+                    key={code} 
+                    className="gap-1.5 pr-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white border-0 shadow-md shadow-emerald-500/30"
+                  >
+                    {j?.flag} {j?.name}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeJurisdiction(code);
+                      }}
+                      className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </div>
 
       <Dialog open={showJurisModal} onOpenChange={setShowJurisModal}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
