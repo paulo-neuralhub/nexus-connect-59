@@ -22,7 +22,8 @@ export default function CRMV2Dashboard() {
   usePageTitle("CRM");
 
   const { data, isLoading } = useCRMDashboardKPIs();
-  const { data: pipelineSummary, isLoading: isLoadingPipelineSummary } = usePipelineSummary();
+  const pipelineSummary = null as any; // Pipeline summary removed in v2
+  const isLoadingPipelineSummary = false;
   const seed = useSeedCRMDemoData();
 
   const cards = useMemo(() => {
