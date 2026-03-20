@@ -65,7 +65,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
               <h3 className="font-bold text-lg text-foreground">{office.acronym || office.code}</h3>
               <Badge variant="outline" className="text-xs shadow-sm border-border/80">{OFFICE_TYPE_LABELS[officeType] || "Nacional"}</Badge>
               {(office as any).has_fee_intelligence && (
-                <Badge variant="outline" className="text-[10px] h-4 gap-0.5 px-1"><Sparkles className="h-2.5 w-2.5 text-amber-500" />Tasas</Badge>
+                <Badge variant="outline" className="text-[10px] h-4 gap-0.5 px-1 shadow-sm"><Sparkles className="h-2.5 w-2.5 text-amber-500" />Tasas</Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground line-clamp-1">{office.official_name_local || office.name}</p>
