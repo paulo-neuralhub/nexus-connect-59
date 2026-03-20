@@ -229,8 +229,35 @@ export default function ExpedientesPage() {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* KPIs de Urgencia */}
+        {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <UrgencyKpiCard 
+            label="Total expedientes" 
+            value={stats.total} 
+            urgencyKey="total"
+            colorClass="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+            textClass="text-slate-700 dark:text-slate-300"
+            isActive={urgencyFilter === 'all'}
+            onClick={() => setUrgencyFilter('all')}
+          />
+          <UrgencyKpiCard 
+            label="Activos" 
+            value={stats.total - stats.overdue} 
+            urgencyKey="ok"
+            colorClass="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+            textClass="text-green-700 dark:text-green-300"
+            isActive={urgencyFilter === 'ok'}
+            onClick={() => setUrgencyFilter(urgencyFilter === 'ok' ? 'all' : 'ok')}
+          />
+          <UrgencyKpiCard 
+            label="Próximos 30 días" 
+            value={stats.next30Days + stats.next7Days} 
+            urgencyKey="next30Days"
+            colorClass="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800"
+            textClass="text-yellow-700 dark:text-yellow-300"
+            isActive={urgencyFilter === 'next30Days'}
+            onClick={() => setUrgencyFilter(urgencyFilter === 'next30Days' ? 'all' : 'next30Days')}
+          />
           <UrgencyKpiCard 
             label="Vencidos" 
             value={stats.overdue} 
@@ -240,34 +267,6 @@ export default function ExpedientesPage() {
             isActive={urgencyFilter === 'overdue'}
             onClick={() => setUrgencyFilter(urgencyFilter === 'overdue' ? 'all' : 'overdue')}
             showWarning={stats.overdue > 0}
-          />
-          <UrgencyKpiCard 
-            label="Próximos 7 días" 
-            value={stats.next7Days} 
-            urgencyKey="next7Days"
-            colorClass="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800"
-            textClass="text-orange-700 dark:text-orange-300"
-            isActive={urgencyFilter === 'next7Days'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'next7Days' ? 'all' : 'next7Days')}
-            showWarning={stats.next7Days > 5}
-          />
-          <UrgencyKpiCard 
-            label="Este mes" 
-            value={stats.next30Days} 
-            urgencyKey="next30Days"
-            colorClass="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800"
-            textClass="text-yellow-700 dark:text-yellow-300"
-            isActive={urgencyFilter === 'next30Days'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'next30Days' ? 'all' : 'next30Days')}
-          />
-          <UrgencyKpiCard 
-            label="Sin urgencia" 
-            value={stats.ok} 
-            urgencyKey="ok"
-            colorClass="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
-            textClass="text-green-700 dark:text-green-300"
-            isActive={urgencyFilter === 'ok'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'ok' ? 'all' : 'ok')}
           />
         </div>
 
