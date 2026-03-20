@@ -36,9 +36,12 @@ export interface CRMAccount {
   payment_classification_id: UUID | null;
   created_at: string;
   updated_at: string;
-  // Joined
+  // Joined (optional, only when selected in query)
   assigned_user?: { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null } | null;
+  client_type?: { id: string; name: string; color: string } | null;
   matters_count?: number;
+  // Allow extra fields accessed via `as any` in legacy consumers
+  [key: string]: unknown;
 }
 
 export interface AccountFilters {
