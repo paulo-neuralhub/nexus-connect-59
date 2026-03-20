@@ -88,6 +88,7 @@ const sidebarSections: SidebarSection[] = [
     label: 'Negocio',
     icon: Briefcase,
     items: [
+      { label: 'Planes y Precios', path: '/backoffice/billing', icon: CreditCard },
       { label: 'Productos', path: '/backoffice/stripe/products', icon: BarChart3 },
       { label: 'Suscripciones', path: '/backoffice/stripe/subscriptions', icon: Users },
       { label: 'Facturas', path: '/backoffice/stripe/invoices', icon: FileText },
@@ -153,7 +154,6 @@ const sidebarSections: SidebarSection[] = [
     icon: Wrench,
     items: [
       { label: 'Calendar', path: '/backoffice/calendar', icon: Calendar },
-      { label: 'Planes y Precios', path: '/backoffice/billing', icon: CreditCard },
       { label: 'Configuración', path: '/backoffice/settings', icon: Settings },
     ],
   },
