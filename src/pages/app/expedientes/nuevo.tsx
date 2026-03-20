@@ -292,18 +292,17 @@ export default function NewMatterPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <TypeJurisdictionStep
-                    types={matterTypes}
+                    types={matterTypes as any}
                     selectedType={selectedType}
                     onSelectType={(type) => {
                       setSelectedType(type);
-                      // Reset trademark type when changing matter type
                       if (type !== 'trademark') {
                         setTrademarkType(undefined);
                       }
                     }}
                     selectedJurisdictions={selectedJurisdictions}
                     onSelectJurisdictions={setSelectedJurisdictions}
-                    isLoading={loadingTypes}
+                    isLoading={false}
                     singleJurisdiction={true}
                     trademarkType={trademarkType as any}
                     onSelectTrademarkType={setTrademarkType as any}
