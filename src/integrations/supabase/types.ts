@@ -1802,8 +1802,10 @@ export type Database = {
           auth_type: string | null
           automation_level: string | null
           automation_percentage: number | null
+          avg_days_opposition_period: number | null
           avg_days_to_decision: number | null
           avg_days_to_first_action: number | null
+          avg_days_to_publication: number | null
           avg_response_time_ms: number | null
           best_practices: Json | null
           bulk_data_available: boolean | null
@@ -1834,6 +1836,7 @@ export type Database = {
           data_source_config: Json | null
           data_source_notes: string | null
           data_source_type: string | null
+          default_partner_id: string | null
           digital_maturity_score: number | null
           digital_score: number | null
           digitalization_level: string | null
@@ -1845,10 +1848,13 @@ export type Database = {
           e_filing_url: string | null
           electronic_signature: boolean | null
           email_general: string | null
+          examiner_patterns: Json | null
           fax: string | null
           fee_last_verified_at: string | null
           fees_source_notes: string | null
           fees_url: string | null
+          filing_volume_growth_pct: number | null
+          filing_volume_year: number | null
           flag: string | null
           flag_emoji: string | null
           grace_period_days: number | null
@@ -1858,6 +1864,7 @@ export type Database = {
           handles_utility_models: boolean | null
           has_api: boolean | null
           id: string
+          insights_updated_at: string | null
           internal_notes: string | null
           ip_types: string[] | null
           is_active: boolean | null
@@ -1870,12 +1877,14 @@ export type Database = {
           last_sync_type: string | null
           latam_relevance_score: number | null
           linkedin_page: string | null
+          main_rejection_reasons: Json | null
           member_madrid_protocol: boolean | null
           name: string | null
           name_en: string | null
           name_es: string | null
           name_official: string
           name_short: string | null
+          next_review_date: string | null
           nice_version: string | null
           notes: string | null
           office_acronym: string | null
@@ -1885,6 +1894,7 @@ export type Database = {
           open_data_available: boolean | null
           operational_status: string | null
           opposition_procedure: Json | null
+          opposition_success_rate: number | null
           paris_convention_member: boolean | null
           payment_methods: Json | null
           phone_general: string | null
@@ -1895,15 +1905,23 @@ export type Database = {
           rate_limit_per_day: number | null
           rate_limit_per_minute: number | null
           region: string | null
+          rejection_rate: number | null
           rejection_rate_pct: number | null
           renewal_procedure: Json | null
           requires_local_agent: boolean | null
           search_url: string | null
           spanish_companies_active: boolean | null
           special_requirements: Json | null
+          stats_patent_applications: number | null
+          stats_patent_grants: number | null
+          stats_source_url: string | null
           stats_tm_applications: number | null
           stats_tm_registrations: number | null
+          stats_year: number | null
           status: string | null
+          success_rate_approvals: number | null
+          success_rate_sample_size: number | null
+          success_rate_updated_at: string | null
           support_email: string | null
           support_phone: string | null
           supported_ip_types: string[] | null
@@ -1935,10 +1953,17 @@ export type Database = {
           tm_search_url: string | null
           tm_use_requirement: boolean | null
           tmview_available: boolean | null
+          top_filing_countries: Json | null
+          top_filing_sectors: Json | null
+          total_filings_tracked: number | null
           translation_languages: Json | null
           translation_required: boolean | null
+          ub_integration_notes: string | null
+          ub_integration_status: string | null
           updated_at: string
           url_status: string | null
+          use_requirement_details: string | null
+          use_requirement_years: number | null
           uses_nice_classification: boolean | null
           website_main: string | null
           website_official: string | null
@@ -1968,8 +1993,10 @@ export type Database = {
           auth_type?: string | null
           automation_level?: string | null
           automation_percentage?: number | null
+          avg_days_opposition_period?: number | null
           avg_days_to_decision?: number | null
           avg_days_to_first_action?: number | null
+          avg_days_to_publication?: number | null
           avg_response_time_ms?: number | null
           best_practices?: Json | null
           bulk_data_available?: boolean | null
@@ -2000,6 +2027,7 @@ export type Database = {
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
+          default_partner_id?: string | null
           digital_maturity_score?: number | null
           digital_score?: number | null
           digitalization_level?: string | null
@@ -2011,10 +2039,13 @@ export type Database = {
           e_filing_url?: string | null
           electronic_signature?: boolean | null
           email_general?: string | null
+          examiner_patterns?: Json | null
           fax?: string | null
           fee_last_verified_at?: string | null
           fees_source_notes?: string | null
           fees_url?: string | null
+          filing_volume_growth_pct?: number | null
+          filing_volume_year?: number | null
           flag?: string | null
           flag_emoji?: string | null
           grace_period_days?: number | null
@@ -2024,6 +2055,7 @@ export type Database = {
           handles_utility_models?: boolean | null
           has_api?: boolean | null
           id?: string
+          insights_updated_at?: string | null
           internal_notes?: string | null
           ip_types?: string[] | null
           is_active?: boolean | null
@@ -2036,12 +2068,14 @@ export type Database = {
           last_sync_type?: string | null
           latam_relevance_score?: number | null
           linkedin_page?: string | null
+          main_rejection_reasons?: Json | null
           member_madrid_protocol?: boolean | null
           name?: string | null
           name_en?: string | null
           name_es?: string | null
           name_official: string
           name_short?: string | null
+          next_review_date?: string | null
           nice_version?: string | null
           notes?: string | null
           office_acronym?: string | null
@@ -2051,6 +2085,7 @@ export type Database = {
           open_data_available?: boolean | null
           operational_status?: string | null
           opposition_procedure?: Json | null
+          opposition_success_rate?: number | null
           paris_convention_member?: boolean | null
           payment_methods?: Json | null
           phone_general?: string | null
@@ -2061,15 +2096,23 @@ export type Database = {
           rate_limit_per_day?: number | null
           rate_limit_per_minute?: number | null
           region?: string | null
+          rejection_rate?: number | null
           rejection_rate_pct?: number | null
           renewal_procedure?: Json | null
           requires_local_agent?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
+          stats_patent_applications?: number | null
+          stats_patent_grants?: number | null
+          stats_source_url?: string | null
           stats_tm_applications?: number | null
           stats_tm_registrations?: number | null
+          stats_year?: number | null
           status?: string | null
+          success_rate_approvals?: number | null
+          success_rate_sample_size?: number | null
+          success_rate_updated_at?: string | null
           support_email?: string | null
           support_phone?: string | null
           supported_ip_types?: string[] | null
@@ -2101,10 +2144,17 @@ export type Database = {
           tm_search_url?: string | null
           tm_use_requirement?: boolean | null
           tmview_available?: boolean | null
+          top_filing_countries?: Json | null
+          top_filing_sectors?: Json | null
+          total_filings_tracked?: number | null
           translation_languages?: Json | null
           translation_required?: boolean | null
+          ub_integration_notes?: string | null
+          ub_integration_status?: string | null
           updated_at?: string
           url_status?: string | null
+          use_requirement_details?: string | null
+          use_requirement_years?: number | null
           uses_nice_classification?: boolean | null
           website_main?: string | null
           website_official?: string | null
@@ -2134,8 +2184,10 @@ export type Database = {
           auth_type?: string | null
           automation_level?: string | null
           automation_percentage?: number | null
+          avg_days_opposition_period?: number | null
           avg_days_to_decision?: number | null
           avg_days_to_first_action?: number | null
+          avg_days_to_publication?: number | null
           avg_response_time_ms?: number | null
           best_practices?: Json | null
           bulk_data_available?: boolean | null
@@ -2166,6 +2218,7 @@ export type Database = {
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
+          default_partner_id?: string | null
           digital_maturity_score?: number | null
           digital_score?: number | null
           digitalization_level?: string | null
@@ -2177,10 +2230,13 @@ export type Database = {
           e_filing_url?: string | null
           electronic_signature?: boolean | null
           email_general?: string | null
+          examiner_patterns?: Json | null
           fax?: string | null
           fee_last_verified_at?: string | null
           fees_source_notes?: string | null
           fees_url?: string | null
+          filing_volume_growth_pct?: number | null
+          filing_volume_year?: number | null
           flag?: string | null
           flag_emoji?: string | null
           grace_period_days?: number | null
@@ -2190,6 +2246,7 @@ export type Database = {
           handles_utility_models?: boolean | null
           has_api?: boolean | null
           id?: string
+          insights_updated_at?: string | null
           internal_notes?: string | null
           ip_types?: string[] | null
           is_active?: boolean | null
@@ -2202,12 +2259,14 @@ export type Database = {
           last_sync_type?: string | null
           latam_relevance_score?: number | null
           linkedin_page?: string | null
+          main_rejection_reasons?: Json | null
           member_madrid_protocol?: boolean | null
           name?: string | null
           name_en?: string | null
           name_es?: string | null
           name_official?: string
           name_short?: string | null
+          next_review_date?: string | null
           nice_version?: string | null
           notes?: string | null
           office_acronym?: string | null
@@ -2217,6 +2276,7 @@ export type Database = {
           open_data_available?: boolean | null
           operational_status?: string | null
           opposition_procedure?: Json | null
+          opposition_success_rate?: number | null
           paris_convention_member?: boolean | null
           payment_methods?: Json | null
           phone_general?: string | null
@@ -2227,15 +2287,23 @@ export type Database = {
           rate_limit_per_day?: number | null
           rate_limit_per_minute?: number | null
           region?: string | null
+          rejection_rate?: number | null
           rejection_rate_pct?: number | null
           renewal_procedure?: Json | null
           requires_local_agent?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
+          stats_patent_applications?: number | null
+          stats_patent_grants?: number | null
+          stats_source_url?: string | null
           stats_tm_applications?: number | null
           stats_tm_registrations?: number | null
+          stats_year?: number | null
           status?: string | null
+          success_rate_approvals?: number | null
+          success_rate_sample_size?: number | null
+          success_rate_updated_at?: string | null
           support_email?: string | null
           support_phone?: string | null
           supported_ip_types?: string[] | null
@@ -2267,10 +2335,17 @@ export type Database = {
           tm_search_url?: string | null
           tm_use_requirement?: boolean | null
           tmview_available?: boolean | null
+          top_filing_countries?: Json | null
+          top_filing_sectors?: Json | null
+          total_filings_tracked?: number | null
           translation_languages?: Json | null
           translation_required?: boolean | null
+          ub_integration_notes?: string | null
+          ub_integration_status?: string | null
           updated_at?: string
           url_status?: string | null
+          use_requirement_details?: string | null
+          use_requirement_years?: number | null
           uses_nice_classification?: boolean | null
           website_main?: string | null
           website_official?: string | null
@@ -2645,6 +2720,9 @@ export type Database = {
           created_at: string | null
           extraction_method: string
           extraction_prompt_hint: string
+          history_research_confidence: number | null
+          history_researched: boolean | null
+          history_researched_at: string | null
           id: string
           ipo_office_id: string
           is_active: boolean | null
@@ -2667,6 +2745,9 @@ export type Database = {
           created_at?: string | null
           extraction_method: string
           extraction_prompt_hint: string
+          history_research_confidence?: number | null
+          history_researched?: boolean | null
+          history_researched_at?: string | null
           id?: string
           ipo_office_id: string
           is_active?: boolean | null
@@ -2689,6 +2770,9 @@ export type Database = {
           created_at?: string | null
           extraction_method?: string
           extraction_prompt_hint?: string
+          history_research_confidence?: number | null
+          history_researched?: boolean | null
+          history_researched_at?: string | null
           id?: string
           ipo_office_id?: string
           is_active?: boolean | null
