@@ -130,7 +130,7 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
                     <TableCell className="text-sm">
                       {cost.cost_date ? format(new Date(cost.cost_date), 'dd MMM yyyy', { locale: es }) : '—'}
                     </TableCell>
-                    <TableCell className="font-medium text-sm">{cost.concept}</TableCell>
+                    <TableCell className="font-medium text-sm">{cost.description}</TableCell>
                     <TableCell className="text-sm text-slate-500">
                       {costTypeLabels[cost.cost_type] || cost.cost_type}
                     </TableCell>
