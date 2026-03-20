@@ -208,15 +208,15 @@ export function DynamicDenominationField({
                 border: '1px solid rgba(147, 51, 234, 0.2)' 
               }}
             >
-              Marca {TRADEMARK_FIELD_CONFIG[trademarkType]?.icon === Type ? 'Nominativa' : 
-                     trademarkType === 'figurative' ? 'Figurativa' :
-                     trademarkType === 'mixed' ? 'Mixta' :
-                     trademarkType === '3d' ? 'Tridimensional' :
-                     trademarkType === 'color' ? 'De color' :
-                     trademarkType === 'sound' ? 'Sonora' :
-                     trademarkType === 'olfactory' ? 'Olfativa' :
-                     trademarkType === 'motion' ? 'De movimiento' :
-                     trademarkType === 'position' ? 'De posición' : ''}
+               Marca {TRADEMARK_FIELD_CONFIG[trademarkType]?.icon === Type ? 'Nominativa' : 
+                      trademarkType === 'figurative' ? 'Figurativa' :
+                      trademarkType === 'mixed' ? 'Mixta' :
+                      trademarkType === '3d' ? '3D' :
+                      trademarkType === 'color' ? 'Color' :
+                      trademarkType === 'sound' ? 'Sonora' :
+                      trademarkType === 'pattern' ? 'Patrón' :
+                      trademarkType === 'multimedia' ? 'Multimedia' :
+                      trademarkType === 'motion' ? 'Movimiento' : ''}
             </span>
           )}
         </div>
