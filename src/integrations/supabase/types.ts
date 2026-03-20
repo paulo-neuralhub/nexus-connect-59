@@ -6371,6 +6371,7 @@ export type Database = {
           account_id: string | null
           activity_date: string
           activity_type: string
+          call_id: string | null
           contact_id: string | null
           created_at: string
           created_by: string | null
@@ -6389,6 +6390,7 @@ export type Database = {
           account_id?: string | null
           activity_date?: string
           activity_type?: string
+          call_id?: string | null
           contact_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -6407,6 +6409,7 @@ export type Database = {
           account_id?: string | null
           activity_date?: string
           activity_type?: string
+          call_id?: string | null
           contact_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -6445,6 +6448,359 @@ export type Database = {
           },
           {
             foreignKeyName: "crm_activities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_ai_suggestions: {
+        Row: {
+          action_data: Json | null
+          action_label: string | null
+          action_type: string | null
+          body: string
+          context_id: string | null
+          context_type: string
+          expires_at: string | null
+          generated_at: string | null
+          id: string
+          is_actioned: boolean | null
+          is_dismissed: boolean | null
+          organization_id: string
+          priority: string
+          related_deadline_id: string | null
+          related_matter_id: string | null
+          suggestion_type: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_type?: string | null
+          body: string
+          context_id?: string | null
+          context_type: string
+          expires_at?: string | null
+          generated_at?: string | null
+          id?: string
+          is_actioned?: boolean | null
+          is_dismissed?: boolean | null
+          organization_id: string
+          priority?: string
+          related_deadline_id?: string | null
+          related_matter_id?: string | null
+          suggestion_type: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_type?: string | null
+          body?: string
+          context_id?: string | null
+          context_type?: string
+          expires_at?: string | null
+          generated_at?: string | null
+          id?: string
+          is_actioned?: boolean | null
+          is_dismissed?: boolean | null
+          organization_id?: string
+          priority?: string
+          related_deadline_id?: string | null
+          related_matter_id?: string | null
+          suggestion_type?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_ai_suggestions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_ai_suggestions_related_deadline_id_fkey"
+            columns: ["related_deadline_id"]
+            isOneToOne: false
+            referencedRelation: "matter_deadlines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_ai_suggestions_related_matter_id_fkey"
+            columns: ["related_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_ai_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_automation_executions: {
+        Row: {
+          account_id: string | null
+          action_result: Json | null
+          deal_id: string | null
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          organization_id: string
+          rule_id: string
+          status: string
+          trigger_data: Json | null
+        }
+        Insert: {
+          account_id?: string | null
+          action_result?: Json | null
+          deal_id?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          organization_id: string
+          rule_id: string
+          status?: string
+          trigger_data?: Json | null
+        }
+        Update: {
+          account_id?: string | null
+          action_result?: Json | null
+          deal_id?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          organization_id?: string
+          rule_id?: string
+          status?: string
+          trigger_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_automation_executions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "crm_automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          name: string
+          organization_id: string
+          pipeline_id: string | null
+          stage_id: string | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          organization_id: string
+          pipeline_id?: string | null
+          stage_id?: string | null
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          organization_id?: string
+          pipeline_id?: string | null
+          stage_id?: string | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_automation_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_rules_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_automation_rules_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_calls: {
+        Row: {
+          account_id: string | null
+          ai_next_action: string | null
+          contact_id: string | null
+          created_at: string | null
+          deal_id: string | null
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          initiated_by: string
+          notes: string | null
+          organization_id: string
+          outcome: string | null
+          phone_number_from: string | null
+          phone_number_to: string | null
+          provider: string | null
+          provider_call_sid: string | null
+          recording_consent: boolean | null
+          recording_duration_seconds: number | null
+          recording_url: string | null
+          started_at: string | null
+          status: string | null
+          transcription: string | null
+          transcription_summary: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          ai_next_action?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          deal_id?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          initiated_by: string
+          notes?: string | null
+          organization_id: string
+          outcome?: string | null
+          phone_number_from?: string | null
+          phone_number_to?: string | null
+          provider?: string | null
+          provider_call_sid?: string | null
+          recording_consent?: boolean | null
+          recording_duration_seconds?: number | null
+          recording_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          transcription?: string | null
+          transcription_summary?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          ai_next_action?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          deal_id?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          initiated_by?: string
+          notes?: string | null
+          organization_id?: string
+          outcome?: string | null
+          phone_number_from?: string | null
+          phone_number_to?: string | null
+          provider?: string | null
+          provider_call_sid?: string | null
+          recording_consent?: boolean | null
+          recording_duration_seconds?: number | null
+          recording_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          transcription?: string | null
+          transcription_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_calls_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_calls_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_calls_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_calls_initiated_by_fkey"
+            columns: ["initiated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_calls_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
