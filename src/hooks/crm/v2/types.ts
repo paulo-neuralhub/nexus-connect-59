@@ -255,4 +255,17 @@ export interface CRMDashboardKPIs {
   total_pipeline_eur: number;
   deals_this_month: number;
   activities_today: number;
+  // Compat fields for legacy dashboard consumers
+  total_accounts?: number;
+  total_contacts?: number;
+  total_leads?: number;
+  hot_leads?: number;
+  total_pipeline_value?: number;
+  weighted_pipeline_value?: number;
+  deals_closing_this_month?: number;
+  pending_tasks?: number;
+  at_risk_accounts?: number;
+  win_rate?: number;
+  lead_conversion_rate?: number;
+  [key: string]: unknown;
 }
