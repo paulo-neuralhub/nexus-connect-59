@@ -293,7 +293,7 @@ export default function NewMatterPage() {
                     onSelectType={(type) => {
                       setSelectedType(type);
                       // Reset trademark type when changing matter type
-                      if (!type?.startsWith('TM') && type !== 'NC') {
+                      if (type !== 'trademark') {
                         setTrademarkType(undefined);
                       }
                     }}
