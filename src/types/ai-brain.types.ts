@@ -3,6 +3,8 @@
 // ============================================================
 
 // AI Provider Types
+export type ProviderCategory = 'llm' | 'search' | 'vision' | 'scraping';
+
 export interface AIProvider {
   id: string;
   name: string;
@@ -21,6 +23,9 @@ export interface AIProvider {
   consecutive_failures?: number;
   logo_url?: string | null;
   config: Record<string, unknown>;
+  description?: string | null;
+  category?: ProviderCategory | null;
+  website?: string | null;
   created_at: string;
   updated_at: string;
 }
