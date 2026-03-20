@@ -156,7 +156,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
 
 function IpTypeBadge({ active, label, title }: { active?: boolean | null; label: string; title: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium",
+    <span className={cn("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium shadow-sm",
       active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-muted text-muted-foreground"
     )} title={title}>
       {active ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}{label}
