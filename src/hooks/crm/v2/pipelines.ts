@@ -1,27 +1,14 @@
+// ============================================================
+// IP-NEXUS CRM V2 — Pipelines hooks (crm_pipelines + crm_pipeline_stages)
+// ============================================================
+
 import { useQuery } from "@tanstack/react-query";
 import { fromTable } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
+import type { CRMPipeline, CRMPipelineStage } from "./types";
 
-export type CRMPipelineStage = {
-  id: string;
-  pipeline_id: string;
-  name: string;
-  color: string;
-  probability: number;
-  position: number;
-  is_won_stage?: boolean | null;
-  is_lost_stage?: boolean | null;
-};
-
-export type CRMPipeline = {
-  id: string;
-  name: string;
-  code?: string | null;
-  entity_type?: string | null; // 'lead' or 'deal'
-  is_default: boolean;
-  position: number;
-  stages?: CRMPipelineStage[];
-};
+// Re-export types so consumers importing from pipelines.ts still work
+export type { CRMPipeline, CRMPipelineStage } from "./types";
 
 export function useCRMPipelines() {
   const { organizationId } = useOrganization();
@@ -29,29 +16,41 @@ export function useCRMPipelines() {
   return useQuery({
     queryKey: ["crm-pipelines", organizationId],
     queryFn: async () => {
-      if (!organizationId) return [];
-      const { data, error } = await fromTable("pipelines")
-        .select(
-          `id, name, code, entity_type, is_default, position,
-           stages:pipeline_stages(id, pipeline_id, name, color, probability, position, is_won_stage, is_lost_stage)
-          `
-        )
+      if (!organizationId) return [] as CRMPipeline[];
+
+      const { data, error } = await fromTable("crm_pipelines")
+        .select(`
+          id, organization_id, name, description, pipeline_type,
+          is_default, is_active, position, created_at, updated_at,
+          stages:crm_pipeline_stages(id, pipeline_id, name, color, probability, position, is_won_stage, is_lost_stage, created_at)
+        `)
         .eq("organization_id", organizationId)
-        .eq("owner_type", "tenant")
+        .eq("is_active", true)
         .order("position", { ascending: true });
 
       if (error) throw error;
 
-      const rows = (data ?? []) as CRMPipeline[];
-      return rows.map((p) => ({
+      return ((data ?? []) as CRMPipeline[]).map((p) => ({
         ...p,
-        stages: (p.stages ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+        stages: (p.stages ?? []).slice().sort((a, b) => a.position - b.position),
       }));
     },
     enabled: !!organizationId,
+    staleTime: 5 * 60_000,
   });
 }
 
+/** Get stages grouped by pipeline for quick lookup */
+export function useStagesByPipeline() {
+  const { data: pipelines = [], ...rest } = useCRMPipelines();
+  const stagesByPipeline: Record<string, CRMPipelineStage[]> = {};
+  for (const p of pipelines) {
+    stagesByPipeline[p.id] = p.stages ?? [];
+  }
+  return { pipelines, stagesByPipeline, ...rest };
+}
+
+/** Compat: returns first default or first pipeline */
 export function useDefaultCRMPipeline() {
   const { data: pipelines = [], ...rest } = useCRMPipelines();
   const defaultPipeline = pipelines.find((p) => p.is_default) ?? pipelines[0];

@@ -1,6 +1,16 @@
+// ============================================================
+// IP-NEXUS CRM V2 — Client 360 hook
+// ============================================================
+
 import { useQuery } from "@tanstack/react-query";
 import { rpcFn } from "@/lib/supabase";
-import type { Client360Data } from "./types";
+
+export interface Client360Data {
+  account: unknown;
+  contacts: unknown[];
+  deals: unknown[];
+  interactions: unknown[];
+}
 
 export function useClient360(accountId: string | undefined) {
   return useQuery({

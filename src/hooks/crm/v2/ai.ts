@@ -1,7 +1,20 @@
+// ============================================================
+// IP-NEXUS CRM V2 — AI hooks (crm_ai_learning_logs, crm_ai_recommendations)
+// ============================================================
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fromTable } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
-import type { AIDraftFeedback } from "./types";
+
+export interface AIDraftFeedback {
+  interaction_id?: string;
+  learning_type: string;
+  original_input: Record<string, unknown>;
+  ai_draft: string;
+  human_action?: string;
+  final_sent_text?: string;
+  edit_reason?: string;
+}
 
 export function useSubmitAIDraftFeedback() {
   const queryClient = useQueryClient();
@@ -10,8 +23,6 @@ export function useSubmitAIDraftFeedback() {
   return useMutation({
     mutationFn: async (feedback: AIDraftFeedback) => {
       if (!organizationId) throw new Error("Missing organizationId");
-
-      // simple normalized distance proxy
       let correctionDistance = 0;
       let semanticSimilarity = 1;
       if (feedback.human_action === "edited" && feedback.final_sent_text) {
@@ -20,8 +31,6 @@ export function useSubmitAIDraftFeedback() {
         correctionDistance = maxLen === 0 ? 0 : 1 - minLen / maxLen;
         semanticSimilarity = 0.8;
       }
-
-      // Map to existing schema in crm_ai_learning_logs
       const { data, error } = await fromTable("crm_ai_learning_logs")
         .insert({
           organization_id: organizationId,
@@ -37,7 +46,6 @@ export function useSubmitAIDraftFeedback() {
         })
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
@@ -54,16 +62,12 @@ export function usePendingRecommendations(accountId?: string) {
     queryKey: ["crm-recommendations", organizationId, accountId],
     queryFn: async () => {
       if (!organizationId) return [];
-      // Keep selection simple to avoid deep TS instantiation and because the
-      // join keys may vary by schema.
       let query = fromTable("crm_ai_recommendations")
         .select("*")
         .eq("organization_id", organizationId)
         .eq("status", "pending")
         .order("urgency", { ascending: false });
-
       if (accountId) query = query.eq("account_id", accountId);
-
       const { data, error } = await query.limit(20);
       if (error) throw error;
       return data ?? [];
