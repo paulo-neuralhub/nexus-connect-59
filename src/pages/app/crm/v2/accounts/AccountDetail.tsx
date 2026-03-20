@@ -33,6 +33,7 @@ import { AccountPortfolioTab } from "./tabs/AccountPortfolioTab";
 import { AccountDealsTab } from "./tabs/AccountDealsTab";
 import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
+import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 
 export default function CRMV2AccountDetail() {
   const { id } = useParams<{ id: string }>();
