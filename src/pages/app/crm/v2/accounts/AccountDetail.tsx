@@ -39,6 +39,7 @@ export default function CRMV2AccountDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [showActivityModal, setShowActivityModal] = useState(false);
 
   const { data, isLoading, error } = useCRMAccountDetail(id);
   const { data: deals = [] } = useCRMDeals(id ? { account_id: id } : undefined);
