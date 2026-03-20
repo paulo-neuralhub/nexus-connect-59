@@ -167,9 +167,12 @@ export default function ExpedientesPage() {
     // Apply type filter
     if (typeFilter !== 'all') {
       result = result.filter(m => {
-        if (typeFilter === 'trademark') return m.matter_type.startsWith('TM_') || m.matter_type === 'trademark';
+        if (typeFilter === 'trademark') return m.matter_type.startsWith('TM_') || m.matter_type === 'trademark' || m.matter_type === 'NC';
         if (typeFilter === 'patent') return m.matter_type.startsWith('PT_') || m.matter_type === 'UM' || m.matter_type === 'patent';
         if (typeFilter === 'design') return m.matter_type.startsWith('DS_') || m.matter_type === 'design';
+        if (typeFilter === 'domain') return m.matter_type === 'DOM' || m.matter_type === 'domain';
+        if (typeFilter === 'copyright') return m.matter_type === 'copyright';
+        if (typeFilter === 'trade_secret') return m.matter_type === 'trade_secret';
         return true;
       });
     }
