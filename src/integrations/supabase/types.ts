@@ -4385,6 +4385,213 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_addons: {
+        Row: {
+          adds_genius_queries_monthly: number | null
+          adds_jurisdictions: number | null
+          adds_spider_alerts_monthly: number | null
+          adds_storage_gb: number | null
+          adds_users: number | null
+          category: string
+          code: string
+          color_hex: string | null
+          compatible_plan_codes: string[] | null
+          created_at: string | null
+          description_es: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean | null
+          is_standalone: boolean | null
+          jurisdiction_codes: string[] | null
+          module_code: string | null
+          name_en: string
+          name_es: string
+          price_annual_eur: number
+          price_monthly_eur: number
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          adds_genius_queries_monthly?: number | null
+          adds_jurisdictions?: number | null
+          adds_spider_alerts_monthly?: number | null
+          adds_storage_gb?: number | null
+          adds_users?: number | null
+          category: string
+          code: string
+          color_hex?: string | null
+          compatible_plan_codes?: string[] | null
+          created_at?: string | null
+          description_es?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_standalone?: boolean | null
+          jurisdiction_codes?: string[] | null
+          module_code?: string | null
+          name_en: string
+          name_es: string
+          price_annual_eur?: number
+          price_monthly_eur?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          adds_genius_queries_monthly?: number | null
+          adds_jurisdictions?: number | null
+          adds_spider_alerts_monthly?: number | null
+          adds_storage_gb?: number | null
+          adds_users?: number | null
+          category?: string
+          code?: string
+          color_hex?: string | null
+          compatible_plan_codes?: string[] | null
+          created_at?: string | null
+          description_es?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_standalone?: boolean | null
+          jurisdiction_codes?: string[] | null
+          module_code?: string | null
+          name_en?: string
+          name_es?: string
+          price_annual_eur?: number
+          price_monthly_eur?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      billing_plan_history: {
+        Row: {
+          change_type: string
+          changed_by_user_id: string | null
+          created_at: string | null
+          id: string
+          new_state: Json | null
+          notes: string | null
+          organization_id: string
+          previous_state: Json | null
+        }
+        Insert: {
+          change_type: string
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_state?: Json | null
+          notes?: string | null
+          organization_id: string
+          previous_state?: Json | null
+        }
+        Update: {
+          change_type?: string
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_state?: Json | null
+          notes?: string | null
+          organization_id?: string
+          previous_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_plan_history_changed_by_user_id_fkey"
+            columns: ["changed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_plan_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_plans: {
+        Row: {
+          annual_discount_pct: number | null
+          code: string
+          created_at: string | null
+          description_es: string | null
+          highlight_color_hex: string | null
+          highlight_label: string | null
+          id: string
+          included_modules: string[]
+          is_active: boolean | null
+          is_visible_pricing: boolean | null
+          limit_contacts: number
+          limit_genius_queries_monthly: number
+          limit_jurisdictions_docket: number
+          limit_matters: number
+          limit_spider_alerts_monthly: number
+          limit_storage_gb: number
+          limit_users: number
+          name_en: string
+          name_es: string
+          price_annual_eur: number
+          price_monthly_eur: number
+          sort_order: number | null
+          trial_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          annual_discount_pct?: number | null
+          code: string
+          created_at?: string | null
+          description_es?: string | null
+          highlight_color_hex?: string | null
+          highlight_label?: string | null
+          id?: string
+          included_modules?: string[]
+          is_active?: boolean | null
+          is_visible_pricing?: boolean | null
+          limit_contacts?: number
+          limit_genius_queries_monthly?: number
+          limit_jurisdictions_docket?: number
+          limit_matters?: number
+          limit_spider_alerts_monthly?: number
+          limit_storage_gb?: number
+          limit_users?: number
+          name_en: string
+          name_es: string
+          price_annual_eur?: number
+          price_monthly_eur?: number
+          sort_order?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          annual_discount_pct?: number | null
+          code?: string
+          created_at?: string | null
+          description_es?: string | null
+          highlight_color_hex?: string | null
+          highlight_label?: string | null
+          id?: string
+          included_modules?: string[]
+          is_active?: boolean | null
+          is_visible_pricing?: boolean | null
+          limit_contacts?: number
+          limit_genius_queries_monthly?: number
+          limit_jurisdictions_docket?: number
+          limit_matters?: number
+          limit_spider_alerts_monthly?: number
+          limit_storage_gb?: number
+          limit_users?: number
+          name_en?: string
+          name_es?: string
+          price_annual_eur?: number
+          price_monthly_eur?: number
+          sort_order?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       bug_report_replies: {
         Row: {
           content: string | null
@@ -16518,6 +16725,125 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_feature_flags: {
+        Row: {
+          active_jurisdiction_codes: string[] | null
+          current_addons: Json | null
+          current_billing_cycle: string | null
+          current_plan_code: string | null
+          effective_limit_contacts: number
+          effective_limit_genius_queries_monthly: number
+          effective_limit_jurisdictions_docket: number
+          effective_limit_matters: number
+          effective_limit_spider_alerts_monthly: number
+          effective_limit_storage_gb: number
+          effective_limit_users: number
+          has_accounting_advanced: boolean | null
+          has_accounting_basic: boolean | null
+          has_analytics: boolean | null
+          has_api_access: boolean | null
+          has_automations: boolean | null
+          has_communications: boolean | null
+          has_crm: boolean | null
+          has_docket: boolean | null
+          has_filing: boolean | null
+          has_finance_basic: boolean | null
+          has_finance_full: boolean | null
+          has_genius: boolean | null
+          has_market: boolean | null
+          has_spider: boolean | null
+          has_sso: boolean | null
+          id: string
+          is_active: boolean | null
+          is_in_trial: boolean | null
+          manual_override: Json | null
+          organization_id: string
+          suspension_reason: string | null
+          trial_ends_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_jurisdiction_codes?: string[] | null
+          current_addons?: Json | null
+          current_billing_cycle?: string | null
+          current_plan_code?: string | null
+          effective_limit_contacts?: number
+          effective_limit_genius_queries_monthly?: number
+          effective_limit_jurisdictions_docket?: number
+          effective_limit_matters?: number
+          effective_limit_spider_alerts_monthly?: number
+          effective_limit_storage_gb?: number
+          effective_limit_users?: number
+          has_accounting_advanced?: boolean | null
+          has_accounting_basic?: boolean | null
+          has_analytics?: boolean | null
+          has_api_access?: boolean | null
+          has_automations?: boolean | null
+          has_communications?: boolean | null
+          has_crm?: boolean | null
+          has_docket?: boolean | null
+          has_filing?: boolean | null
+          has_finance_basic?: boolean | null
+          has_finance_full?: boolean | null
+          has_genius?: boolean | null
+          has_market?: boolean | null
+          has_spider?: boolean | null
+          has_sso?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          is_in_trial?: boolean | null
+          manual_override?: Json | null
+          organization_id: string
+          suspension_reason?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_jurisdiction_codes?: string[] | null
+          current_addons?: Json | null
+          current_billing_cycle?: string | null
+          current_plan_code?: string | null
+          effective_limit_contacts?: number
+          effective_limit_genius_queries_monthly?: number
+          effective_limit_jurisdictions_docket?: number
+          effective_limit_matters?: number
+          effective_limit_spider_alerts_monthly?: number
+          effective_limit_storage_gb?: number
+          effective_limit_users?: number
+          has_accounting_advanced?: boolean | null
+          has_accounting_basic?: boolean | null
+          has_analytics?: boolean | null
+          has_api_access?: boolean | null
+          has_automations?: boolean | null
+          has_communications?: boolean | null
+          has_crm?: boolean | null
+          has_docket?: boolean | null
+          has_filing?: boolean | null
+          has_finance_basic?: boolean | null
+          has_finance_full?: boolean | null
+          has_genius?: boolean | null
+          has_market?: boolean | null
+          has_spider?: boolean | null
+          has_sso?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          is_in_trial?: boolean | null
+          manual_override?: Json | null
+          organization_id?: string
+          suspension_reason?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_feature_flags_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_messages: {
         Row: {
           attachments: Json | null
@@ -17195,6 +17521,15 @@ export type Database = {
         Returns: boolean
       }
       is_backoffice_staff: { Args: never; Returns: boolean }
+      recalculate_tenant_flags: {
+        Args: {
+          p_addons?: Json
+          p_billing_cycle?: string
+          p_org_id: string
+          p_plan_code: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "member" | "viewer"
