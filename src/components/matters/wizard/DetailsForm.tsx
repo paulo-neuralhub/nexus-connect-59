@@ -113,6 +113,7 @@ export function DetailsForm({
   previewNumber,
   isGeneratingNumber,
   trademarkType,
+  section = 'basic',
 }: DetailsFormProps) {
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
