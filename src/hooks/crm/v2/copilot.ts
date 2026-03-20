@@ -40,10 +40,10 @@ export function useIPCoPilot(contextType: string, contextId: string | undefined)
         .eq("is_dismissed", false)
         .gt("expires_at", new Date().toISOString())
         .order("priority", { ascending: true })
-        .limit(4);
+      .limit(4);
       return (data ?? []) as CoPilotSuggestion[];
     },
-    enabled: !!organizationId && !!contextId,
+    enabled: !!organizationId && !!contextId && contextType !== "email_draft",
     staleTime: 5 * 60 * 1000, // 5 min
   });
 
