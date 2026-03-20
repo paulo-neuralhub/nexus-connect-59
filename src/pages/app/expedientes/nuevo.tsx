@@ -138,7 +138,7 @@ export default function NewMatterPage() {
   );
 
   // Check if type is trademark
-  const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
+  const isTrademarkType = selectedType === 'trademark';
 
   // Step validation - 5 steps
   const isStepValid = (step: number): boolean => {
@@ -293,7 +293,7 @@ export default function NewMatterPage() {
                     onSelectType={(type) => {
                       setSelectedType(type);
                       // Reset trademark type when changing matter type
-                      if (!type?.startsWith('TM') && type !== 'NC') {
+                      if (type !== 'trademark') {
                         setTrademarkType(undefined);
                       }
                     }}
