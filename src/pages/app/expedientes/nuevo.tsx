@@ -71,6 +71,19 @@ export default function NewMatterPage() {
     nice_classes: [],
     jurisdiction_fields: {},
   });
+  const [datesData, setDatesData] = useState<WizardDatesData>({
+    application_number: '',
+    filing_date: '',
+    priority_claimed: false,
+    priority_date: '',
+    priority_number: '',
+    priority_country: '',
+    status: 'draft',
+    registration_number: '',
+    registration_date: '',
+    expiry_date: '',
+    auto_deadlines: true,
+  });
   
   // Preview number state
   const [previewNumber, setPreviewNumber] = useState<string | null>(null);
