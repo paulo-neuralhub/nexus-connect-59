@@ -152,8 +152,11 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
-        navigateFallback: "/offline.html",
+        navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/auth/],
+        // Don't precache offline.html — it's only useful as a standalone fallback
+        // and was causing false "sin conexión" in preview/sandbox environments
+        navigateFallbackAllowlist: [/^(?!\/(api|auth))/],
       },
       devOptions: {
         enabled: false,
