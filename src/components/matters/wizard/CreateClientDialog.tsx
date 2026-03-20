@@ -97,6 +97,7 @@ export function CreateClientDialog({
       return data;
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['clients-for-wizard'] });
       queryClient.invalidateQueries({ queryKey: ['contacts-for-matter'] });
       toast.success('Cliente creado correctamente', {
         description: `Token: ${data.client_token}`,
