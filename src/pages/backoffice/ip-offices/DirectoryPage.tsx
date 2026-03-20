@@ -157,6 +157,9 @@ function DirectoryContent() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={() => setUpdateDialogOpen(true)}>
+                <RefreshCw className="h-4 w-4 mr-2" />Actualizar Directorio
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredOffices.length === 0}><Download className="h-4 w-4 mr-2" />Exportar</Button>
             </div>
           </div>
