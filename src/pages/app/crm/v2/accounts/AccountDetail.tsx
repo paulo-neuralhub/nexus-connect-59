@@ -141,68 +141,80 @@ export default function CRMV2AccountDetail() {
         </div>
       </div>
 
-      {/* TABS */}
+      {/* TABS + COPILOT */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="w-full justify-start bg-muted/50 h-auto flex-wrap p-1">
-              <TabsTrigger value="overview" className="gap-1.5">
-                <Building2 className="w-3.5 h-3.5" /> Resumen
-              </TabsTrigger>
-              <TabsTrigger value="contacts" className="gap-1.5">
-                <Users className="w-3.5 h-3.5" /> Contactos
-                {contacts.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{contacts.length}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="portfolio" className="gap-1.5">
-                <Briefcase className="w-3.5 h-3.5" /> Portfolio PI
-                {mattersCount > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{mattersCount}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="deals" className="gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5" /> Deals
-                {deals.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{deals.length}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="activities" className="gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> Actividades
-                {activities.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{activities.length}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="documents" className="gap-1.5">
-                <FileText className="w-3.5 h-3.5" /> Documentos
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex gap-6">
+            {/* Main content */}
+            <div className="flex-1 min-w-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="w-full justify-start bg-muted/50 h-auto flex-wrap p-1">
+                  <TabsTrigger value="overview" className="gap-1.5">
+                    <Building2 className="w-3.5 h-3.5" /> Resumen
+                  </TabsTrigger>
+                  <TabsTrigger value="contacts" className="gap-1.5">
+                    <Users className="w-3.5 h-3.5" /> Contactos
+                    {contacts.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{contacts.length}</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="portfolio" className="gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5" /> Portfolio PI
+                    {mattersCount > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{mattersCount}</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="deals" className="gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5" /> Deals
+                    {deals.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{deals.length}</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="activities" className="gap-1.5">
+                    <Clock className="w-3.5 h-3.5" /> Actividades
+                    {activities.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{activities.length}</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="documents" className="gap-1.5">
+                    <FileText className="w-3.5 h-3.5" /> Documentos
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="overview">
-              <AccountOverviewTab
-                account={account}
-                contactsCount={contacts.length}
-                dealsCount={deals.length}
-                mattersCount={mattersCount}
-                activitiesCount={activities.length}
-              />
-            </TabsContent>
+                <TabsContent value="overview">
+                  <AccountOverviewTab
+                    account={account}
+                    contactsCount={contacts.length}
+                    dealsCount={deals.length}
+                    mattersCount={mattersCount}
+                    activitiesCount={activities.length}
+                  />
+                </TabsContent>
 
-            <TabsContent value="contacts">
-              <AccountContactsTab contacts={contacts} />
-            </TabsContent>
+                <TabsContent value="contacts">
+                  <AccountContactsTab contacts={contacts} />
+                </TabsContent>
 
-            <TabsContent value="portfolio">
-              <AccountPortfolioTab accountId={id} />
-            </TabsContent>
+                <TabsContent value="portfolio">
+                  <AccountPortfolioTab accountId={id} />
+                </TabsContent>
 
-            <TabsContent value="deals">
-              <AccountDealsTab deals={deals as any} />
-            </TabsContent>
+                <TabsContent value="deals">
+                  <AccountDealsTab deals={deals as any} />
+                </TabsContent>
 
-            <TabsContent value="activities">
-              <AccountActivitiesTab
-                accountId={id}
-                onAddActivity={() => setShowActivityModal(true)}
-              />
-            </TabsContent>
+                <TabsContent value="activities">
+                  <AccountActivitiesTab
+                    accountId={id}
+                    onAddActivity={() => setShowActivityModal(true)}
+                  />
+                </TabsContent>
 
-            <TabsContent value="documents">
-              <AccountDocumentsTab accountId={id} />
-            </TabsContent>
-          </Tabs>
+                <TabsContent value="documents">
+                  <AccountDocumentsTab accountId={id} />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* CoPilot sidebar */}
+            <div className="w-[320px] shrink-0 hidden xl:block">
+              <div className="sticky top-4">
+                <IPCoPilotPanel accountId={id} accountName={account.name} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
