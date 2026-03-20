@@ -7,6 +7,9 @@ import { fromTable } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
 import type { CRMPipeline, CRMPipelineStage } from "./types";
 
+// Re-export types so consumers importing from pipelines.ts still work
+export type { CRMPipeline, CRMPipelineStage } from "./types";
+
 export function useCRMPipelines() {
   const { organizationId } = useOrganization();
 

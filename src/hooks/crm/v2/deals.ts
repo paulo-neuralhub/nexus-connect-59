@@ -179,6 +179,9 @@ export function useMoveDealStage() {
   });
 }
 
+/** Compat alias for consumers that use the old name */
+export const useUpdateDealStage = useMoveDealStage;
+
 export function useDeleteCRMDeal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
