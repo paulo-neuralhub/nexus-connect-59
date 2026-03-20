@@ -484,7 +484,8 @@ const App = () => (
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
                 </Route>
-                {/* Document Generator */}
+                {/* Documents */}
+                <Route path="documentos" element={<DocumentsListPage />} />
                 <Route path="documents/new" element={<DocumentGeneratorPage />} />
                 <Route path="documents/generator" element={<DocumentGeneratorPage />} />
                 <Route path="finance" element={<FinanceLayout />}>
