@@ -189,13 +189,23 @@ export default function MatterDetailPage() {
         onDeleteClick={() => setShowDeleteDialog(true)}
       />
 
+      {/* Phase Timeline - Horizontal pipeline by type */}
+      <div className="max-w-7xl mx-auto px-6 pt-4">
+        <div className="border border-slate-200 rounded-xl bg-white p-5">
+          <MatterPhaseTimeline
+            matterType={matter.matter_type}
+            status={matter.status}
+          />
+        </div>
+      </div>
+
       {/* Main Content Area: 2/3 + 1/3 Layout */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Main Column (2/3) */}
           <div className="lg:col-span-2">
-            {/* New organized tabs with two rows */}
+            {/* Tabs: Resumen, Plazos, Documentos, Actividad, Costes, Detalles */}
             <MatterDetailTabs 
               activeTab={activeTab}
               onTabChange={setActiveTab}
