@@ -353,6 +353,7 @@ const App = () => (
       <OrganizationProvider>
         <ModulesProvider>
           <BrandingProvider>
+          <EnrichProgressProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
