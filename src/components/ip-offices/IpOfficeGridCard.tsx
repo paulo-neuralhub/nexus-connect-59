@@ -137,7 +137,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
               <span className="text-xs text-muted-foreground">⚪ Sin datos</span>
             )}
             {c?.pj_is_active && (
-              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">🟢 En web</Badge>
+              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm">🟢 En web</Badge>
             )}
           </div>
           <div className="flex items-center justify-between">
