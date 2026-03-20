@@ -1,6 +1,6 @@
 export type MatterType = 'trademark' | 'patent' | 'design' | 'domain' | 'copyright' | 'other';
 
-export type MatterStatus = 'draft' | 'pending' | 'filed' | 'published' | 'granted' | 'active' | 'opposed' | 'expired' | 'abandoned' | 'cancelled';
+export type MatterStatus = 'draft' | 'pending' | 'filed' | 'filing' | 'examining' | 'published' | 'granted' | 'registered' | 'active' | 'renewal' | 'opposed' | 'expired' | 'abandoned' | 'archived' | 'cancelled';
 
 export type MarkType = 'word' | 'figurative' | 'combined' | 'sound' | '3d' | 'other';
 
