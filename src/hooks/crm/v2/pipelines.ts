@@ -49,3 +49,10 @@ export function useStagesByPipeline() {
   }
   return { pipelines, stagesByPipeline, ...rest };
 }
+
+/** Compat: returns first default or first pipeline */
+export function useDefaultCRMPipeline() {
+  const { data: pipelines = [], ...rest } = useCRMPipelines();
+  const defaultPipeline = pipelines.find((p) => p.is_default) ?? pipelines[0];
+  return { data: defaultPipeline, ...rest };
+}

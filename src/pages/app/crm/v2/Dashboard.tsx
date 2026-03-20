@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Users, Building2, CheckSquare, Percent } from "lucide-react";
 import { useCRMDashboardKPIs } from "@/hooks/crm/v2/dashboard";
-import { usePipelineSummary } from "@/hooks/crm/v2/deals";
+// usePipelineSummary was removed in v2; using deals directly
+// import { usePipelineSummary } from "@/hooks/crm/v2/deals";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useSeedCRMDemoData } from "@/hooks/crm/v2/seed-demo";
