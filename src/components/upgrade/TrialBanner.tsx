@@ -1,39 +1,28 @@
 /**
  * TRIAL BANNER
- * PROMPT 50: Shows trial status and days remaining
+ * Shows trial status and days remaining using tenant_feature_flags
  */
 
-import { useOrganizationLicenses } from "@/hooks/use-module-access";
-import { MODULE_REGISTRY, type ModuleCode } from "@/lib/modules/module-registry";
+import { useTenantFeatureFlags } from "@/hooks/use-module-access";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import type { ModuleCode } from "@/lib/modules/module-registry";
 
 export function TrialBanner() {
   const navigate = useNavigate();
-  const { data: licenses } = useOrganizationLicenses();
+  const { data: flags } = useTenantFeatureFlags();
 
-  // Find active trials
-  const activeTrials = licenses?.filter(l => 
-    l.trial_ends_at && new Date(l.trial_ends_at) > new Date()
-  ) || [];
-
-  if (activeTrials.length === 0) return null;
-
-  // Get the trial ending soonest
-  const soonestTrial = activeTrials.reduce((prev, current) => {
-    const prevDate = new Date(prev.trial_ends_at!);
-    const currentDate = new Date(current.trial_ends_at!);
-    return prevDate < currentDate ? prev : current;
-  });
+  if (!flags?.is_in_trial || !flags?.trial_ends_at) return null;
 
   const daysLeft = Math.ceil(
-    (new Date(soonestTrial.trial_ends_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(flags.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
 
+  if (daysLeft <= 0) return null;
+
   const isUrgent = daysLeft <= 3;
-  const moduleInfo = MODULE_REGISTRY[soonestTrial.module_code as ModuleCode];
 
   return (
     <div 
@@ -51,17 +40,8 @@ export function TrialBanner() {
           <Clock className="h-4 w-4" />
         )}
         <span>
-          {activeTrials.length === 1 ? (
-            <>
-              Tu trial de <strong>{moduleInfo?.name}</strong> termina en{" "}
-              <strong>{daysLeft} día{daysLeft !== 1 ? 's' : ''}</strong>
-            </>
-          ) : (
-            <>
-              Tienes <strong>{activeTrials.length} trials activos</strong>.
-              El más próximo termina en <strong>{daysLeft} días</strong>
-            </>
-          )}
+          Tu período de prueba termina en{" "}
+          <strong>{daysLeft} día{daysLeft !== 1 ? 's' : ''}</strong>
         </span>
       </div>
 
@@ -86,13 +66,12 @@ interface ModuleTrialIndicatorProps {
 }
 
 export function ModuleTrialIndicator({ moduleCode, className }: ModuleTrialIndicatorProps) {
-  const { data: licenses } = useOrganizationLicenses();
-  const license = licenses?.find(l => l.module_code === moduleCode);
+  const { data: flags } = useTenantFeatureFlags();
 
-  if (!license?.trial_ends_at) return null;
+  if (!flags?.is_in_trial || !flags?.trial_ends_at) return null;
 
   const daysLeft = Math.ceil(
-    (new Date(license.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(flags.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
 
   if (daysLeft <= 0) return null;
