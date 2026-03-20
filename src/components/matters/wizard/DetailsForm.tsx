@@ -438,10 +438,11 @@ export function DetailsForm({
           />
         </motion.div>
       </div>
+      </>)}
 
+      {section === 'specific' && (<>
       {/* ============================================ */}
-      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN - NIVEL DIOS */}
-      {/* Diseño integrado, no llamativo */}
+      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN */}
       {/* ============================================ */}
 
       {/* ESPAÑA - OEPM */}
