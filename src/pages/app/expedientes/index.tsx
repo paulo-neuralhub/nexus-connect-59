@@ -439,14 +439,16 @@ const URGENCY_COLORS: Record<string, string> = {
   next7Days: '#f97316', // orange
   next30Days: '#eab308', // yellow
   ok: '#22c55e',        // green
+  total: '#3b82f6',     // blue
 };
 
 // KPI descriptions
 const URGENCY_DESCRIPTIONS: Record<string, string> = {
-  overdue: 'Requiere atención urgente',
+  overdue: 'Plazos vencidos',
   next7Days: 'Atención pronto',
-  next30Days: 'Programados este mes',
-  ok: 'Más de 30 días',
+  next30Days: 'Deadlines próximos',
+  ok: 'En buen estado',
+  total: 'Cartera completa',
 };
 
 // KPI icons
@@ -455,6 +457,7 @@ const URGENCY_ICONS: Record<string, string> = {
   next7Days: '⏰',
   next30Days: '📅',
   ok: '✅',
+  total: '📊',
 };
 
 function UrgencyKpiCard({ 
