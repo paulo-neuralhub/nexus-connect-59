@@ -138,7 +138,7 @@ export default function NewMatterPage() {
   );
 
   // Check if type is trademark
-  const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
+  const isTrademarkType = selectedType === 'trademark';
 
   // Step validation - 5 steps
   const isStepValid = (step: number): boolean => {
