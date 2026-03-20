@@ -6202,13 +6202,23 @@ export type Database = {
         Row: {
           account_type: string | null
           address: string | null
+          address_line1: string | null
+          address_line2: string | null
+          agent_jurisdictions: string[] | null
+          agent_license_number: string | null
           annual_ip_budget_eur: number | null
           assigned_to: string | null
+          billing_email: string | null
           city: string | null
           client_token: string | null
           client_type_id: string | null
+          country: string | null
           country_code: string | null
           created_at: string
+          credit_limit: number | null
+          currency: string | null
+          email: string | null
+          fax: string | null
           health_score: number | null
           id: string
           industry: string | null
@@ -6221,25 +6231,43 @@ export type Database = {
           notes: string | null
           organization_id: string
           payment_classification_id: string | null
+          payment_terms: number | null
+          phone: string | null
+          postal_code: string | null
           preferred_language: string | null
           rating_stars: number | null
+          state_province: string | null
           status: string | null
           tags: string[] | null
+          tax_country: string | null
           tax_id: string | null
+          tax_id_type: string | null
           tier: string | null
+          trade_name: string | null
           updated_at: string
           vat_number: string | null
+          website: string | null
         }
         Insert: {
           account_type?: string | null
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          agent_jurisdictions?: string[] | null
+          agent_license_number?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_email?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
+          country?: string | null
           country_code?: string | null
           created_at?: string
+          credit_limit?: number | null
+          currency?: string | null
+          email?: string | null
+          fax?: string | null
           health_score?: number | null
           id?: string
           industry?: string | null
@@ -6252,25 +6280,43 @@ export type Database = {
           notes?: string | null
           organization_id: string
           payment_classification_id?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
+          state_province?: string | null
           status?: string | null
           tags?: string[] | null
+          tax_country?: string | null
           tax_id?: string | null
+          tax_id_type?: string | null
           tier?: string | null
+          trade_name?: string | null
           updated_at?: string
           vat_number?: string | null
+          website?: string | null
         }
         Update: {
           account_type?: string | null
           address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          agent_jurisdictions?: string[] | null
+          agent_license_number?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_email?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
+          country?: string | null
           country_code?: string | null
           created_at?: string
+          credit_limit?: number | null
+          currency?: string | null
+          email?: string | null
+          fax?: string | null
           health_score?: number | null
           id?: string
           industry?: string | null
@@ -6283,14 +6329,22 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           payment_classification_id?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
+          state_province?: string | null
           status?: string | null
           tags?: string[] | null
+          tax_country?: string | null
           tax_id?: string | null
+          tax_id_type?: string | null
           tier?: string | null
+          trade_name?: string | null
           updated_at?: string
           vat_number?: string | null
+          website?: string | null
         }
         Relationships: [
           {
