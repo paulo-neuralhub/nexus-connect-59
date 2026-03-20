@@ -136,6 +136,7 @@ export interface DealFilters {
   pipeline_stage_id?: UUID;
   assigned_to?: UUID;
   account_id?: UUID;
+  contact_id?: UUID;
   deal_type?: string;
   search?: string;
 }
