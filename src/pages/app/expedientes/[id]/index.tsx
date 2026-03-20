@@ -223,10 +223,9 @@ export default function MatterDetailPage() {
 
             {/* Tab Contents */}
             <div className="transition-all duration-200">
-              {/* General Tab */}
+              {/* Resumen Tab */}
               {activeTab === 'general' && (
                 <div className="space-y-4">
-                  {/* Rights Info Card - Now with trademark type support */}
                   <MatterRightsInfoCard matter={matter} />
 
                   {/* Recent Timeline Preview */}
@@ -236,7 +235,7 @@ export default function MatterDetailPage() {
                         <History className="h-5 w-5" />
                         Actividad Reciente
                       </CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('timeline')}>
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('activity')}>
                         Ver todo
                       </Button>
                     </CardHeader>
@@ -267,133 +266,29 @@ export default function MatterDetailPage() {
                 </div>
               )}
 
-              {/* Filings Tab */}
-              {activeTab === 'filings' && (
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Presentaciones por Jurisdicción</CardTitle>
-                    <Button size="sm" onClick={() => setShowFilingModal(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Añadir
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {!filings?.length ? (
-                      <p className="text-muted-foreground text-center py-8">
-                        No hay presentaciones registradas
-                      </p>
-                    ) : (
-                      <div className="space-y-4">
-                        {filings.map(filing => (
-                          <div 
-                            key={filing.id} 
-                            className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => setSelectedFiling(filing)}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                <Badge variant="outline" className="text-lg px-3 py-1">
-                                  {filing.jurisdiction_code}
-                                </Badge>
-                                <Badge className={STATUS_CONFIG[filing.status]?.color || 'bg-gray-100'}>
-                                  {STATUS_CONFIG[filing.status]?.label || filing.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              {filing.application_number && (
-                                <div>
-                                  <span className="text-muted-foreground">Nº Solicitud</span>
-                                  <p className="font-medium">{filing.application_number}</p>
-                                </div>
-                              )}
-                              {filing.registration_number && (
-                                <div>
-                                  <span className="text-muted-foreground">Nº Registro</span>
-                                  <p className="font-medium">{filing.registration_number}</p>
-                                </div>
-                              )}
-                              {filing.filing_date && (
-                                <div>
-                                  <span className="text-muted-foreground">Fecha presentación</span>
-                                  <p>{format(new Date(filing.filing_date), 'dd/MM/yyyy')}</p>
-                                </div>
-                              )}
-                              {filing.expiry_date && (
-                                <div>
-                                  <span className="text-muted-foreground">Vencimiento</span>
-                                  <p>{format(new Date(filing.expiry_date), 'dd/MM/yyyy')}</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Parties Tab - Enhanced with edit/delete */}
-              {activeTab === 'parties' && (
-                <MatterPartiesTab matterId={id!} matterType={matter.matter_type} />
-              )}
-
-              {/* Documents Tab */}
-              {activeTab === 'documents' && (
-                <MatterDocumentsTab matterId={id!} />
-              )}
-
-              {/* Deadlines Tab */}
+              {/* Plazos Tab */}
               {activeTab === 'deadlines' && (
                 <MatterDeadlinesTab matterId={id!} />
               )}
 
-              {/* Communications Tab - Enhanced with templates and locked reference */}
-              {activeTab === 'communications' && (
-                <MatterCommunicationsTab 
-                  matterId={id!} 
-                  matterReference={matter.reference || matter.id}
-                  matterTitle={matter.title}
-                  matterType={matter.matter_type}
-                  jurisdiction={(matter as any).jurisdiction}
-                  clientId={matter.client_id}
-                  clientName={matter.client_name}
-                  clientEmail={matter.client_email}
-                  clientPhone={matter.client_phone}
-                />
+              {/* Documentos Tab */}
+              {activeTab === 'documents' && (
+                <MatterDocumentsTab matterId={id!} />
               )}
 
-              {/* Tasks Tab */}
-              {activeTab === 'tasks' && (
-                <MatterTasksTab matterId={id!} />
+              {/* Actividad Tab */}
+              {activeTab === 'activity' && (
+                <MatterActivityTab matterId={id!} />
               )}
 
-              {/* Invoices Tab */}
-              {activeTab === 'invoices' && (
-                <MatterInvoicesTab matterId={id!} clientId={matter.client_id} />
+              {/* Costes Tab */}
+              {activeTab === 'costs' && (
+                <MatterCostsTab matterId={id!} />
               )}
 
-              {/* Timeline Tab - Professional style */}
-              {activeTab === 'timeline' && (
-                <TimelineProfesional 
-                  matterId={id!} 
-                  maxHeight="700px"
-                  onOpenCommunication={(commId) => setSelectedTimelineCommId(commId)}
-                  onOpenDocument={async (docId, filePath) => {
-                    if (filePath) {
-                      const { data } = await supabase.storage
-                        .from('matter-documents')
-                        .createSignedUrl(filePath, 3600);
-                      if (data?.signedUrl) {
-                        window.open(data.signedUrl, '_blank');
-                      }
-                    } else {
-                      setActiveTab('documents');
-                    }
-                  }}
-                  onOpenTask={() => setActiveTab('tasks')}
-                />
+              {/* Detalles Tab - Inline edit */}
+              {activeTab === 'details' && (
+                <MatterDetailsEditTab matter={matter} />
               )}
             </div>
           </div>
