@@ -76,7 +76,15 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
   };
 
   return (
-    <Card className={cn("cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group h-full flex flex-col shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.08)] border-transparent", getCardBg())} onClick={handleClick}>
+    <Card 
+      className={cn("cursor-pointer hover:border-primary/30 group h-full flex flex-col border-transparent transition-all duration-200", getCardBg())} 
+      style={{
+        boxShadow: '3px 3px 8px #cdd1dc, -3px -3px 8px #ffffff',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '5px 5px 12px #c0c5d0, -5px -5px 12px #ffffff'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '3px 3px 8px #cdd1dc, -3px -3px 8px #ffffff'; }}
+      onClick={handleClick}
+    >
       <CardContent className="p-5 flex flex-col flex-1">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
