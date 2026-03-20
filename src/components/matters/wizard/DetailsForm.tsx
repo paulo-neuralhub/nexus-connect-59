@@ -873,6 +873,7 @@ export function DetailsForm({
           className="mt-6"
         />
       )}
+      </>)}
 
       {/* Create Client Dialog */}
       <CreateClientDialog
