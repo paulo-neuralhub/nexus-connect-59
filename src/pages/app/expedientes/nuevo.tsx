@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Check, Loader2, Tag, FileText, Eye, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Tag, FileText, Eye, Sparkles, Calendar } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
