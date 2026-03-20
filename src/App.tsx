@@ -92,9 +92,8 @@ import CRMV2InteractionsList from "./pages/app/crm/v2/interactions";
 import CRMV2TasksList from "./pages/app/crm/v2/tasks";
 import CRMLeadsPage from "./pages/app/crm/v2/leads";
 import CRMPipelinesPage from "./pages/app/crm/v2/pipelines";
-import CRMKanbanPage from "./pages/app/crm/CRMKanbanPage";
+import CRMKanbanPageV2 from "./pages/app/crm/v2/KanbanPage";
 import CRMDashboardNew from "./pages/app/crm/CRMDashboardNew";
-import CRMPipelinePage from "./pages/app/crm/CRMPipelinePage";
 import CRMLeadDetailPage from "./pages/app/crm/leads/LeadDetailPage";
 import CRMDealDetailPage from "./pages/app/crm/deals/DealDetailPage";
 import MarketingLayout from "./pages/app/marketing/MarketingLayout";
@@ -401,9 +400,9 @@ const App = () => (
                 </Route>
                 <Route path="crm" element={<CRMLayout />}>
                   <Route index element={<CRMDashboardNew />} />
-                  <Route path="kanban" element={<CRMPipelinePage />} />
+                  <Route path="kanban" element={<CRMKanbanPageV2 />} />
                   <Route path="pipeline" element={<Navigate to="/app/crm/kanban" replace />} />
-                  <Route path="leads" element={<Navigate to="/app/crm/kanban?view=leads" replace />} />
+                  <Route path="leads" element={<CRMLeadsPage />} />
                   <Route path="leads/:id" element={<CRMLeadDetailPage />} />
                   <Route path="deals" element={<Navigate to="/app/crm/kanban?view=deals" replace />} />
                   <Route path="negocios" element={<Navigate to="/app/crm/kanban?view=deals" replace />} />
