@@ -342,6 +342,8 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { EnrichProgressProvider } from "@/contexts/EnrichProgressContext";
+import { EnrichProgressWidget } from "@/components/EnrichProgressWidget";
 
 const queryClient = new QueryClient();
 
