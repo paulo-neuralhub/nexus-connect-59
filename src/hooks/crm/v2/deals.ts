@@ -1,8 +1,12 @@
+// ============================================================
+// IP-NEXUS CRM V2 — Deals hooks (crm_deals)
+// ============================================================
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fromTable, rpcFn, supabase } from "@/lib/supabase";
+import { fromTable, supabase } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useToast } from "@/hooks/use-toast";
-import type { DealFilters, PipelineSummary } from "./types";
+import type { CRMDeal, DealFilters, CRMPipelineStage } from "./types";
 
 export function useCRMDeals(filters?: DealFilters) {
   const { organizationId } = useOrganization();
@@ -10,56 +14,64 @@ export function useCRMDeals(filters?: DealFilters) {
   return useQuery({
     queryKey: ["crm-deals", organizationId, filters],
     queryFn: async () => {
-      if (!organizationId) return [];
+      if (!organizationId) return [] as CRMDeal[];
       let query = fromTable("crm_deals")
-        .select(
-          `*,
-           pipeline_id,
-           stage_id,
-           assigned_to,
-           account:crm_accounts!account_id(id, name, tier, health_score),
-           contact:crm_contacts!contact_id(id, full_name, email),
-           owner:users!owner_id(id, full_name, avatar_url),
-           assigned_user:users!assigned_to(id, full_name, avatar_url)
-          `
-        )
+        .select(`
+          id, organization_id, account_id, name, stage,
+          pipeline_id, pipeline_stage_id, deal_type, opportunity_type,
+          jurisdiction_code, nice_classes, amount, amount_eur,
+          weighted_amount, official_fees_eur, professional_fees_eur,
+          probability_pct, expected_close_date, actual_close_date,
+          lost_reason, matter_id, account_name_cache, assigned_to,
+          created_at, updated_at,
+          account:crm_accounts!account_id(id, name),
+          contact:crm_contacts!contact_id(id, full_name),
+          pipeline_stage:crm_pipeline_stages!pipeline_stage_id(id, name, color, probability, is_won_stage, is_lost_stage)
+        `)
         .eq("organization_id", organizationId)
-        .order("expected_close_date", { ascending: true, nullsFirst: false });
+        .order("created_at", { ascending: false });
 
-      if (filters?.stage?.length) query = query.in("stage", filters.stage);
-      if (filters?.stage_id?.length) query = query.in("stage_id", filters.stage_id);
-      if (filters?.owner_id) query = query.eq("owner_id", filters.owner_id);
-      if (filters?.account_id) query = query.eq("account_id", filters.account_id);
-      if (filters?.contact_id) query = query.eq("contact_id", filters.contact_id);
       if (filters?.pipeline_id) query = query.eq("pipeline_id", filters.pipeline_id);
-      if (filters?.opportunity_type?.length) query = query.in("opportunity_type", filters.opportunity_type);
-      if (filters?.amount_min !== undefined) query = query.gte("amount", filters.amount_min);
-      if (filters?.amount_max !== undefined) query = query.lte("amount", filters.amount_max);
-      if (filters?.expected_close_from) query = query.gte("expected_close_date", filters.expected_close_from);
-      if (filters?.expected_close_to) query = query.lte("expected_close_date", filters.expected_close_to);
+      if (filters?.pipeline_stage_id) query = query.eq("pipeline_stage_id", filters.pipeline_stage_id);
+      if (filters?.assigned_to) query = query.eq("assigned_to", filters.assigned_to);
+      if (filters?.account_id) query = query.eq("account_id", filters.account_id);
+      if (filters?.deal_type) query = query.eq("deal_type", filters.deal_type);
       if (filters?.search) query = query.ilike("name", `%${filters.search}%`);
 
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as CRMDeal[];
     },
     enabled: !!organizationId,
   });
 }
 
-export function usePipelineSummary() {
-  const { organizationId } = useOrganization();
+/** Group deals by pipeline_stage_id for Kanban view */
+export function useDealsByStage(pipelineId: string | undefined, stages: CRMPipelineStage[]) {
+  const { data: deals = [], ...rest } = useCRMDeals(pipelineId ? { pipeline_id: pipelineId } : undefined);
 
-  return useQuery({
-    queryKey: ["pipeline-summary", organizationId],
-    queryFn: async () => {
-      if (!organizationId) throw new Error("Missing organizationId");
-      const { data, error } = await rpcFn("crm_get_pipeline_summary", { p_organization_id: organizationId });
-      if (error) throw error;
-      return data as unknown as PipelineSummary;
-    },
-    enabled: !!organizationId,
-  });
+  const dealsByStage: Record<string, CRMDeal[]> = {};
+  for (const s of stages) {
+    dealsByStage[s.id] = [];
+  }
+  for (const deal of deals) {
+    const sid = deal.pipeline_stage_id;
+    if (sid && dealsByStage[sid]) {
+      dealsByStage[sid].push(deal);
+    }
+  }
+
+  const totalValue = deals.reduce((s, d) => s + (d.amount_eur ?? d.amount ?? 0), 0);
+  const closedWon = deals.filter((d) => d.pipeline_stage?.is_won_stage);
+  const closedAll = deals.filter((d) => d.pipeline_stage?.is_won_stage || d.pipeline_stage?.is_lost_stage);
+  const winRate = closedAll.length > 0 ? Math.round((closedWon.length / closedAll.length) * 100) : 0;
+
+  return {
+    deals,
+    dealsByStage,
+    kpis: { totalDeals: deals.length, totalValue, winRate },
+    ...rest,
+  };
 }
 
 export function useCreateCRMDeal() {
@@ -70,15 +82,12 @@ export function useCreateCRMDeal() {
   return useMutation({
     mutationFn: async (deal: Record<string, unknown>) => {
       if (!organizationId) throw new Error("Missing organizationId");
-      
-      // Get current user for default assignment
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { data, error } = await fromTable("crm_deals")
-        .insert({ 
-          ...deal, 
+        .insert({
+          ...deal,
           organization_id: organizationId,
-          assigned_to: deal.assigned_to || user?.id, // Default to current user
+          assigned_to: deal.assigned_to || user?.id,
         })
         .select()
         .single();
@@ -87,12 +96,12 @@ export function useCreateCRMDeal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-deals"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline-summary"] });
-      toast({ title: "Oportunidad creada correctamente" });
+      queryClient.invalidateQueries({ queryKey: ["crm-dashboard-kpis"] });
+      toast({ title: "Deal creado" });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      toast({ title: "Error al crear oportunidad", description: message, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al crear deal", description: msg, variant: "destructive" });
     },
   });
 }
@@ -103,103 +112,69 @@ export function useUpdateCRMDeal() {
 
   return useMutation({
     mutationFn: async (params: { id: string; data: Record<string, unknown> }) => {
-      const { data, error } = await fromTable("crm_deals").update(params.data).eq("id", params.id).select().single();
+      const { data, error } = await fromTable("crm_deals")
+        .update({ ...params.data, updated_at: new Date().toISOString() })
+        .eq("id", params.id)
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-deals"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-dashboard-kpis"] });
       toast({ title: "Deal actualizado" });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      toast({ title: "Error al actualizar deal", description: message, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al actualizar deal", description: msg, variant: "destructive" });
     },
   });
 }
 
-export function useUpdateDealStage() {
+export function useMoveDealStage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (params: {
-      dealId: string;
-      newStageId: string;
-      closeReason?: string;
-      lostReason?: string;
-      lostToCompetitor?: string;
-    }) => {
-      const { data: currentDeal, error: currentError } = await fromTable("crm_deals")
-        .select("stage, stage_id, stage_entered_at, stage_history, amount")
-        .eq("id", params.dealId)
-        .single();
-      if (currentError) throw currentError;
-
-      // Load target stage (pipeline_stages)
-      const { data: targetStage, error: stageError } = await fromTable("pipeline_stages")
+    mutationFn: async (params: { dealId: string; newStageId: string; lostReason?: string }) => {
+      // Fetch target stage info
+      const { data: targetStage, error: stageErr } = await fromTable("crm_pipeline_stages")
         .select("id, name, probability, is_won_stage, is_lost_stage")
         .eq("id", params.newStageId)
         .single();
-      if (stageError) throw stageError;
-
-      const stageHistory = (currentDeal?.stage_history as unknown[] | null) ?? [];
-      stageHistory.push({
-        stage: (currentDeal as any)?.stage,
-        entered_at: currentDeal?.stage_entered_at,
-        exited_at: new Date().toISOString(),
-        days_in_stage: Math.floor(
-          (Date.now() - new Date((currentDeal?.stage_entered_at as string | undefined) ?? Date.now()).getTime()) /
-            (1000 * 60 * 60 * 24)
-        ),
-      });
+      if (stageErr) throw stageErr;
 
       const updates: Record<string, unknown> = {
-        stage: targetStage?.name ?? "",
-        stage_id: targetStage?.id ?? params.newStageId,
+        pipeline_stage_id: params.newStageId,
+        stage: targetStage.name,
+        probability_pct: targetStage.probability,
         stage_entered_at: new Date().toISOString(),
-        stage_history: stageHistory,
       };
 
-      // weighted_amount recalculation (if amount exists)
-      const amount = (currentDeal as any)?.amount as number | null | undefined;
-      if (amount != null && targetStage?.probability != null) {
-        updates.weighted_amount = Math.round((Number(amount) * Number(targetStage.probability)) / 100);
+      if (targetStage.is_won_stage) {
+        updates.actual_close_date = new Date().toISOString();
+      } else if (targetStage.is_lost_stage) {
+        updates.actual_close_date = new Date().toISOString();
+        updates.lost_reason = params.lostReason ?? null;
       }
 
-      const isWon = !!targetStage?.is_won_stage;
-      const isLost = !!targetStage?.is_lost_stage;
-      if (isWon) {
-        updates.won = true;
-        updates.lost_reason = null;
-        updates.actual_close_date = new Date().toISOString().split("T")[0];
-        if (params.closeReason) updates.close_reason = params.closeReason;
-      } else if (isLost) {
-        updates.won = false;
-        updates.actual_close_date = new Date().toISOString().split("T")[0];
-        updates.lost_reason = params.lostReason ?? params.closeReason ?? null;
-        if (params.closeReason) updates.close_reason = params.closeReason;
-        if (params.lostToCompetitor) updates.lost_to_competitor = params.lostToCompetitor;
-      } else {
-        // Re-open deal when moving back to non-terminal stages
-        updates.won = null;
-        updates.actual_close_date = null;
-        updates.lost_reason = null;
-      }
-
-      const { data, error } = await fromTable("crm_deals").update(updates).eq("id", params.dealId).select().single();
+      const { data, error } = await fromTable("crm_deals")
+        .update(updates)
+        .eq("id", params.dealId)
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-deals"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline-summary"] });
-      toast({ title: "Etapa actualizada" });
+      queryClient.invalidateQueries({ queryKey: ["crm-dashboard-kpis"] });
+      toast({ title: "Deal movido de etapa" });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      toast({ title: "Error al actualizar etapa", description: message, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al mover deal", description: msg, variant: "destructive" });
     },
   });
 }
@@ -215,12 +190,12 @@ export function useDeleteCRMDeal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-deals"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-dashboard-kpis"] });
       toast({ title: "Deal eliminado" });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      toast({ title: "Error al eliminar deal", description: message, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al eliminar deal", description: msg, variant: "destructive" });
     },
   });
 }

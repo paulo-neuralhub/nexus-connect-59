@@ -1,69 +1,111 @@
+// ============================================================
+// IP-NEXUS CRM V2 — Accounts hooks (crm_accounts)
+// ============================================================
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fromTable, supabase } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useToast } from "@/hooks/use-toast";
+import type { CRMAccount, AccountFilters } from "./types";
 
-export function useCRMAccounts(filters?: { search?: string; limit?: number }) {
+export function useCRMAccounts(filters?: AccountFilters) {
   const { organizationId } = useOrganization();
 
   return useQuery({
     queryKey: ["crm-accounts", organizationId, filters],
     queryFn: async () => {
-      if (!organizationId) return [];
+      if (!organizationId) return { accounts: [] as CRMAccount[], total: 0 };
+
       let query = fromTable("crm_accounts")
-        .select(`
-          id, name, legal_name, 
-          tax_id, client_token,
-          status, tier, health_score, 
-          rating_stars, tags,
-          last_interaction_at,
-          created_at, updated_at,
-          assigned_to,
-          assigned_user:users!assigned_to(id, full_name, avatar_url),
-          client_type:client_type_config(id, name, color),
-          payment_classification:payment_classification_config(id, name, color, alert_level)
-        `)
-        .eq("organization_id", organizationId)
-        .order("name", { ascending: true });
+        .select(
+          `id, name, legal_name, tax_id, account_type, vat_number,
+           country_code, city, industry, ip_portfolio_size,
+           annual_ip_budget_eur, status, tier, health_score,
+           lifecycle_stage, assigned_to, tags, is_active,
+           last_interaction_at, created_at, updated_at,
+           assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`,
+          { count: "exact" }
+        )
+        .eq("organization_id", organizationId);
 
-      // Search by name OR tax_id (NIF/CIF)
+      // Filters
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,tax_id.ilike.%${filters.search}%,legal_name.ilike.%${filters.search}%`);
+        query = query.or(
+          `name.ilike.%${filters.search}%,tax_id.ilike.%${filters.search}%,legal_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%`
+        );
       }
+      if (filters?.lifecycle_stage) query = query.eq("lifecycle_stage", filters.lifecycle_stage);
+      if (filters?.account_type) query = query.eq("account_type", filters.account_type);
+      if (filters?.is_active !== undefined) query = query.eq("is_active", filters.is_active);
 
-      // Limit results for performance
-      if (filters?.limit) {
-        query = query.limit(filters.limit);
-      }
+      // Order
+      const orderCol = filters?.order_by ?? "name";
+      query = query.order(orderCol, { ascending: filters?.order_asc ?? true });
 
-      const { data, error } = await query;
+      // Pagination
+      const limit = filters?.limit ?? 20;
+      const offset = filters?.offset ?? 0;
+      query = query.range(offset, offset + limit - 1);
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data ?? [];
+      return { accounts: (data ?? []) as CRMAccount[], total: count ?? 0 };
     },
     enabled: !!organizationId,
-    staleTime: 1000 * 30, // Cache 30s for combobox performance
+    staleTime: 30_000,
   });
 }
 
-export function useCRMAccount(id: string) {
+export function useCRMAccount(id: string | undefined) {
   const { organizationId } = useOrganization();
 
   return useQuery({
-    queryKey: ["crm-account", organizationId, id],
+    queryKey: ["crm-account", id],
     queryFn: async () => {
       if (!organizationId || !id) return null;
-      const { data, error } = await fromTable("crm_accounts")
-        .select(`
-          *,
-          assigned_user:users!assigned_to(id, full_name, avatar_url),
-          client_type:client_type_config(id, name, color),
-          payment_classification:payment_classification_config(id, name, color, alert_level)
-        `)
-        .eq("id", id)
-        .eq("organization_id", organizationId)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+
+      // Parallel: account + contacts + deals + activities + matters count
+      const [accountRes, contactsRes, dealsRes, activitiesRes, mattersRes] = await Promise.all([
+        fromTable("crm_accounts")
+          .select(`*, assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`)
+          .eq("id", id)
+          .eq("organization_id", organizationId)
+          .maybeSingle(),
+        fromTable("crm_contacts")
+          .select("id, full_name, email, phone, job_title, role, is_primary")
+          .eq("account_id", id)
+          .eq("organization_id", organizationId)
+          .order("is_primary", { ascending: false }),
+        fromTable("crm_deals")
+          .select(`id, name, stage, amount_eur, probability_pct, expected_close_date, pipeline_stage_id,
+                   pipeline_stage:crm_pipeline_stages!pipeline_stage_id(id, name, color, is_won_stage, is_lost_stage)`)
+          .eq("account_id", id)
+          .eq("organization_id", organizationId)
+          .order("created_at", { ascending: false }),
+        fromTable("crm_activities")
+          .select(`id, activity_type, subject, description, activity_date,
+                   contact:crm_contacts!contact_id(id, full_name),
+                   creator:profiles!created_by(id, first_name, last_name)`)
+          .eq("account_id", id)
+          .eq("organization_id", organizationId)
+          .order("activity_date", { ascending: false })
+          .limit(10),
+        fromTable("matters")
+          .select("id", { count: "exact", head: true })
+          .eq("client_id", id)
+          .eq("organization_id", organizationId),
+      ]);
+
+      if (accountRes.error) throw accountRes.error;
+      if (!accountRes.data) return null;
+
+      return {
+        account: accountRes.data as CRMAccount,
+        contacts: contactsRes.data ?? [],
+        deals: dealsRes.data ?? [],
+        activities: activitiesRes.data ?? [],
+        mattersCount: mattersRes.count ?? 0,
+      };
     },
     enabled: !!organizationId && !!id,
   });
@@ -77,15 +119,12 @@ export function useCreateCRMAccount() {
   return useMutation({
     mutationFn: async (account: Record<string, unknown>) => {
       if (!organizationId) throw new Error("Missing organizationId");
-      
-      // Get current user for default assignment
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { data, error } = await fromTable("crm_accounts")
-        .insert({ 
-          ...account, 
+        .insert({
+          ...account,
           organization_id: organizationId,
-          assigned_to: account.assigned_to || user?.id, // Default to current user
+          assigned_to: account.assigned_to || user?.id,
         })
         .select()
         .single();
@@ -97,8 +136,34 @@ export function useCreateCRMAccount() {
       toast({ title: "Cuenta creada" });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      toast({ title: "Error al crear cuenta", description: message, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al crear cuenta", description: msg, variant: "destructive" });
+    },
+  });
+}
+
+export function useUpdateCRMAccount() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
+      const { data, error } = await fromTable("crm_accounts")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_d, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["crm-account", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["crm-accounts"] });
+      toast({ title: "Cuenta actualizada" });
+    },
+    onError: (error: unknown) => {
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      toast({ title: "Error al actualizar cuenta", description: msg, variant: "destructive" });
     },
   });
 }
