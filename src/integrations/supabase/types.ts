@@ -295,6 +295,290 @@ export type Database = {
           },
         ]
       }
+      agent_rankings: {
+        Row: {
+          agent_id: string
+          created_at: string | null
+          id: string
+          jurisdiction: string | null
+          rank_change: number | null
+          rank_percentile: number | null
+          rank_position: number
+          rank_previous: number | null
+          ranking_category: string | null
+          ranking_date: string
+          rating_avg: number
+          reputation_score: number
+          response_time_avg: number
+          success_rate: number
+          total_transactions: number
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string | null
+          id?: string
+          jurisdiction?: string | null
+          rank_change?: number | null
+          rank_percentile?: number | null
+          rank_position: number
+          rank_previous?: number | null
+          ranking_category?: string | null
+          ranking_date?: string
+          rating_avg: number
+          reputation_score: number
+          response_time_avg: number
+          success_rate: number
+          total_transactions: number
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string | null
+          id?: string
+          jurisdiction?: string | null
+          rank_change?: number | null
+          rank_percentile?: number | null
+          rank_position?: number
+          rank_previous?: number | null
+          ranking_category?: string | null
+          ranking_date?: string
+          rating_avg?: number
+          reputation_score?: number
+          response_time_avg?: number
+          success_rate?: number
+          total_transactions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_rankings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_service_fees: {
+        Row: {
+          additional_class_fee: number | null
+          additional_class_fee_currency: string | null
+          agent_id: string | null
+          classes_included: number | null
+          created_at: string | null
+          excludes_description: string | null
+          fee_amount: number
+          fee_amount_eur: number | null
+          fee_currency: string | null
+          id: string
+          includes_apostille: boolean | null
+          includes_official_fee: boolean | null
+          includes_pow_preparation: boolean | null
+          includes_translations: boolean | null
+          ipo_office_id: string | null
+          last_confirmed_date: string | null
+          notes: string | null
+          partner_id: string | null
+          service_type: string
+          source: string | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          additional_class_fee?: number | null
+          additional_class_fee_currency?: string | null
+          agent_id?: string | null
+          classes_included?: number | null
+          created_at?: string | null
+          excludes_description?: string | null
+          fee_amount: number
+          fee_amount_eur?: number | null
+          fee_currency?: string | null
+          id?: string
+          includes_apostille?: boolean | null
+          includes_official_fee?: boolean | null
+          includes_pow_preparation?: boolean | null
+          includes_translations?: boolean | null
+          ipo_office_id?: string | null
+          last_confirmed_date?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          service_type: string
+          source?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          additional_class_fee?: number | null
+          additional_class_fee_currency?: string | null
+          agent_id?: string | null
+          classes_included?: number | null
+          created_at?: string | null
+          excludes_description?: string | null
+          fee_amount?: number
+          fee_amount_eur?: number | null
+          fee_currency?: string | null
+          id?: string
+          includes_apostille?: boolean | null
+          includes_official_fee?: boolean | null
+          includes_pow_preparation?: boolean | null
+          includes_translations?: boolean | null
+          ipo_office_id?: string | null
+          last_confirmed_date?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          service_type?: string
+          source?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_service_fees_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_service_fees_ipo_office_id_fkey"
+            columns: ["ipo_office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agents: {
+        Row: {
+          address: string | null
+          avg_response_hours: number | null
+          city: string | null
+          contact_person: string | null
+          contract_expiry: string | null
+          contract_url: string | null
+          country_code: string
+          created_at: string | null
+          currency: string | null
+          email: string | null
+          firm_name: string | null
+          handles_apostille: boolean | null
+          handles_legalization: boolean | null
+          handles_pow: boolean | null
+          handles_translations: boolean | null
+          id: string
+          internal_rating_notes: string | null
+          is_active: boolean | null
+          is_vetted: boolean | null
+          jurisdictions: Json | null
+          languages: Json | null
+          linkedin_url: string | null
+          name: string
+          notes: string | null
+          payment_methods: Json | null
+          payment_terms: string | null
+          phone: string | null
+          rating: number | null
+          relationship_since: string | null
+          relationship_type: string | null
+          service_types: Json | null
+          specializations: Json | null
+          success_rate_pct: number | null
+          timezone: string | null
+          total_cases_handled: number | null
+          updated_at: string | null
+          vetted_by: string | null
+          vetted_date: string | null
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          avg_response_hours?: number | null
+          city?: string | null
+          contact_person?: string | null
+          contract_expiry?: string | null
+          contract_url?: string | null
+          country_code: string
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          firm_name?: string | null
+          handles_apostille?: boolean | null
+          handles_legalization?: boolean | null
+          handles_pow?: boolean | null
+          handles_translations?: boolean | null
+          id?: string
+          internal_rating_notes?: string | null
+          is_active?: boolean | null
+          is_vetted?: boolean | null
+          jurisdictions?: Json | null
+          languages?: Json | null
+          linkedin_url?: string | null
+          name: string
+          notes?: string | null
+          payment_methods?: Json | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          relationship_since?: string | null
+          relationship_type?: string | null
+          service_types?: Json | null
+          specializations?: Json | null
+          success_rate_pct?: number | null
+          timezone?: string | null
+          total_cases_handled?: number | null
+          updated_at?: string | null
+          vetted_by?: string | null
+          vetted_date?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          avg_response_hours?: number | null
+          city?: string | null
+          contact_person?: string | null
+          contract_expiry?: string | null
+          contract_url?: string | null
+          country_code?: string
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          firm_name?: string | null
+          handles_apostille?: boolean | null
+          handles_legalization?: boolean | null
+          handles_pow?: boolean | null
+          handles_translations?: boolean | null
+          id?: string
+          internal_rating_notes?: string | null
+          is_active?: boolean | null
+          is_vetted?: boolean | null
+          jurisdictions?: Json | null
+          languages?: Json | null
+          linkedin_url?: string | null
+          name?: string
+          notes?: string | null
+          payment_methods?: Json | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          relationship_since?: string | null
+          relationship_type?: string | null
+          service_types?: Json | null
+          specializations?: Json | null
+          success_rate_pct?: number | null
+          timezone?: string | null
+          total_cases_handled?: number | null
+          updated_at?: string | null
+          vetted_by?: string | null
+          vetted_date?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       ai_conversations: {
         Row: {
           agent_type: string
@@ -790,6 +1074,93 @@ export type Database = {
           tokens_output?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      alert_configurations: {
+        Row: {
+          alert_type: string
+          analyze_frequency: string | null
+          auto_analyze_enabled: boolean | null
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          last_analyzed_at: string | null
+          min_confidence: number | null
+          min_severity: string | null
+          notify_email: boolean | null
+          notify_in_app: boolean | null
+          notify_matter_owner: boolean | null
+          notify_roles: string[] | null
+          notify_slack: boolean | null
+          organization_id: string
+          slack_webhook_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          analyze_frequency?: string | null
+          auto_analyze_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_analyzed_at?: string | null
+          min_confidence?: number | null
+          min_severity?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_matter_owner?: boolean | null
+          notify_roles?: string[] | null
+          notify_slack?: boolean | null
+          organization_id: string
+          slack_webhook_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          analyze_frequency?: string | null
+          auto_analyze_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_analyzed_at?: string | null
+          min_confidence?: number | null
+          min_severity?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_matter_owner?: boolean | null
+          notify_roles?: string[] | null
+          notify_slack?: boolean | null
+          organization_id?: string
+          slack_webhook_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      alert_types: {
+        Row: {
+          code: string
+          created_at: string | null
+          default_priority: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          default_priority?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          default_priority?: string | null
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -1727,6 +2098,72 @@ export type Database = {
           },
         ]
       }
+      deadline_alerts: {
+        Row: {
+          alert_type: string
+          body: string | null
+          channel: string
+          created_at: string | null
+          deadline_id: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          message: string | null
+          organization_id: string
+          read_at: string | null
+          recipient_email: string | null
+          recipient_id: string | null
+          recipient_role: string | null
+          response_data: Json | null
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          alert_type: string
+          body?: string | null
+          channel: string
+          created_at?: string | null
+          deadline_id: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          organization_id: string
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          recipient_role?: string | null
+          response_data?: Json | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          alert_type?: string
+          body?: string | null
+          channel?: string
+          created_at?: string | null
+          deadline_id?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          organization_id?: string
+          read_at?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          recipient_role?: string | null
+          response_data?: Json | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: []
+      }
       deadline_rules: {
         Row: {
           adjust_to_business_day: boolean | null
@@ -2086,6 +2523,111 @@ export type Database = {
         }
         Relationships: []
       }
+      document_types: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          fields_schema: Json | null
+          icon: string | null
+          id: string
+          name: string
+          name_en: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          fields_schema?: Json | null
+          icon?: string | null
+          id: string
+          name: string
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          fields_schema?: Json | null
+          icon?: string | null
+          id?: string
+          name?: string
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          document_type:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size: number | null
+          id: string
+          is_current_version: boolean | null
+          matter_id: string | null
+          mime_type: string | null
+          organization_id: string
+          original_filename: string
+          previous_version_id: string | null
+          storage_bucket: string
+          storage_path: string
+          title: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          version: number | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type?:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size?: number | null
+          id?: string
+          is_current_version?: boolean | null
+          matter_id?: string | null
+          mime_type?: string | null
+          organization_id: string
+          original_filename: string
+          previous_version_id?: string | null
+          storage_bucket: string
+          storage_path: string
+          title?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type?:
+            | Database["public"]["Enums"]["document_type_enum"]
+            | null
+          file_size?: number | null
+          id?: string
+          is_current_version?: boolean | null
+          matter_id?: string | null
+          mime_type?: string | null
+          organization_id?: string
+          original_filename?: string
+          previous_version_id?: string | null
+          storage_bucket?: string
+          storage_path?: string
+          title?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           base_currency: string
@@ -2257,6 +2799,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      finance_transactions: {
+        Row: {
+          amount: number
+          category: string
+          category_id: string | null
+          created_at: string | null
+          currency: string
+          description: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          reference_id: string | null
+          reference_table: string | null
+          status: string | null
+          subcategory: string | null
+          transaction_date: string
+          type: string
+          updated_at: string | null
+          vendor: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          amount?: number
+          category: string
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          reference_id?: string | null
+          reference_table?: string | null
+          status?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          type: string
+          updated_at?: string | null
+          vendor?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          reference_id?: string | null
+          reference_table?: string | null
+          status?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          type?: string
+          updated_at?: string | null
+          vendor?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: []
       }
       generated_reports: {
         Row: {
@@ -5350,6 +5955,186 @@ export type Database = {
           },
         ]
       }
+      nice_class_items: {
+        Row: {
+          alternate_names: string[] | null
+          class_id: string | null
+          class_number: number
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_generic_term: boolean | null
+          is_popular: boolean | null
+          item_code: string
+          item_name_en: string
+          item_name_es: string | null
+          updated_at: string | null
+          version_id: string | null
+        }
+        Insert: {
+          alternate_names?: string[] | null
+          class_id?: string | null
+          class_number: number
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_generic_term?: boolean | null
+          is_popular?: boolean | null
+          item_code: string
+          item_name_en: string
+          item_name_es?: string | null
+          updated_at?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          alternate_names?: string[] | null
+          class_id?: string | null
+          class_number?: number
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_generic_term?: boolean | null
+          is_popular?: boolean | null
+          item_code?: string
+          item_name_en?: string
+          item_name_es?: string | null
+          updated_at?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nice_class_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "nice_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nice_class_items_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "nice_classification_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nice_classes: {
+        Row: {
+          category: string | null
+          class_number: number
+          class_type: string
+          color: string | null
+          created_at: string | null
+          excludes_en: string[] | null
+          excludes_es: string[] | null
+          explanatory_note_en: string | null
+          explanatory_note_es: string | null
+          icon: string | null
+          id: string
+          includes_en: string[] | null
+          includes_es: string[] | null
+          is_active: boolean | null
+          is_popular: boolean | null
+          last_reviewed_at: string | null
+          notes: string | null
+          reviewed_by: string | null
+          title_en: string
+          title_es: string | null
+          updated_at: string | null
+          version_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          class_number: number
+          class_type: string
+          color?: string | null
+          created_at?: string | null
+          excludes_en?: string[] | null
+          excludes_es?: string[] | null
+          explanatory_note_en?: string | null
+          explanatory_note_es?: string | null
+          icon?: string | null
+          id?: string
+          includes_en?: string[] | null
+          includes_es?: string[] | null
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          last_reviewed_at?: string | null
+          notes?: string | null
+          reviewed_by?: string | null
+          title_en: string
+          title_es?: string | null
+          updated_at?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          class_number?: number
+          class_type?: string
+          color?: string | null
+          created_at?: string | null
+          excludes_en?: string[] | null
+          excludes_es?: string[] | null
+          explanatory_note_en?: string | null
+          explanatory_note_es?: string | null
+          icon?: string | null
+          id?: string
+          includes_en?: string[] | null
+          includes_es?: string[] | null
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          last_reviewed_at?: string | null
+          notes?: string | null
+          reviewed_by?: string | null
+          title_en?: string
+          title_es?: string | null
+          updated_at?: string | null
+          version_id?: string | null
+        }
+        Relationships: []
+      }
+      nice_classification_versions: {
+        Row: {
+          edition: string
+          effective_date: string | null
+          id: string
+          imported_at: string | null
+          imported_by: string | null
+          is_active: boolean | null
+          notes: string | null
+          total_classes: number | null
+          total_items: number | null
+          version_number: string
+        }
+        Insert: {
+          edition: string
+          effective_date?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          total_classes?: number | null
+          total_items?: number | null
+          version_number: string
+        }
+        Update: {
+          edition?: string
+          effective_date?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          total_classes?: number | null
+          total_items?: number | null
+          version_number?: string
+        }
+        Relationships: []
+      }
       nice_import_log: {
         Row: {
           classes_imported: number | null
@@ -5410,6 +6195,273 @@ export type Database = {
           details?: Json | null
           id?: string
           performed_by?: string | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          deadline_reminder_days: number[] | null
+          deadline_reminders: boolean | null
+          digest_day: number | null
+          digest_enabled: boolean | null
+          digest_frequency: string | null
+          digest_time: string | null
+          email_enabled: boolean | null
+          id: string
+          in_app_enabled: boolean | null
+          invoice_notifications: boolean | null
+          marketing_notifications: boolean | null
+          preferences: Json | null
+          push_enabled: boolean | null
+          quiet_hours_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          renewal_reminder_days: number[] | null
+          renewal_reminders: boolean | null
+          team_notifications: boolean | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+          watch_alerts: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          deadline_reminder_days?: number[] | null
+          deadline_reminders?: boolean | null
+          digest_day?: number | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          digest_time?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          in_app_enabled?: boolean | null
+          invoice_notifications?: boolean | null
+          marketing_notifications?: boolean | null
+          preferences?: Json | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          renewal_reminder_days?: number[] | null
+          renewal_reminders?: boolean | null
+          team_notifications?: boolean | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+          watch_alerts?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          deadline_reminder_days?: number[] | null
+          deadline_reminders?: boolean | null
+          digest_day?: number | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          digest_time?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          in_app_enabled?: boolean | null
+          invoice_notifications?: boolean | null
+          marketing_notifications?: boolean | null
+          preferences?: Json | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          renewal_reminder_days?: number[] | null
+          renewal_reminders?: boolean | null
+          team_notifications?: boolean | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          watch_alerts?: boolean | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_data: Json | null
+          action_label: string | null
+          action_url: string | null
+          archived_at: string | null
+          body: string
+          category: string | null
+          channels_sent: Json | null
+          created_at: string | null
+          data: Json | null
+          expires_at: string | null
+          group_key: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_archived: boolean | null
+          is_read: boolean | null
+          metadata: Json | null
+          organization_id: string | null
+          priority: string | null
+          read_at: string | null
+          reference_id: string | null
+          reference_type: string | null
+          resolved: boolean
+          sent_via: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          body: string
+          category?: string | null
+          channels_sent?: Json | null
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          group_key?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          priority?: string | null
+          read_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          resolved?: boolean
+          sent_via?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_url?: string | null
+          archived_at?: string | null
+          body?: string
+          category?: string | null
+          channels_sent?: Json | null
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          group_key?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          priority?: string | null
+          read_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          resolved?: boolean
+          sent_via?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          amount: number
+          amount_with_vat: number | null
+          client_email: string
+          client_id: string | null
+          client_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          jurisdiction: string | null
+          metadata: Json | null
+          nice_classes: Json | null
+          notes: string | null
+          official_fee: number | null
+          order_number: string
+          paid_at: string | null
+          payment_method: string | null
+          service_fee: number | null
+          service_name: string
+          service_type: string
+          source: string | null
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          trademark_name: string | null
+          updated_at: string | null
+          vat_amount: number | null
+          vat_rate: number | null
+        }
+        Insert: {
+          amount: number
+          amount_with_vat?: number | null
+          client_email: string
+          client_id?: string | null
+          client_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          jurisdiction?: string | null
+          metadata?: Json | null
+          nice_classes?: Json | null
+          notes?: string | null
+          official_fee?: number | null
+          order_number: string
+          paid_at?: string | null
+          payment_method?: string | null
+          service_fee?: number | null
+          service_name: string
+          service_type: string
+          source?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          trademark_name?: string | null
+          updated_at?: string | null
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Update: {
+          amount?: number
+          amount_with_vat?: number | null
+          client_email?: string
+          client_id?: string | null
+          client_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          jurisdiction?: string | null
+          metadata?: Json | null
+          nice_classes?: Json | null
+          notes?: string | null
+          official_fee?: number | null
+          order_number?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          service_fee?: number | null
+          service_name?: string
+          service_type?: string
+          source?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          trademark_name?: string | null
+          updated_at?: string | null
+          vat_amount?: number | null
+          vat_rate?: number | null
         }
         Relationships: []
       }
@@ -6118,6 +7170,275 @@ export type Database = {
           },
         ]
       }
+      service_catalog: {
+        Row: {
+          additional_class_fee_eur: number | null
+          applicable_offices: string[] | null
+          available_globally: boolean | null
+          base_price: number
+          category: string | null
+          category_id: string | null
+          competitor_service_codes: string[] | null
+          complexity: string | null
+          created_at: string
+          currency: string
+          default_jurisdiction: string | null
+          default_matter_subtype: string | null
+          default_matter_type: string | null
+          description: string | null
+          description_en: string | null
+          description_pt: string | null
+          discovery_tags: string[] | null
+          display_order: number | null
+          estimated_days: number | null
+          estimated_days_max: number | null
+          estimated_days_min: number | null
+          estimated_duration: string | null
+          estimated_hours: number | null
+          extra_class_fee: number | null
+          fee_type_link: string | null
+          generates_matter: boolean | null
+          has_official_fee: boolean | null
+          id: string
+          includes_official_fees: boolean | null
+          is_active: boolean
+          is_automatable: boolean | null
+          is_flagship: boolean | null
+          is_preconfigured: boolean | null
+          is_public: boolean | null
+          is_recurring: boolean | null
+          jurisdiction: string | null
+          long_description: string | null
+          long_description_en: string | null
+          long_description_pt: string | null
+          name: string
+          name_de: string | null
+          name_en: string | null
+          name_fr: string | null
+          name_pt: string | null
+          nice_class_dependent: boolean | null
+          nice_classes_included: number | null
+          official_fee: number | null
+          official_fees_note: string | null
+          organization_id: string | null
+          preconfigured_code: string | null
+          price_from_eur: number | null
+          price_to_eur: number | null
+          pricing_model: string | null
+          professional_fee: number | null
+          recurrence_period: string | null
+          reference_code: string | null
+          requires_jurisdiction: boolean | null
+          requires_local_agent: boolean | null
+          service_type: string | null
+          show_in_landing: boolean | null
+          show_in_portal: boolean | null
+          stripe_price_id: string | null
+          subcategory: string | null
+          tax_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          additional_class_fee_eur?: number | null
+          applicable_offices?: string[] | null
+          available_globally?: boolean | null
+          base_price?: number
+          category?: string | null
+          category_id?: string | null
+          competitor_service_codes?: string[] | null
+          complexity?: string | null
+          created_at?: string
+          currency?: string
+          default_jurisdiction?: string | null
+          default_matter_subtype?: string | null
+          default_matter_type?: string | null
+          description?: string | null
+          description_en?: string | null
+          description_pt?: string | null
+          discovery_tags?: string[] | null
+          display_order?: number | null
+          estimated_days?: number | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          estimated_duration?: string | null
+          estimated_hours?: number | null
+          extra_class_fee?: number | null
+          fee_type_link?: string | null
+          generates_matter?: boolean | null
+          has_official_fee?: boolean | null
+          id?: string
+          includes_official_fees?: boolean | null
+          is_active?: boolean
+          is_automatable?: boolean | null
+          is_flagship?: boolean | null
+          is_preconfigured?: boolean | null
+          is_public?: boolean | null
+          is_recurring?: boolean | null
+          jurisdiction?: string | null
+          long_description?: string | null
+          long_description_en?: string | null
+          long_description_pt?: string | null
+          name: string
+          name_de?: string | null
+          name_en?: string | null
+          name_fr?: string | null
+          name_pt?: string | null
+          nice_class_dependent?: boolean | null
+          nice_classes_included?: number | null
+          official_fee?: number | null
+          official_fees_note?: string | null
+          organization_id?: string | null
+          preconfigured_code?: string | null
+          price_from_eur?: number | null
+          price_to_eur?: number | null
+          pricing_model?: string | null
+          professional_fee?: number | null
+          recurrence_period?: string | null
+          reference_code?: string | null
+          requires_jurisdiction?: boolean | null
+          requires_local_agent?: boolean | null
+          service_type?: string | null
+          show_in_landing?: boolean | null
+          show_in_portal?: boolean | null
+          stripe_price_id?: string | null
+          subcategory?: string | null
+          tax_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          additional_class_fee_eur?: number | null
+          applicable_offices?: string[] | null
+          available_globally?: boolean | null
+          base_price?: number
+          category?: string | null
+          category_id?: string | null
+          competitor_service_codes?: string[] | null
+          complexity?: string | null
+          created_at?: string
+          currency?: string
+          default_jurisdiction?: string | null
+          default_matter_subtype?: string | null
+          default_matter_type?: string | null
+          description?: string | null
+          description_en?: string | null
+          description_pt?: string | null
+          discovery_tags?: string[] | null
+          display_order?: number | null
+          estimated_days?: number | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          estimated_duration?: string | null
+          estimated_hours?: number | null
+          extra_class_fee?: number | null
+          fee_type_link?: string | null
+          generates_matter?: boolean | null
+          has_official_fee?: boolean | null
+          id?: string
+          includes_official_fees?: boolean | null
+          is_active?: boolean
+          is_automatable?: boolean | null
+          is_flagship?: boolean | null
+          is_preconfigured?: boolean | null
+          is_public?: boolean | null
+          is_recurring?: boolean | null
+          jurisdiction?: string | null
+          long_description?: string | null
+          long_description_en?: string | null
+          long_description_pt?: string | null
+          name?: string
+          name_de?: string | null
+          name_en?: string | null
+          name_fr?: string | null
+          name_pt?: string | null
+          nice_class_dependent?: boolean | null
+          nice_classes_included?: number | null
+          official_fee?: number | null
+          official_fees_note?: string | null
+          organization_id?: string | null
+          preconfigured_code?: string | null
+          price_from_eur?: number | null
+          price_to_eur?: number | null
+          pricing_model?: string | null
+          professional_fee?: number | null
+          recurrence_period?: string | null
+          reference_code?: string | null
+          requires_jurisdiction?: boolean | null
+          requires_local_agent?: boolean | null
+          service_type?: string | null
+          show_in_landing?: boolean | null
+          show_in_portal?: boolean | null
+          stripe_price_id?: string | null
+          subcategory?: string | null
+          tax_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_catalog_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_categories: {
+        Row: {
+          code: string
+          color: string | null
+          created_at: string | null
+          description_en: string | null
+          description_es: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name_en: string
+          name_es: string
+          parent_id: string | null
+          position: number | null
+          right_type: string | null
+          right_types: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          color?: string | null
+          created_at?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name_en: string
+          name_es: string
+          parent_id?: string | null
+          position?: number | null
+          right_type?: string | null
+          right_types?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          color?: string | null
+          created_at?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name_en?: string
+          name_es?: string
+          parent_id?: string | null
+          position?: number | null
+          right_type?: string | null
+          right_types?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       settings_audit_log: {
         Row: {
           created_at: string
@@ -6189,6 +7510,51 @@ export type Database = {
           signature_request_id?: string | null
           signer_id?: string | null
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          billing_cycle: string | null
+          created_at: string | null
+          current_period_end: string
+          current_period_start: string
+          id: string
+          organization_id: string
+          plan_id: string
+          status: string
+          stripe_subscription_id: string | null
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_cycle?: string | null
+          created_at?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          organization_id: string
+          plan_id: string
+          status?: string
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_cycle?: string | null
+          created_at?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          organization_id?: string
+          plan_id?: string
+          status?: string
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -6416,6 +7782,20 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "member" | "viewer"
+      document_type_enum:
+        | "application"
+        | "registration"
+        | "renewal"
+        | "opposition"
+        | "response"
+        | "correspondence"
+        | "invoice"
+        | "contract"
+        | "power_of_attorney"
+        | "trademark_certificate"
+        | "patent_certificate"
+        | "design_certificate"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6544,6 +7924,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "manager", "member", "viewer"],
+      document_type_enum: [
+        "application",
+        "registration",
+        "renewal",
+        "opposition",
+        "response",
+        "correspondence",
+        "invoice",
+        "contract",
+        "power_of_attorney",
+        "trademark_certificate",
+        "patent_certificate",
+        "design_certificate",
+        "other",
+      ],
     },
   },
 } as const
