@@ -61,23 +61,26 @@ const FLAGS: Record<string, string> = {
 
 // Configuración de tipos de expediente
 const TYPE_CONFIG: Record<string, { label: string; icon: string; color: string; bgLight: string; textColor: string }> = {
-  TM_NAT: { label: 'Marca Nacional', icon: '®️', color: 'bg-blue-500', bgLight: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300' },
-  TM_EU: { label: 'Marca UE', icon: '®️', color: 'bg-indigo-500', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300' },
+  TM_NAT: { label: 'Marca Nacional', icon: '®️', color: 'bg-violet-500', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
+  TM_EU: { label: 'Marca UE', icon: '®️', color: 'bg-violet-500', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
   TM_INT: { label: 'Marca Internacional', icon: '®️', color: 'bg-violet-500', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
-  PT_NAT: { label: 'Patente Nacional', icon: '⚙️', color: 'bg-purple-500', bgLight: 'bg-purple-50 dark:bg-purple-950', textColor: 'text-purple-700 dark:text-purple-300' },
-  PT_EU: { label: 'Patente Europea', icon: '⚙️', color: 'bg-fuchsia-500', bgLight: 'bg-fuchsia-50 dark:bg-fuchsia-950', textColor: 'text-fuchsia-700 dark:text-fuchsia-300' },
-  PT_PCT: { label: 'Patente PCT', icon: '⚙️', color: 'bg-pink-500', bgLight: 'bg-pink-50 dark:bg-pink-950', textColor: 'text-pink-700 dark:text-pink-300' },
-  UM: { label: 'Modelo Utilidad', icon: '🔧', color: 'bg-amber-500', bgLight: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300' },
-  DS_NAT: { label: 'Diseño Nacional', icon: '✏️', color: 'bg-rose-500', bgLight: 'bg-rose-50 dark:bg-rose-950', textColor: 'text-rose-700 dark:text-rose-300' },
-  DS_EU: { label: 'Diseño Comunitario', icon: '✏️', color: 'bg-red-500', bgLight: 'bg-red-50 dark:bg-red-950', textColor: 'text-red-700 dark:text-red-300' },
-  DOM: { label: 'Dominio', icon: '🌐', color: 'bg-teal-500', bgLight: 'bg-teal-50 dark:bg-teal-950', textColor: 'text-teal-700 dark:text-teal-300' },
-  NC: { label: 'Nombre Comercial', icon: '🏢', color: 'bg-emerald-500', bgLight: 'bg-emerald-50 dark:bg-emerald-950', textColor: 'text-emerald-700 dark:text-emerald-300' },
+  PT_NAT: { label: 'Patente Nacional', icon: '⚙️', color: 'bg-sky-500', bgLight: 'bg-sky-50 dark:bg-sky-950', textColor: 'text-sky-700 dark:text-sky-300' },
+  PT_EU: { label: 'Patente Europea', icon: '⚙️', color: 'bg-sky-500', bgLight: 'bg-sky-50 dark:bg-sky-950', textColor: 'text-sky-700 dark:text-sky-300' },
+  PT_PCT: { label: 'Patente PCT', icon: '⚙️', color: 'bg-sky-500', bgLight: 'bg-sky-50 dark:bg-sky-950', textColor: 'text-sky-700 dark:text-sky-300' },
+  UM: { label: 'Modelo Utilidad', icon: '🔧', color: 'bg-sky-500', bgLight: 'bg-sky-50 dark:bg-sky-950', textColor: 'text-sky-700 dark:text-sky-300' },
+  DS_NAT: { label: 'Diseño Nacional', icon: '✏️', color: 'bg-indigo-500', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300' },
+  DS_EU: { label: 'Diseño Comunitario', icon: '✏️', color: 'bg-indigo-500', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300' },
+  DOM: { label: 'Dominio', icon: '🌐', color: 'bg-emerald-500', bgLight: 'bg-emerald-50 dark:bg-emerald-950', textColor: 'text-emerald-700 dark:text-emerald-300' },
+  NC: { label: 'Nombre Comercial', icon: '🏢', color: 'bg-violet-500', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
   OPO: { label: 'Oposición', icon: '⚖️', color: 'bg-orange-500', bgLight: 'bg-orange-50 dark:bg-orange-950', textColor: 'text-orange-700 dark:text-orange-300' },
   VIG: { label: 'Vigilancia', icon: '👁️', color: 'bg-cyan-500', bgLight: 'bg-cyan-50 dark:bg-cyan-950', textColor: 'text-cyan-700 dark:text-cyan-300' },
   LIT: { label: 'Litigio', icon: '🏛️', color: 'bg-slate-500', bgLight: 'bg-slate-50 dark:bg-slate-950', textColor: 'text-slate-700 dark:text-slate-300' },
-  trademark: { label: 'Marca', icon: '®️', color: 'bg-blue-500', bgLight: 'bg-blue-50 dark:bg-blue-950', textColor: 'text-blue-700 dark:text-blue-300' },
-  patent: { label: 'Patente', icon: '⚙️', color: 'bg-purple-500', bgLight: 'bg-purple-50 dark:bg-purple-950', textColor: 'text-purple-700 dark:text-purple-300' },
-  design: { label: 'Diseño', icon: '✏️', color: 'bg-rose-500', bgLight: 'bg-rose-50 dark:bg-rose-950', textColor: 'text-rose-700 dark:text-rose-300' },
+  trademark: { label: 'Marca', icon: '®️', color: 'bg-violet-500', bgLight: 'bg-violet-50 dark:bg-violet-950', textColor: 'text-violet-700 dark:text-violet-300' },
+  patent: { label: 'Patente', icon: '⚙️', color: 'bg-sky-500', bgLight: 'bg-sky-50 dark:bg-sky-950', textColor: 'text-sky-700 dark:text-sky-300' },
+  design: { label: 'Diseño', icon: '✏️', color: 'bg-indigo-500', bgLight: 'bg-indigo-50 dark:bg-indigo-950', textColor: 'text-indigo-700 dark:text-indigo-300' },
+  domain: { label: 'Dominio', icon: '🌐', color: 'bg-emerald-500', bgLight: 'bg-emerald-50 dark:bg-emerald-950', textColor: 'text-emerald-700 dark:text-emerald-300' },
+  copyright: { label: 'Copyright', icon: '©️', color: 'bg-amber-500', bgLight: 'bg-amber-50 dark:bg-amber-950', textColor: 'text-amber-700 dark:text-amber-300' },
+  trade_secret: { label: 'Secreto', icon: '🔒', color: 'bg-slate-500', bgLight: 'bg-slate-50 dark:bg-slate-950', textColor: 'text-slate-700 dark:text-slate-300' },
 };
 
 const DEFAULT_TYPE = { label: 'Expediente', icon: '📁', color: 'bg-gray-500', bgLight: 'bg-gray-50 dark:bg-gray-900', textColor: 'text-gray-700 dark:text-gray-300' };
@@ -164,9 +167,12 @@ export default function ExpedientesPage() {
     // Apply type filter
     if (typeFilter !== 'all') {
       result = result.filter(m => {
-        if (typeFilter === 'trademark') return m.matter_type.startsWith('TM_') || m.matter_type === 'trademark';
+        if (typeFilter === 'trademark') return m.matter_type.startsWith('TM_') || m.matter_type === 'trademark' || m.matter_type === 'NC';
         if (typeFilter === 'patent') return m.matter_type.startsWith('PT_') || m.matter_type === 'UM' || m.matter_type === 'patent';
         if (typeFilter === 'design') return m.matter_type.startsWith('DS_') || m.matter_type === 'design';
+        if (typeFilter === 'domain') return m.matter_type === 'DOM' || m.matter_type === 'domain';
+        if (typeFilter === 'copyright') return m.matter_type === 'copyright';
+        if (typeFilter === 'trade_secret') return m.matter_type === 'trade_secret';
         return true;
       });
     }
@@ -176,12 +182,15 @@ export default function ExpedientesPage() {
   
   // Type counts
   const typeCounts = useMemo(() => {
-    if (!allMatters) return { all: 0, trademark: 0, patent: 0, design: 0 };
+    if (!allMatters) return { all: 0, trademark: 0, patent: 0, design: 0, domain: 0, copyright: 0, trade_secret: 0 };
     return {
       all: allMatters.length,
-      trademark: allMatters.filter(m => m.matter_type.startsWith('TM_') || m.matter_type === 'trademark').length,
+      trademark: allMatters.filter(m => m.matter_type.startsWith('TM_') || m.matter_type === 'trademark' || m.matter_type === 'NC').length,
       patent: allMatters.filter(m => m.matter_type.startsWith('PT_') || m.matter_type === 'UM' || m.matter_type === 'patent').length,
       design: allMatters.filter(m => m.matter_type.startsWith('DS_') || m.matter_type === 'design').length,
+      domain: allMatters.filter(m => m.matter_type === 'DOM' || m.matter_type === 'domain').length,
+      copyright: allMatters.filter(m => m.matter_type === 'copyright').length,
+      trade_secret: allMatters.filter(m => m.matter_type === 'trade_secret').length,
     };
   }, [allMatters]);
 
@@ -223,8 +232,35 @@ export default function ExpedientesPage() {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* KPIs de Urgencia */}
+        {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <UrgencyKpiCard 
+            label="Total expedientes" 
+            value={stats.total} 
+            urgencyKey="total"
+            colorClass="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+            textClass="text-slate-700 dark:text-slate-300"
+            isActive={urgencyFilter === 'all'}
+            onClick={() => setUrgencyFilter('all')}
+          />
+          <UrgencyKpiCard 
+            label="Activos" 
+            value={stats.total - stats.overdue} 
+            urgencyKey="ok"
+            colorClass="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+            textClass="text-green-700 dark:text-green-300"
+            isActive={urgencyFilter === 'ok'}
+            onClick={() => setUrgencyFilter(urgencyFilter === 'ok' ? 'all' : 'ok')}
+          />
+          <UrgencyKpiCard 
+            label="Próximos 30 días" 
+            value={stats.next30Days + stats.next7Days} 
+            urgencyKey="next30Days"
+            colorClass="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800"
+            textClass="text-yellow-700 dark:text-yellow-300"
+            isActive={urgencyFilter === 'next30Days'}
+            onClick={() => setUrgencyFilter(urgencyFilter === 'next30Days' ? 'all' : 'next30Days')}
+          />
           <UrgencyKpiCard 
             label="Vencidos" 
             value={stats.overdue} 
@@ -235,34 +271,6 @@ export default function ExpedientesPage() {
             onClick={() => setUrgencyFilter(urgencyFilter === 'overdue' ? 'all' : 'overdue')}
             showWarning={stats.overdue > 0}
           />
-          <UrgencyKpiCard 
-            label="Próximos 7 días" 
-            value={stats.next7Days} 
-            urgencyKey="next7Days"
-            colorClass="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800"
-            textClass="text-orange-700 dark:text-orange-300"
-            isActive={urgencyFilter === 'next7Days'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'next7Days' ? 'all' : 'next7Days')}
-            showWarning={stats.next7Days > 5}
-          />
-          <UrgencyKpiCard 
-            label="Este mes" 
-            value={stats.next30Days} 
-            urgencyKey="next30Days"
-            colorClass="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800"
-            textClass="text-yellow-700 dark:text-yellow-300"
-            isActive={urgencyFilter === 'next30Days'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'next30Days' ? 'all' : 'next30Days')}
-          />
-          <UrgencyKpiCard 
-            label="Sin urgencia" 
-            value={stats.ok} 
-            urgencyKey="ok"
-            colorClass="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
-            textClass="text-green-700 dark:text-green-300"
-            isActive={urgencyFilter === 'ok'}
-            onClick={() => setUrgencyFilter(urgencyFilter === 'ok' ? 'all' : 'ok')}
-          />
         </div>
 
         {/* Filtros por tipo */}
@@ -270,9 +278,12 @@ export default function ExpedientesPage() {
           <div className="flex items-center gap-2 pb-2">
             {[
               { id: 'all', label: 'Todos', count: typeCounts.all },
-              { id: 'trademark', label: 'Marcas', count: typeCounts.trademark },
-              { id: 'patent', label: 'Patentes', count: typeCounts.patent },
-              { id: 'design', label: 'Diseños', count: typeCounts.design },
+              { id: 'trademark', label: '🏷️ Marcas', count: typeCounts.trademark },
+              { id: 'patent', label: '⚗️ Patentes', count: typeCounts.patent },
+              { id: 'design', label: '🎨 Diseños', count: typeCounts.design },
+              { id: 'domain', label: '🌐 Dominios', count: typeCounts.domain },
+              { id: 'copyright', label: '©️ Copyright', count: typeCounts.copyright },
+              { id: 'trade_secret', label: '🔒 Secretos', count: typeCounts.trade_secret },
             ].map((filter) => (
               <button
                 key={filter.id}
@@ -431,14 +442,16 @@ const URGENCY_COLORS: Record<string, string> = {
   next7Days: '#f97316', // orange
   next30Days: '#eab308', // yellow
   ok: '#22c55e',        // green
+  total: '#3b82f6',     // blue
 };
 
 // KPI descriptions
 const URGENCY_DESCRIPTIONS: Record<string, string> = {
-  overdue: 'Requiere atención urgente',
+  overdue: 'Plazos vencidos',
   next7Days: 'Atención pronto',
-  next30Days: 'Programados este mes',
-  ok: 'Más de 30 días',
+  next30Days: 'Deadlines próximos',
+  ok: 'En buen estado',
+  total: 'Cartera completa',
 };
 
 // KPI icons
@@ -447,6 +460,7 @@ const URGENCY_ICONS: Record<string, string> = {
   next7Days: '⏰',
   next30Days: '📅',
   ok: '✅',
+  total: '📊',
 };
 
 function UrgencyKpiCard({ 
@@ -468,7 +482,7 @@ function UrgencyKpiCard({
   // Border color based on urgency
   const getBorderStyle = () => {
     if (urgencyKey === 'overdue' && value > 0) {
-      return { border: '2px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 0 0 1px rgba(239, 68, 68, 0.1)' };
+      return { border: '2px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 0 8px rgba(239, 68, 68, 0.4)' };
     }
     if (urgencyKey === 'next7Days' && value > 0) {
       return { border: '1px solid rgba(249, 115, 22, 0.25)' };
@@ -530,18 +544,23 @@ function MatterListRowSilk({ matter, onClick }: {
   // Get color for type
   const getTypeColor = (type: string): string => {
     const colors: Record<string, string> = {
-      'TM_NAT': '#00b4d8',
-      'TM_EU': '#00b4d8',
-      'TM_INT': '#00b4d8',
-      'trademark': '#00b4d8',
-      'PT_NAT': '#10b981',
-      'PT_EU': '#10b981',
-      'PT_PCT': '#10b981',
-      'UM': '#10b981',
-      'patent': '#10b981',
-      'DS_NAT': '#ec4899',
-      'DS_EU': '#ec4899',
-      'design': '#ec4899',
+      'TM_NAT': '#8B5CF6',
+      'TM_EU': '#8B5CF6',
+      'TM_INT': '#8B5CF6',
+      'trademark': '#8B5CF6',
+      'NC': '#8B5CF6',
+      'PT_NAT': '#0EA5E9',
+      'PT_EU': '#0EA5E9',
+      'PT_PCT': '#0EA5E9',
+      'UM': '#0EA5E9',
+      'patent': '#0EA5E9',
+      'DS_NAT': '#6366F1',
+      'DS_EU': '#6366F1',
+      'design': '#6366F1',
+      'DOM': '#10B981',
+      'domain': '#10B981',
+      'copyright': '#F59E0B',
+      'trade_secret': '#64748B',
     };
     return colors[type] || '#64748b';
   };
@@ -799,18 +818,23 @@ function MatterCardNew({ matter, onClick }: { matter: MatterWithDeadline; onClic
    // Get color for type badge
    const getTypeColor = (type: string): string => {
      const colors: Record<string, string> = {
-       'TM_NAT': '#00b4d8',
-       'TM_EU': '#00b4d8',
-       'TM_INT': '#00b4d8',
-       'trademark': '#00b4d8',
-       'PT_NAT': '#10b981',
-       'PT_EU': '#10b981',
-       'PT_PCT': '#10b981',
-       'UM': '#10b981',
-       'patent': '#10b981',
-       'DS_NAT': '#ec4899',
-       'DS_EU': '#ec4899',
-       'design': '#ec4899',
+       'TM_NAT': '#8B5CF6',
+       'TM_EU': '#8B5CF6',
+       'TM_INT': '#8B5CF6',
+       'trademark': '#8B5CF6',
+       'NC': '#8B5CF6',
+       'PT_NAT': '#0EA5E9',
+       'PT_EU': '#0EA5E9',
+       'PT_PCT': '#0EA5E9',
+       'UM': '#0EA5E9',
+       'patent': '#0EA5E9',
+       'DS_NAT': '#6366F1',
+       'DS_EU': '#6366F1',
+       'design': '#6366F1',
+       'DOM': '#10B981',
+       'domain': '#10B981',
+       'copyright': '#F59E0B',
+       'trade_secret': '#64748B',
      };
      return colors[type] || '#64748b';
    };

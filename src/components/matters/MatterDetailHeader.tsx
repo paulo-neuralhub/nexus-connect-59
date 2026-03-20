@@ -43,53 +43,59 @@ const MATTER_TYPE_ICONS: Record<string, {
   borderColor: string;
   shadowColor: string;
 }> = {
-  // Trademarks
-  TM_NAT: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  TM_EU: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  TM_INT: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  trademark: { icon: Shield, gradientFrom: '#06b6d4', gradientTo: '#0891b2', borderColor: '#22d3ee', shadowColor: 'rgba(6, 182, 212, 0.4)' },
-  // Patents
-  PT_NAT: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  PT_EU: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  PT_PCT: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
-  patent: { icon: Lightbulb, gradientFrom: '#3b82f6', gradientTo: '#2563eb', borderColor: '#60a5fa', shadowColor: 'rgba(59, 130, 246, 0.4)' },
+  // Trademarks — violet #8B5CF6
+  TM_NAT: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  TM_EU: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  TM_INT: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  trademark: { icon: Shield, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  // Patents — sky #0EA5E9
+  PT_NAT: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  PT_EU: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  PT_PCT: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  patent: { icon: Lightbulb, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
   // Utility Model
-  UM: { icon: Wrench, gradientFrom: '#8b5cf6', gradientTo: '#7c3aed', borderColor: '#a78bfa', shadowColor: 'rgba(139, 92, 246, 0.4)' },
-  utility_model: { icon: Wrench, gradientFrom: '#8b5cf6', gradientTo: '#7c3aed', borderColor: '#a78bfa', shadowColor: 'rgba(139, 92, 246, 0.4)' },
-  // Designs
-  DS_NAT: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
-  DS_EU: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
-  design: { icon: Palette, gradientFrom: '#f59e0b', gradientTo: '#d97706', borderColor: '#fbbf24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
+  UM: { icon: Wrench, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  utility_model: { icon: Wrench, gradientFrom: '#0EA5E9', gradientTo: '#0284C7', borderColor: '#38BDF8', shadowColor: 'rgba(14, 165, 233, 0.4)' },
+  // Designs — indigo #6366F1
+  DS_NAT: { icon: Palette, gradientFrom: '#6366F1', gradientTo: '#4F46E5', borderColor: '#818CF8', shadowColor: 'rgba(99, 102, 241, 0.4)' },
+  DS_EU: { icon: Palette, gradientFrom: '#6366F1', gradientTo: '#4F46E5', borderColor: '#818CF8', shadowColor: 'rgba(99, 102, 241, 0.4)' },
+  design: { icon: Palette, gradientFrom: '#6366F1', gradientTo: '#4F46E5', borderColor: '#818CF8', shadowColor: 'rgba(99, 102, 241, 0.4)' },
   // Trade Name
-  NC: { icon: Store, gradientFrom: '#14b8a6', gradientTo: '#0d9488', borderColor: '#2dd4bf', shadowColor: 'rgba(20, 184, 166, 0.4)' },
-  trade_name: { icon: Store, gradientFrom: '#14b8a6', gradientTo: '#0d9488', borderColor: '#2dd4bf', shadowColor: 'rgba(20, 184, 166, 0.4)' },
-  // Copyright
-  copyright: { icon: BookOpen, gradientFrom: '#f43f5e', gradientTo: '#e11d48', borderColor: '#fb7185', shadowColor: 'rgba(244, 63, 94, 0.4)' },
-  // Trade Secret
-  trade_secret: { icon: Lock, gradientFrom: '#64748b', gradientTo: '#475569', borderColor: '#94a3b8', shadowColor: 'rgba(100, 116, 139, 0.4)' },
+  NC: { icon: Store, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  trade_name: { icon: Store, gradientFrom: '#8B5CF6', gradientTo: '#7C3AED', borderColor: '#A78BFA', shadowColor: 'rgba(139, 92, 246, 0.4)' },
+  // Domain — green #10B981
+  domain: { icon: Store, gradientFrom: '#10B981', gradientTo: '#059669', borderColor: '#34D399', shadowColor: 'rgba(16, 185, 129, 0.4)' },
+  DOM: { icon: Store, gradientFrom: '#10B981', gradientTo: '#059669', borderColor: '#34D399', shadowColor: 'rgba(16, 185, 129, 0.4)' },
+  // Copyright — amber #F59E0B
+  copyright: { icon: BookOpen, gradientFrom: '#F59E0B', gradientTo: '#D97706', borderColor: '#FBBF24', shadowColor: 'rgba(245, 158, 11, 0.4)' },
+  // Trade Secret — slate #64748B
+  trade_secret: { icon: Lock, gradientFrom: '#64748B', gradientTo: '#475569', borderColor: '#94A3B8', shadowColor: 'rgba(100, 116, 139, 0.4)' },
   // Default
   default: { icon: FileText, gradientFrom: '#94a3b8', gradientTo: '#64748b', borderColor: '#cbd5e1', shadowColor: 'rgba(148, 163, 184, 0.4)' },
 };
 
-// Type configuration - colors for badges
+// Type configuration - colors for badges (aligned with spec)
 const TYPE_CONFIG: Record<string, { label: string; borderColor: string; textColor: string; bgLight: string; gradientFrom: string; gradientTo: string }> = {
-  TM_NAT: { label: 'Marca Nacional', borderColor: 'border-cyan-300', textColor: 'text-cyan-700', bgLight: 'bg-cyan-50', gradientFrom: '#00b4d8', gradientTo: '#0891b2' },
-  TM_EU: { label: 'Marca UE', borderColor: 'border-blue-300', textColor: 'text-blue-700', bgLight: 'bg-blue-50', gradientFrom: '#3b82f6', gradientTo: '#2563eb' },
-  TM_INT: { label: 'Marca Internacional', borderColor: 'border-indigo-300', textColor: 'text-indigo-700', bgLight: 'bg-indigo-50', gradientFrom: '#6366f1', gradientTo: '#4f46e5' },
-  PT_NAT: { label: 'Patente Nacional', borderColor: 'border-amber-300', textColor: 'text-amber-700', bgLight: 'bg-amber-50', gradientFrom: '#f59e0b', gradientTo: '#d97706' },
-  PT_EU: { label: 'Patente Europea', borderColor: 'border-orange-300', textColor: 'text-orange-700', bgLight: 'bg-orange-50', gradientFrom: '#f97316', gradientTo: '#ea580c' },
-  PT_PCT: { label: 'Patente PCT', borderColor: 'border-rose-300', textColor: 'text-rose-700', bgLight: 'bg-rose-50', gradientFrom: '#f43f5e', gradientTo: '#e11d48' },
-  UM: { label: 'Modelo Utilidad', borderColor: 'border-yellow-300', textColor: 'text-yellow-700', bgLight: 'bg-yellow-50', gradientFrom: '#eab308', gradientTo: '#ca8a04' },
-  DS_NAT: { label: 'Diseño Nacional', borderColor: 'border-pink-300', textColor: 'text-pink-700', bgLight: 'bg-pink-50', gradientFrom: '#ec4899', gradientTo: '#db2777' },
-  DS_EU: { label: 'Diseño Comunitario', borderColor: 'border-fuchsia-300', textColor: 'text-fuchsia-700', bgLight: 'bg-fuchsia-50', gradientFrom: '#d946ef', gradientTo: '#c026d3' },
-  DOM: { label: 'Dominio', borderColor: 'border-teal-300', textColor: 'text-teal-700', bgLight: 'bg-teal-50', gradientFrom: '#14b8a6', gradientTo: '#0d9488' },
-  NC: { label: 'Nombre Comercial', borderColor: 'border-emerald-300', textColor: 'text-emerald-700', bgLight: 'bg-emerald-50', gradientFrom: '#10b981', gradientTo: '#059669' },
-  OPO: { label: 'Oposición', borderColor: 'border-red-300', textColor: 'text-red-700', bgLight: 'bg-red-50', gradientFrom: '#ef4444', gradientTo: '#dc2626' },
-  VIG: { label: 'Vigilancia', borderColor: 'border-slate-300', textColor: 'text-slate-700', bgLight: 'bg-slate-50', gradientFrom: '#64748b', gradientTo: '#475569' },
-  LIT: { label: 'Litigio', borderColor: 'border-gray-300', textColor: 'text-gray-700', bgLight: 'bg-gray-50', gradientFrom: '#6b7280', gradientTo: '#4b5563' },
-  trademark: { label: 'Marca', borderColor: 'border-cyan-300', textColor: 'text-cyan-700', bgLight: 'bg-cyan-50', gradientFrom: '#00b4d8', gradientTo: '#0891b2' },
-  patent: { label: 'Patente', borderColor: 'border-amber-300', textColor: 'text-amber-700', bgLight: 'bg-amber-50', gradientFrom: '#f59e0b', gradientTo: '#d97706' },
-  design: { label: 'Diseño', borderColor: 'border-pink-300', textColor: 'text-pink-700', bgLight: 'bg-pink-50', gradientFrom: '#ec4899', gradientTo: '#db2777' },
+  TM_NAT: { label: 'Marca Nacional', borderColor: 'border-violet-300', textColor: 'text-violet-700', bgLight: 'bg-violet-50', gradientFrom: '#8B5CF6', gradientTo: '#7C3AED' },
+  TM_EU: { label: 'Marca UE', borderColor: 'border-violet-300', textColor: 'text-violet-700', bgLight: 'bg-violet-50', gradientFrom: '#8B5CF6', gradientTo: '#7C3AED' },
+  TM_INT: { label: 'Marca Internacional', borderColor: 'border-violet-300', textColor: 'text-violet-700', bgLight: 'bg-violet-50', gradientFrom: '#8B5CF6', gradientTo: '#7C3AED' },
+  PT_NAT: { label: 'Patente Nacional', borderColor: 'border-sky-300', textColor: 'text-sky-700', bgLight: 'bg-sky-50', gradientFrom: '#0EA5E9', gradientTo: '#0284C7' },
+  PT_EU: { label: 'Patente Europea', borderColor: 'border-sky-300', textColor: 'text-sky-700', bgLight: 'bg-sky-50', gradientFrom: '#0EA5E9', gradientTo: '#0284C7' },
+  PT_PCT: { label: 'Patente PCT', borderColor: 'border-sky-300', textColor: 'text-sky-700', bgLight: 'bg-sky-50', gradientFrom: '#0EA5E9', gradientTo: '#0284C7' },
+  UM: { label: 'Modelo Utilidad', borderColor: 'border-sky-300', textColor: 'text-sky-700', bgLight: 'bg-sky-50', gradientFrom: '#0EA5E9', gradientTo: '#0284C7' },
+  DS_NAT: { label: 'Diseño Nacional', borderColor: 'border-indigo-300', textColor: 'text-indigo-700', bgLight: 'bg-indigo-50', gradientFrom: '#6366F1', gradientTo: '#4F46E5' },
+  DS_EU: { label: 'Diseño Comunitario', borderColor: 'border-indigo-300', textColor: 'text-indigo-700', bgLight: 'bg-indigo-50', gradientFrom: '#6366F1', gradientTo: '#4F46E5' },
+  DOM: { label: 'Dominio', borderColor: 'border-emerald-300', textColor: 'text-emerald-700', bgLight: 'bg-emerald-50', gradientFrom: '#10B981', gradientTo: '#059669' },
+  NC: { label: 'Nombre Comercial', borderColor: 'border-violet-300', textColor: 'text-violet-700', bgLight: 'bg-violet-50', gradientFrom: '#8B5CF6', gradientTo: '#7C3AED' },
+  OPO: { label: 'Oposición', borderColor: 'border-orange-300', textColor: 'text-orange-700', bgLight: 'bg-orange-50', gradientFrom: '#F97316', gradientTo: '#EA580C' },
+  VIG: { label: 'Vigilancia', borderColor: 'border-slate-300', textColor: 'text-slate-700', bgLight: 'bg-slate-50', gradientFrom: '#64748B', gradientTo: '#475569' },
+  LIT: { label: 'Litigio', borderColor: 'border-gray-300', textColor: 'text-gray-700', bgLight: 'bg-gray-50', gradientFrom: '#6B7280', gradientTo: '#4B5563' },
+  trademark: { label: 'Marca', borderColor: 'border-violet-300', textColor: 'text-violet-700', bgLight: 'bg-violet-50', gradientFrom: '#8B5CF6', gradientTo: '#7C3AED' },
+  patent: { label: 'Patente', borderColor: 'border-sky-300', textColor: 'text-sky-700', bgLight: 'bg-sky-50', gradientFrom: '#0EA5E9', gradientTo: '#0284C7' },
+  design: { label: 'Diseño', borderColor: 'border-indigo-300', textColor: 'text-indigo-700', bgLight: 'bg-indigo-50', gradientFrom: '#6366F1', gradientTo: '#4F46E5' },
+  domain: { label: 'Dominio', borderColor: 'border-emerald-300', textColor: 'text-emerald-700', bgLight: 'bg-emerald-50', gradientFrom: '#10B981', gradientTo: '#059669' },
+  copyright: { label: 'Copyright', borderColor: 'border-amber-300', textColor: 'text-amber-700', bgLight: 'bg-amber-50', gradientFrom: '#F59E0B', gradientTo: '#D97706' },
+  trade_secret: { label: 'Secreto Empresarial', borderColor: 'border-slate-300', textColor: 'text-slate-700', bgLight: 'bg-slate-50', gradientFrom: '#64748B', gradientTo: '#475569' },
 };
 
 // Trademark type labels

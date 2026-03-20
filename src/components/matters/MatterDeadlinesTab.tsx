@@ -43,24 +43,28 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
   };
 
   const getDeadlineStatus = (dueDate: string, isCompleted: boolean) => {
-    if (isCompleted) return { label: 'Completado', color: 'bg-green-100 text-green-700', urgent: false };
+    if (isCompleted) return { label: 'Completado', color: 'bg-green-100 text-green-700', urgent: false, ledEffect: false };
     
     const date = new Date(dueDate);
     const now = new Date();
     
     if (isPast(date)) {
-      return { label: 'Vencido', color: 'bg-red-100 text-red-700', urgent: true };
+      return { label: 'Vencido', color: 'bg-red-100 text-red-700', urgent: true, ledEffect: true };
+    }
+    
+    if (isWithinInterval(date, { start: now, end: addDays(now, 3) })) {
+      return { label: 'Crítico', color: 'bg-red-100 text-red-700', urgent: true, ledEffect: true };
     }
     
     if (isWithinInterval(date, { start: now, end: addDays(now, 7) })) {
-      return { label: 'Urgente', color: 'bg-orange-100 text-orange-700', urgent: true };
+      return { label: 'Urgente', color: 'bg-orange-100 text-orange-700', urgent: true, ledEffect: false };
     }
     
     if (isWithinInterval(date, { start: now, end: addDays(now, 30) })) {
-      return { label: 'Próximo', color: 'bg-yellow-100 text-yellow-700', urgent: false };
+      return { label: 'Próximo', color: 'bg-yellow-100 text-yellow-700', urgent: false, ledEffect: false };
     }
     
-    return { label: 'Programado', color: 'bg-blue-100 text-blue-700', urgent: false };
+    return { label: 'Programado', color: 'bg-blue-100 text-blue-700', urgent: false, ledEffect: false };
   };
 
   const allSorted = [...(deadlines || [])].sort((a, b) => {
@@ -135,14 +139,15 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
                 const typeConfig = DEADLINE_TYPE_CONFIG[deadline.deadline_type || 'internal'] || DEADLINE_TYPE_CONFIG.internal;
                 
                 return (
-                  <div 
-                    key={deadline.id} 
-                    className={cn(
-                      "flex items-start justify-between p-4 border rounded-lg",
-                      deadline.is_completed && "opacity-60",
-                      status.urgent && !deadline.is_completed && "border-destructive/50 bg-destructive/5"
-                    )}
-                  >
+                    <div 
+                      key={deadline.id} 
+                      className={cn(
+                        "flex items-start justify-between p-4 border rounded-lg",
+                        deadline.is_completed && "opacity-60",
+                        status.urgent && !deadline.is_completed && "border-destructive/50 bg-destructive/5"
+                      )}
+                      style={status.ledEffect && !deadline.is_completed ? { boxShadow: '0 0 8px rgba(239, 68, 68, 0.4)' } : undefined}
+                    >
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         "h-10 w-10 rounded-lg flex items-center justify-center",
