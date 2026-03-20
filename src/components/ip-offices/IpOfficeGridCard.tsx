@@ -54,8 +54,29 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
     return "bg-orange-50/20 hover:bg-orange-50/50 dark:bg-orange-950/15 dark:hover:bg-orange-950/30";
   };
 
+  // Extract country name and bold it in the office description
+  const officeName = office.official_name_local || office.name || "";
+  const countryName = office.country_name || "";
+  
+  const renderOfficeName = () => {
+    if (!countryName || !officeName) return <>{officeName}</>;
+    const countryUpper = countryName.toUpperCase();
+    const nameUpper = officeName.toUpperCase();
+    const idx = nameUpper.lastIndexOf(countryUpper);
+    if (idx >= 0) {
+      return (
+        <>
+          {officeName.slice(0, idx)}
+          <span className="font-semibold text-foreground">{officeName.slice(idx, idx + countryName.length)}</span>
+          {officeName.slice(idx + countryName.length)}
+        </>
+      );
+    }
+    return <>{officeName} — <span className="font-semibold text-foreground">{countryName}</span></>;
+  };
+
   return (
-    <Card className={cn("cursor-pointer hover:shadow-lg transition-all hover:border-primary/30 group h-full flex flex-col", getCardBg())} onClick={handleClick}>
+    <Card className={cn("cursor-pointer hover:shadow-lg transition-all hover:border-primary/30 group h-full flex flex-col shadow-sm border-border/60", getCardBg())} onClick={handleClick}>
       <CardContent className="p-5 flex flex-col flex-1">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
@@ -63,12 +84,12 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-lg text-foreground">{office.acronym || office.code}</h3>
-              <Badge variant="outline" className="text-xs">{OFFICE_TYPE_LABELS[officeType] || "Nacional"}</Badge>
+              <Badge variant="outline" className="text-xs shadow-sm border-border/80">{OFFICE_TYPE_LABELS[officeType] || "Nacional"}</Badge>
               {(office as any).has_fee_intelligence && (
-                <Badge variant="outline" className="text-[10px] h-4 gap-0.5 px-1"><Sparkles className="h-2.5 w-2.5 text-amber-500" />Tasas</Badge>
+                <Badge variant="outline" className="text-[10px] h-4 gap-0.5 px-1 shadow-sm"><Sparkles className="h-2.5 w-2.5 text-amber-500" />Tasas</Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-1">{office.official_name_local || office.name}</p>
+            <p className="text-sm text-muted-foreground line-clamp-1">{renderOfficeName()}</p>
           </div>
         </div>
 
@@ -137,7 +158,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
               <span className="text-xs text-muted-foreground">⚪ Sin datos</span>
             )}
             {c?.pj_is_active && (
-              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">🟢 En web</Badge>
+              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm">🟢 En web</Badge>
             )}
           </div>
           <div className="flex items-center justify-between">
@@ -156,7 +177,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
 
 function IpTypeBadge({ active, label, title }: { active?: boolean | null; label: string; title: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium",
+    <span className={cn("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium shadow-sm",
       active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-muted text-muted-foreground"
     )} title={title}>
       {active ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}{label}
