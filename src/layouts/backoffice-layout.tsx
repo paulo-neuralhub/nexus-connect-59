@@ -153,6 +153,7 @@ const sidebarSections: SidebarSection[] = [
     icon: Wrench,
     items: [
       { label: 'Calendar', path: '/backoffice/calendar', icon: Calendar },
+      { label: 'Planes y Precios', path: '/backoffice/billing', icon: CreditCard },
       { label: 'Configuración', path: '/backoffice/settings', icon: Settings },
     ],
   },

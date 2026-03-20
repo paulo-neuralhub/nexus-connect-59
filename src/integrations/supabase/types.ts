@@ -11933,6 +11933,53 @@ export type Database = {
         }
         Relationships: []
       }
+      leads_billing: {
+        Row: {
+          billing_cycle: string | null
+          comments: string | null
+          created_at: string | null
+          email: string
+          estimated_monthly_eur: number | null
+          id: string
+          organization_id: string | null
+          selected_addons: Json | null
+          selected_plan_code: string | null
+          user_id: string | null
+        }
+        Insert: {
+          billing_cycle?: string | null
+          comments?: string | null
+          created_at?: string | null
+          email: string
+          estimated_monthly_eur?: number | null
+          id?: string
+          organization_id?: string | null
+          selected_addons?: Json | null
+          selected_plan_code?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          billing_cycle?: string | null
+          comments?: string | null
+          created_at?: string | null
+          email?: string
+          estimated_monthly_eur?: number | null
+          id?: string
+          organization_id?: string | null
+          selected_addons?: Json | null
+          selected_plan_code?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_billing_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_acceptances: {
         Row: {
           acceptance_method: string | null
