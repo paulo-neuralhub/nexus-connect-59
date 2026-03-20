@@ -28,7 +28,7 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCost, setNewCost] = useState({
-    concept: '',
+    description: '',
     cost_type: 'official_fee',
     amount: '',
     currency: 'EUR',
