@@ -239,7 +239,7 @@ export interface CRMTask {
   priority: string | null;
   due_date: string | null;
   completed_at: string | null;
-  assigned_to: UUID | null;
+  assigned_to: unknown; // UUID string or joined object depending on query
   created_by: UUID | null;
   created_at: string;
   updated_at: string;
