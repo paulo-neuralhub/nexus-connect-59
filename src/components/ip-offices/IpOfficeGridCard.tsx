@@ -54,8 +54,29 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
     return "bg-orange-50/20 hover:bg-orange-50/50 dark:bg-orange-950/15 dark:hover:bg-orange-950/30";
   };
 
+  // Extract country name and bold it in the office description
+  const officeName = office.official_name_local || office.name || "";
+  const countryName = office.country_name || "";
+  
+  const renderOfficeName = () => {
+    if (!countryName || !officeName) return <>{officeName}</>;
+    const countryUpper = countryName.toUpperCase();
+    const nameUpper = officeName.toUpperCase();
+    const idx = nameUpper.lastIndexOf(countryUpper);
+    if (idx >= 0) {
+      return (
+        <>
+          {officeName.slice(0, idx)}
+          <span className="font-semibold text-foreground">{officeName.slice(idx, idx + countryName.length)}</span>
+          {officeName.slice(idx + countryName.length)}
+        </>
+      );
+    }
+    return <>{officeName} — <span className="font-semibold text-foreground">{countryName}</span></>;
+  };
+
   return (
-    <Card className={cn("cursor-pointer hover:shadow-lg transition-all hover:border-primary/30 group h-full flex flex-col", getCardBg())} onClick={handleClick}>
+    <Card className={cn("cursor-pointer hover:shadow-lg transition-all hover:border-primary/30 group h-full flex flex-col shadow-sm border-border/60", getCardBg())} onClick={handleClick}>
       <CardContent className="p-5 flex flex-col flex-1">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
