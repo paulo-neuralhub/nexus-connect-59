@@ -326,11 +326,12 @@ export default function NewMatterPage() {
                     jurisdiction={selectedJurisdictions[0]}
                     previewNumber={previewNumber || undefined}
                     isGeneratingNumber={generatingNumber}
+                    section="basic"
                   />
                 </motion.div>
               )}
 
-              {/* Step 3: Details (Nice classes etc) - reuses DetailsForm's specific sections */}
+              {/* Step 3: Details (Nice classes etc) */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
@@ -346,6 +347,7 @@ export default function NewMatterPage() {
                     jurisdiction={selectedJurisdictions[0]}
                     previewNumber={previewNumber || undefined}
                     isGeneratingNumber={generatingNumber}
+                    section="specific"
                   />
                 </motion.div>
               )}

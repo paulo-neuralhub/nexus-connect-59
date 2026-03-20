@@ -101,6 +101,8 @@ interface DetailsFormProps {
   previewNumber?: string;
   isGeneratingNumber?: boolean;
   trademarkType?: string;
+  /** 'basic' = step 2 (title, client, refs, flags), 'specific' = step 3 (Nice, jurisdiction fields) */
+  section?: 'basic' | 'specific';
 }
 
 export function DetailsForm({
@@ -111,6 +113,7 @@ export function DetailsForm({
   previewNumber,
   isGeneratingNumber,
   trademarkType,
+  section = 'basic',
 }: DetailsFormProps) {
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
@@ -143,11 +146,21 @@ export function DetailsForm({
       transition={{ duration: 0.2 }}
       className="space-y-6"
     >
+      {section === 'basic' && (
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold mb-2">Detalles del expediente</h2>
-        <p className="text-muted-foreground">Completa la información básica</p>
+        <h2 className="text-xl font-semibold mb-2">Información del expediente</h2>
+        <p className="text-muted-foreground">Datos básicos: título, cliente y referencias</p>
       </div>
+      )}
 
+      {section === 'specific' && (
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-semibold mb-2">Detalles específicos</h2>
+        <p className="text-muted-foreground">Clasificación y campos según tipo y jurisdicción</p>
+      </div>
+      )}
+
+      {section === 'basic' && (<>
       {/* Number Preview - HERO ELEMENT WOW */}
       {previewNumber && (
         <motion.div 
@@ -216,10 +229,34 @@ export function DetailsForm({
             El título debe tener al menos 3 caracteres
           </p>
         )}
-      </div>
+       </div>
 
-      {/* Type-specific fields */}
-      {isTrademarkType && (
+      {/* References */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Referencia interna</Label>
+          <Input
+            placeholder="Se genera automáticamente"
+            value={data.reference}
+            onChange={(e) => onChange({ reference: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Déjalo vacío para generar automáticamente
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label>Referencia del cliente</Label>
+          <Input
+            placeholder="Referencia que usa el cliente"
+            value={data.client_reference}
+            onChange={(e) => onChange({ client_reference: e.target.value })}
+          />
+        </div>
+      </div>
+      </>)}
+
+      {/* ═══ SPECIFIC SECTION: type & jurisdiction fields ═══ */}
+      {section === 'specific' && isTrademarkType && (
         <>
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
@@ -249,7 +286,7 @@ export function DetailsForm({
         </>
       )}
 
-      {isPatentType && (
+      {section === 'specific' && isPatentType && (
         <div className="space-y-2">
           <Label>Título de la invención</Label>
           <Input
@@ -260,6 +297,7 @@ export function DetailsForm({
         </div>
       )}
 
+      {section === 'basic' && (<>
       {/* References */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -400,10 +438,11 @@ export function DetailsForm({
           />
         </motion.div>
       </div>
+      </>)}
 
+      {section === 'specific' && (<>
       {/* ============================================ */}
-      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN - NIVEL DIOS */}
-      {/* Diseño integrado, no llamativo */}
+      {/* CAMPOS ESPECÍFICOS POR JURISDICCIÓN */}
       {/* ============================================ */}
 
       {/* ESPAÑA - OEPM */}
@@ -834,6 +873,7 @@ export function DetailsForm({
           className="mt-6"
         />
       )}
+      </>)}
 
       {/* Create Client Dialog */}
       <CreateClientDialog

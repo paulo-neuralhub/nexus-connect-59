@@ -110,6 +110,7 @@ import AutomationList from "./pages/app/marketing/automations";
 import AutomationEditor from "./pages/app/marketing/automations/AutomationEditor";
 import NewAutomationPage from "./pages/app/marketing/automations/new";
 import DocumentGeneratorPage from "./pages/app/documents/DocumentGeneratorPage";
+import DocumentsListPage from "./pages/app/documentos/index";
 import FAQPage from "./pages/app/help/faq";
 import GuidesPage from "./pages/app/help/guides";
 import GlossaryPage from "./pages/app/help/glossary";
@@ -483,7 +484,8 @@ const App = () => (
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
                 </Route>
-                {/* Document Generator */}
+                {/* Documents */}
+                <Route path="documentos" element={<DocumentsListPage />} />
                 <Route path="documents/new" element={<DocumentGeneratorPage />} />
                 <Route path="documents/generator" element={<DocumentGeneratorPage />} />
                 <Route path="finance" element={<FinanceLayout />}>
