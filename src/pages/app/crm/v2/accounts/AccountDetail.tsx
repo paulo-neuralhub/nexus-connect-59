@@ -4,7 +4,7 @@
  */
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useCRMAccountDetail } from "@/hooks/crm/v2/accounts";
 import { useCRMDeals } from "@/hooks/crm/v2/deals";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,11 +33,13 @@ import { AccountPortfolioTab } from "./tabs/AccountPortfolioTab";
 import { AccountDealsTab } from "./tabs/AccountDealsTab";
 import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
+import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 
 export default function CRMV2AccountDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [showActivityModal, setShowActivityModal] = useState(false);
 
   const { data, isLoading, error } = useCRMAccountDetail(id);
   const { data: deals = [] } = useCRMDeals(id ? { account_id: id } : undefined);
@@ -190,7 +192,10 @@ export default function CRMV2AccountDetail() {
             </TabsContent>
 
             <TabsContent value="activities">
-              <AccountActivitiesTab activities={activities as any} />
+              <AccountActivitiesTab
+                accountId={id}
+                onAddActivity={() => setShowActivityModal(true)}
+              />
             </TabsContent>
 
             <TabsContent value="documents">
@@ -199,6 +204,12 @@ export default function CRMV2AccountDetail() {
           </Tabs>
         </div>
       </div>
+
+      <InteractionFormModal
+        open={showActivityModal}
+        onClose={() => setShowActivityModal(false)}
+        defaultAccountId={id}
+      />
     </div>
   );
 }

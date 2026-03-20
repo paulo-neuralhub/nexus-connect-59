@@ -1,14 +1,22 @@
 /**
  * CRM Account Detail — Tab: Actividades / Timeline
+ * Paginated (20 per page) with "load more"
  */
 
+import { useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fromTable } from "@/lib/supabase";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Mail, Phone, MessageCircle, Calendar, FileText, Plus, StickyNote } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Clock, Mail, Phone, MessageCircle, Calendar, FileText, Plus, StickyNote, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 20;
 
 interface Activity {
   id: string;
@@ -21,7 +29,7 @@ interface Activity {
 }
 
 interface Props {
-  activities: Activity[];
+  accountId: string;
   onAddActivity?: () => void;
 }
 
@@ -34,7 +42,45 @@ const TYPE_ICON: Record<string, { icon: React.ElementType; color: string }> = {
   document: { icon: FileText, color: "text-cyan-500 bg-cyan-500/10" },
 };
 
-export function AccountActivitiesTab({ activities, onAddActivity }: Props) {
+function useAccountActivities(accountId: string, page: number) {
+  const { organizationId } = useOrganization();
+
+  return useQuery({
+    queryKey: ["crm-account-activities", organizationId, accountId, page],
+    queryFn: async () => {
+      if (!organizationId) return { data: [] as Activity[], hasMore: false };
+      const { data, error } = await fromTable("crm_activities")
+        .select(
+          `id, activity_type, subject, description, activity_date,
+           contact:crm_contacts!contact_id(id, full_name),
+           creator:profiles!created_by(id, first_name, last_name)`
+        )
+        .eq("account_id", accountId)
+        .eq("organization_id", organizationId)
+        .order("activity_date", { ascending: false })
+        .range(0, (page + 1) * PAGE_SIZE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as Activity[];
+      return { data: rows, hasMore: rows.length === (page + 1) * PAGE_SIZE };
+    },
+    enabled: !!organizationId && !!accountId,
+  });
+}
+
+export function AccountActivitiesTab({ accountId, onAddActivity }: Props) {
+  const [page, setPage] = useState(0);
+  const { data: result, isLoading } = useAccountActivities(accountId, page);
+  const activities = result?.data ?? [];
+  const hasMore = result?.hasMore ?? false;
+
+  if (isLoading && activities.length === 0) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full" />)}
+      </div>
+    );
+  }
+
   if (!activities.length) {
     return (
       <div className="text-center py-12">
@@ -57,7 +103,6 @@ export function AccountActivitiesTab({ activities, onAddActivity }: Props) {
       </div>
 
       <div className="relative pl-6 space-y-1">
-        {/* Timeline line */}
         <div className="absolute left-[11px] top-3 bottom-3 w-px bg-border" />
 
         {activities.map(a => {
@@ -89,6 +134,20 @@ export function AccountActivitiesTab({ activities, onAddActivity }: Props) {
           );
         })}
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => p + 1)}
+            disabled={isLoading}
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+            Cargar más
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

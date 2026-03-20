@@ -5096,6 +5096,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           documents_count: number | null
+          folder_type: string | null
           icon: string | null
           id: string
           is_system: boolean | null
@@ -5111,6 +5112,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           documents_count?: number | null
+          folder_type?: string | null
           icon?: string | null
           id?: string
           is_system?: boolean | null
@@ -5126,6 +5128,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           documents_count?: number | null
+          folder_type?: string | null
           icon?: string | null
           id?: string
           is_system?: boolean | null
@@ -6643,6 +6646,13 @@ export type Database = {
           weighted_amount?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_deals_account_id_crm_accounts_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_deals_contact_id_fkey"
             columns: ["contact_id"]

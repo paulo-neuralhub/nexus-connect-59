@@ -25,9 +25,10 @@ export interface ContactTabs360Props {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
   counts?: Partial<Record<TabId, number>>;
+  children?: React.ReactNode;
 }
 
-export function ContactTabs360({ activeTab, onTabChange, counts }: ContactTabs360Props) {
+export function ContactTabs360({ activeTab, onTabChange, counts, children }: ContactTabs360Props) {
   return (
     <ProfessionalCard padding="none" className="overflow-hidden">
       {/* Headers */}
@@ -55,11 +56,13 @@ export function ContactTabs360({ activeTab, onTabChange, counts }: ContactTabs36
         ))}
       </div>
 
-      {/* Content */}
+      {/* Content — rendered by parent */}
       <div className="p-5">
-        <div className="rounded-xl border border-border bg-background-card p-5 text-sm text-muted-foreground">
-          Contenido “{tabs.find((t) => t.id === activeTab)?.label}” (placeholder). 
-        </div>
+        {children ?? (
+          <div className="rounded-xl border border-border bg-background-card p-5 text-sm text-muted-foreground">
+            Contenido "{tabs.find((t) => t.id === activeTab)?.label}" (placeholder).
+          </div>
+        )}
       </div>
     </ProfessionalCard>
   );
