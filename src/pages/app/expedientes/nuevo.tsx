@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Check, Loader2, Tag, FileText, Eye, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Tag, FileText, Eye, Sparkles, Calendar } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
@@ -30,13 +30,16 @@ import {
   type WizardStep,
   type MatterDetailsData,
 } from '@/components/matters/wizard';
+import { WizardDatesStep, type WizardDatesData } from '@/components/matters/wizard/WizardDatesStep';
 import { toast } from 'sonner';
 
-// Steps configuration - Now 3 steps instead of 4
+// Steps configuration - 5 steps
 const WIZARD_STEPS: WizardStep[] = [
-  { number: 1, label: 'Tipo y Jurisdicción', icon: Tag },
-  { number: 2, label: 'Detalles', icon: FileText },
-  { number: 3, label: 'Revisar', icon: Eye },
+  { number: 1, label: 'Tipo', icon: Tag },
+  { number: 2, label: 'Info', icon: FileText },
+  { number: 3, label: 'Detalles', icon: Sparkles },
+  { number: 4, label: 'Fechas', icon: Calendar },
+  { number: 5, label: 'Revisar', icon: Eye },
 ];
 
 export default function NewMatterPage() {
@@ -67,6 +70,19 @@ export default function NewMatterPage() {
     is_confidential: false,
     nice_classes: [],
     jurisdiction_fields: {},
+  });
+  const [datesData, setDatesData] = useState<WizardDatesData>({
+    application_number: '',
+    filing_date: '',
+    priority_claimed: false,
+    priority_date: '',
+    priority_number: '',
+    priority_country: '',
+    status: 'draft',
+    registration_number: '',
+    registration_date: '',
+    expiry_date: '',
+    auto_deadlines: true,
   });
   
   // Preview number state
@@ -124,19 +140,20 @@ export default function NewMatterPage() {
   // Check if type is trademark
   const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
 
-  // Step validation - Now 3 steps
+  // Step validation - 5 steps
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        // If trademark type, also require trademarkType selection
         const baseValid = !!selectedType && selectedJurisdictions.length > 0;
-        if (isTrademarkType) {
-          return baseValid && !!trademarkType;
-        }
+        if (isTrademarkType) return baseValid && !!trademarkType;
         return baseValid;
       case 2:
         return detailsData.title.length >= 3;
       case 3:
+        return true; // Nice classes / specific details are optional
+      case 4:
+        return true; // Dates are optional
+      case 5:
         return true;
       default:
         return false;
@@ -145,7 +162,7 @@ export default function NewMatterPage() {
 
   // Navigation
   const nextStep = () => {
-    if (isStepValid(currentStep) && currentStep < 3) {
+    if (isStepValid(currentStep) && currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -310,10 +327,47 @@ export default function NewMatterPage() {
                 </motion.div>
               )}
 
-              {/* Step 3: Review */}
+              {/* Step 3: Details (Nice classes etc) - reuses DetailsForm's specific sections */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <DetailsForm
+                    data={detailsData}
+                    onChange={handleDetailsChange}
+                    matterType={selectedType}
+                    jurisdiction={selectedJurisdictions[0]}
+                    previewNumber={previewNumber || undefined}
+                    isGeneratingNumber={generatingNumber}
+                  />
+                </motion.div>
+              )}
+
+              {/* Step 4: Dates & Status */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step-4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <WizardDatesStep
+                    data={datesData}
+                    onChange={(updates) => setDatesData(prev => ({ ...prev, ...updates }))}
+                    matterType={selectedType}
+                  />
+                </motion.div>
+              )}
+
+              {/* Step 5: Review */}
+              {currentStep === 5 && (
+                <motion.div
+                  key="step-5"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -353,7 +407,7 @@ export default function NewMatterPage() {
             Anterior
           </Button>
 
-          {currentStep < 3 ? (
+          {currentStep < 5 ? (
             <Button
               onClick={nextStep}
               disabled={!isStepValid(currentStep)}
