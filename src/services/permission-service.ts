@@ -90,35 +90,59 @@ export async function getUserRole(
 ): Promise<UserRole | null> {
   const key = getCacheKey(userId, organizationId);
   
-  // Check cache
   const cached = roleCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.role;
   }
   
   try {
-    const { data, error } = await supabase
-      .rpc('get_user_role', {
-        _user_id: userId,
-        _organization_id: organizationId,
-      });
-    
-    if (error) {
+    const { data, error } = await supabase.rpc('get_user_role', {
+      _user_id: userId,
+      _organization_id: organizationId,
+    });
+
+    if (!error) {
+      const roleData = data?.[0];
+      const role: UserRole = {
+        roleId: roleData?.role_id || null,
+        roleCode: roleData?.role_code || null,
+        roleName: roleData?.role_name || null,
+        legacyRole: roleData?.legacy_role || null,
+      };
+
+      roleCache.set(key, { role, timestamp: Date.now() });
+      return role;
+    }
+
+    const missingRpcCodes = new Set(['PGRST202', '42883']);
+    if (!missingRpcCodes.has(error.code ?? '')) {
       console.error('Error fetching user role:', error);
       return null;
     }
-    
-    const roleData = data?.[0];
+
+    const { data: legacyRoles, error: legacyError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId);
+
+    if (legacyError) {
+      console.error('Error fetching legacy user role:', legacyError);
+      return null;
+    }
+
+    const roleValues = (legacyRoles ?? []).map((item) => item.role).filter(Boolean);
+    const roleCode = roleValues.includes('super_admin')
+      ? 'super_admin'
+      : roleValues[0] ?? null;
+
     const role: UserRole = {
-      roleId: roleData?.role_id || null,
-      roleCode: roleData?.role_code || null,
-      roleName: roleData?.role_name || null,
-      legacyRole: roleData?.legacy_role || null,
+      roleId: null,
+      roleCode,
+      roleName: roleCode,
+      legacyRole: roleCode,
     };
-    
-    // Cache the result
+
     roleCache.set(key, { role, timestamp: Date.now() });
-    
     return role;
   } catch (err) {
     console.error('Error in getUserRole:', err);
@@ -135,34 +159,45 @@ export async function getUserPermissions(
 ): Promise<Permission[]> {
   const key = getCacheKey(userId, organizationId);
   
-  // Check cache
   const cached = permissionCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.permissions;
   }
   
   try {
-    const { data, error } = await supabase
-      .rpc('get_user_permissions', {
-        _user_id: userId,
-        _organization_id: organizationId,
-      });
+    const { data, error } = await supabase.rpc('get_user_permissions', {
+      _user_id: userId,
+      _organization_id: organizationId,
+    });
     
-    if (error) {
+    if (!error) {
+      const permissions: Permission[] = (data || []).map((p: any) => ({
+        code: p.permission_code,
+        name: p.permission_name,
+        module: p.module,
+        scope: p.scope as PermissionScope,
+      }));
+
+      permissionCache.set(key, { permissions, timestamp: Date.now() });
+      return permissions;
+    }
+
+    const missingRpcCodes = new Set(['PGRST202', '42883']);
+    if (!missingRpcCodes.has(error.code ?? '')) {
       console.error('Error fetching user permissions:', error);
       return [];
     }
-    
-    const permissions: Permission[] = (data || []).map((p: any) => ({
-      code: p.permission_code,
-      name: p.permission_name,
-      module: p.module,
-      scope: p.scope as PermissionScope,
-    }));
-    
-    // Cache the result
+
+    const role = await getUserRole(userId, organizationId);
+    const isLegacyAdmin = ['super_admin', 'owner', 'admin'].includes(
+      role?.roleCode || role?.legacyRole || ''
+    );
+
+    const permissions = isLegacyAdmin
+      ? [{ code: '*', name: 'Full Access', module: '*', scope: 'all' as PermissionScope }]
+      : [];
+
     permissionCache.set(key, { permissions, timestamp: Date.now() });
-    
     return permissions;
   } catch (err) {
     console.error('Error in getUserPermissions:', err);
@@ -179,19 +214,24 @@ export async function checkPermission(
   permissionCode: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .rpc('check_user_permission', {
-        _user_id: userId,
-        _organization_id: organizationId,
-        _permission_code: permissionCode,
-      });
+    const { data, error } = await supabase.rpc('check_user_permission', {
+      _user_id: userId,
+      _organization_id: organizationId,
+      _permission_code: permissionCode,
+    });
     
-    if (error) {
+    if (!error) {
+      return data === true;
+    }
+
+    const missingRpcCodes = new Set(['PGRST202', '42883']);
+    if (!missingRpcCodes.has(error.code ?? '')) {
       console.error('Error checking permission:', error);
       return false;
     }
-    
-    return data === true;
+
+    const role = await getUserRole(userId, organizationId);
+    return ['super_admin', 'owner', 'admin'].includes(role?.roleCode || role?.legacyRole || '');
   } catch (err) {
     console.error('Error in checkPermission:', err);
     return false;
