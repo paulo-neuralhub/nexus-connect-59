@@ -140,19 +140,20 @@ export default function NewMatterPage() {
   // Check if type is trademark
   const isTrademarkType = selectedType?.startsWith('TM') || selectedType === 'NC';
 
-  // Step validation - Now 3 steps
+  // Step validation - 5 steps
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        // If trademark type, also require trademarkType selection
         const baseValid = !!selectedType && selectedJurisdictions.length > 0;
-        if (isTrademarkType) {
-          return baseValid && !!trademarkType;
-        }
+        if (isTrademarkType) return baseValid && !!trademarkType;
         return baseValid;
       case 2:
         return detailsData.title.length >= 3;
       case 3:
+        return true; // Nice classes / specific details are optional
+      case 4:
+        return true; // Dates are optional
+      case 5:
         return true;
       default:
         return false;
@@ -161,7 +162,7 @@ export default function NewMatterPage() {
 
   // Navigation
   const nextStep = () => {
-    if (isStepValid(currentStep) && currentStep < 3) {
+    if (isStepValid(currentStep) && currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
