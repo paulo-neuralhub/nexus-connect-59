@@ -283,6 +283,7 @@ export default function IpOfficesDirectoryPage() {
           </Tabs>
         </div>
       </div>
+      <IncrementalUpdateDialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen} />
     </div>
   );
 }
