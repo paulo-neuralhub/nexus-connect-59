@@ -146,10 +146,19 @@ export function DetailsForm({
       transition={{ duration: 0.2 }}
       className="space-y-6"
     >
+      {section === 'basic' && (
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold mb-2">Detalles del expediente</h2>
-        <p className="text-muted-foreground">Completa la información básica</p>
+        <h2 className="text-xl font-semibold mb-2">Información del expediente</h2>
+        <p className="text-muted-foreground">Datos básicos: título, cliente y referencias</p>
       </div>
+      )}
+
+      {section === 'specific' && (
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-semibold mb-2">Detalles específicos</h2>
+        <p className="text-muted-foreground">Clasificación y campos según tipo y jurisdicción</p>
+      </div>
+      )}
 
       {/* Number Preview - HERO ELEMENT WOW */}
       {previewNumber && (
