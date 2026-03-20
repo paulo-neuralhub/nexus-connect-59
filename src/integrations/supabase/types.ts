@@ -1779,6 +1779,33 @@ export type Database = {
           },
         ]
       }
+      ip_office_update_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          created_by: string | null
+          details: Json | null
+          id: string
+          source: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          created_by?: string | null
+          details?: Json | null
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          created_by?: string | null
+          details?: Json | null
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       ipo_offices: {
         Row: {
           accepted_languages: Json | null
