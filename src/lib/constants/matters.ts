@@ -9,15 +9,20 @@ export const MATTER_TYPES = {
 } as const;
 
 export const MATTER_STATUSES = {
-  draft: { label: 'Borrador', color: '#94A3B8' },
-  pending: { label: 'Pendiente', color: '#F59E0B' },
-  filed: { label: 'Presentado', color: '#3B82F6' },
-  published: { label: 'Publicado', color: '#8B5CF6' },
+  draft: { label: 'Borrador', color: '#64748B' },
+  pending: { label: 'Pendiente', color: '#64748B' },
+  filed: { label: 'En tramitación', color: '#3B82F6' },
+  filing: { label: 'En tramitación', color: '#3B82F6' },
+  examining: { label: 'Examinación', color: '#F59E0B' },
+  published: { label: 'Publicado', color: '#6366F1' },
   granted: { label: 'Concedido', color: '#22C55E' },
+  registered: { label: 'Registrado', color: '#22C55E' },
   active: { label: 'Activo', color: '#10B981' },
-  opposed: { label: 'En oposición', color: '#EF4444' },
-  expired: { label: 'Expirado', color: '#6B7280' },
+  renewal: { label: 'Renovación', color: '#14B8A6' },
+  opposed: { label: 'En oposición', color: '#F97316' },
+  expired: { label: 'Expirado', color: '#94A3B8' },
   abandoned: { label: 'Abandonado', color: '#94A3B8' },
+  archived: { label: 'Archivado', color: '#94A3B8' },
   cancelled: { label: 'Cancelado', color: '#EF4444' },
 } as const;
 
