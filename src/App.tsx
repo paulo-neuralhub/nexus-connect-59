@@ -735,7 +735,7 @@ const App = () => (
             </TooltipProvider>
             <EnrichProgressWidget />
           </BrowserRouter>
-        </EnrichProgressProvider>
+          </EnrichProgressProvider>
         </BrandingProvider>
       </ModulesProvider>
       </OrganizationProvider>
