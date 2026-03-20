@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Mail, Send, Loader2 } from 'lucide-react';
+import { Mail, Send, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -57,6 +57,7 @@ export function SendEmailModal({ open, onOpenChange, contact, dealId }: SendEmai
   const [toEmail, setToEmail] = useState(contact?.email || '');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   useEffect(() => {
     setToEmail(contact?.email || '');
@@ -201,7 +202,47 @@ export function SendEmailModal({ open, onOpenChange, contact, dealId }: SendEmai
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Asunto del email" />
           </div>
           <div className="space-y-2">
-            <Label>Mensaje</Label>
+            <div className="flex items-center justify-between">
+              <Label>Mensaje</Label>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                disabled={isGeneratingAI}
+                onClick={async () => {
+                  if (!currentOrganization?.id) return;
+                  setIsGeneratingAI(true);
+                  try {
+                    const { data, error } = await (await import('@/integrations/supabase/client')).supabase.functions.invoke('crm-copilot', {
+                      body: {
+                        context_type: 'account',
+                        context_id: currentOrganization.id,
+                        organization_id: currentOrganization.id,
+                        force_regenerate: true,
+                      },
+                    });
+                    if (!error && data?.suggestions?.[0]?.body) {
+                      const draft = data.suggestions.find((s: any) => s.suggestion_type === 'draft_text');
+                      if (draft) {
+                        setBody((draft.action_data as any)?.draft_text || draft.body);
+                        setMode('custom');
+                      } else {
+                        setBody(data.suggestions[0].body);
+                        setMode('custom');
+                      }
+                      toast.success('Borrador generado por IA');
+                    }
+                  } catch {
+                    toast.error('Error generando borrador');
+                  } finally {
+                    setIsGeneratingAI(false);
+                  }
+                }}
+              >
+                {isGeneratingAI ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                Generar con IA
+              </Button>
+            </div>
             <Textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}

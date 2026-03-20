@@ -12,3 +12,4 @@ export * from "./ai";
 export * from "./client360";
 export * from "./interactions";
 export * from "./automations";
+export * from "./copilot";
