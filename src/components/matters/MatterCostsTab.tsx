@@ -198,7 +198,7 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
             <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancelar</Button>
             <Button
               onClick={() => addCost.mutate()}
-              disabled={!newCost.concept || !newCost.amount || addCost.isPending}
+              disabled={!newCost.description || !newCost.amount || addCost.isPending}
             >
               Crear coste
             </Button>
