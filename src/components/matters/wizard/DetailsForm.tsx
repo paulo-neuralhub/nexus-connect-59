@@ -160,6 +160,7 @@ export function DetailsForm({
       </div>
       )}
 
+      {section === 'basic' && (<>
       {/* Number Preview - HERO ELEMENT WOW */}
       {previewNumber && (
         <motion.div 
