@@ -14,8 +14,7 @@ import { useOrganization } from '@/contexts/organization-context';
 import { 
   useCreateMatterV2, 
   useGenerateMatterNumber,
-  usePreviewMatterNumber,
-  useMatterTypes 
+  usePreviewMatterNumber
 } from '@/hooks/use-matters-v2';
 import { useGenerateInternalReference } from '@/hooks/use-internal-reference-config';
 import { Button } from '@/components/ui/button';
