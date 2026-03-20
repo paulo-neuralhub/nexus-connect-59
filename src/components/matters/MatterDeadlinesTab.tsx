@@ -43,24 +43,28 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
   };
 
   const getDeadlineStatus = (dueDate: string, isCompleted: boolean) => {
-    if (isCompleted) return { label: 'Completado', color: 'bg-green-100 text-green-700', urgent: false };
+    if (isCompleted) return { label: 'Completado', color: 'bg-green-100 text-green-700', urgent: false, ledEffect: false };
     
     const date = new Date(dueDate);
     const now = new Date();
     
     if (isPast(date)) {
-      return { label: 'Vencido', color: 'bg-red-100 text-red-700', urgent: true };
+      return { label: 'Vencido', color: 'bg-red-100 text-red-700', urgent: true, ledEffect: true };
+    }
+    
+    if (isWithinInterval(date, { start: now, end: addDays(now, 3) })) {
+      return { label: 'Crítico', color: 'bg-red-100 text-red-700', urgent: true, ledEffect: true };
     }
     
     if (isWithinInterval(date, { start: now, end: addDays(now, 7) })) {
-      return { label: 'Urgente', color: 'bg-orange-100 text-orange-700', urgent: true };
+      return { label: 'Urgente', color: 'bg-orange-100 text-orange-700', urgent: true, ledEffect: false };
     }
     
     if (isWithinInterval(date, { start: now, end: addDays(now, 30) })) {
-      return { label: 'Próximo', color: 'bg-yellow-100 text-yellow-700', urgent: false };
+      return { label: 'Próximo', color: 'bg-yellow-100 text-yellow-700', urgent: false, ledEffect: false };
     }
     
-    return { label: 'Programado', color: 'bg-blue-100 text-blue-700', urgent: false };
+    return { label: 'Programado', color: 'bg-blue-100 text-blue-700', urgent: false, ledEffect: false };
   };
 
   const allSorted = [...(deadlines || [])].sort((a, b) => {
