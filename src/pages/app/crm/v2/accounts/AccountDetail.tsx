@@ -4,7 +4,7 @@
  */
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useCRMAccountDetail } from "@/hooks/crm/v2/accounts";
 import { useCRMDeals } from "@/hooks/crm/v2/deals";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
