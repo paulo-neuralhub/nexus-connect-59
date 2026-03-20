@@ -20,7 +20,6 @@ import {
   AIBrainStatsCards,
   ProvidersTab,
   ModelsTab,
-  TaskRouterTab,
   CircuitBreakerTab,
   RAGTab,
   AnalyticsTab,
@@ -33,6 +32,7 @@ import {
   TaskDialog,
   RAGDialog
 } from '@/components/backoffice/ai-brain';
+import { TaskRoutingTab } from '@/components/backoffice/ai-brain/TaskRoutingTab';
 
 // Types
 import { 
@@ -360,15 +360,7 @@ export default function AIBrainPage() {
         </TabsContent>
 
         <TabsContent value="router" className="space-y-4">
-          <TaskRouterTab
-            tasks={tasks}
-            models={models}
-            isLoading={tasksLoading || modelsLoading}
-            onAdd={() => openTaskDialog()}
-            onEdit={openTaskDialog}
-            onDelete={handleDeleteTask}
-            onToggleActive={handleToggleTaskActive}
-          />
+          <TaskRoutingTab />
         </TabsContent>
 
         <TabsContent value="circuit" className="space-y-4">

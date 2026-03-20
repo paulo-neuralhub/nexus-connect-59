@@ -2098,6 +2098,7 @@ export type Database = {
           deprecated_at: string | null
           description: string | null
           discovered_at: string | null
+          family: string | null
           id: string
           input_cost_per_1m: number | null
           is_active: boolean | null
@@ -2127,6 +2128,7 @@ export type Database = {
           deprecated_at?: string | null
           description?: string | null
           discovered_at?: string | null
+          family?: string | null
           id?: string
           input_cost_per_1m?: number | null
           is_active?: boolean | null
@@ -2156,6 +2158,7 @@ export type Database = {
           deprecated_at?: string | null
           description?: string | null
           discovered_at?: string | null
+          family?: string | null
           id?: string
           input_cost_per_1m?: number | null
           is_active?: boolean | null
@@ -2635,11 +2638,13 @@ export type Database = {
         Row: {
           api_key_encrypted: string | null
           base_url: string | null
+          category: string | null
           circuit_open: boolean | null
           code: string
           config: Json | null
           consecutive_failures: number | null
           created_at: string
+          description: string | null
           health_latency_ms: number | null
           health_status: string | null
           id: string
@@ -2653,15 +2658,18 @@ export type Database = {
           supports_tools: boolean | null
           supports_vision: boolean | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           api_key_encrypted?: string | null
           base_url?: string | null
+          category?: string | null
           circuit_open?: boolean | null
           code: string
           config?: Json | null
           consecutive_failures?: number | null
           created_at?: string
+          description?: string | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
@@ -2675,15 +2683,18 @@ export type Database = {
           supports_tools?: boolean | null
           supports_vision?: boolean | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           api_key_encrypted?: string | null
           base_url?: string | null
+          category?: string | null
           circuit_open?: boolean | null
           code?: string
           config?: Json | null
           consecutive_failures?: number | null
           created_at?: string
+          description?: string | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
@@ -2697,6 +2708,7 @@ export type Database = {
           supports_tools?: boolean | null
           supports_vision?: boolean | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -2981,11 +2993,16 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean | null
+          max_tokens: number | null
+          module: string | null
           name: string | null
+          primary_model: string | null
+          primary_provider: string | null
           priority: number | null
           task_code: string | null
           task_id: string | null
           task_name: string | null
+          temperature: number | null
           updated_at: string | null
         }
         Insert: {
@@ -2995,11 +3012,16 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          max_tokens?: number | null
+          module?: string | null
           name?: string | null
+          primary_model?: string | null
+          primary_provider?: string | null
           priority?: number | null
           task_code?: string | null
           task_id?: string | null
           task_name?: string | null
+          temperature?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -3009,11 +3031,16 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          max_tokens?: number | null
+          module?: string | null
           name?: string | null
+          primary_model?: string | null
+          primary_provider?: string | null
           priority?: number | null
           task_code?: string | null
           task_id?: string | null
           task_name?: string | null
+          temperature?: number | null
           updated_at?: string | null
         }
         Relationships: []
