@@ -229,9 +229,33 @@ export function DetailsForm({
             El título debe tener al menos 3 caracteres
           </p>
         )}
-      </div>
+       </div>
 
-      {/* Type-specific fields — only in 'specific' section */}
+      {/* References */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Referencia interna</Label>
+          <Input
+            placeholder="Se genera automáticamente"
+            value={data.reference}
+            onChange={(e) => onChange({ reference: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Déjalo vacío para generar automáticamente
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label>Referencia del cliente</Label>
+          <Input
+            placeholder="Referencia que usa el cliente"
+            value={data.client_reference}
+            onChange={(e) => onChange({ client_reference: e.target.value })}
+          />
+        </div>
+      </div>
+      </>)}
+
+      {/* ═══ SPECIFIC SECTION: type & jurisdiction fields ═══ */}
       {section === 'specific' && isTrademarkType && (
         <>
           <div className="space-y-2">
@@ -262,7 +286,7 @@ export function DetailsForm({
         </>
       )}
 
-      {isPatentType && (
+      {section === 'specific' && isPatentType && (
         <div className="space-y-2">
           <Label>Título de la invención</Label>
           <Input
