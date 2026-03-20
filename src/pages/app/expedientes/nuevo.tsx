@@ -327,10 +327,47 @@ export default function NewMatterPage() {
                 </motion.div>
               )}
 
-              {/* Step 3: Review */}
+              {/* Step 3: Details (Nice classes etc) - reuses DetailsForm's specific sections */}
               {currentStep === 3 && (
                 <motion.div
                   key="step-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <DetailsForm
+                    data={detailsData}
+                    onChange={handleDetailsChange}
+                    matterType={selectedType}
+                    jurisdiction={selectedJurisdictions[0]}
+                    previewNumber={previewNumber || undefined}
+                    isGeneratingNumber={generatingNumber}
+                  />
+                </motion.div>
+              )}
+
+              {/* Step 4: Dates & Status */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step-4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <WizardDatesStep
+                    data={datesData}
+                    onChange={(updates) => setDatesData(prev => ({ ...prev, ...updates }))}
+                    matterType={selectedType}
+                  />
+                </motion.div>
+              )}
+
+              {/* Step 5: Review */}
+              {currentStep === 5 && (
+                <motion.div
+                  key="step-5"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
