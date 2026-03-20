@@ -275,9 +275,12 @@ export default function ExpedientesPage() {
           <div className="flex items-center gap-2 pb-2">
             {[
               { id: 'all', label: 'Todos', count: typeCounts.all },
-              { id: 'trademark', label: 'Marcas', count: typeCounts.trademark },
-              { id: 'patent', label: 'Patentes', count: typeCounts.patent },
-              { id: 'design', label: 'Diseños', count: typeCounts.design },
+              { id: 'trademark', label: '🏷️ Marcas', count: typeCounts.trademark },
+              { id: 'patent', label: '⚗️ Patentes', count: typeCounts.patent },
+              { id: 'design', label: '🎨 Diseños', count: typeCounts.design },
+              { id: 'domain', label: '🌐 Dominios', count: typeCounts.domain },
+              { id: 'copyright', label: '©️ Copyright', count: typeCounts.copyright },
+              { id: 'trade_secret', label: '🔒 Secretos', count: typeCounts.trade_secret },
             ].map((filter) => (
               <button
                 key={filter.id}
