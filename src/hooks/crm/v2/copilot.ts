@@ -107,7 +107,7 @@ export function useIPCoPilot(contextType: string, contextId: string | undefined)
     isGenerating: generateMutation.isPending,
     error: suggestionsQuery.error || generateMutation.error,
     lastUpdated: suggestionsQuery.dataUpdatedAt,
-    generate: (force?: boolean) => generateMutation.mutate(force ?? false),
+    generate: (force?: boolean) => generateMutation.mutate(force === true),
     dismiss: (id: string) => dismissMutation.mutate(id),
     markActioned: (id: string) => actionMutation.mutate(id),
   };
