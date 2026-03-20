@@ -22,7 +22,77 @@ Deno.serve(async (req) => {
   );
 
   try {
-    const { action, queue_id, batch_size, priority_max } = await req.json();
+    const body = await req.json();
+    const { action, queue_id, batch_size, priority_max, codes, dry_run } = body;
+
+    // Handle batch codes request from IncrementalUpdateDialog
+    if (codes && Array.isArray(codes)) {
+      const results = [];
+      for (const code of codes) {
+        try {
+          // Find or create queue item for this office code
+          const { data: office } = await supabase
+            .from('ipo_offices')
+            .select('id, name')
+            .eq('code', code)
+            .single();
+
+          if (!office) {
+            results.push({ code, status: 'not_found', error: `Office ${code} not found` });
+            continue;
+          }
+
+          // Check if queue item exists
+          let { data: queueItem } = await supabase
+            .from('ip_office_research_queue')
+            .select('id, status')
+            .eq('office_id', office.id)
+            .maybeSingle();
+
+          if (!queueItem) {
+            // Create queue item
+            const { data: newItem, error: insertErr } = await supabase
+              .from('ip_office_research_queue')
+              .insert({
+                office_id: office.id,
+                office_name: office.name,
+                country_code: code,
+                status: 'pending',
+                priority: 3,
+              })
+              .select('id')
+              .single();
+
+            if (insertErr) {
+              results.push({ code, status: 'error', error: insertErr.message });
+              continue;
+            }
+            queueItem = newItem;
+          } else if (queueItem.status === 'completed' || queueItem.status === 'partial') {
+            // Reset for re-research
+            await supabase.from('ip_office_research_queue').update({
+              status: 'pending',
+              phase_1_general: {}, phase_2_trademarks: {}, phase_3_fees: {},
+              phase_4_treaties: {}, phase_5_digital: {}, phase_6_requirements: {},
+              parsed_data: {}, total_tokens_used: 0, estimated_cost_usd: 0,
+              auto_confidence_score: 0, research_started_at: null, research_completed_at: null,
+            }).eq('id', queueItem!.id);
+          }
+
+          if (dry_run) {
+            results.push({ code, office: office.name, status: 'queued', queue_id: queueItem!.id });
+            continue;
+          }
+
+          // Research one phase
+          const result = await researchNextPhase(supabase, queueItem!.id);
+          results.push({ code, office: office.name, ...result });
+        } catch (err) {
+          results.push({ code, status: 'error', error: (err as Error).message });
+        }
+      }
+      return jsonResponse({ processed: results.length, results });
+    }
 
     if (action === 'research_phase' || action === 'research_single') {
       const result = await researchNextPhase(supabase, queue_id);
