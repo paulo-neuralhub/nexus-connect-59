@@ -150,9 +150,7 @@ export default function NewMatterPage() {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        const baseValid = !!selectedType && selectedJurisdictions.length > 0;
-        if (isTrademarkType) return baseValid && !!trademarkType;
-        return baseValid;
+        return !!selectedType && selectedJurisdictions.length > 0;
       case 2:
         return detailsData.title.length >= 3;
       case 3:
