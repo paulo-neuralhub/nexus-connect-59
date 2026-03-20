@@ -538,18 +538,23 @@ function MatterListRowSilk({ matter, onClick }: {
   // Get color for type
   const getTypeColor = (type: string): string => {
     const colors: Record<string, string> = {
-      'TM_NAT': '#00b4d8',
-      'TM_EU': '#00b4d8',
-      'TM_INT': '#00b4d8',
-      'trademark': '#00b4d8',
-      'PT_NAT': '#10b981',
-      'PT_EU': '#10b981',
-      'PT_PCT': '#10b981',
-      'UM': '#10b981',
-      'patent': '#10b981',
-      'DS_NAT': '#ec4899',
-      'DS_EU': '#ec4899',
-      'design': '#ec4899',
+      'TM_NAT': '#8B5CF6',
+      'TM_EU': '#8B5CF6',
+      'TM_INT': '#8B5CF6',
+      'trademark': '#8B5CF6',
+      'NC': '#8B5CF6',
+      'PT_NAT': '#0EA5E9',
+      'PT_EU': '#0EA5E9',
+      'PT_PCT': '#0EA5E9',
+      'UM': '#0EA5E9',
+      'patent': '#0EA5E9',
+      'DS_NAT': '#6366F1',
+      'DS_EU': '#6366F1',
+      'design': '#6366F1',
+      'DOM': '#10B981',
+      'domain': '#10B981',
+      'copyright': '#F59E0B',
+      'trade_secret': '#64748B',
     };
     return colors[type] || '#64748b';
   };
