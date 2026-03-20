@@ -68,7 +68,7 @@ export function IpOfficeGridCard({ office, onClick }: Props) {
                 <Badge variant="outline" className="text-[10px] h-4 gap-0.5 px-1 shadow-sm"><Sparkles className="h-2.5 w-2.5 text-amber-500" />Tasas</Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-1">{office.official_name_local || office.name}</p>
+            <p className="text-sm text-muted-foreground line-clamp-1">{renderOfficeName()}</p>
           </div>
         </div>
 
