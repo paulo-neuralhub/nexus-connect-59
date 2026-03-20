@@ -186,9 +186,13 @@ export function EditClientCompanyDialog({
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Cliente creado");
-      queryClient.invalidateQueries({ queryKey: ["crm-accounts"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["crm-accounts"] }),
+        queryClient.invalidateQueries({ queryKey: ["crm-account"] }),
+        queryClient.invalidateQueries({ queryKey: ["crm-dashboard-kpis"] }),
+      ]);
       onOpenChange(false);
       onCreated?.(data.id);
     },
