@@ -1,9 +1,10 @@
 export const MATTER_TYPES = {
-  trademark: { label: 'Marca', icon: 'Tag', color: '#EC4899' },
-  patent: { label: 'Patente', icon: 'Lightbulb', color: '#F59E0B' },
-  design: { label: 'Diseño', icon: 'Palette', color: '#8B5CF6' },
+  trademark: { label: 'Marca', icon: 'Tag', color: '#8B5CF6' },
+  patent: { label: 'Patente', icon: 'Lightbulb', color: '#0EA5E9' },
+  design: { label: 'Diseño', icon: 'Palette', color: '#6366F1' },
   domain: { label: 'Dominio', icon: 'Globe', color: '#10B981' },
-  copyright: { label: 'Copyright', icon: 'Copyright', color: '#3B82F6' },
+  copyright: { label: 'Copyright', icon: 'Copyright', color: '#F59E0B' },
+  trade_secret: { label: 'Secreto', icon: 'Lock', color: '#64748B' },
   other: { label: 'Otro', icon: 'File', color: '#6B7280' },
 } as const;
 
