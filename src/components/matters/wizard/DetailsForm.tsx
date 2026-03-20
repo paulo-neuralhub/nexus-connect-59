@@ -231,8 +231,8 @@ export function DetailsForm({
         )}
       </div>
 
-      {/* Type-specific fields */}
-      {isTrademarkType && (
+      {/* Type-specific fields — only in 'specific' section */}
+      {section === 'specific' && isTrademarkType && (
         <>
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
