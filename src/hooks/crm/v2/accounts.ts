@@ -14,57 +14,71 @@ export function useCRMAccounts(filters?: AccountFilters) {
   return useQuery({
     queryKey: ["crm-accounts", organizationId, filters],
     queryFn: async () => {
-      if (!organizationId) return { accounts: [] as CRMAccount[], total: 0 };
+      if (!organizationId) return [] as CRMAccount[];
 
       let query = fromTable("crm_accounts")
         .select(
-          `id, name, legal_name, tax_id, account_type, vat_number,
+          `id, name, legal_name, tax_id, client_token, account_type, vat_number,
            country_code, city, industry, ip_portfolio_size,
-           annual_ip_budget_eur, status, tier, health_score,
+           annual_ip_budget_eur, status, tier, health_score, rating_stars,
            lifecycle_stage, assigned_to, tags, is_active,
            last_interaction_at, created_at, updated_at,
-           assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`,
-          { count: "exact" }
+           assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`
         )
         .eq("organization_id", organizationId);
 
-      // Filters
       if (filters?.search) {
         query = query.or(
-          `name.ilike.%${filters.search}%,tax_id.ilike.%${filters.search}%,legal_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%`
+          `name.ilike.%${filters.search}%,tax_id.ilike.%${filters.search}%,legal_name.ilike.%${filters.search}%`
         );
       }
       if (filters?.lifecycle_stage) query = query.eq("lifecycle_stage", filters.lifecycle_stage);
       if (filters?.account_type) query = query.eq("account_type", filters.account_type);
       if (filters?.is_active !== undefined) query = query.eq("is_active", filters.is_active);
 
-      // Order
       const orderCol = filters?.order_by ?? "name";
       query = query.order(orderCol, { ascending: filters?.order_asc ?? true });
 
-      // Pagination
-      const limit = filters?.limit ?? 20;
-      const offset = filters?.offset ?? 0;
-      query = query.range(offset, offset + limit - 1);
+      if (filters?.limit) query = query.limit(filters.limit);
 
-      const { data, error, count } = await query;
+      const { data, error } = await query;
       if (error) throw error;
-      return { accounts: (data ?? []) as CRMAccount[], total: count ?? 0 };
+      return (data ?? []) as CRMAccount[];
     },
     enabled: !!organizationId,
     staleTime: 30_000,
   });
 }
 
+/** Single account — returns flat account object (backward compat) */
 export function useCRMAccount(id: string | undefined) {
   const { organizationId } = useOrganization();
 
   return useQuery({
-    queryKey: ["crm-account", id],
+    queryKey: ["crm-account", organizationId, id],
+    queryFn: async () => {
+      if (!organizationId || !id) return null;
+      const { data, error } = await fromTable("crm_accounts")
+        .select(`*, assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`)
+        .eq("id", id)
+        .eq("organization_id", organizationId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as CRMAccount | null;
+    },
+    enabled: !!organizationId && !!id,
+  });
+}
+
+/** Full account detail with related entities */
+export function useCRMAccountDetail(id: string | undefined) {
+  const { organizationId } = useOrganization();
+
+  return useQuery({
+    queryKey: ["crm-account-detail", id],
     queryFn: async () => {
       if (!organizationId || !id) return null;
 
-      // Parallel: account + contacts + deals + activities + matters count
       const [accountRes, contactsRes, dealsRes, activitiesRes, mattersRes] = await Promise.all([
         fromTable("crm_accounts")
           .select(`*, assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`)
@@ -157,7 +171,7 @@ export function useUpdateCRMAccount() {
       return data;
     },
     onSuccess: (_d, vars) => {
-      queryClient.invalidateQueries({ queryKey: ["crm-account", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["crm-account"] });
       queryClient.invalidateQueries({ queryKey: ["crm-accounts"] });
       toast({ title: "Cuenta actualizada" });
     },
