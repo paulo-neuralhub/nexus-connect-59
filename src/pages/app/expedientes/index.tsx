@@ -479,7 +479,7 @@ function UrgencyKpiCard({
   // Border color based on urgency
   const getBorderStyle = () => {
     if (urgencyKey === 'overdue' && value > 0) {
-      return { border: '2px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 0 0 1px rgba(239, 68, 68, 0.1)' };
+      return { border: '2px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 0 8px rgba(239, 68, 68, 0.4)' };
     }
     if (urgencyKey === 'next7Days' && value > 0) {
       return { border: '1px solid rgba(249, 115, 22, 0.25)' };
