@@ -1,10 +1,10 @@
 /**
  * useCRMPendingItems - Hook para tareas y llamadas pendientes CRM (datos reales)
- * Reemplaza datos mock de CRMDashboardNew
+ * Uses crm_tasks and crm_activities tables
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { useOrganization } from '@/hooks/useOrganization';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -45,12 +45,10 @@ export function useCRMPendingCalls() {
         const todayStart = startOfDay(today).toISOString();
         const todayEnd = endOfDay(today).toISOString();
 
-        // Buscar tareas de tipo llamada pendientes para hoy
-        const { data, error } = await (supabase
-          .from('crm_tasks') as any)
+        const { data, error } = await fromTable('crm_tasks')
           .select(`
             id, title, due_date,
-            contact:crm_contacts(id, full_name, phone, account:crm_accounts(name))
+            contact:crm_contacts!contact_id(id, full_name, phone, account:crm_accounts!account_id(name))
           `)
           .eq('organization_id', organizationId)
           .eq('status', 'pending')
@@ -64,13 +62,16 @@ export function useCRMPendingCalls() {
           return [];
         }
 
-        return (data || []).map((t: any) => ({
-          id: t.id,
-          name: t.contact?.full_name || 'Sin asignar',
-          company: t.contact?.account?.name || 'Sin empresa',
-          phone: t.contact?.phone || '',
-          time: t.due_date ? format(new Date(t.due_date), 'HH:mm', { locale: es }) : '--:--',
-        }));
+        return (data || []).map((t: Record<string, unknown>) => {
+          const contact = t.contact as { full_name?: string; phone?: string; account?: { name?: string } } | null;
+          return {
+            id: t.id as string,
+            name: contact?.full_name || 'Sin asignar',
+            company: contact?.account?.name || 'Sin empresa',
+            phone: contact?.phone || '',
+            time: t.due_date ? format(new Date(t.due_date as string), 'HH:mm', { locale: es }) : '--:--',
+          };
+        });
       } catch {
         return [];
       }
@@ -92,9 +93,7 @@ export function useCRMUrgentTasks() {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // Buscar tareas urgentes (vencen hoy o mañana)
-        const { data, error } = await supabase
-          .from('crm_tasks')
+        const { data, error } = await fromTable('crm_tasks')
           .select('id, title, status, due_date')
           .eq('organization_id', organizationId)
           .eq('status', 'pending')
@@ -107,16 +106,15 @@ export function useCRMUrgentTasks() {
           return [];
         }
 
-        return (data || []).map((t: any) => {
-          const due = t.due_date ? new Date(t.due_date) : null;
+        return (data || []).map((t: Record<string, unknown>) => {
+          const due = t.due_date ? new Date(t.due_date as string) : null;
           const isToday = due && startOfDay(due).getTime() === startOfDay(today).getTime();
           const isTomorrow = due && startOfDay(due).getTime() === startOfDay(tomorrow).getTime();
-          // Determine urgency based on due date proximity
           const urgency = isToday ? 'high' : isTomorrow ? 'medium' : 'low';
 
           return {
-            id: t.id,
-            title: t.title || 'Tarea sin título',
+            id: t.id as string,
+            title: (t.title as string) || 'Tarea sin título',
             urgency,
             dueDate: isToday ? 'Hoy' : isTomorrow ? 'Mañana' : due ? format(due, 'd MMM', { locale: es }) : 'Sin fecha',
           };
@@ -138,15 +136,13 @@ export function useCRMRecentActivity() {
       if (!organizationId) return [];
 
       try {
-        // Buscar últimas interacciones
-        const { data, error } = await supabase
-          .from('crm_interactions')
+        const { data, error } = await fromTable('crm_activities')
           .select(`
-            id, channel, subject, created_at,
-            created_by_user:users!crm_interactions_created_by_fkey(full_name)
+            id, activity_type, subject, activity_date,
+            creator:profiles!created_by(id, first_name, last_name)
           `)
           .eq('organization_id', organizationId)
-          .order('created_at', { ascending: false })
+          .order('activity_date', { ascending: false })
           .limit(10);
 
         if (error) {
@@ -154,17 +150,21 @@ export function useCRMRecentActivity() {
           return [];
         }
 
-        return (data || []).map((i: any) => {
+        return (data || []).map((i: Record<string, unknown>) => {
+          const actType = i.activity_type as string;
           let type: RecentActivity['type'] = 'note';
-          if (i.channel === 'email') type = 'email';
-          else if (i.channel === 'phone' || i.channel === 'call') type = 'call';
+          if (actType === 'email') type = 'email';
+          else if (actType === 'call') type = 'call';
+
+          const creator = i.creator as { first_name?: string; last_name?: string } | null;
+          const userName = creator ? [creator.first_name, creator.last_name].filter(Boolean).join(' ') : 'Sistema';
 
           return {
-            id: i.id,
+            id: i.id as string,
             type,
-            text: i.subject || 'Actividad registrada',
-            user: i.created_by_user?.full_name || 'Sistema',
-            time: i.created_at ? format(new Date(i.created_at), 'HH:mm', { locale: es }) : '',
+            text: (i.subject as string) || 'Actividad registrada',
+            user: userName,
+            time: i.activity_date ? format(new Date(i.activity_date as string), 'HH:mm', { locale: es }) : '',
           };
         });
       } catch {
@@ -184,17 +184,14 @@ export function useCRMAverageTicket() {
       if (!organizationId) return 0;
 
       try {
-        // Calcular ticket medio de deals ganados
-        const { data, error } = await supabase
-          .from('crm_deals')
-          .select('amount')
+        const { data, error } = await fromTable('crm_deals')
+          .select('amount_eur, amount')
           .eq('organization_id', organizationId)
-          .eq('stage', 'won')
-          .not('amount', 'is', null);
+          .not('amount_eur', 'is', null);
 
         if (error || !data || data.length === 0) return 0;
 
-        const total = data.reduce((sum, d) => sum + (d.amount || 0), 0);
+        const total = data.reduce((sum, d: Record<string, unknown>) => sum + ((d.amount_eur as number) || (d.amount as number) || 0), 0);
         return Math.round(total / data.length);
       } catch {
         return 0;

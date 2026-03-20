@@ -143,26 +143,26 @@ export function useSeedCRMDemoData() {
       );
       if (dealsError) throw dealsError;
 
-      // 4) Interactions (timeline)
-      const interactionsSeed = [
-        { account_id: accA.id, contact_id: contactByAccount.get(accA.id)?.id, channel: "email", direction: "inbound", subject: "Consulta inicial marca", daysAgo: 10 },
-        { account_id: accA.id, contact_id: contactByAccount.get(accA.id)?.id, channel: "call", direction: "outbound", subject: "Seguimiento propuesta", daysAgo: 7 },
-        { account_id: accB.id, contact_id: contactByAccount.get(accB.id)?.id, channel: "whatsapp", direction: "inbound", subject: "Duda renovación", daysAgo: 5 },
-        { account_id: accC.id, contact_id: contactByAccount.get(accC.id)?.id, channel: "meeting", direction: "outbound", subject: "Reunión estrategia PI", daysAgo: 2 },
+      // 4) Activities (timeline) — uses crm_activities
+      const activitiesSeed = [
+        { account_id: accA.id, contact_id: contactByAccount.get(accA.id)?.id, activity_type: "email", subject: "Consulta inicial marca", daysAgo: 10 },
+        { account_id: accA.id, contact_id: contactByAccount.get(accA.id)?.id, activity_type: "call", subject: "Seguimiento propuesta", daysAgo: 7 },
+        { account_id: accB.id, contact_id: contactByAccount.get(accB.id)?.id, activity_type: "whatsapp", subject: "Duda renovación", daysAgo: 5 },
+        { account_id: accC.id, contact_id: contactByAccount.get(accC.id)?.id, activity_type: "meeting", subject: "Reunión estrategia PI", daysAgo: 2 },
       ];
 
-      const { error: interactionsError } = await fromTable("crm_interactions").insert(
-        interactionsSeed.map((i) => ({
+      const { error: activitiesError } = await fromTable("crm_activities").insert(
+        activitiesSeed.map((i) => ({
           organization_id: organizationId,
           account_id: i.account_id,
           contact_id: i.contact_id,
-          channel: i.channel,
-          direction: i.direction,
+          activity_type: i.activity_type,
           subject: i.subject,
-          created_at: new Date(Date.now() - i.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+          activity_date: new Date(Date.now() - i.daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+          created_by: userId,
         }))
       );
-      if (interactionsError) throw interactionsError;
+      if (activitiesError) throw activitiesError;
 
       // 5) Tasks (pendientes + futuras)
       const tasksSeed = [

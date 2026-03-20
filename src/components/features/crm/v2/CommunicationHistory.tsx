@@ -4,16 +4,14 @@ import { es } from 'date-fns/locale';
 import {
   CheckCircle,
   Clock,
-  Eye,
   FileText,
   Mail,
   MessageCircle,
   Phone,
   Video,
-  XCircle,
 } from 'lucide-react';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,16 +26,15 @@ interface CommunicationHistoryProps {
 
 type CommunicationType = {
   id: string;
-  type: 'email' | 'whatsapp' | 'call' | 'meeting' | 'note' | string;
-  direction: 'inbound' | 'outbound' | string;
+  type: string;
+  direction: string;
   subject?: string | null;
   content?: string | null;
   status: string;
   created_at: string;
-  metadata?: Record<string, unknown> | null;
 };
 
-const channelIcons: Record<string, any> = {
+const channelIcons: Record<string, typeof Mail> = {
   email: Mail,
   whatsapp: MessageCircle,
   call: Phone,
@@ -45,96 +42,34 @@ const channelIcons: Record<string, any> = {
   note: FileText,
 };
 
-const statusConfig: Record<
-  string,
-  { icon: any; className: string; label: string }
-> = {
+const statusConfig: Record<string, { icon: typeof CheckCircle; className: string; label: string }> = {
   sent: { icon: CheckCircle, className: 'text-primary', label: 'Enviado' },
-  delivered: { icon: CheckCircle, className: 'text-primary', label: 'Entregado' },
-  read: { icon: Eye, className: 'text-primary', label: 'Leído' },
-  opened: { icon: Eye, className: 'text-primary', label: 'Abierto' },
+  completed: { icon: CheckCircle, className: 'text-primary', label: 'Completado' },
   pending: { icon: Clock, className: 'text-muted-foreground', label: 'Pendiente' },
-  failed: { icon: XCircle, className: 'text-destructive', label: 'Error' },
-  received: { icon: CheckCircle, className: 'text-muted-foreground', label: 'Recibido' },
 };
 
 export function CommunicationHistory({ contactId, organizationId, maxHeight = '400px' }: CommunicationHistoryProps) {
   const { data: communications = [], isLoading } = useQuery({
     queryKey: ['communication-history', organizationId, contactId],
     queryFn: async () => {
-      const [interactionsRes, emailsRes, whatsappRes] = await Promise.all([
-        supabase
-          .from('crm_interactions')
-          .select('id, channel, direction, subject, content, status, created_at, metadata')
-          .eq('organization_id', organizationId)
-          .eq('contact_id', contactId)
-          .order('created_at', { ascending: false })
-          .limit(50),
-        supabase
-          .from('crm_email_tracking')
-          .select('id, subject, body_preview, status, created_at, opened_count, first_opened_at')
-          .eq('organization_id', organizationId)
-          .eq('contact_id', contactId)
-          .order('created_at', { ascending: false })
-          .limit(50),
-        supabase
-          .from('crm_whatsapp_messages')
-          .select('id, direction, template_name, content, status, created_at, wa_message_id')
-          .eq('organization_id', organizationId)
-          .eq('contact_id', contactId)
-          .order('created_at', { ascending: false })
-          .limit(50),
-      ]);
+      const { data, error } = await fromTable('crm_activities')
+        .select('id, activity_type, subject, description, outcome, activity_date, created_by')
+        .eq('organization_id', organizationId)
+        .eq('contact_id', contactId)
+        .order('activity_date', { ascending: false })
+        .limit(50);
 
-      if (interactionsRes.error) throw interactionsRes.error;
-      if (emailsRes.error) throw emailsRes.error;
-      if (whatsappRes.error) throw whatsappRes.error;
+      if (error) throw error;
 
-      const combined: CommunicationType[] = [
-        ...((interactionsRes.data ?? []).map((i) => ({
-          id: i.id,
-          type: (i.channel as string) || 'note',
-          direction: (i.direction as string) || 'outbound',
-          subject: i.subject,
-          content: i.content,
-          status: (i.status as string) || 'sent',
-          created_at: i.created_at as string,
-          metadata: (i.metadata as any) ?? null,
-        })) as CommunicationType[]),
-        ...((emailsRes.data ?? []).map((e) => ({
-          id: e.id,
-          type: 'email',
-          direction: 'outbound',
-          subject: e.subject,
-          content: (e as any).body_preview,
-          status: (e.status as string) || 'sent',
-          created_at: e.created_at as string,
-          metadata: {
-            opened_count: (e as any).opened_count,
-            first_opened_at: (e as any).first_opened_at,
-          },
-        })) as CommunicationType[]),
-        ...((whatsappRes.data ?? []).map((w) => ({
-          id: w.id,
-          type: 'whatsapp',
-          direction: w.direction,
-          subject: (w as any).template_name,
-          content: (w as any).content,
-          status: (w.status as string) || 'sent',
-          created_at: w.created_at as string,
-          metadata: { wa_message_id: (w as any).wa_message_id },
-        })) as CommunicationType[]),
-      ];
-
-      combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      const seen = new Set<string>();
-      return combined.filter((c) => {
-        const key = `${c.type}-${c.created_at}-${(c.content || '').slice(0, 50)}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      return (data ?? []).map((row: Record<string, unknown>): CommunicationType => ({
+        id: row.id as string,
+        type: (row.activity_type as string) || 'note',
+        direction: 'outbound',
+        subject: row.subject as string | null,
+        content: row.description as string | null,
+        status: (row.outcome as string) || 'completed',
+        created_at: row.activity_date as string,
+      }));
     },
     enabled: !!organizationId && !!contactId,
   });
@@ -181,7 +116,7 @@ export function CommunicationHistory({ contactId, organizationId, maxHeight = '4
           <div className="space-y-3">
             {communications.map((comm) => {
               const ChannelIcon = channelIcons[comm.type] || FileText;
-              const statusInfo = statusConfig[comm.status] || statusConfig.sent;
+              const statusInfo = statusConfig[comm.status] || statusConfig.completed;
               const StatusIcon = statusInfo.icon;
 
               return (
@@ -198,24 +133,18 @@ export function CommunicationHistory({ contactId, organizationId, maxHeight = '4
                           <StatusIcon className={cn('h-3 w-3', statusInfo.className)} />
                           {statusInfo.label}
                         </Badge>
-                        {comm.direction === 'inbound' ? <Badge variant="outline">Entrante</Badge> : null}
                       </div>
 
                       {comm.subject ? <p className="text-sm font-medium text-foreground mt-1 truncate">{comm.subject}</p> : null}
                       {comm.content ? (
-                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap break-words">
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap break-words line-clamp-3">
                           {comm.content}
                         </p>
                       ) : null}
 
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comm.created_at), { addSuffix: true, locale: es })}
-                        </p>
-                        {comm.type === 'email' && (comm.metadata as any)?.opened_count > 0 ? (
-                          <Badge variant="outline">Abierto {(comm.metadata as any).opened_count}x</Badge>
-                        ) : null}
-                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {formatDistanceToNow(new Date(comm.created_at), { addSuffix: true, locale: es })}
+                      </p>
                     </div>
                   </div>
                 </div>
