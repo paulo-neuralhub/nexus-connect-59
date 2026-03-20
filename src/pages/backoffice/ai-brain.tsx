@@ -20,7 +20,6 @@ import {
   AIBrainStatsCards,
   ProvidersTab,
   ModelsTab,
-  TaskRouterTab,
   CircuitBreakerTab,
   RAGTab,
   AnalyticsTab,
@@ -33,6 +32,7 @@ import {
   TaskDialog,
   RAGDialog
 } from '@/components/backoffice/ai-brain';
+import { TaskRoutingTab } from '@/components/backoffice/ai-brain/TaskRoutingTab';
 
 // Types
 import { 
