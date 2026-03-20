@@ -156,8 +156,8 @@ export function MatterCostsTab({ matterId }: MatterCostsTabProps) {
             <div>
               <Label>Concepto</Label>
               <Input
-                value={newCost.concept}
-                onChange={(e) => setNewCost(p => ({ ...p, concept: e.target.value }))}
+                value={newCost.description}
+                onChange={(e) => setNewCost(p => ({ ...p, description: e.target.value }))}
                 placeholder="Ej: Tasa de solicitud EUIPO"
               />
             </div>
