@@ -169,7 +169,7 @@ export function RequireRole({ roles, children, redirectTo }: RequireRoleProps) {
  */
 export function RequireOwnerOrAdmin({ children, redirectTo }: { children: React.ReactNode; redirectTo?: string }) {
   return (
-    <RequireRole roles={['owner', 'admin']} redirectTo={redirectTo}>
+    <RequireRole roles={['owner', 'admin', 'super_admin']} redirectTo={redirectTo}>
       {children}
     </RequireRole>
   );

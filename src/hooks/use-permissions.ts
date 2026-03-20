@@ -104,10 +104,11 @@ export function usePermissions(): UsePermissionsResult {
   
   // Get effective role code (new system or legacy)
   const effectiveRoleCode = userRole?.roleCode || userRole?.legacyRole || null;
+  const isSuperAdmin = effectiveRoleCode === 'super_admin';
   
   // Role checks
-  const isOwner = effectiveRoleCode === SYSTEM_ROLES.OWNER;
-  const isAdmin = effectiveRoleCode === SYSTEM_ROLES.ADMIN;
+  const isOwner = effectiveRoleCode === SYSTEM_ROLES.OWNER || isSuperAdmin;
+  const isAdmin = effectiveRoleCode === SYSTEM_ROLES.ADMIN || isSuperAdmin;
   const isManager = effectiveRoleCode === SYSTEM_ROLES.MANAGER;
   const isMember = effectiveRoleCode === SYSTEM_ROLES.MEMBER;
   const isViewer = effectiveRoleCode === SYSTEM_ROLES.VIEWER;
@@ -115,20 +116,19 @@ export function usePermissions(): UsePermissionsResult {
   
   // Synchronous permission check (uses cached permissions)
   const hasPermission = (code: string): boolean => {
-    // Owner has all permissions
-    if (isOwner) return true;
+    if (isOwner || isAdmin || permissions.some(p => p.code === '*')) return true;
     return permissions.some(p => p.code === code);
   };
   
   // Check if user has any of the permissions
   const hasAnyPermission = (codes: string[]): boolean => {
-    if (isOwner) return true;
+    if (isOwner || isAdmin || permissions.some(p => p.code === '*')) return true;
     return codes.some(code => hasPermission(code));
   };
   
   // Check if user has all permissions
   const hasAllPermissions = (codes: string[]): boolean => {
-    if (isOwner) return true;
+    if (isOwner || isAdmin || permissions.some(p => p.code === '*')) return true;
     return codes.every(code => hasPermission(code));
   };
   
