@@ -43,6 +43,25 @@ import MarketProfile from "./pages/app/market/profile";
 import AgentListPage from "./pages/app/market/agents";
 import AgentDetailPage from "./pages/app/market/agents/[id]";
 import MarketLandingPage from "./pages/market/MarketLandingPage";
+import AgentsDirectoryPage from "./pages/market/AgentsDirectoryPage";
+import AgentProfilePage from "./pages/market/AgentProfilePage";
+import ServiceRequestPage from "./pages/market/ServiceRequestPage";
+
+// Agent Area
+import AgentLayout from "./pages/agent/AgentLayout";
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentRequests from "./pages/agent/AgentRequests";
+import {
+  AgentProfile as AgentProfilePlaceholder,
+  AgentServicesPage as AgentServicesPlaceholder,
+  AgentCredentialsPage as AgentCredentialsPlaceholder,
+  AgentPaymentsPage as AgentPaymentsPlaceholder,
+  AgentReviewsPage as AgentReviewsPlaceholder,
+  AgentSettingsPage as AgentSettingsPlaceholder,
+} from "./pages/agent/AgentPlaceholders";
+
+// Backoffice Market
+import BackofficeMarketPage from "./pages/backoffice/market";
 import RfqListPage from "./pages/app/market/rfq";
 import CreateRfqRequestPage from "./pages/app/market/rfq/new";
 import RfqRequestDetailPage from "./pages/app/market/rfq/[id]";
