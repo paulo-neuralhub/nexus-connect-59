@@ -1,9 +1,10 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Mail, MessageSquare, SlidersHorizontal, LayoutList, FileText } from "lucide-react";
+import { Mail, MessageSquare, SlidersHorizontal, LayoutList, FileText, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/app/communications", label: "Bandeja Unificada", icon: LayoutList, end: true },
+  { to: "/app/communications/internal", label: "Chat Interno", icon: MessageCircle },
   { to: "/app/communications/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { to: "/app/communications/email", label: "Email", icon: Mail },
   { to: "/app/communications/templates", label: "Templates", icon: FileText },
@@ -19,12 +20,9 @@ export default function CommunicationsLayout() {
       {!isUnifiedInbox && (
         <header className="space-y-1">
           <h1 className="text-2xl font-bold text-foreground">Comunicaciones</h1>
-          <p className="text-sm text-muted-foreground">
-            Gestión omnicanal de comunicaciones
-          </p>
+          <p className="text-sm text-muted-foreground">Gestión omnicanal de comunicaciones</p>
         </header>
       )}
-
       <nav className="flex flex-wrap gap-2">
         {tabs.map((t) => (
           <NavLink
@@ -45,10 +43,7 @@ export default function CommunicationsLayout() {
           </NavLink>
         ))}
       </nav>
-
-      <main>
-        <Outlet />
-      </main>
+      <main><Outlet /></main>
     </div>
   );
 }
