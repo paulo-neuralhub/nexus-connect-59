@@ -215,7 +215,7 @@ export function IPSoftphone() {
           "flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg",
           "transition-all hover:scale-105",
           deviceStatus === "ready"
-            ? "bg-emerald-600 text-white"
+            ? "bg-primary text-primary-foreground"
             : "bg-muted text-muted-foreground"
         )}
         title="Abrir teléfono"
