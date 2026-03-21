@@ -27,6 +27,7 @@ function formatShortCurrency(value: number) {
 }
 
 export default function FinanceDashboard() {
+  const { data: fiscalConfig, isLoading: loadingFiscal } = useFiscalConfig();
   const { data: kpis } = useFinanceDashboardKPIs();
   const { data: revenueExpenses = [] } = useRevenueVsExpenses();
   const { data: serviceBreakdown = [] } = useServiceTypeBreakdown();
@@ -34,6 +35,7 @@ export default function FinanceDashboard() {
   const { data: profitability = [] } = useMatterProfitability();
 
   const hasOverdue = (kpis?.overdueCount || 0) > 0;
+  const showFiscalBanner = !loadingFiscal && !fiscalConfig;
 
   return (
     <div className="p-6 space-y-6">
