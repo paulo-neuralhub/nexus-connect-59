@@ -4,3 +4,7 @@ export { CommThreadList } from './CommThreadList';
 export { CommThreadDetail } from './CommThreadDetail';
 export { CommComposer } from './CommComposer';
 export { CommEmptyState } from './CommEmptyState';
+export { CommInternalChat } from './CommInternalChat';
+export { CommSettingsPage } from './CommSettingsPage';
+export { MatterCommunicationsTabV2 } from './MatterCommunicationsTabV2';
+export { AccountCommunicationsTabV2 } from './AccountCommunicationsTabV2';

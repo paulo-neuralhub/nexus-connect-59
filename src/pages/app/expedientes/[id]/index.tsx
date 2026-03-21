@@ -42,6 +42,7 @@ import { MatterDeadlinesTab } from '@/components/matters/MatterDeadlinesTab';
 import { MatterTasksTab } from '@/components/matters/MatterTasksTab';
 import { MatterInvoicesTab } from '@/components/matters/MatterInvoicesTab';
 import { MatterCommunicationsTab } from '@/components/matters/MatterCommunicationsTabEnhanced';
+import { MatterCommunicationsTabV2 } from '@/components/communications/unified';
 import { EmailComposeModal } from '@/components/matters/EmailComposeModal';
 import { LogCallModal } from '@/components/matters/LogCallModal';
 import { AddNoteModal } from '@/components/matters/AddNoteModal';
@@ -290,6 +291,11 @@ export default function MatterDetailPage() {
               {/* Detalles Tab - Inline edit */}
               {activeTab === 'details' && (
                 <MatterDetailsEditTab matter={matter} />
+              )}
+
+              {/* Communications Tab (COMM-01) */}
+              {activeTab === 'communications' && (
+                <MatterCommunicationsTabV2 matterId={id!} matterReference={matter?.reference} />
               )}
 
               {/* Spider Tab */}

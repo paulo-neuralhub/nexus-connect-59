@@ -5,7 +5,7 @@
 
 import * as React from 'react';
 import { 
-  FileText, Calendar, FolderOpen, MessageCircle,
+  FileText, Calendar, FolderOpen, MessageCircle, Mail,
   Euro, Settings
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,6 +35,7 @@ const TABS = [
   { id: 'general', label: 'Resumen', icon: FileText, counterKey: null, emoji: '📋' },
   { id: 'deadlines', label: 'Plazos', icon: Calendar, counterKey: 'deadlines', emoji: '⏰' },
   { id: 'documents', label: 'Documentos', icon: FolderOpen, counterKey: 'documents', emoji: '📄' },
+  { id: 'communications', label: 'Comunicaciones', icon: Mail, counterKey: 'communications', emoji: '📧' },
   { id: 'activity', label: 'Actividad', icon: MessageCircle, counterKey: 'timeline', emoji: '💬' },
   { id: 'costs', label: 'Costes', icon: Euro, counterKey: 'costs', emoji: '💰' },
   { id: 'spider', label: 'Spider', icon: Settings, counterKey: null, emoji: '🕷️' },
