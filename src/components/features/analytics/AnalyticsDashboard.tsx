@@ -180,20 +180,6 @@ export function AnalyticsDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => favoriteMutation.mutate({ 
-                          id: report.id, 
-                          isFavorite: report.is_favorite 
-                        })}
-                      >
-                        {report.is_favorite ? (
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                        ) : (
-                          <StarOff className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
