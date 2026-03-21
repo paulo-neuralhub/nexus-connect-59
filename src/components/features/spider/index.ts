@@ -7,3 +7,8 @@ export * from './visual-comparison-card';
 export * from './SpiderKPIs';
 export * from './SilkResultCard';
 export * from './SilkAlertsPanel';
+export * from './SpiderDashboardView';
+export * from './SpiderAlertsTab';
+export * from './SpiderWatchesTab';
+export * from './SpiderConfigTab';
+export * from './MatterSpiderTab';
