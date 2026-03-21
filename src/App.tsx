@@ -274,6 +274,7 @@ import KillSwitchPage from "./pages/backoffice/kill-switch";
 import MarketConfigPage from "./pages/backoffice/market-config";
 import BackofficeCalendarPage from "./pages/backoffice/calendar";
 import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics";
+import BackofficeGeniusPage from "./pages/backoffice/genius";
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
 import KnowledgeMapPage from "./pages/backoffice/knowledge";
 import DemoDataPage from "./pages/backoffice/demo-data";
