@@ -5,7 +5,7 @@
 
 import * as React from 'react';
 import { 
-  FileText, Calendar, FolderOpen, MessageCircle,
+  FileText, Calendar, FolderOpen, MessageCircle, Mail,
   Euro, Settings
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
