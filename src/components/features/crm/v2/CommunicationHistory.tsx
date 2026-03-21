@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CallActivityCard, type CallActivityData } from '@/components/telephony/CallActivityCard';
 
 interface CommunicationHistoryProps {
   contactId: string;
@@ -32,6 +33,7 @@ type CommunicationType = {
   content?: string | null;
   status: string;
   created_at: string;
+  metadata?: Record<string, unknown> | null;
 };
 
 const channelIcons: Record<string, typeof Mail> = {
@@ -49,11 +51,11 @@ const statusConfig: Record<string, { icon: typeof CheckCircle; className: string
 };
 
 export function CommunicationHistory({ contactId, organizationId, maxHeight = '400px' }: CommunicationHistoryProps) {
-  const { data: communications = [], isLoading } = useQuery({
+  const { data: communications = [], isLoading, refetch } = useQuery({
     queryKey: ['communication-history', organizationId, contactId],
     queryFn: async () => {
       const { data, error } = await fromTable('crm_activities')
-        .select('id, activity_type, subject, description, outcome, activity_date, created_by')
+        .select('id, activity_type, subject, description, outcome, activity_date, created_by, metadata')
         .eq('organization_id', organizationId)
         .eq('contact_id', contactId)
         .order('activity_date', { ascending: false })
@@ -69,6 +71,7 @@ export function CommunicationHistory({ contactId, organizationId, maxHeight = '4
         content: row.description as string | null,
         status: (row.outcome as string) || 'completed',
         created_at: row.activity_date as string,
+        metadata: (row.metadata as Record<string, unknown>) || null,
       }));
     },
     enabled: !!organizationId && !!contactId,
@@ -115,6 +118,26 @@ export function CommunicationHistory({ contactId, organizationId, maxHeight = '4
         <ScrollArea style={{ maxHeight }} className="pr-4">
           <div className="space-y-3">
             {communications.map((comm) => {
+              // Render rich card for call activities
+              if (comm.type === 'call') {
+                const callData: CallActivityData = {
+                  id: comm.id,
+                  activity_type: 'call',
+                  subject: comm.subject,
+                  description: comm.content,
+                  outcome: comm.status,
+                  activity_date: comm.created_at,
+                  metadata: comm.metadata || {},
+                };
+                return (
+                  <CallActivityCard
+                    key={comm.id}
+                    activity={callData}
+                    onMatterLinked={() => refetch()}
+                  />
+                );
+              }
+
               const ChannelIcon = channelIcons[comm.type] || FileText;
               const statusInfo = statusConfig[comm.status] || statusConfig.completed;
               const StatusIcon = statusInfo.icon;

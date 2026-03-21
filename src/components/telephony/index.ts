@@ -13,3 +13,6 @@ export { CallCompletedModal } from './CallCompletedModal';
 export { RecordingPlayer } from './RecordingPlayer';
 export { CallManager } from './CallManager';
 export { IPSoftphone, openSoftphone } from './IPSoftphone';
+export { CallActivityCard } from './CallActivityCard';
+export type { CallActivityData } from './CallActivityCard';
+export { LinkToMatterDropdown } from './LinkToMatterDropdown';

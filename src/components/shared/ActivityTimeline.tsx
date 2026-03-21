@@ -35,6 +35,7 @@ import {
   type GroupedActivities,
 } from '@/hooks/legal-ops/useActivityLog';
 import { cn } from '@/lib/utils';
+import { CallActivityCard, type CallActivityData } from '@/components/telephony/CallActivityCard';
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
   matter_created: FilePlus,
@@ -271,6 +272,20 @@ interface ActivityRowProps {
 }
 
 function ActivityRow({ activity, compact = false }: ActivityRowProps) {
+  // Rich card for call activities
+  if (activity.action === 'call_logged' || activity.action === 'call_completed') {
+    const callData: CallActivityData = {
+      id: activity.id,
+      activity_type: 'call',
+      subject: activity.title,
+      description: activity.description || undefined,
+      outcome: (activity as any).metadata?.call_outcome || 'completed',
+      activity_date: activity.created_at,
+      metadata: (activity as any).metadata || {},
+    };
+    return <CallActivityCard activity={callData} />;
+  }
+
   const Icon = ACTION_ICONS[activity.action] || Edit;
   const colorClass = CATEGORY_COLORS[activity.action_category || 'other'];
   const time = format(new Date(activity.created_at), 'HH:mm', { locale: es });
