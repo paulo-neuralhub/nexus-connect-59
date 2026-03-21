@@ -690,6 +690,7 @@ const App = () => (
                 <Route path="logs" element={<SystemLogsPage />} />
                 <Route path="alerts" element={<BackofficeAlertsPage />} />
                 <Route path="products" element={<BackofficeProductsPage />} />
+                <Route path="spider" element={<BackofficeSpiderPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
                 <Route path="market-config" element={<MarketConfigPage />} />
                 {/* Stripe */}
