@@ -580,6 +580,7 @@ const App = () => (
                 <Route path="settings/templates/:type" element={<DocumentTemplateListPage />} />
                 <Route path="settings/templates/:id/edit" element={<DocumentTemplateEditPage />} />
                 <Route path="settings/signatures" element={<SignaturesPage />} />
+                <Route path="settings/genius" element={<GeniusSettingsPage />} />
                 <Route path="expedientes/importar" element={<ImportDataPage />} />
                 <Route path="expedientes/revision" element={<ReviewQueuePage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />

@@ -8,7 +8,8 @@ import { ModuleGate } from '@/components/common/ModuleGate';
 import { useLegalCheck } from '@/hooks/legal/useLegalCheck';
 
 const geniusNav = [
-  { path: '/app/genius', label: 'Chat', icon: MessageSquare, exact: true },
+  { path: '/app/genius', label: 'Dashboard', icon: Brain, exact: true },
+  { path: '/app/genius/chat', label: 'Chat', icon: MessageSquare },
   { path: '/app/genius/analysis', label: 'Análisis', icon: Scale },
   { path: '/app/genius/documents-gen', label: 'Documentos', icon: FileText },
   { path: '/app/genius/predictions', label: 'Predicciones', icon: Brain },
