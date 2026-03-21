@@ -223,6 +223,7 @@ import EmailInboxPage from "./pages/app/communications/email";
 import CommunicationsTemplatesPage from "./pages/app/communications/templates";
 import CommunicationsSettingsPage from "./pages/app/communications/settings";
 import CommunicationDetailPage from "./pages/app/communications/CommunicationDetail";
+import InternalChatPage from "./pages/app/communications/internal";
 import BackofficeWhatsAppCommunicationsPage from "./pages/backoffice/communications/whatsapp";
 import BackofficeEmailCommunicationsPage from "./pages/backoffice/communications/email";
 
