@@ -60,6 +60,7 @@ import { MatterDetailTabs } from '@/components/matters/MatterDetailTabs';
 import { MatterActivityTab } from '@/components/matters/MatterActivityTab';
 import { MatterCostsTab } from '@/components/matters/MatterCostsTab';
 import { MatterDetailsEditTab } from '@/components/matters/MatterDetailsEditTab';
+import { MatterSpiderTab } from '@/components/features/spider/MatterSpiderTab';
 import { MatterPhaseTimeline } from '@/components/matters/MatterPhaseTimeline';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
