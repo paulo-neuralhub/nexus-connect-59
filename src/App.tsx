@@ -392,6 +392,9 @@ const App = () => (
                 <Route path="/docket" element={<DocketLandingPage />} />
                 <Route path="/nexus" element={<NexusLandingPage />} />
                 <Route path="/market" element={<MarketLandingPage />} />
+                <Route path="/market/agents" element={<AgentsDirectoryPage />} />
+                <Route path="/market/agents/:slug" element={<AgentProfilePage />} />
+                <Route path="/market/request/:agentSlug" element={<ServiceRequestPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/spider-pro" element={<SpiderLandingPage />} />
                 <Route path="/products/:slug" element={<ProductLanding />} />
