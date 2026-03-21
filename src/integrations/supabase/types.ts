@@ -10081,6 +10081,7 @@ export type Database = {
           article_reference: string | null
           content: string
           created_at: string | null
+          data_confidence: string | null
           document_category: string | null
           effective_date: string | null
           embedding: string | null
@@ -10099,6 +10100,7 @@ export type Database = {
           article_reference?: string | null
           content: string
           created_at?: string | null
+          data_confidence?: string | null
           document_category?: string | null
           effective_date?: string | null
           embedding?: string | null
@@ -10117,6 +10119,7 @@ export type Database = {
           article_reference?: string | null
           content?: string
           created_at?: string | null
+          data_confidence?: string | null
           document_category?: string | null
           effective_date?: string | null
           embedding?: string | null
