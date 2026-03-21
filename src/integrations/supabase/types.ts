@@ -15827,6 +15827,439 @@ export type Database = {
         }
         Relationships: []
       }
+      market_agent_credentials: {
+        Row: {
+          agent_id: string
+          created_at: string | null
+          credential_name: string
+          credential_number: string | null
+          credential_type: string
+          document_storage_path: string | null
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          issuing_authority: string | null
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string | null
+          credential_name: string
+          credential_number?: string | null
+          credential_type: string
+          document_storage_path?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuing_authority?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string | null
+          credential_name?: string
+          credential_number?: string | null
+          credential_type?: string
+          document_storage_path?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuing_authority?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_agent_credentials_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_agent_portfolio: {
+        Row: {
+          agent_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_public: boolean | null
+          jurisdiction_code: string | null
+          outcome: string | null
+          service_type: string | null
+          title: string
+          year: number | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          jurisdiction_code?: string | null
+          outcome?: string | null
+          service_type?: string | null
+          title: string
+          year?: number | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          jurisdiction_code?: string | null
+          outcome?: string | null
+          service_type?: string | null
+          title?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_agent_portfolio_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_agent_services: {
+        Row: {
+          additional_class_fee_eur: number | null
+          agent_id: string
+          available_payment_plans: string[] | null
+          base_price_eur: number | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          estimated_days_max: number | null
+          estimated_days_min: number | null
+          excludes: string[] | null
+          id: string
+          includes: string[] | null
+          is_active: boolean | null
+          jurisdiction_code: string
+          official_fees_eur: number | null
+          price_includes_official_fees: boolean | null
+          revisions_included: number | null
+          service_type: string
+          sort_order: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          additional_class_fee_eur?: number | null
+          agent_id: string
+          available_payment_plans?: string[] | null
+          base_price_eur?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          excludes?: string[] | null
+          id?: string
+          includes?: string[] | null
+          is_active?: boolean | null
+          jurisdiction_code: string
+          official_fees_eur?: number | null
+          price_includes_official_fees?: boolean | null
+          revisions_included?: number | null
+          service_type: string
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          additional_class_fee_eur?: number | null
+          agent_id?: string
+          available_payment_plans?: string[] | null
+          base_price_eur?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          excludes?: string[] | null
+          id?: string
+          includes?: string[] | null
+          is_active?: boolean | null
+          jurisdiction_code?: string
+          official_fees_eur?: number | null
+          price_includes_official_fees?: boolean | null
+          revisions_included?: number | null
+          service_type?: string
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_agent_services_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_agents: {
+        Row: {
+          accepts_new_clients: boolean | null
+          avatar_url: string | null
+          avg_response_hours: number | null
+          bar_association: string | null
+          bio: string | null
+          city: string | null
+          completed_services: number | null
+          country_code: string
+          cover_image_url: string | null
+          created_at: string | null
+          default_revisions_included: number | null
+          display_name: string
+          extra_revision_fee_eur: number | null
+          firm_name: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_verified: boolean | null
+          jurisdictions: string[] | null
+          languages: string[] | null
+          license_number: string | null
+          linkedin_url: string | null
+          market_plan: string | null
+          organization_id: string | null
+          rating_avg: number | null
+          ratings_count: number | null
+          reputation_score: number | null
+          slug: string | null
+          specializations: string[] | null
+          stripe_account_id: string | null
+          stripe_charges_enabled: boolean | null
+          stripe_onboarding_complete: boolean | null
+          stripe_payouts_enabled: boolean | null
+          success_rate: number | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+          website: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          accepts_new_clients?: boolean | null
+          avatar_url?: string | null
+          avg_response_hours?: number | null
+          bar_association?: string | null
+          bio?: string | null
+          city?: string | null
+          completed_services?: number | null
+          country_code?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          default_revisions_included?: number | null
+          display_name: string
+          extra_revision_fee_eur?: number | null
+          firm_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          jurisdictions?: string[] | null
+          languages?: string[] | null
+          license_number?: string | null
+          linkedin_url?: string | null
+          market_plan?: string | null
+          organization_id?: string | null
+          rating_avg?: number | null
+          ratings_count?: number | null
+          reputation_score?: number | null
+          slug?: string | null
+          specializations?: string[] | null
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean | null
+          stripe_onboarding_complete?: boolean | null
+          stripe_payouts_enabled?: boolean | null
+          success_rate?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          accepts_new_clients?: boolean | null
+          avatar_url?: string | null
+          avg_response_hours?: number | null
+          bar_association?: string | null
+          bio?: string | null
+          city?: string | null
+          completed_services?: number | null
+          country_code?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          default_revisions_included?: number | null
+          display_name?: string
+          extra_revision_fee_eur?: number | null
+          firm_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          jurisdictions?: string[] | null
+          languages?: string[] | null
+          license_number?: string | null
+          linkedin_url?: string | null
+          market_plan?: string | null
+          organization_id?: string | null
+          rating_avg?: number | null
+          ratings_count?: number | null
+          reputation_score?: number | null
+          slug?: string | null
+          specializations?: string[] | null
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean | null
+          stripe_onboarding_complete?: boolean | null
+          stripe_payouts_enabled?: boolean | null
+          success_rate?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_agents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_milestone_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          milestone_number: number
+          performed_by: string | null
+          performed_by_type: string | null
+          service_request_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          milestone_number: number
+          performed_by?: string | null
+          performed_by_type?: string | null
+          service_request_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          milestone_number?: number
+          performed_by?: string | null
+          performed_by_type?: string | null
+          service_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_milestone_events_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "market_service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_official_fee_receipts: {
+        Row: {
+          amount_currency: string | null
+          amount_paid: number
+          created_at: string | null
+          id: string
+          milestone_number: number | null
+          office_code: string
+          office_name: string | null
+          paid_at: string
+          receipt_reference: string | null
+          receipt_storage_path: string
+          service_request_id: string
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount_currency?: string | null
+          amount_paid: number
+          created_at?: string | null
+          id?: string
+          milestone_number?: number | null
+          office_code: string
+          office_name?: string | null
+          paid_at: string
+          receipt_reference?: string | null
+          receipt_storage_path: string
+          service_request_id: string
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount_currency?: string | null
+          amount_paid?: number
+          created_at?: string | null
+          id?: string
+          milestone_number?: number | null
+          office_code?: string
+          office_name?: string | null
+          paid_at?: string
+          receipt_reference?: string | null
+          receipt_storage_path?: string
+          service_request_id?: string
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_official_fee_receipts_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "market_service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_official_fee_receipts_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_opportunities: {
         Row: {
           country_iso2: string | null
@@ -15856,6 +16289,338 @@ export type Database = {
           opportunity_score?: number | null
         }
         Relationships: []
+      }
+      market_price_regulations: {
+        Row: {
+          created_at: string | null
+          id: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at: string | null
+          legal_basis: string | null
+          price_display_allowed: boolean | null
+          price_display_note: string | null
+          price_regulation_type: string | null
+          source_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at?: string | null
+          legal_basis?: string | null
+          price_display_allowed?: boolean | null
+          price_display_note?: string | null
+          price_regulation_type?: string | null
+          source_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          jurisdiction_code?: string
+          jurisdiction_name?: string
+          last_verified_at?: string | null
+          legal_basis?: string | null
+          price_display_allowed?: boolean | null
+          price_display_note?: string | null
+          price_regulation_type?: string | null
+          source_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      market_reviews: {
+        Row: {
+          agent_id: string
+          agent_reply: string | null
+          agent_reply_at: string | null
+          communication_rating: number | null
+          created_at: string | null
+          expertise_rating: number | null
+          id: string
+          is_anonymous: boolean | null
+          moderated_at: string | null
+          moderated_by: string | null
+          overall_rating: number
+          quality_rating: number | null
+          rejection_reason: string | null
+          review_language: string | null
+          review_text: string | null
+          reviewer_user_id: string
+          service_request_id: string
+          status: string | null
+          timeliness_rating: number | null
+          updated_at: string | null
+          value_rating: number | null
+        }
+        Insert: {
+          agent_id: string
+          agent_reply?: string | null
+          agent_reply_at?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          expertise_rating?: number | null
+          id?: string
+          is_anonymous?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          overall_rating: number
+          quality_rating?: number | null
+          rejection_reason?: string | null
+          review_language?: string | null
+          review_text?: string | null
+          reviewer_user_id: string
+          service_request_id: string
+          status?: string | null
+          timeliness_rating?: number | null
+          updated_at?: string | null
+          value_rating?: number | null
+        }
+        Update: {
+          agent_id?: string
+          agent_reply?: string | null
+          agent_reply_at?: string | null
+          communication_rating?: number | null
+          created_at?: string | null
+          expertise_rating?: number | null
+          id?: string
+          is_anonymous?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          overall_rating?: number
+          quality_rating?: number | null
+          rejection_reason?: string | null
+          review_language?: string | null
+          review_text?: string | null
+          reviewer_user_id?: string
+          service_request_id?: string
+          status?: string | null
+          timeliness_rating?: number | null
+          updated_at?: string | null
+          value_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_reviews_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_reviews_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: true
+            referencedRelation: "market_service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_saved_agents: {
+        Row: {
+          agent_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_saved_agents_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_service_requests: {
+        Row: {
+          agent_id: string | null
+          agent_payout_eur: number | null
+          auto_release_at: string | null
+          brand_name: string | null
+          client_organization_id: string | null
+          client_user_id: string
+          comm_thread_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          deadline_at: string | null
+          delivered_at: string | null
+          delivery_evidence_required: boolean | null
+          delivery_files: Json | null
+          delivery_notes: string | null
+          description: string | null
+          estimated_days: number | null
+          id: string
+          jurisdiction_code: string
+          milestones: Json | null
+          nice_classes: number[] | null
+          official_fees_total_eur: number | null
+          payment_plan: string | null
+          payment_status: string | null
+          platform_fee_eur: number | null
+          professional_fees_total_eur: number | null
+          quote_accepted_at: string | null
+          quote_amount_eur: number | null
+          quote_notes: string | null
+          quote_rejected_at: string | null
+          quote_sent_at: string | null
+          quote_valid_until: string | null
+          request_number: string | null
+          resolution_center_action: string | null
+          resolution_center_initiated_by: string | null
+          resolution_center_opened_at: string | null
+          resolution_center_resolved: boolean | null
+          resolution_center_response_deadline: string | null
+          revisions_included: number | null
+          revisions_used: number | null
+          service_type: string
+          status: string | null
+          status_changed_at: string | null
+          stripe_payment_intent_id: string | null
+          stripe_transfer_group: string | null
+          title: string
+          total_amount_eur: number | null
+          updated_at: string | null
+          urgency: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_payout_eur?: number | null
+          auto_release_at?: string | null
+          brand_name?: string | null
+          client_organization_id?: string | null
+          client_user_id: string
+          comm_thread_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          deadline_at?: string | null
+          delivered_at?: string | null
+          delivery_evidence_required?: boolean | null
+          delivery_files?: Json | null
+          delivery_notes?: string | null
+          description?: string | null
+          estimated_days?: number | null
+          id?: string
+          jurisdiction_code: string
+          milestones?: Json | null
+          nice_classes?: number[] | null
+          official_fees_total_eur?: number | null
+          payment_plan?: string | null
+          payment_status?: string | null
+          platform_fee_eur?: number | null
+          professional_fees_total_eur?: number | null
+          quote_accepted_at?: string | null
+          quote_amount_eur?: number | null
+          quote_notes?: string | null
+          quote_rejected_at?: string | null
+          quote_sent_at?: string | null
+          quote_valid_until?: string | null
+          request_number?: string | null
+          resolution_center_action?: string | null
+          resolution_center_initiated_by?: string | null
+          resolution_center_opened_at?: string | null
+          resolution_center_resolved?: boolean | null
+          resolution_center_response_deadline?: string | null
+          revisions_included?: number | null
+          revisions_used?: number | null
+          service_type: string
+          status?: string | null
+          status_changed_at?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_group?: string | null
+          title: string
+          total_amount_eur?: number | null
+          updated_at?: string | null
+          urgency?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_payout_eur?: number | null
+          auto_release_at?: string | null
+          brand_name?: string | null
+          client_organization_id?: string | null
+          client_user_id?: string
+          comm_thread_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          deadline_at?: string | null
+          delivered_at?: string | null
+          delivery_evidence_required?: boolean | null
+          delivery_files?: Json | null
+          delivery_notes?: string | null
+          description?: string | null
+          estimated_days?: number | null
+          id?: string
+          jurisdiction_code?: string
+          milestones?: Json | null
+          nice_classes?: number[] | null
+          official_fees_total_eur?: number | null
+          payment_plan?: string | null
+          payment_status?: string | null
+          platform_fee_eur?: number | null
+          professional_fees_total_eur?: number | null
+          quote_accepted_at?: string | null
+          quote_amount_eur?: number | null
+          quote_notes?: string | null
+          quote_rejected_at?: string | null
+          quote_sent_at?: string | null
+          quote_valid_until?: string | null
+          request_number?: string | null
+          resolution_center_action?: string | null
+          resolution_center_initiated_by?: string | null
+          resolution_center_opened_at?: string | null
+          resolution_center_resolved?: boolean | null
+          resolution_center_response_deadline?: string | null
+          revisions_included?: number | null
+          revisions_used?: number | null
+          service_type?: string
+          status?: string | null
+          status_changed_at?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_group?: string | null
+          title?: string
+          total_amount_eur?: number | null
+          updated_at?: string | null
+          urgency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_service_requests_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_service_requests_client_organization_id_fkey"
+            columns: ["client_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       market_users: {
         Row: {
@@ -22713,6 +23478,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      slugify: { Args: { input_text: string }; Returns: string }
       verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
     Enums: {
