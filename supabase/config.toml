@@ -47,3 +47,15 @@ verify_jwt = false
 
 [functions.comm-sync-call]
 verify_jwt = false
+
+[functions.genius-chat]
+verify_jwt = false
+
+[functions.genius-generate-document]
+verify_jwt = false
+
+[functions.genius-execute-action]
+verify_jwt = false
+
+[functions.genius-proactive]
+verify_jwt = false
