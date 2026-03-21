@@ -125,6 +125,7 @@ const sidebarSections: SidebarSection[] = [
     icon: Bot,
     items: [
       { label: 'AI Brain', path: '/backoffice/ai', icon: Brain },
+      { label: 'IP-GENIUS', path: '/backoffice/genius', icon: Sparkles },
       { label: '🗺️ Conocimiento Global', path: '/backoffice/knowledge', icon: Globe },
       { label: 'Knowledge Bases', path: '/backoffice/knowledge-bases', icon: Library },
       { label: 'Automatizaciones', path: '/backoffice/automations', icon: Zap },
