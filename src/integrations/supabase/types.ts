@@ -9500,6 +9500,207 @@ export type Database = {
           },
         ]
       }
+      genius_conversations: {
+        Row: {
+          context_matter_id: string | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          message_count: number | null
+          organization_id: string
+          status: string | null
+          title: string | null
+          total_cost_eur: number | null
+          total_tokens_used: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          context_matter_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          message_count?: number | null
+          organization_id: string
+          status?: string | null
+          title?: string | null
+          total_cost_eur?: number | null
+          total_tokens_used?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          context_matter_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          message_count?: number | null
+          organization_id?: string
+          status?: string | null
+          title?: string | null
+          total_cost_eur?: number | null
+          total_tokens_used?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_conversations_context_matter_id_fkey"
+            columns: ["context_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_generated_docs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          content_html: string | null
+          content_markdown: string | null
+          conversation_id: string | null
+          created_at: string | null
+          created_by: string | null
+          document_type: string
+          generation_prompt_hash: string | null
+          id: string
+          jurisdiction_code: string | null
+          language: string | null
+          matter_id: string | null
+          model_used: string | null
+          organization_id: string
+          parent_doc_id: string | null
+          rag_sources_used: Json | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sent_at: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content_html?: string | null
+          content_markdown?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          document_type: string
+          generation_prompt_hash?: string | null
+          id?: string
+          jurisdiction_code?: string | null
+          language?: string | null
+          matter_id?: string | null
+          model_used?: string | null
+          organization_id: string
+          parent_doc_id?: string | null
+          rag_sources_used?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content_html?: string | null
+          content_markdown?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          document_type?: string
+          generation_prompt_hash?: string | null
+          id?: string
+          jurisdiction_code?: string | null
+          language?: string | null
+          matter_id?: string | null
+          model_used?: string | null
+          organization_id?: string
+          parent_doc_id?: string | null
+          rag_sources_used?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_generated_docs_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "genius_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_parent_doc_id_fkey"
+            columns: ["parent_doc_id"]
+            isOneToOne: false
+            referencedRelation: "genius_generated_docs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_generated_documents: {
         Row: {
           citations: Json | null
@@ -9581,6 +9782,119 @@ export type Database = {
         }
         Relationships: []
       }
+      genius_knowledge_global: {
+        Row: {
+          article_reference: string | null
+          content: string
+          created_at: string | null
+          document_category: string | null
+          effective_date: string | null
+          embedding: string | null
+          id: string
+          is_active: boolean | null
+          jurisdiction_code: string | null
+          knowledge_type: string
+          language: string | null
+          last_verified_at: string | null
+          source_name: string | null
+          source_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          article_reference?: string | null
+          content: string
+          created_at?: string | null
+          document_category?: string | null
+          effective_date?: string | null
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string | null
+          knowledge_type: string
+          language?: string | null
+          last_verified_at?: string | null
+          source_name?: string | null
+          source_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          article_reference?: string | null
+          content?: string
+          created_at?: string | null
+          document_category?: string | null
+          effective_date?: string | null
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string | null
+          knowledge_type?: string
+          language?: string | null
+          last_verified_at?: string | null
+          source_name?: string | null
+          source_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      genius_knowledge_tenant: {
+        Row: {
+          chunk_index: number | null
+          chunk_total: number | null
+          content_chunk: string
+          created_at: string | null
+          document_type: string | null
+          embedding: string | null
+          id: string
+          is_active: boolean | null
+          jurisdiction_code: string | null
+          organization_id: string
+          source_id: string | null
+          source_type: string
+          title: string
+        }
+        Insert: {
+          chunk_index?: number | null
+          chunk_total?: number | null
+          content_chunk: string
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string | null
+          organization_id: string
+          source_id?: string | null
+          source_type: string
+          title: string
+        }
+        Update: {
+          chunk_index?: number | null
+          chunk_total?: number | null
+          content_chunk?: string
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string | null
+          organization_id?: string
+          source_id?: string | null
+          source_type?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_knowledge_tenant_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_legal_sources: {
         Row: {
           content: string | null
@@ -9631,6 +9945,167 @@ export type Database = {
           version?: number | null
         }
         Relationships: []
+      }
+      genius_messages: {
+        Row: {
+          action_data: Json | null
+          action_executed_at: string | null
+          action_status: string | null
+          content: string
+          content_type: string | null
+          conversation_id: string
+          cost_eur: number | null
+          created_at: string | null
+          document_jurisdiction: string | null
+          document_language: string | null
+          document_type: string | null
+          id: string
+          model_used: string | null
+          organization_id: string
+          proposed_action: string | null
+          rag_sources: Json | null
+          role: string
+          tokens_input: number | null
+          tokens_output: number | null
+        }
+        Insert: {
+          action_data?: Json | null
+          action_executed_at?: string | null
+          action_status?: string | null
+          content: string
+          content_type?: string | null
+          conversation_id: string
+          cost_eur?: number | null
+          created_at?: string | null
+          document_jurisdiction?: string | null
+          document_language?: string | null
+          document_type?: string | null
+          id?: string
+          model_used?: string | null
+          organization_id: string
+          proposed_action?: string | null
+          rag_sources?: Json | null
+          role: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+        }
+        Update: {
+          action_data?: Json | null
+          action_executed_at?: string | null
+          action_status?: string | null
+          content?: string
+          content_type?: string | null
+          conversation_id?: string
+          cost_eur?: number | null
+          created_at?: string | null
+          document_jurisdiction?: string | null
+          document_language?: string | null
+          document_type?: string | null
+          id?: string
+          model_used?: string | null
+          organization_id?: string
+          proposed_action?: string | null
+          rag_sources?: Json | null
+          role?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "genius_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_tenant_config: {
+        Row: {
+          created_at: string | null
+          current_month_actions: number | null
+          current_month_documents: number | null
+          current_month_queries: number | null
+          current_month_reset_at: string | null
+          disclaimer_accepted: boolean | null
+          disclaimer_accepted_at: string | null
+          disclaimer_accepted_by: string | null
+          feature_app_actions: boolean | null
+          feature_document_generation: boolean | null
+          feature_proactive_analysis: boolean | null
+          feature_web_search: boolean | null
+          id: string
+          is_active: boolean | null
+          max_actions_per_month: number | null
+          max_documents_per_month: number | null
+          max_queries_per_month: number | null
+          organization_id: string
+          plan_code: string | null
+          preferred_language: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_month_actions?: number | null
+          current_month_documents?: number | null
+          current_month_queries?: number | null
+          current_month_reset_at?: string | null
+          disclaimer_accepted?: boolean | null
+          disclaimer_accepted_at?: string | null
+          disclaimer_accepted_by?: string | null
+          feature_app_actions?: boolean | null
+          feature_document_generation?: boolean | null
+          feature_proactive_analysis?: boolean | null
+          feature_web_search?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_actions_per_month?: number | null
+          max_documents_per_month?: number | null
+          max_queries_per_month?: number | null
+          organization_id: string
+          plan_code?: string | null
+          preferred_language?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_month_actions?: number | null
+          current_month_documents?: number | null
+          current_month_queries?: number | null
+          current_month_reset_at?: string | null
+          disclaimer_accepted?: boolean | null
+          disclaimer_accepted_at?: string | null
+          disclaimer_accepted_by?: string | null
+          feature_app_actions?: boolean | null
+          feature_document_generation?: boolean | null
+          feature_proactive_analysis?: boolean | null
+          feature_web_search?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_actions_per_month?: number | null
+          max_documents_per_month?: number | null
+          max_queries_per_month?: number | null
+          organization_id?: string
+          plan_code?: string | null
+          preferred_language?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_tenant_config_disclaimer_accepted_by_fkey"
+            columns: ["disclaimer_accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_tenant_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       genius_trademark_comparisons: {
         Row: {
