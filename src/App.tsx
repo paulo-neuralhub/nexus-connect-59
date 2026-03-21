@@ -680,7 +680,7 @@ const App = () => (
                 <Route path="demo-mode" element={<DemoModePage />} />
                 <Route path="system-tests" element={<SystemTestsPage />} />
                 <Route path="voip" element={<VoipManagementPage />} />
-                <Route path="telephony" element={<TelephonyDashboard />} />
+                <Route path="telephony" element={<BackofficeTelephonyPage />} />
                 <Route path="telephony/provider" element={<TelephonyProviderPage />} />
                 <Route path="telephony/packs" element={<TelephonyPacksPage />} />
                 <Route path="telephony/consumption" element={<TelephonyConsumptionPage />} />
