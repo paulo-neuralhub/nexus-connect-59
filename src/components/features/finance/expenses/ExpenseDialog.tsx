@@ -1,10 +1,11 @@
 /**
- * Expense Dialog
- * Create/Edit expense form
- * L62-D: Finance Module
+ * Expense Dialog — Enhanced
+ * Create/Edit expense with receipt upload to Supabase Storage
+ * IP-specific categories: Tasa oficial, Traducción, Mensajería, etc.
+ * PHASE 3: Finance Module
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -33,15 +34,17 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { MatterSelect } from '@/components/features/docket/MatterSelect';
-import { CalendarIcon, Receipt, Loader2, Upload } from 'lucide-react';
+import { CalendarIcon, Receipt, Loader2, Upload, FileText, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { 
-  useCreateExpense, 
-  useUpdateExpense, 
-  Expense, 
+import {
+  useCreateExpense,
+  useUpdateExpense,
+  Expense,
   ExpenseCategory,
-  EXPENSE_CATEGORIES 
+  EXPENSE_CATEGORIES,
 } from '@/hooks/finance/useExpenses';
+import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/contexts/organization-context';
 import { toast } from 'sonner';
 
 const VAT_RATES = [
@@ -64,6 +67,7 @@ export function ExpenseDialog({
   expense,
   defaultMatter,
 }: ExpenseDialogProps) {
+  const { currentOrganization } = useOrganization();
   const [selectedMatter, setSelectedMatter] = useState<{ id: string; reference: string; title: string } | null>(null);
   const [date, setDate] = useState<Date>(new Date());
   const [category, setCategory] = useState<ExpenseCategory>('other');
@@ -73,6 +77,8 @@ export function ExpenseDialog({
   const [isBillable, setIsBillable] = useState(true);
   const [markupPercent, setMarkupPercent] = useState('0');
   const [receiptUrl, setReceiptUrl] = useState('');
+  const [receiptFileName, setReceiptFileName] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const createMutation = useCreateExpense();
   const updateMutation = useUpdateExpense();
@@ -91,6 +97,7 @@ export function ExpenseDialog({
         setIsBillable(expense.is_billable);
         setMarkupPercent(expense.markup_percent.toString());
         setReceiptUrl(expense.receipt_url || '');
+        setReceiptFileName(expense.receipt_file_name || '');
       } else {
         setSelectedMatter(defaultMatter || null);
         setDate(new Date());
@@ -101,9 +108,57 @@ export function ExpenseDialog({
         setIsBillable(true);
         setMarkupPercent('0');
         setReceiptUrl('');
+        setReceiptFileName('');
       }
     }
   }, [open, expense, defaultMatter]);
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentOrganization?.id) return;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo no puede superar 10MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${currentOrganization.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from('expense-receipts')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      // Get public URL (signed since bucket is private)
+      const { data: urlData } = await supabase.storage
+        .from('expense-receipts')
+        .createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year
+
+      if (urlData?.signedUrl) {
+        setReceiptUrl(urlData.signedUrl);
+        setReceiptFileName(file.name);
+        toast.success('Justificante subido');
+      }
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error('Error al subir el archivo');
+    } finally {
+      setUploading(false);
+    }
+  }, [currentOrganization?.id]);
+
+  const handleRemoveReceipt = () => {
+    setReceiptUrl('');
+    setReceiptFileName('');
+  };
 
   const handleSubmit = async () => {
     const amountNum = parseFloat(amount);
@@ -130,6 +185,7 @@ export function ExpenseDialog({
           is_billable: isBillable,
           markup_percent: parseFloat(markupPercent) || 0,
           receipt_url: receiptUrl || undefined,
+          receipt_file_name: receiptFileName || undefined,
         });
         toast.success('Gasto actualizado');
       } else {
@@ -143,6 +199,7 @@ export function ExpenseDialog({
           is_billable: isBillable,
           markup_percent: parseFloat(markupPercent) || 0,
           receipt_url: receiptUrl || undefined,
+          receipt_file_name: receiptFileName || undefined,
         });
         toast.success('Gasto registrado');
       }
@@ -173,7 +230,7 @@ export function ExpenseDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-          {/* Date */}
+          {/* Date + Category */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Fecha *</Label>
@@ -203,7 +260,6 @@ export function ExpenseDialog({
               </Popover>
             </div>
 
-            {/* Category */}
             <div className="space-y-2">
               <Label>Categoría *</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)}>
@@ -324,19 +380,54 @@ export function ExpenseDialog({
             )}
           </div>
 
-          {/* Receipt URL */}
+          {/* Receipt Upload */}
           <div className="space-y-2">
-            <Label className="text-muted-foreground">URL del justificante (opcional)</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="https://..."
-                value={receiptUrl}
-                onChange={(e) => setReceiptUrl(e.target.value)}
-              />
-              <Button variant="outline" size="icon" disabled>
-                <Upload className="h-4 w-4" />
-              </Button>
-            </div>
+            <Label>Justificante / Recibo</Label>
+            {receiptUrl ? (
+              <div className="flex items-center gap-2 p-2 border rounded-lg bg-muted/30">
+                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm truncate flex-1">
+                  {receiptFileName || 'Archivo adjunto'}
+                </span>
+                <a
+                  href={receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline shrink-0"
+                >
+                  Ver
+                </a>
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={handleRemoveReceipt}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*,.pdf,.doc,.docx"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploading}
+                />
+                <div className={cn(
+                  'flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-4 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/30',
+                  uploading && 'opacity-50 pointer-events-none'
+                )}>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Arrastra o haz clic para subir justificante
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -344,7 +435,7 @@ export function ExpenseDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || uploading}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? 'Guardar' : 'Crear gasto'}
           </Button>

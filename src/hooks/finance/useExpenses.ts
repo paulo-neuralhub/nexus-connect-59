@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 
 export type ExpenseStatus = 'pending' | 'approved' | 'rejected' | 'reimbursed';
 export type ExpenseBillingStatus = 'unbilled' | 'ready' | 'billed' | 'written_off';
-export type ExpenseCategory = 'travel' | 'materials' | 'official_fees' | 'courier' | 'meals' | 'accommodation' | 'other';
+export type ExpenseCategory = 'official_fees' | 'translation' | 'courier' | 'travel' | 'certification' | 'apostille' | 'materials' | 'meals' | 'accommodation' | 'other';
 
 export interface Expense {
   id: string;
@@ -73,10 +73,13 @@ export interface ExpenseFilters {
 }
 
 export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; icon: string }> = {
+  official_fees: { label: 'Tasa oficial', icon: 'Building' },
+  translation: { label: 'Traducción', icon: 'Languages' },
+  courier: { label: 'Mensajería/Courier', icon: 'Send' },
   travel: { label: 'Viaje/Transporte', icon: 'Car' },
+  certification: { label: 'Certificación', icon: 'FileCheck' },
+  apostille: { label: 'Apostilla', icon: 'Stamp' },
   materials: { label: 'Materiales', icon: 'Package' },
-  official_fees: { label: 'Tasas oficiales', icon: 'Building' },
-  courier: { label: 'Mensajería', icon: 'Send' },
   meals: { label: 'Comidas', icon: 'UtensilsCrossed' },
   accommodation: { label: 'Alojamiento', icon: 'Bed' },
   other: { label: 'Otros', icon: 'MoreHorizontal' },
