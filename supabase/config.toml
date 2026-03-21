@@ -32,3 +32,18 @@ verify_jwt = false
 
 [functions.spider-scan]
 verify_jwt = false
+
+[functions.comm-send-email]
+verify_jwt = false
+
+[functions.comm-email-inbound]
+verify_jwt = false
+
+[functions.comm-send-whatsapp]
+verify_jwt = false
+
+[functions.comm-whatsapp-inbound]
+verify_jwt = false
+
+[functions.comm-sync-call]
+verify_jwt = false
