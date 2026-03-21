@@ -16,8 +16,6 @@ import {
   Download,
   Calendar,
   Play,
-  Star,
-  StarOff,
   MoreVertical,
   Plus,
   Briefcase,
@@ -37,7 +35,6 @@ import {
   useReportDefinitions, 
   useReportExecutions, 
   useRunReport,
-  useToggleFavoriteReport,
   useAnalyticsStats 
 } from '@/hooks/analytics/useAnalytics';
 import { RunReportDialog } from './RunReportDialog';
@@ -65,7 +62,6 @@ export function AnalyticsDashboard() {
   const { data: stats } = useAnalyticsStats();
   
   const runMutation = useRunReport();
-  const favoriteMutation = useToggleFavoriteReport();
 
   const filteredReports = reports?.filter(r => 
     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -182,20 +178,6 @@ export function AnalyticsDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => favoriteMutation.mutate({ 
-                          id: report.id, 
-                          isFavorite: report.is_favorite 
-                        })}
-                      >
-                        {report.is_favorite ? (
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                        ) : (
-                          <StarOff className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
@@ -223,12 +205,12 @@ export function AnalyticsDashboard() {
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-xs text-muted-foreground">
-                      {report.run_count > 0 && (
-                        <span>{report.run_count} ejecuciones</span>
+                      {report.report_type && (
+                        <span>{report.report_type}</span>
                       )}
                     </div>
                     <div className="flex gap-1">
-                      {report.available_formats?.slice(0, 3).map((fmt: string) => (
+                      {report.output_formats?.slice(0, 3).map((fmt: string) => (
                         <Badge key={fmt} variant="secondary" className="text-xs">
                           {fmt.toUpperCase()}
                         </Badge>
