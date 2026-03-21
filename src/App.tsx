@@ -288,6 +288,7 @@ import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
 import BackofficeProductsPage from "./pages/backoffice/products";
+import BackofficeSpiderPage from "./pages/backoffice/spider";
 
 // Stripe Backoffice
 import StripeDashboard from "./pages/backoffice/stripe";
