@@ -12574,6 +12574,231 @@ export type Database = {
         }
         Relationships: []
       }
+      ipo_automation_capabilities: {
+        Row: {
+          assignments_api: string | null
+          assignments_notes: string | null
+          assignments_status: string | null
+          auth_type: string | null
+          avg_registration_months: number | null
+          classification_api: string | null
+          classification_notes: string | null
+          classification_status: string | null
+          created_at: string | null
+          data_format: string | null
+          documents_api: string | null
+          documents_notes: string | null
+          documents_status: string | null
+          enforcement_api: string | null
+          enforcement_notes: string | null
+          enforcement_status: string | null
+          exam_formal_api: string | null
+          exam_formal_notes: string | null
+          exam_formal_status: string | null
+          exam_substantive_api: string | null
+          exam_substantive_notes: string | null
+          exam_substantive_status: string | null
+          expansion_api: string | null
+          expansion_notes: string | null
+          expansion_status: string | null
+          filing_api: string | null
+          filing_notes: string | null
+          filing_status: string | null
+          flag_emoji: string | null
+          hague_member: boolean | null
+          id: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at: string | null
+          local_agent_cost_eur_estimate: number | null
+          madrid_member: boolean | null
+          notes: string | null
+          notifications_api: string | null
+          notifications_notes: string | null
+          notifications_status: string | null
+          office_id: string | null
+          official_fee_1class_eur: number | null
+          opposition_api: string | null
+          opposition_notes: string | null
+          opposition_status: string | null
+          overall_automation_pct: number | null
+          pct_member: boolean | null
+          rate_limit_per_min: number | null
+          region: string | null
+          renewal_api: string | null
+          renewal_notes: string | null
+          renewal_status: string | null
+          requires_local_agent: boolean | null
+          search_clearance_api: string | null
+          search_clearance_notes: string | null
+          search_clearance_status: string | null
+          surveillance_api: string | null
+          surveillance_notes: string | null
+          surveillance_status: string | null
+          tracking_api: string | null
+          tracking_notes: string | null
+          tracking_status: string | null
+          updated_at: string | null
+          valuation_api: string | null
+          valuation_notes: string | null
+          valuation_status: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          assignments_api?: string | null
+          assignments_notes?: string | null
+          assignments_status?: string | null
+          auth_type?: string | null
+          avg_registration_months?: number | null
+          classification_api?: string | null
+          classification_notes?: string | null
+          classification_status?: string | null
+          created_at?: string | null
+          data_format?: string | null
+          documents_api?: string | null
+          documents_notes?: string | null
+          documents_status?: string | null
+          enforcement_api?: string | null
+          enforcement_notes?: string | null
+          enforcement_status?: string | null
+          exam_formal_api?: string | null
+          exam_formal_notes?: string | null
+          exam_formal_status?: string | null
+          exam_substantive_api?: string | null
+          exam_substantive_notes?: string | null
+          exam_substantive_status?: string | null
+          expansion_api?: string | null
+          expansion_notes?: string | null
+          expansion_status?: string | null
+          filing_api?: string | null
+          filing_notes?: string | null
+          filing_status?: string | null
+          flag_emoji?: string | null
+          hague_member?: boolean | null
+          id?: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at?: string | null
+          local_agent_cost_eur_estimate?: number | null
+          madrid_member?: boolean | null
+          notes?: string | null
+          notifications_api?: string | null
+          notifications_notes?: string | null
+          notifications_status?: string | null
+          office_id?: string | null
+          official_fee_1class_eur?: number | null
+          opposition_api?: string | null
+          opposition_notes?: string | null
+          opposition_status?: string | null
+          overall_automation_pct?: number | null
+          pct_member?: boolean | null
+          rate_limit_per_min?: number | null
+          region?: string | null
+          renewal_api?: string | null
+          renewal_notes?: string | null
+          renewal_status?: string | null
+          requires_local_agent?: boolean | null
+          search_clearance_api?: string | null
+          search_clearance_notes?: string | null
+          search_clearance_status?: string | null
+          surveillance_api?: string | null
+          surveillance_notes?: string | null
+          surveillance_status?: string | null
+          tracking_api?: string | null
+          tracking_notes?: string | null
+          tracking_status?: string | null
+          updated_at?: string | null
+          valuation_api?: string | null
+          valuation_notes?: string | null
+          valuation_status?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          assignments_api?: string | null
+          assignments_notes?: string | null
+          assignments_status?: string | null
+          auth_type?: string | null
+          avg_registration_months?: number | null
+          classification_api?: string | null
+          classification_notes?: string | null
+          classification_status?: string | null
+          created_at?: string | null
+          data_format?: string | null
+          documents_api?: string | null
+          documents_notes?: string | null
+          documents_status?: string | null
+          enforcement_api?: string | null
+          enforcement_notes?: string | null
+          enforcement_status?: string | null
+          exam_formal_api?: string | null
+          exam_formal_notes?: string | null
+          exam_formal_status?: string | null
+          exam_substantive_api?: string | null
+          exam_substantive_notes?: string | null
+          exam_substantive_status?: string | null
+          expansion_api?: string | null
+          expansion_notes?: string | null
+          expansion_status?: string | null
+          filing_api?: string | null
+          filing_notes?: string | null
+          filing_status?: string | null
+          flag_emoji?: string | null
+          hague_member?: boolean | null
+          id?: string
+          jurisdiction_code?: string
+          jurisdiction_name?: string
+          last_verified_at?: string | null
+          local_agent_cost_eur_estimate?: number | null
+          madrid_member?: boolean | null
+          notes?: string | null
+          notifications_api?: string | null
+          notifications_notes?: string | null
+          notifications_status?: string | null
+          office_id?: string | null
+          official_fee_1class_eur?: number | null
+          opposition_api?: string | null
+          opposition_notes?: string | null
+          opposition_status?: string | null
+          overall_automation_pct?: number | null
+          pct_member?: boolean | null
+          rate_limit_per_min?: number | null
+          region?: string | null
+          renewal_api?: string | null
+          renewal_notes?: string | null
+          renewal_status?: string | null
+          requires_local_agent?: boolean | null
+          search_clearance_api?: string | null
+          search_clearance_notes?: string | null
+          search_clearance_status?: string | null
+          surveillance_api?: string | null
+          surveillance_notes?: string | null
+          surveillance_status?: string | null
+          tracking_api?: string | null
+          tracking_notes?: string | null
+          tracking_status?: string | null
+          updated_at?: string | null
+          valuation_api?: string | null
+          valuation_notes?: string | null
+          valuation_status?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ipo_automation_capabilities_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ipo_automation_capabilities_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ipo_enrich_runs: {
         Row: {
           completed_at: string | null
