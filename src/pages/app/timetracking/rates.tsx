@@ -63,9 +63,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-const RATE_TYPE_CONFIG: Record<RateType, { label: string; icon: any; color: string }> = {
+const RATE_TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
   user: { label: 'Usuario', icon: User, color: 'bg-blue-100 text-blue-700' },
-  role: { label: 'Rol', icon: Users, color: 'bg-purple-100 text-purple-700' },
   matter_type: { label: 'Tipo Expediente', icon: Briefcase, color: 'bg-green-100 text-green-700' },
   client: { label: 'Cliente', icon: Building, color: 'bg-amber-100 text-amber-700' },
   default: { label: 'Por Defecto', icon: DollarSign, color: 'bg-gray-100 text-gray-700' },
