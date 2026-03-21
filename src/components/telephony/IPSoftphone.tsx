@@ -194,9 +194,9 @@ export function IPSoftphone() {
   // ── Status colors ──
   const statusConfig = {
     idle: { color: "bg-muted", textColor: "text-muted-foreground", label: "Listo", dot: "bg-muted-foreground" },
-    calling: { color: "bg-blue-500/10", textColor: "text-blue-600", label: "Marcando...", dot: "bg-blue-500 animate-pulse" },
-    ringing: { color: "bg-amber-500/10", textColor: "text-amber-600", label: "Llamando...", dot: "bg-amber-500 animate-pulse" },
-    "in-progress": { color: "bg-emerald-500/10", textColor: "text-emerald-600", label: "En llamada", dot: "bg-emerald-500" },
+    calling: { color: "bg-accent/50", textColor: "text-accent-foreground", label: "Marcando...", dot: "bg-accent-foreground animate-pulse" },
+    ringing: { color: "bg-accent/50", textColor: "text-accent-foreground", label: "Llamando...", dot: "bg-accent-foreground animate-pulse" },
+    "in-progress": { color: "bg-primary/10", textColor: "text-primary", label: "En llamada", dot: "bg-primary" },
     ended: { color: "bg-muted", textColor: "text-muted-foreground", label: "Finalizada", dot: "bg-muted-foreground" },
     error: { color: "bg-destructive/10", textColor: "text-destructive", label: "Error", dot: "bg-destructive" },
   };
