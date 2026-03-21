@@ -3924,17 +3924,150 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_daily_metrics: {
+        Row: {
+          ai_cost_month_eur: number | null
+          ai_cost_today_eur: number | null
+          ai_documents_generated_today: number | null
+          ai_queries_today: number | null
+          avg_invoice_value: number | null
+          calculated_at: string | null
+          calls_made_today: number | null
+          clients_active: number | null
+          clients_total: number | null
+          deadline_compliance_rate: number | null
+          deadlines_completed_today: number | null
+          deadlines_due_today: number | null
+          deadlines_missed_today: number | null
+          deadlines_overdue_total: number | null
+          deals_lost_month: number | null
+          deals_pipeline_value: number | null
+          deals_won_month: number | null
+          emails_sent_today: number | null
+          hours_billable_today: number | null
+          hours_logged_today: number | null
+          id: string
+          invoices_created_today: number | null
+          matters_active: number | null
+          matters_created_today: number | null
+          matters_design: number | null
+          matters_patent: number | null
+          matters_total: number | null
+          matters_trademark: number | null
+          metric_date: string
+          organization_id: string
+          revenue_collected_month: number | null
+          revenue_invoiced_month: number | null
+          revenue_pending: number | null
+          spider_alerts_critical: number | null
+          spider_alerts_new: number | null
+          spider_watches_active: number | null
+          whatsapp_sent_today: number | null
+        }
+        Insert: {
+          ai_cost_month_eur?: number | null
+          ai_cost_today_eur?: number | null
+          ai_documents_generated_today?: number | null
+          ai_queries_today?: number | null
+          avg_invoice_value?: number | null
+          calculated_at?: string | null
+          calls_made_today?: number | null
+          clients_active?: number | null
+          clients_total?: number | null
+          deadline_compliance_rate?: number | null
+          deadlines_completed_today?: number | null
+          deadlines_due_today?: number | null
+          deadlines_missed_today?: number | null
+          deadlines_overdue_total?: number | null
+          deals_lost_month?: number | null
+          deals_pipeline_value?: number | null
+          deals_won_month?: number | null
+          emails_sent_today?: number | null
+          hours_billable_today?: number | null
+          hours_logged_today?: number | null
+          id?: string
+          invoices_created_today?: number | null
+          matters_active?: number | null
+          matters_created_today?: number | null
+          matters_design?: number | null
+          matters_patent?: number | null
+          matters_total?: number | null
+          matters_trademark?: number | null
+          metric_date?: string
+          organization_id: string
+          revenue_collected_month?: number | null
+          revenue_invoiced_month?: number | null
+          revenue_pending?: number | null
+          spider_alerts_critical?: number | null
+          spider_alerts_new?: number | null
+          spider_watches_active?: number | null
+          whatsapp_sent_today?: number | null
+        }
+        Update: {
+          ai_cost_month_eur?: number | null
+          ai_cost_today_eur?: number | null
+          ai_documents_generated_today?: number | null
+          ai_queries_today?: number | null
+          avg_invoice_value?: number | null
+          calculated_at?: string | null
+          calls_made_today?: number | null
+          clients_active?: number | null
+          clients_total?: number | null
+          deadline_compliance_rate?: number | null
+          deadlines_completed_today?: number | null
+          deadlines_due_today?: number | null
+          deadlines_missed_today?: number | null
+          deadlines_overdue_total?: number | null
+          deals_lost_month?: number | null
+          deals_pipeline_value?: number | null
+          deals_won_month?: number | null
+          emails_sent_today?: number | null
+          hours_billable_today?: number | null
+          hours_logged_today?: number | null
+          id?: string
+          invoices_created_today?: number | null
+          matters_active?: number | null
+          matters_created_today?: number | null
+          matters_design?: number | null
+          matters_patent?: number | null
+          matters_total?: number | null
+          matters_trademark?: number | null
+          metric_date?: string
+          organization_id?: string
+          revenue_collected_month?: number | null
+          revenue_invoiced_month?: number | null
+          revenue_pending?: number | null
+          spider_alerts_critical?: number | null
+          spider_alerts_new?: number | null
+          spider_watches_active?: number | null
+          whatsapp_sent_today?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_daily_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           browser: string | null
           country_code: string | null
           created_at: string | null
           device_type: string | null
+          entity_id: string | null
+          entity_type: string | null
           event_category: string
           event_date: string | null
           event_name: string
+          event_type: string | null
           id: string
-          organization_id: string | null
+          matter_id: string | null
+          occurred_at: string | null
+          organization_id: string
           os: string | null
           page_path: string | null
           page_title: string | null
@@ -3944,6 +4077,7 @@ export type Database = {
           region: string | null
           screen_resolution: string | null
           session_id: string
+          user_country: string | null
           user_id: string | null
         }
         Insert: {
@@ -3951,11 +4085,16 @@ export type Database = {
           country_code?: string | null
           created_at?: string | null
           device_type?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           event_category: string
           event_date?: string | null
           event_name: string
+          event_type?: string | null
           id?: string
-          organization_id?: string | null
+          matter_id?: string | null
+          occurred_at?: string | null
+          organization_id: string
           os?: string | null
           page_path?: string | null
           page_title?: string | null
@@ -3965,6 +4104,7 @@ export type Database = {
           region?: string | null
           screen_resolution?: string | null
           session_id: string
+          user_country?: string | null
           user_id?: string | null
         }
         Update: {
@@ -3972,11 +4112,16 @@ export type Database = {
           country_code?: string | null
           created_at?: string | null
           device_type?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           event_category?: string
           event_date?: string | null
           event_name?: string
+          event_type?: string | null
           id?: string
-          organization_id?: string | null
+          matter_id?: string | null
+          occurred_at?: string | null
+          organization_id?: string
           os?: string | null
           page_path?: string | null
           page_title?: string | null
@@ -3986,9 +4131,117 @@ export type Database = {
           region?: string | null
           screen_resolution?: string | null
           session_id?: string
+          user_country?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_matter_metrics: {
+        Row: {
+          actual_registration_date: string | null
+          created_at: string | null
+          days_since_filing: number | null
+          days_to_registration: number | null
+          deadlines_completed_on_time: number | null
+          deadlines_missed: number | null
+          deadlines_total: number | null
+          expected_registration_date: string | null
+          id: string
+          last_calculated_at: string | null
+          margin_eur: number | null
+          margin_pct: number | null
+          matter_id: string
+          office_actions_on_time: number | null
+          office_actions_received: number | null
+          office_actions_responded: number | null
+          oppositions_filed: number | null
+          oppositions_received: number | null
+          organization_id: string
+          total_collected: number | null
+          total_expenses: number | null
+          total_hours: number | null
+          total_hours_cost: number | null
+          total_invoiced: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_registration_date?: string | null
+          created_at?: string | null
+          days_since_filing?: number | null
+          days_to_registration?: number | null
+          deadlines_completed_on_time?: number | null
+          deadlines_missed?: number | null
+          deadlines_total?: number | null
+          expected_registration_date?: string | null
+          id?: string
+          last_calculated_at?: string | null
+          margin_eur?: number | null
+          margin_pct?: number | null
+          matter_id: string
+          office_actions_on_time?: number | null
+          office_actions_received?: number | null
+          office_actions_responded?: number | null
+          oppositions_filed?: number | null
+          oppositions_received?: number | null
+          organization_id: string
+          total_collected?: number | null
+          total_expenses?: number | null
+          total_hours?: number | null
+          total_hours_cost?: number | null
+          total_invoiced?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_registration_date?: string | null
+          created_at?: string | null
+          days_since_filing?: number | null
+          days_to_registration?: number | null
+          deadlines_completed_on_time?: number | null
+          deadlines_missed?: number | null
+          deadlines_total?: number | null
+          expected_registration_date?: string | null
+          id?: string
+          last_calculated_at?: string | null
+          margin_eur?: number | null
+          margin_pct?: number | null
+          matter_id?: string
+          office_actions_on_time?: number | null
+          office_actions_received?: number | null
+          office_actions_responded?: number | null
+          oppositions_filed?: number | null
+          oppositions_received?: number | null
+          organization_id?: string
+          total_collected?: number | null
+          total_expenses?: number | null
+          total_hours?: number | null
+          total_hours_cost?: number | null
+          total_invoiced?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_matter_metrics_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_matter_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       api_connections: {
         Row: {
@@ -18754,9 +19007,13 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean | null
+          is_scheduled: boolean | null
+          is_system_template: boolean | null
           name: string | null
           organization_id: string | null
+          output_formats: string[] | null
           report_type: string | null
+          schedule_cron: string | null
           updated_at: string | null
         }
         Insert: {
@@ -18766,9 +19023,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_scheduled?: boolean | null
+          is_system_template?: boolean | null
           name?: string | null
           organization_id?: string | null
+          output_formats?: string[] | null
           report_type?: string | null
+          schedule_cron?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -18778,9 +19039,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_scheduled?: boolean | null
+          is_system_template?: boolean | null
           name?: string | null
           organization_id?: string | null
+          output_formats?: string[] | null
           report_type?: string | null
+          schedule_cron?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -18789,11 +19054,18 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string | null
+          duration_seconds: number | null
           error_message: string | null
+          file_path: string | null
+          file_size_bytes: number | null
           file_url: string | null
           id: string
           organization_id: string | null
+          parameters: Json | null
+          report_definition_id: string | null
           report_id: string | null
+          requested_by: string | null
+          row_count: number | null
           started_at: string | null
           status: string | null
           triggered_by: string | null
@@ -18801,11 +19073,18 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           error_message?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
           file_url?: string | null
           id?: string
           organization_id?: string | null
+          parameters?: Json | null
+          report_definition_id?: string | null
           report_id?: string | null
+          requested_by?: string | null
+          row_count?: number | null
           started_at?: string | null
           status?: string | null
           triggered_by?: string | null
@@ -18813,16 +19092,38 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           error_message?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
           file_url?: string | null
           id?: string
           organization_id?: string | null
+          parameters?: Json | null
+          report_definition_id?: string | null
           report_id?: string | null
+          requested_by?: string | null
+          row_count?: number | null
           started_at?: string | null
           status?: string | null
           triggered_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "report_executions_report_definition_id_fkey"
+            columns: ["report_definition_id"]
+            isOneToOne: false
+            referencedRelation: "report_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_executions_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_templates: {
         Row: {
@@ -22317,6 +22618,14 @@ export type Database = {
         Returns: string
       }
       apply_research_data: { Args: { p_queue_id: string }; Returns: Json }
+      calculate_daily_metrics: {
+        Args: { p_date?: string; p_org_id: string }
+        Returns: undefined
+      }
+      calculate_matter_metrics: {
+        Args: { p_matter_id: string }
+        Returns: undefined
+      }
       charge_call: {
         Args: {
           p_call_sid: string
