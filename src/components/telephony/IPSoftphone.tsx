@@ -394,8 +394,8 @@ export function IPSoftphone() {
             <div className="px-4 py-3 space-y-3">
               {/* Timer */}
               <div className="flex items-center justify-center gap-2">
-                <Clock className="h-4 w-4 text-emerald-600" />
-                <span className="text-2xl font-mono font-semibold text-emerald-600">
+                <Clock className="h-4 w-4 text-primary" />
+                <span className="text-2xl font-mono font-semibold text-primary">
                   {formatDuration(callDuration)}
                 </span>
               </div>
