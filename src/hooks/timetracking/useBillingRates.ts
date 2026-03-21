@@ -1,34 +1,34 @@
 /**
  * Billing Rates Hooks
- * P57: Time Tracking Module
+ * UPDATED: Matches real billing_rates schema (rate_name, valid_from, valid_until)
+ * Joins profiles instead of users table
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 
-export type RateType = 'user' | 'role' | 'matter_type' | 'client' | 'default';
+export type RateType = 'user' | 'matter_type' | 'client' | 'default';
 
 export interface BillingRate {
   id: string;
   organization_id: string;
-  rate_type: RateType;
-  user_id?: string;
-  role_name?: string;
-  matter_type?: string;
-  contact_id?: string;
+  rate_type: string;
+  user_id?: string | null;
+  matter_type?: string | null;
+  crm_account_id?: string | null;
+  activity_type?: string | null;
+  rate_name: string;
   hourly_rate: number;
   currency: string;
-  name?: string;
-  description?: string;
-  effective_from: string;
-  effective_until?: string;
-  is_active: boolean;
+  is_default: boolean;
+  valid_from: string | null;
+  valid_until: string | null;
   created_at: string;
   updated_at: string;
   // Joined data
-  user?: { id: string; full_name: string };
-  contact?: { id: string; name: string };
+  user?: { id: string; first_name: string; last_name: string } | null;
+  account?: { id: string; name: string } | null;
 }
 
 // Get all billing rates
@@ -44,12 +44,12 @@ export function useBillingRates() {
         .from('billing_rates')
         .select(`
           *,
-          user:users(id, full_name),
-          contact:contacts(id, name)
+          user:profiles!billing_rates_user_id_fkey(id, first_name, last_name),
+          account:crm_accounts!billing_rates_crm_account_id_fkey(id, name)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('rate_type', { ascending: true })
-        .order('created_at', { ascending: false });
+        .order('is_default', { ascending: false });
 
       if (error) throw error;
       return data as BillingRate[];
@@ -66,16 +66,16 @@ export function useCreateBillingRate() {
   return useMutation({
     mutationFn: async (data: {
       rate_type: RateType;
+      rate_name: string;
       hourly_rate: number;
       currency?: string;
-      name?: string;
-      description?: string;
       user_id?: string;
-      role_name?: string;
       matter_type?: string;
-      contact_id?: string;
-      effective_from?: string;
-      effective_until?: string;
+      crm_account_id?: string;
+      activity_type?: string;
+      is_default?: boolean;
+      valid_from?: string;
+      valid_until?: string;
     }) => {
       if (!currentOrganization?.id) {
         throw new Error('No organization');
@@ -85,13 +85,23 @@ export function useCreateBillingRate() {
         .from('billing_rates')
         .insert({
           organization_id: currentOrganization.id,
-          ...data,
+          rate_type: data.rate_type,
+          rate_name: data.rate_name,
+          hourly_rate: data.hourly_rate,
+          currency: data.currency || 'EUR',
+          user_id: data.user_id || null,
+          matter_type: data.matter_type || null,
+          crm_account_id: data.crm_account_id || null,
+          activity_type: data.activity_type || null,
+          is_default: data.is_default || false,
+          valid_from: data.valid_from || new Date().toISOString().split('T')[0],
+          valid_until: data.valid_until || null,
         })
         .select()
         .single();
 
       if (error) throw error;
-      return rate;
+      return rate as BillingRate;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billing-rates'] });
@@ -108,15 +118,16 @@ export function useUpdateBillingRate() {
       id,
       ...updates
     }: Partial<BillingRate> & { id: string }) => {
+      const { user, account, ...cleanUpdates } = updates as any;
       const { data, error } = await supabase
         .from('billing_rates')
-        .update(updates)
+        .update({ ...cleanUpdates, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return data as BillingRate;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billing-rates'] });
@@ -143,27 +154,26 @@ export function useDeleteBillingRate() {
   });
 }
 
-// Get applicable rate for a matter
+// Get applicable rate for a user/matter (simplified without RPC)
 export function useApplicableRate(matterId: string | undefined) {
   const { currentOrganization } = useOrganization();
 
   return useQuery({
     queryKey: ['applicable-rate', currentOrganization?.id, matterId],
-    queryFn: async () => {
-      if (!currentOrganization?.id || !matterId) return null;
+    queryFn: async (): Promise<number | null> => {
+      if (!currentOrganization?.id) return null;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      // Get default rate for the org
+      const { data } = await supabase
+        .from('billing_rates')
+        .select('hourly_rate')
+        .eq('organization_id', currentOrganization.id)
+        .eq('is_default', true)
+        .limit(1)
+        .maybeSingle();
 
-      const { data, error } = await supabase.rpc('get_applicable_rate', {
-        p_organization_id: currentOrganization.id,
-        p_user_id: user.id,
-        p_matter_id: matterId,
-      });
-
-      if (error) throw error;
-      return data as number;
+      return data?.hourly_rate ?? null;
     },
-    enabled: !!currentOrganization?.id && !!matterId,
+    enabled: !!currentOrganization?.id,
   });
 }

@@ -1,6 +1,7 @@
 // ============================================
 // src/hooks/finance/useProvisions.ts
 // Hooks para gestión de provisiones de fondos
+// UPDATED: provision_movements matches real schema
 // ============================================
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,17 +41,22 @@ export interface Provision {
 
 export type ProvisionStatus = 'pending' | 'requested' | 'received' | 'used' | 'returned';
 
+// Matches real provision_movements schema
 export interface ProvisionMovement {
   id: string;
+  organization_id: string;
   provision_id: string;
-  movement_type: 'request' | 'receipt' | 'use' | 'return';
+  movement_type: string; // 'deposit' | 'apply_to_invoice' | 'apply_to_official_fee' | 'refund' | 'adjustment'
   amount: number;
-  description?: string;
-  reference?: string;
-  document_url?: string;
-  movement_date: string;
-  created_by?: string;
-  created_at: string;
+  currency: string | null;
+  amount_eur: number | null;
+  description: string;
+  balance_before: number;
+  balance_after: number;
+  invoice_id: string | null;
+  expense_id: string | null;
+  created_by: string | null;
+  created_at: string | null;
 }
 
 export interface ProvisionFilters {
@@ -66,7 +72,7 @@ export function useProvisions(filters?: ProvisionFilters) {
   return useQuery({
     queryKey: ['provisions', currentOrganization?.id, filters],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('provisions')
         .select(`
           *,
@@ -95,7 +101,7 @@ export function useProvision(id: string) {
   return useQuery({
     queryKey: ['provision', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('provisions')
         .select(`
           *,
@@ -126,7 +132,7 @@ export function useCreateProvision() {
   
   return useMutation({
     mutationFn: async (data: Omit<Partial<Provision>, 'organization_id'>) => {
-      const { data: provision, error } = await supabase
+      const { data: provision, error } = await (supabase as any)
         .from('provisions')
         .insert({
           organization_id: currentOrganization!.id,
@@ -158,7 +164,7 @@ export function useUpdateProvision() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Provision> }) => {
       const { client, matter, ...updateData } = data as any;
-      const { data: provision, error } = await supabase
+      const { data: provision, error } = await (supabase as any)
         .from('provisions')
         .update({ ...updateData, updated_at: new Date().toISOString() })
         .eq('id', id)
@@ -179,7 +185,7 @@ export function useDeleteProvision() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('provisions').delete().eq('id', id);
+      const { error } = await (supabase as any).from('provisions').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -188,7 +194,7 @@ export function useDeleteProvision() {
   });
 }
 
-// ===== MOVIMIENTOS =====
+// ===== MOVIMIENTOS (uses real provision_movements schema) =====
 export function useProvisionMovements(provisionId: string) {
   return useQuery({
     queryKey: ['provision-movements', provisionId],
@@ -197,7 +203,7 @@ export function useProvisionMovements(provisionId: string) {
         .from('provision_movements')
         .select('*')
         .eq('provision_id', provisionId)
-        .order('movement_date', { ascending: false });
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return data as ProvisionMovement[];
     },
@@ -207,71 +213,75 @@ export function useProvisionMovements(provisionId: string) {
 
 export function useCreateProvisionMovement() {
   const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (data: Omit<Partial<ProvisionMovement>, 'created_by'>) => {
-      // Insert movement
+    mutationFn: async (data: {
+      provision_id: string;
+      movement_type: string;
+      amount: number;
+      description: string;
+      invoice_id?: string;
+      expense_id?: string;
+    }) => {
+      // Get current provision balance
+      const { data: provision } = await (supabase as any)
+        .from('provisions')
+        .select('amount, used_amount, returned_amount')
+        .eq('id', data.provision_id)
+        .single();
+
+      const currentBalance = provision
+        ? Number(provision.amount) - Number(provision.used_amount || 0) - Number(provision.returned_amount || 0)
+        : 0;
+
+      const newBalance = data.movement_type === 'deposit'
+        ? currentBalance + data.amount
+        : currentBalance - Math.abs(data.amount);
+
+      // Insert movement with balance tracking
       const { data: movement, error } = await supabase
         .from('provision_movements')
         .insert({
-          provision_id: data.provision_id!,
-          movement_type: data.movement_type!,
-          amount: data.amount || 0,
+          organization_id: currentOrganization!.id,
+          provision_id: data.provision_id,
+          movement_type: data.movement_type,
+          amount: data.amount,
           description: data.description,
-          reference: data.reference,
-          document_url: data.document_url,
-          movement_date: data.movement_date || new Date().toISOString().split('T')[0],
+          balance_before: currentBalance,
+          balance_after: newBalance,
+          invoice_id: data.invoice_id || null,
+          expense_id: data.expense_id || null,
           created_by: user?.id,
         })
         .select()
         .single();
       if (error) throw error;
       
-      // Update provision based on movement type
-      const updateData: Partial<Provision> = {};
+      // Update provision status based on movement type
+      const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
       
-      if (data.movement_type === 'request') {
-        updateData.status = 'requested';
-        updateData.requested_at = new Date().toISOString();
-      } else if (data.movement_type === 'receipt') {
+      if (data.movement_type === 'deposit') {
         updateData.status = 'received';
         updateData.received_at = new Date().toISOString();
-        updateData.payment_reference = data.reference;
-        updateData.payment_date = data.movement_date;
-      } else if (data.movement_type === 'use') {
-        // Get current provision to update used_amount
-        const { data: provision } = await supabase
-          .from('provisions')
-          .select('used_amount, amount')
-          .eq('id', data.provision_id!)
-          .single();
-        
-        const newUsedAmount = (provision?.used_amount || 0) + (data.amount || 0);
-        updateData.used_amount = newUsedAmount;
-        updateData.used_for = data.description;
-        
-        if (newUsedAmount >= (provision?.amount || 0)) {
+      } else if (data.movement_type === 'apply_to_invoice' || data.movement_type === 'apply_to_official_fee') {
+        const newUsed = (provision?.used_amount || 0) + Math.abs(data.amount);
+        updateData.used_amount = newUsed;
+        if (newUsed >= (provision?.amount || 0)) {
           updateData.status = 'used';
         }
-      } else if (data.movement_type === 'return') {
-        // Get current provision
-        const { data: provision } = await supabase
-          .from('provisions')
-          .select('returned_amount')
-          .eq('id', data.provision_id!)
-          .single();
-        
-        updateData.returned_amount = (provision?.returned_amount || 0) + (data.amount || 0);
+      } else if (data.movement_type === 'refund') {
+        updateData.returned_amount = (provision?.returned_amount || 0) + Math.abs(data.amount);
         updateData.returned_at = new Date().toISOString();
         updateData.status = 'returned';
       }
       
-      if (Object.keys(updateData).length > 0) {
-        await supabase
+      if (Object.keys(updateData).length > 1) {
+        await (supabase as any)
           .from('provisions')
-          .update({ ...updateData, updated_at: new Date().toISOString() })
-          .eq('id', data.provision_id!);
+          .update(updateData)
+          .eq('id', data.provision_id);
       }
       
       return movement as ProvisionMovement;
@@ -291,26 +301,26 @@ export function useProvisionStats() {
   return useQuery({
     queryKey: ['provision-stats', currentOrganization?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('provisions')
         .select('status, amount, used_amount, returned_amount')
         .eq('organization_id', currentOrganization!.id);
       
       if (error) throw error;
       
-      const pending = data.filter(p => p.status === 'pending' || p.status === 'requested');
-      const received = data.filter(p => p.status === 'received');
-      const all = data;
+      const pending = (data || []).filter((p: any) => p.status === 'pending' || p.status === 'requested');
+      const received = (data || []).filter((p: any) => p.status === 'received');
+      const all = data || [];
       
       return {
         pendingCount: pending.length,
-        pendingAmount: pending.reduce((sum, p) => sum + Number(p.amount), 0),
-        receivedAmount: received.reduce((sum, p) => sum + Number(p.amount), 0),
-        availableAmount: all.reduce((sum, p) => {
+        pendingAmount: pending.reduce((sum: number, p: any) => sum + Number(p.amount), 0),
+        receivedAmount: received.reduce((sum: number, p: any) => sum + Number(p.amount), 0),
+        availableAmount: all.reduce((sum: number, p: any) => {
           const available = Number(p.amount) - Number(p.used_amount) - Number(p.returned_amount);
           return sum + (available > 0 ? available : 0);
         }, 0),
-        totalAmount: all.reduce((sum, p) => sum + Number(p.amount), 0),
+        totalAmount: all.reduce((sum: number, p: any) => sum + Number(p.amount), 0),
       };
     },
     enabled: !!currentOrganization?.id,
