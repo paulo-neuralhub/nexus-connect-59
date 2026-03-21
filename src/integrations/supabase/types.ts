@@ -21715,6 +21715,24 @@ export type Database = {
         }
         Returns: Json
       }
+      genius_semantic_search: {
+        Args: {
+          p_doc_category?: string
+          p_jurisdiction?: string
+          p_limit?: number
+          p_org_id: string
+          p_query_embedding: string
+        }
+        Returns: {
+          article_reference: string
+          content: string
+          id: string
+          jurisdiction_code: string
+          similarity: number
+          source: string
+          title: string
+        }[]
+      }
       get_max_call_duration: {
         Args: {
           p_destination_prefix: string
@@ -21750,6 +21768,10 @@ export type Database = {
       }
       increment_comm_counter: {
         Args: { p_channel: string; p_org_id: string }
+        Returns: undefined
+      }
+      increment_genius_counter: {
+        Args: { p_org_id: string; p_type: string }
         Returns: undefined
       }
       is_backoffice_staff: { Args: never; Returns: boolean }
