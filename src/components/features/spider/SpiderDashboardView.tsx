@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSpiderDashboardStats } from '@/hooks/use-spider-data';
 import { SpiderAlertsTab } from './SpiderAlertsTab';
 import { SpiderWatchesTab } from './SpiderWatchesTab';
+import { SpiderStatsTab } from './SpiderStatsTab';
 import { SpiderConfigTab } from './SpiderConfigTab';
 
 const SPIDER_VIOLET = '#8B5CF6';
