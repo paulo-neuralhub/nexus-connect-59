@@ -1,0 +1,36 @@
+-- =============================================
+-- KNOWLEDGE-01 PHASE 1A — EXTEND ipo_offices
+-- =============================================
+
+ALTER TABLE ipo_offices
+  ADD COLUMN IF NOT EXISTS opposition_period_days integer,
+  ADD COLUMN IF NOT EXISTS opposition_extensible boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS opposition_max_extension_days integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS opposition_legal_basis text,
+  ADD COLUMN IF NOT EXISTS opposition_count_from text DEFAULT 'publication',
+  ADD COLUMN IF NOT EXISTS exam_type text DEFAULT 'substantive',
+  ADD COLUMN IF NOT EXISTS exam_criteria_url text,
+  ADD COLUMN IF NOT EXISTS exam_guidelines_year integer,
+  ADD COLUMN IF NOT EXISTS exam_gazette_url text,
+  ADD COLUMN IF NOT EXISTS registration_timeline_days integer,
+  ADD COLUMN IF NOT EXISTS renewal_period_years integer DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS renewal_grace_period_days integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS use_requirement_years integer,
+  ADD COLUMN IF NOT EXISTS accepted_filing_languages text[] DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS requires_translation boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS translation_requirements text,
+  ADD COLUMN IF NOT EXISTS rep_requirement_type text DEFAULT 'none',
+  ADD COLUMN IF NOT EXISTS rep_requirement_notes text,
+  ADD COLUMN IF NOT EXISTS power_of_attorney_required boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS poa_notarization_required boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS official_gazette_url text,
+  ADD COLUMN IF NOT EXISTS opposition_form_url text,
+  ADD COLUMN IF NOT EXISTS renewal_form_url text,
+  ADD COLUMN IF NOT EXISTS assignment_form_url text,
+  ADD COLUMN IF NOT EXISTS fee_schedule_url text,
+  ADD COLUMN IF NOT EXISTS genius_coverage_level text DEFAULT 'none',
+  ADD COLUMN IF NOT EXISTS genius_coverage_score integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS genius_kb_chunks integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS genius_last_kb_update timestamptz,
+  ADD COLUMN IF NOT EXISTS data_source text,
+  ADD COLUMN IF NOT EXISTS last_data_verification timestamptz;
