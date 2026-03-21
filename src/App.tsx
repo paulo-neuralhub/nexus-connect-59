@@ -658,6 +658,19 @@ const App = () => (
               </Route>
               
               {/* BACKOFFICE - Panel de administración consolidado */}
+              {/* AGENT AREA - Protected */}
+              <Route path="/agent" element={<AuthGuard><AgentLayout /></AuthGuard>}>
+                <Route index element={<Navigate to="/agent/dashboard" replace />} />
+                <Route path="dashboard" element={<AgentDashboard />} />
+                <Route path="requests" element={<AgentRequests />} />
+                <Route path="profile" element={<AgentProfilePlaceholder />} />
+                <Route path="services" element={<AgentServicesPlaceholder />} />
+                <Route path="credentials" element={<AgentCredentialsPlaceholder />} />
+                <Route path="payments" element={<AgentPaymentsPlaceholder />} />
+                <Route path="reviews" element={<AgentReviewsPlaceholder />} />
+                <Route path="settings" element={<AgentSettingsPlaceholder />} />
+              </Route>
+
               <Route path="/backoffice" element={<AuthGuard><BackofficeLayout /></AuthGuard>}>
                 <Route index element={<BackofficeDashboard />} />
                 {/* Core */}
