@@ -320,12 +320,11 @@ export function useCorrectionReasonCodes() {
         .order('code');
       
       if (error) {
-        // Fallback if table doesn't exist
         return [
-          { code: '01', description: 'Número de factura' },
-          { code: '02', description: 'Serie de factura' },
-          { code: '03', description: 'Fecha de expedición' },
-          { code: '04', description: 'Nombre y apellidos/Razón social' },
+          { code: '01', name_es: 'Número de factura' },
+          { code: '02', name_es: 'Serie de factura' },
+          { code: '03', name_es: 'Fecha de expedición' },
+          { code: '04', name_es: 'Nombre y apellidos/Razón social' },
         ] as CorrectionReasonCode[];
       }
       return (data as CorrectionReasonCode[]) ?? [];
