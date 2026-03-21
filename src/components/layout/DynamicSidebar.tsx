@@ -225,7 +225,7 @@ export function DynamicSidebar({
       >
         <Icon 
           className="h-[9px] w-[9px] shrink-0" 
-          style={{ color: isActive ? '#00b4d8' : undefined }} 
+          style={{ color: isActive ? moduleColor : moduleColor, opacity: isActive ? 1 : 0.4 }} 
         />
         {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
         {!collapsed && badgeCount > 0 && (
@@ -297,9 +297,9 @@ export function DynamicSidebar({
               <Icon 
                 className="h-3 w-3 shrink-0" 
                 style={isActive ? { 
-                  color: '#00b4d8',
-                  filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                } : { color: 'rgba(255,255,255,0.28)' }} 
+                  color: mod.moduleColor,
+                  filter: `drop-shadow(0 0 4px ${mod.moduleColor}4D)`
+                } : { color: mod.moduleColor, opacity: 0.5 }} 
               />
               <span className="flex-1 truncate text-left">{mod.moduleShortName || mod.moduleName}</span>
               {mod.isTrial && (
@@ -338,9 +338,9 @@ export function DynamicSidebar({
         <Icon 
           className="h-3 w-3 shrink-0" 
           style={isActive ? { 
-            color: '#00b4d8',
-            filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-          } : { color: 'rgba(255,255,255,0.28)' }} 
+            color: mod.moduleColor,
+            filter: `drop-shadow(0 0 4px ${mod.moduleColor}4D)`
+          } : { color: mod.moduleColor, opacity: 0.5 }} 
         />
         {!collapsed && (
           <>
@@ -385,9 +385,9 @@ export function DynamicSidebar({
             <LayoutDashboard 
               className="h-3 w-3 shrink-0" 
               style={isDashboardActive ? { 
-                color: '#00b4d8',
-                filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-              } : { color: 'rgba(255,255,255,0.28)' }} 
+                color: '#3B82F6',
+                filter: 'drop-shadow(0 0 4px rgba(59,130,246,0.30))'
+              } : { color: '#3B82F6', opacity: 0.5 }} 
             />
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
@@ -506,9 +506,9 @@ export function DynamicSidebar({
                   <Bell 
                     className="h-3 w-3 shrink-0" 
                     style={isAlertsActive ? { 
-                      color: '#ef4444',
+                      color: '#EF4444',
                       filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.30))'
-                    } : { color: 'rgba(255,255,255,0.28)' }} 
+                    } : { color: '#EF4444', opacity: 0.5 }} 
                   />
                   {!collapsed && (
                     <>
@@ -541,9 +541,9 @@ export function DynamicSidebar({
                   <HelpCircle 
                     className="h-3 w-3 shrink-0" 
                     style={isHelpActive ? { 
-                      color: '#00b4d8',
-                      filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                    } : { color: 'rgba(255,255,255,0.28)' }} 
+                      color: '#6B7280',
+                      filter: 'drop-shadow(0 0 4px rgba(107,114,128,0.30))'
+                    } : { color: '#6B7280', opacity: 0.5 }} 
                   />
                   {!collapsed && <span className="flex-1">Ayuda</span>}
                 </Link>
