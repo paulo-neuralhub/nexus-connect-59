@@ -23023,6 +23023,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          dashboard: Json | null
+          display: Json | null
+          id: string
+          profile: Json | null
+          security: Json | null
+          shortcuts: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dashboard?: Json | null
+          display?: Json | null
+          id?: string
+          profile?: Json | null
+          security?: Json | null
+          shortcuts?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dashboard?: Json | null
+          display?: Json | null
+          id?: string
+          profile?: Json | null
+          security?: Json | null
+          shortcuts?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_template_preferences: {
         Row: {
           created_at: string | null
