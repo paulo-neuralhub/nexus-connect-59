@@ -95,7 +95,7 @@ export function AppLayout() {
                 {/* Global Timer for mobile */}
                 <GlobalTimer />
 
-                {/* Softphone removed */}
+                <IPSoftphone />
                 
                 {/* Demo Mode Components */}
                 {isDemoMode && (
