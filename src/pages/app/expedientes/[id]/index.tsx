@@ -303,6 +303,11 @@ export default function MatterDetailPage() {
               {activeTab === 'spider' && (
                 <MatterSpiderTab matterId={id!} />
               )}
+
+              {/* Genius Tab */}
+              {activeTab === 'genius' && (
+                <MatterGeniusIntegration matterId={id!} matterReference={matter?.matter_number} />
+              )}
             </div>
           </div>
 

@@ -39,6 +39,7 @@ const TABS = [
   { id: 'activity', label: 'Actividad', icon: MessageCircle, counterKey: 'timeline', emoji: '💬' },
   { id: 'costs', label: 'Costes', icon: Euro, counterKey: 'costs', emoji: '💰' },
   { id: 'spider', label: 'Spider', icon: Settings, counterKey: null, emoji: '🕷️' },
+  { id: 'genius', label: 'Genius', icon: Sparkles, counterKey: null, emoji: '✨' },
   { id: 'details', label: 'Detalles', icon: Settings, counterKey: null, emoji: '⚙️' },
 ] as const;
 
