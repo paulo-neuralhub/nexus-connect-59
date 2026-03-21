@@ -16,7 +16,7 @@ export default function BackofficeTelephonyPage() {
   const [activeTab, setActiveTab] = useState('providers');
 
   return (
-    <div className="space-y-6 -m-6 p-6 min-h-full bg-muted/40">
+    <div className="space-y-6 -m-6 p-6 min-h-full bg-muted/70">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Phone className="h-6 w-6" />
