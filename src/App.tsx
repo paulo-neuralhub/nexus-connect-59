@@ -52,6 +52,7 @@ import MyOffersPage from "./pages/app/market/offers";
 import DataHubPage from "./pages/app/data-hub";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
+import GeniusDashboard from "./pages/app/genius/dashboard";
 import GeniusChatPage from "./pages/app/genius";
 import GeniusComparatorPage from "./pages/app/genius/comparator";
 import GeniusOppositionPage from "./pages/app/genius/opposition";
@@ -151,6 +152,7 @@ import TenantTelephonySettingsPage from "./pages/app/settings/telephony";
 import TenantTelephonyPacksPage from "./pages/app/settings/telephony/packs";
 import TenantTelephonyHistoryPage from "./pages/app/settings/telephony/historial";
 import IPChainPage from "./pages/app/ip-chain";
+import GeniusSettingsPage from "./pages/app/settings/genius";
 import TranslatorPage from "./pages/app/genius/translator";
 import DocumentTemplatesPage from "./pages/app/genius/templates";
 import DocumentTemplatesDashboard from "./pages/app/settings/templates";
@@ -471,7 +473,7 @@ const App = () => (
                   <Route path="rankings" element={<RankingsPage />} />
                 </Route>
                 <Route path="genius" element={<GeniusLayout />}>
-                  <Route index element={<GeniusChatPage />} />
+                  <Route index element={<GeniusDashboard />} />
                   <Route path="analysis" element={<GeniusAnalysisPage />} />
                   <Route path="documents-gen" element={<GeniusDocumentsGenPage />} />
                   <Route path="predictions" element={<GeniusPredictionsPage />} />
@@ -485,6 +487,7 @@ const App = () => (
                   <Route path="templates/edit/:id" element={<TemplateEditorPage />} />
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
+                  <Route path="chat" element={<GeniusChatPage />} />
                 </Route>
                 {/* Documents */}
                 <Route path="documentos" element={<DocumentsListPage />} />
@@ -577,6 +580,7 @@ const App = () => (
                 <Route path="settings/templates/:type" element={<DocumentTemplateListPage />} />
                 <Route path="settings/templates/:id/edit" element={<DocumentTemplateEditPage />} />
                 <Route path="settings/signatures" element={<SignaturesPage />} />
+                <Route path="settings/genius" element={<GeniusSettingsPage />} />
                 <Route path="expedientes/importar" element={<ImportDataPage />} />
                 <Route path="expedientes/revision" element={<ReviewQueuePage />} />
                 <Route path="ip-chain" element={<IPChainPage />} />

@@ -62,6 +62,7 @@ import { MatterActivityTab } from '@/components/matters/MatterActivityTab';
 import { MatterCostsTab } from '@/components/matters/MatterCostsTab';
 import { MatterDetailsEditTab } from '@/components/matters/MatterDetailsEditTab';
 import { MatterSpiderTab } from '@/components/features/spider/MatterSpiderTab';
+import { MatterGeniusIntegration } from '@/components/features/genius/matter-genius-integration';
 import { MatterPhaseTimeline } from '@/components/matters/MatterPhaseTimeline';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -301,6 +302,11 @@ export default function MatterDetailPage() {
               {/* Spider Tab */}
               {activeTab === 'spider' && (
                 <MatterSpiderTab matterId={id!} />
+              )}
+
+              {/* Genius Tab */}
+              {activeTab === 'genius' && (
+                <MatterGeniusIntegration matterId={id!} matterReference={matter?.matter_number} />
               )}
             </div>
           </div>
