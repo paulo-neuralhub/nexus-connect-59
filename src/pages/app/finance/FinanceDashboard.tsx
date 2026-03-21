@@ -39,6 +39,23 @@ export default function FinanceDashboard() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Fiscal config banner */}
+      {showFiscalBanner && (
+        <div className="flex items-center justify-between p-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-amber-800 dark:text-amber-200">Configura tu información fiscal</p>
+              <p className="text-sm text-amber-700 dark:text-amber-300">Necesitas completar la configuración fiscal para usar el módulo de finanzas.</p>
+            </div>
+          </div>
+          <Button asChild size="sm">
+            <Link to="/app/finance/setup">
+              <Settings className="w-4 h-4 mr-2" /> Configurar ahora
+            </Link>
+          </Button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
