@@ -17785,6 +17785,895 @@ export type Database = {
         }
         Relationships: []
       }
+      spider_alert_history: {
+        Row: {
+          alert_id: string
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_status: string | null
+          notes: string | null
+          old_status: string | null
+          organization_id: string
+          performed_by: string | null
+        }
+        Insert: {
+          alert_id: string
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          old_status?: string | null
+          organization_id: string
+          performed_by?: string | null
+        }
+        Update: {
+          alert_id?: string
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          old_status?: string | null
+          organization_id?: string
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_alert_history_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "spider_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alert_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alert_history_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_alerts: {
+        Row: {
+          action_notes: string | null
+          action_taken: string | null
+          actioned_at: string | null
+          actioned_by: string | null
+          ai_analysis: string | null
+          ai_disclaimer: string | null
+          ai_key_factors: string[] | null
+          ai_recommendation: string | null
+          ai_risk_level: string | null
+          combined_score: number
+          created_at: string | null
+          crm_deal_id: string | null
+          detected_applicant: string | null
+          detected_applicant_country: string | null
+          detected_application_number: string | null
+          detected_at: string | null
+          detected_filing_date: string | null
+          detected_goods_services: string | null
+          detected_jurisdiction: string
+          detected_mark_image_url: string | null
+          detected_mark_name: string
+          detected_mark_name_normalized: string
+          detected_mark_status: string | null
+          detected_nice_classes: number[] | null
+          detected_publication_date: string | null
+          id: string
+          matter_id: string | null
+          opposition_days_remaining: number | null
+          opposition_deadline: string | null
+          opposition_matter_id: string | null
+          organization_id: string
+          phonetic_score: number | null
+          semantic_score: number | null
+          severity: string
+          snoozed_until: string | null
+          source_code: string
+          source_reliability: string | null
+          source_url: string | null
+          status: string
+          viewed_at: string | null
+          viewed_by: string | null
+          visual_score: number | null
+          watch_id: string
+          weight_phonetic_used: number | null
+          weight_semantic_used: number | null
+          weight_visual_used: number | null
+          workflow_step_id: string | null
+        }
+        Insert: {
+          action_notes?: string | null
+          action_taken?: string | null
+          actioned_at?: string | null
+          actioned_by?: string | null
+          ai_analysis?: string | null
+          ai_disclaimer?: string | null
+          ai_key_factors?: string[] | null
+          ai_recommendation?: string | null
+          ai_risk_level?: string | null
+          combined_score: number
+          created_at?: string | null
+          crm_deal_id?: string | null
+          detected_applicant?: string | null
+          detected_applicant_country?: string | null
+          detected_application_number?: string | null
+          detected_at?: string | null
+          detected_filing_date?: string | null
+          detected_goods_services?: string | null
+          detected_jurisdiction: string
+          detected_mark_image_url?: string | null
+          detected_mark_name: string
+          detected_mark_name_normalized: string
+          detected_mark_status?: string | null
+          detected_nice_classes?: number[] | null
+          detected_publication_date?: string | null
+          id?: string
+          matter_id?: string | null
+          opposition_days_remaining?: number | null
+          opposition_deadline?: string | null
+          opposition_matter_id?: string | null
+          organization_id: string
+          phonetic_score?: number | null
+          semantic_score?: number | null
+          severity: string
+          snoozed_until?: string | null
+          source_code: string
+          source_reliability?: string | null
+          source_url?: string | null
+          status?: string
+          viewed_at?: string | null
+          viewed_by?: string | null
+          visual_score?: number | null
+          watch_id: string
+          weight_phonetic_used?: number | null
+          weight_semantic_used?: number | null
+          weight_visual_used?: number | null
+          workflow_step_id?: string | null
+        }
+        Update: {
+          action_notes?: string | null
+          action_taken?: string | null
+          actioned_at?: string | null
+          actioned_by?: string | null
+          ai_analysis?: string | null
+          ai_disclaimer?: string | null
+          ai_key_factors?: string[] | null
+          ai_recommendation?: string | null
+          ai_risk_level?: string | null
+          combined_score?: number
+          created_at?: string | null
+          crm_deal_id?: string | null
+          detected_applicant?: string | null
+          detected_applicant_country?: string | null
+          detected_application_number?: string | null
+          detected_at?: string | null
+          detected_filing_date?: string | null
+          detected_goods_services?: string | null
+          detected_jurisdiction?: string
+          detected_mark_image_url?: string | null
+          detected_mark_name?: string
+          detected_mark_name_normalized?: string
+          detected_mark_status?: string | null
+          detected_nice_classes?: number[] | null
+          detected_publication_date?: string | null
+          id?: string
+          matter_id?: string | null
+          opposition_days_remaining?: number | null
+          opposition_deadline?: string | null
+          opposition_matter_id?: string | null
+          organization_id?: string
+          phonetic_score?: number | null
+          semantic_score?: number | null
+          severity?: string
+          snoozed_until?: string | null
+          source_code?: string
+          source_reliability?: string | null
+          source_url?: string | null
+          status?: string
+          viewed_at?: string | null
+          viewed_by?: string | null
+          visual_score?: number | null
+          watch_id?: string
+          weight_phonetic_used?: number | null
+          weight_semantic_used?: number | null
+          weight_visual_used?: number | null
+          workflow_step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_alerts_actioned_by_fkey"
+            columns: ["actioned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_opposition_matter_id_fkey"
+            columns: ["opposition_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_viewed_by_fkey"
+            columns: ["viewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "spider_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_analysis_cache: {
+        Row: {
+          cached_at: string | null
+          combined_score: number
+          detected_name_normalized: string
+          expires_at: string | null
+          id: string
+          organization_id: string
+          phonetic_score: number
+          semantic_score: number
+          visual_score: number | null
+          watch_name_normalized: string
+          weights_used: Json
+        }
+        Insert: {
+          cached_at?: string | null
+          combined_score: number
+          detected_name_normalized: string
+          expires_at?: string | null
+          id?: string
+          organization_id: string
+          phonetic_score: number
+          semantic_score: number
+          visual_score?: number | null
+          watch_name_normalized: string
+          weights_used: Json
+        }
+        Update: {
+          cached_at?: string | null
+          combined_score?: number
+          detected_name_normalized?: string
+          expires_at?: string | null
+          id?: string
+          organization_id?: string
+          phonetic_score?: number
+          semantic_score?: number
+          visual_score?: number | null
+          watch_name_normalized?: string
+          weights_used?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_analysis_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_opposition_deadlines: {
+        Row: {
+          count_from: string
+          id: string
+          is_extendable: boolean | null
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at: string | null
+          legal_basis: string | null
+          legal_notes: string | null
+          max_extension_days: number | null
+          opposition_days: number
+          source_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          count_from: string
+          id?: string
+          is_extendable?: boolean | null
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_verified_at?: string | null
+          legal_basis?: string | null
+          legal_notes?: string | null
+          max_extension_days?: number | null
+          opposition_days: number
+          source_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          count_from?: string
+          id?: string
+          is_extendable?: boolean | null
+          jurisdiction_code?: string
+          jurisdiction_name?: string
+          last_verified_at?: string | null
+          legal_basis?: string | null
+          legal_notes?: string | null
+          max_extension_days?: number | null
+          opposition_days?: number
+          source_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      spider_reports: {
+        Row: {
+          date_from: string | null
+          date_to: string | null
+          error_message: string | null
+          expires_at: string | null
+          file_size_bytes: number | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          jurisdiction_codes: string[] | null
+          organization_id: string
+          report_type: string
+          status: string | null
+          storage_path: string | null
+          title: string
+          watch_ids: string[] | null
+        }
+        Insert: {
+          date_from?: string | null
+          date_to?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          jurisdiction_codes?: string[] | null
+          organization_id: string
+          report_type: string
+          status?: string | null
+          storage_path?: string | null
+          title: string
+          watch_ids?: string[] | null
+        }
+        Update: {
+          date_from?: string | null
+          date_to?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          jurisdiction_codes?: string[] | null
+          organization_id?: string
+          report_type?: string
+          status?: string | null
+          storage_path?: string | null
+          title?: string
+          watch_ids?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_reports_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_scan_runs: {
+        Row: {
+          ai_cost_eur: number | null
+          ai_tokens_used: number | null
+          alerts_created: number | null
+          alerts_skipped_cache: number | null
+          alerts_updated: number | null
+          comparisons_made: number | null
+          completed_at: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          error_message: string | null
+          errors_by_jurisdiction: Json | null
+          id: string
+          jurisdictions_attempted: string[] | null
+          jurisdictions_failed: string[] | null
+          jurisdictions_succeeded: string[] | null
+          marks_scanned: number | null
+          organization_id: string
+          scan_type: string
+          sources_used: string[] | null
+          started_at: string | null
+          status: string | null
+          watch_id: string | null
+        }
+        Insert: {
+          ai_cost_eur?: number | null
+          ai_tokens_used?: number | null
+          alerts_created?: number | null
+          alerts_skipped_cache?: number | null
+          alerts_updated?: number | null
+          comparisons_made?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          errors_by_jurisdiction?: Json | null
+          id?: string
+          jurisdictions_attempted?: string[] | null
+          jurisdictions_failed?: string[] | null
+          jurisdictions_succeeded?: string[] | null
+          marks_scanned?: number | null
+          organization_id: string
+          scan_type: string
+          sources_used?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          watch_id?: string | null
+        }
+        Update: {
+          ai_cost_eur?: number | null
+          ai_tokens_used?: number | null
+          alerts_created?: number | null
+          alerts_skipped_cache?: number | null
+          alerts_updated?: number | null
+          comparisons_made?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          errors_by_jurisdiction?: Json | null
+          id?: string
+          jurisdictions_attempted?: string[] | null
+          jurisdictions_failed?: string[] | null
+          jurisdictions_succeeded?: string[] | null
+          marks_scanned?: number | null
+          organization_id?: string
+          scan_type?: string
+          sources_used?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          watch_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_scan_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_scan_runs_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "spider_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_supported_sources: {
+        Row: {
+          api_type: string
+          base_url: string | null
+          code: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          jurisdictions_covered: string[] | null
+          name: string
+          notes: string | null
+          rate_limit_per_minute: number | null
+          reliability_level: string | null
+          requires_credentials: boolean | null
+        }
+        Insert: {
+          api_type: string
+          base_url?: string | null
+          code: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdictions_covered?: string[] | null
+          name: string
+          notes?: string | null
+          rate_limit_per_minute?: number | null
+          reliability_level?: string | null
+          requires_credentials?: boolean | null
+        }
+        Update: {
+          api_type?: string
+          base_url?: string | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdictions_covered?: string[] | null
+          name?: string
+          notes?: string | null
+          rate_limit_per_minute?: number | null
+          reliability_level?: string | null
+          requires_credentials?: boolean | null
+        }
+        Relationships: []
+      }
+      spider_tenant_config: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          alerts_month_reset_at: string | null
+          alerts_this_month: number | null
+          default_jurisdictions: string[] | null
+          default_scan_frequency: string | null
+          default_similarity_threshold: number | null
+          domain_watch_enabled: boolean | null
+          feature_phonetic: boolean | null
+          feature_semantic: boolean | null
+          feature_visual: boolean | null
+          id: string
+          is_active: boolean | null
+          max_alerts_per_month: number | null
+          max_jurisdictions_per_watch: number | null
+          max_scans_per_month: number | null
+          max_watches: number | null
+          notes: string | null
+          notification_emails: string[] | null
+          notify_critical: boolean | null
+          notify_high: boolean | null
+          notify_low: boolean | null
+          notify_medium: boolean | null
+          organization_id: string
+          plan_code: string
+          realtime_scan_enabled: boolean | null
+          updated_at: string | null
+          webhook_secret: string | null
+          webhook_url: string | null
+          weight_phonetic: number | null
+          weight_semantic: number | null
+          weight_visual: number | null
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          alerts_month_reset_at?: string | null
+          alerts_this_month?: number | null
+          default_jurisdictions?: string[] | null
+          default_scan_frequency?: string | null
+          default_similarity_threshold?: number | null
+          domain_watch_enabled?: boolean | null
+          feature_phonetic?: boolean | null
+          feature_semantic?: boolean | null
+          feature_visual?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_alerts_per_month?: number | null
+          max_jurisdictions_per_watch?: number | null
+          max_scans_per_month?: number | null
+          max_watches?: number | null
+          notes?: string | null
+          notification_emails?: string[] | null
+          notify_critical?: boolean | null
+          notify_high?: boolean | null
+          notify_low?: boolean | null
+          notify_medium?: boolean | null
+          organization_id: string
+          plan_code?: string
+          realtime_scan_enabled?: boolean | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
+          weight_phonetic?: number | null
+          weight_semantic?: number | null
+          weight_visual?: number | null
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          alerts_month_reset_at?: string | null
+          alerts_this_month?: number | null
+          default_jurisdictions?: string[] | null
+          default_scan_frequency?: string | null
+          default_similarity_threshold?: number | null
+          domain_watch_enabled?: boolean | null
+          feature_phonetic?: boolean | null
+          feature_semantic?: boolean | null
+          feature_visual?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_alerts_per_month?: number | null
+          max_jurisdictions_per_watch?: number | null
+          max_scans_per_month?: number | null
+          max_watches?: number | null
+          notes?: string | null
+          notification_emails?: string[] | null
+          notify_critical?: boolean | null
+          notify_high?: boolean | null
+          notify_low?: boolean | null
+          notify_medium?: boolean | null
+          organization_id?: string
+          plan_code?: string
+          realtime_scan_enabled?: boolean | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
+          weight_phonetic?: number | null
+          weight_semantic?: number | null
+          weight_visual?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_tenant_config_activated_by_fkey"
+            columns: ["activated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_tenant_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_watches: {
+        Row: {
+          active_alerts_count: number | null
+          check_phonetic: boolean | null
+          check_semantic: boolean | null
+          check_visual: boolean | null
+          created_at: string | null
+          created_by: string | null
+          false_positives_count: number | null
+          id: string
+          is_active: boolean | null
+          jurisdictions: string[]
+          last_scanned_at: string | null
+          mark_image_path: string | null
+          mark_image_url: string | null
+          matter_id: string | null
+          next_scan_at: string | null
+          nice_classes: number[] | null
+          notes: string | null
+          organization_id: string
+          scan_frequency: string | null
+          similarity_threshold: number | null
+          total_alerts_generated: number | null
+          updated_at: string | null
+          watch_name: string
+          watch_name_normalized: string
+          watch_related_classes: boolean | null
+          watch_type: string | null
+          weight_phonetic: number | null
+          weight_semantic: number | null
+          weight_visual: number | null
+          workflow_id: string | null
+        }
+        Insert: {
+          active_alerts_count?: number | null
+          check_phonetic?: boolean | null
+          check_semantic?: boolean | null
+          check_visual?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          false_positives_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          jurisdictions?: string[]
+          last_scanned_at?: string | null
+          mark_image_path?: string | null
+          mark_image_url?: string | null
+          matter_id?: string | null
+          next_scan_at?: string | null
+          nice_classes?: number[] | null
+          notes?: string | null
+          organization_id: string
+          scan_frequency?: string | null
+          similarity_threshold?: number | null
+          total_alerts_generated?: number | null
+          updated_at?: string | null
+          watch_name: string
+          watch_name_normalized?: string
+          watch_related_classes?: boolean | null
+          watch_type?: string | null
+          weight_phonetic?: number | null
+          weight_semantic?: number | null
+          weight_visual?: number | null
+          workflow_id?: string | null
+        }
+        Update: {
+          active_alerts_count?: number | null
+          check_phonetic?: boolean | null
+          check_semantic?: boolean | null
+          check_visual?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          false_positives_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          jurisdictions?: string[]
+          last_scanned_at?: string | null
+          mark_image_path?: string | null
+          mark_image_url?: string | null
+          matter_id?: string | null
+          next_scan_at?: string | null
+          nice_classes?: number[] | null
+          notes?: string | null
+          organization_id?: string
+          scan_frequency?: string | null
+          similarity_threshold?: number | null
+          total_alerts_generated?: number | null
+          updated_at?: string | null
+          watch_name?: string
+          watch_name_normalized?: string
+          watch_related_classes?: boolean | null
+          watch_type?: string | null
+          weight_phonetic?: number | null
+          weight_semantic?: number | null
+          weight_visual?: number | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_watches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_watches_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_watches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_workflow_steps: {
+        Row: {
+          actions_available: string[] | null
+          assignee_role: string | null
+          auto_escalate: boolean | null
+          created_at: string | null
+          id: string
+          organization_id: string
+          sla_hours: number | null
+          step_name: string
+          step_order: number
+          workflow_id: string
+        }
+        Insert: {
+          actions_available?: string[] | null
+          assignee_role?: string | null
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          sla_hours?: number | null
+          step_name: string
+          step_order: number
+          workflow_id: string
+        }
+        Update: {
+          actions_available?: string[] | null
+          assignee_role?: string | null
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          sla_hours?: number | null
+          step_name?: string
+          step_order?: number
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_workflow_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_workflow_steps_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "spider_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_workflows: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          organization_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          organization_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_workflows_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           billing_cycle: string | null
@@ -19629,6 +20518,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_spider_for_tenant: {
+        Args: { p_activated_by?: string; p_org_id: string; p_plan?: string }
+        Returns: string
+      }
       apply_research_data: { Args: { p_queue_id: string }; Returns: Json }
       charge_call: {
         Args: {
@@ -19670,6 +20563,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "manager" | "member" | "viewer"
