@@ -41,6 +41,7 @@ import {
   LineChart,
   Wrench,
   Zap,
+  Radar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -146,6 +147,14 @@ const sidebarSections: SidebarSection[] = [
     icon: Megaphone,
     items: [
       { label: 'Landings', path: '/backoffice/landings', icon: Globe },
+    ],
+  },
+  {
+    code: 'spider',
+    label: 'Spider',
+    icon: Radar,
+    items: [
+      { label: '🕷️ Spider', path: '/backoffice/spider', icon: Radar },
     ],
   },
   {

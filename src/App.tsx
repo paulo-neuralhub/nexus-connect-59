@@ -288,6 +288,7 @@ import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
 import BackofficeProductsPage from "./pages/backoffice/products";
+import BackofficeSpiderPage from "./pages/backoffice/spider";
 
 // Stripe Backoffice
 import StripeDashboard from "./pages/backoffice/stripe";
@@ -689,6 +690,7 @@ const App = () => (
                 <Route path="logs" element={<SystemLogsPage />} />
                 <Route path="alerts" element={<BackofficeAlertsPage />} />
                 <Route path="products" element={<BackofficeProductsPage />} />
+                <Route path="spider" element={<BackofficeSpiderPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
                 <Route path="market-config" element={<MarketConfigPage />} />
                 {/* Stripe */}

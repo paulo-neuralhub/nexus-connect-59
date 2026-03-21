@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSpiderDashboardStats } from '@/hooks/use-spider-data';
 import { SpiderAlertsTab } from './SpiderAlertsTab';
 import { SpiderWatchesTab } from './SpiderWatchesTab';
+import { SpiderStatsTab } from './SpiderStatsTab';
 import { SpiderConfigTab } from './SpiderConfigTab';
 
 const SPIDER_VIOLET = '#8B5CF6';
@@ -110,9 +111,7 @@ export function SpiderDashboardView() {
           <SpiderWatchesTab />
         </TabsContent>
         <TabsContent value="stats" className="mt-4">
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">Estadísticas disponibles próximamente</p>
-          </div>
+          <SpiderStatsTab />
         </TabsContent>
         <TabsContent value="config" className="mt-4">
           <SpiderConfigTab />
