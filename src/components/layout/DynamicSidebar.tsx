@@ -297,9 +297,9 @@ export function DynamicSidebar({
               <Icon 
                 className="h-3 w-3 shrink-0" 
                 style={isActive ? { 
-                  color: '#00b4d8',
-                  filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                } : { color: 'rgba(255,255,255,0.28)' }} 
+                  color: mod.moduleColor,
+                  filter: `drop-shadow(0 0 4px ${mod.moduleColor}4D)`
+                } : { color: mod.moduleColor, opacity: 0.5 }} 
               />
               <span className="flex-1 truncate text-left">{mod.moduleShortName || mod.moduleName}</span>
               {mod.isTrial && (
