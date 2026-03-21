@@ -37,7 +37,6 @@ import {
   useReportDefinitions, 
   useReportExecutions, 
   useRunReport,
-  useToggleFavoriteReport,
   useAnalyticsStats 
 } from '@/hooks/analytics/useAnalytics';
 import { RunReportDialog } from './RunReportDialog';
@@ -65,7 +64,6 @@ export function AnalyticsDashboard() {
   const { data: stats } = useAnalyticsStats();
   
   const runMutation = useRunReport();
-  const favoriteMutation = useToggleFavoriteReport();
 
   const filteredReports = reports?.filter(r => 
     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
