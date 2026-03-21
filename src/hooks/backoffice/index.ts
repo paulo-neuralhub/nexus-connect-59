@@ -29,3 +29,6 @@ export * from './useExternalApiConnections';
 
 // Master Automation Templates
 export * from './useMasterAutomationTemplates';
+
+// Knowledge Map
+export * from './useKnowledgeMap';
