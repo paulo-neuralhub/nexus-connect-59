@@ -237,7 +237,24 @@ export default function ReportesPage() {
                           )}
                         </td>
                         <td className="py-2.5 text-right">
-                          <Button variant="ghost" size="sm" disabled>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              if (!report.storage_path) {
+                                toast.error('Sin archivo disponible');
+                                return;
+                              }
+                              const { data: signed, error: signErr } = await supabase.storage
+                                .from('reports')
+                                .createSignedUrl(report.storage_path, 3600);
+                              if (signErr || !signed?.signedUrl) {
+                                toast.error('Error obteniendo enlace de descarga');
+                                return;
+                              }
+                              window.open(signed.signedUrl, '_blank');
+                            }}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </td>
