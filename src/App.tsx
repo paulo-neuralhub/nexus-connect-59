@@ -152,7 +152,8 @@ import QuotesPage from "./pages/app/finance/quotes";
 import BillingClientsPage from "./pages/app/finance/clients";
 import FinanceSettingsPage from "./pages/app/finance/settings";
 import ValuationDashboardPage from "./pages/app/finance/valuation";
-import PortfolioDetailPage from "./pages/app/finance/valuation/[id]";
+import FinanceSetupWizard from "./pages/app/finance/setup";
+import ServicesCatalogPage from "./pages/app/finance/services";
 import SettingsPage from "./pages/app/settings";
 import TeamSettingsPage from "./pages/app/settings/team";
 import RolesSettingsPage from "./pages/app/settings/roles";
@@ -531,7 +532,8 @@ const App = () => (
                   <Route path="clients" element={<BillingClientsPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
-                  <Route path="valuation/:id" element={<PortfolioDetailPage />} />
+                  <Route path="services" element={<ServicesCatalogPage />} />
+                  <Route path="setup" element={<FinanceSetupWizard />} />
                   <Route path="settings" element={<FinanceSettingsPage />} />
                 </Route>
                 <Route path="timetracking" element={<TimetrackingLayout />}>
