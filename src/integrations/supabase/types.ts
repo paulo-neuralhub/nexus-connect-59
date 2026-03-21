@@ -9782,6 +9782,300 @@ export type Database = {
         }
         Relationships: []
       }
+      genius_kb_update_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          jurisdiction_code: string | null
+          performed_by: string | null
+          queue_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          jurisdiction_code?: string | null
+          performed_by?: string | null
+          queue_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          jurisdiction_code?: string | null
+          performed_by?: string | null
+          queue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_kb_update_log_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_kb_update_log_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "genius_kb_update_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_kb_update_queue: {
+        Row: {
+          approved_chunk_ids: string[] | null
+          completed_at: string | null
+          confidence_level: string | null
+          created_at: string | null
+          estimated_cost_eur: number | null
+          id: string
+          jurisdiction_code: string
+          jurisdiction_name: string | null
+          lock_expires_at: string | null
+          locked_at: string | null
+          locked_by: string | null
+          operation_type: string
+          perplexity_sources: Json | null
+          processing_error: string | null
+          proposed_chunks: Json | null
+          proposed_office_updates: Json | null
+          rejected_chunk_count: number | null
+          requested_by: string | null
+          requires_expert_review: boolean | null
+          research_prompt: string | null
+          research_result_raw: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_chunk_ids?: string[] | null
+          completed_at?: string | null
+          confidence_level?: string | null
+          created_at?: string | null
+          estimated_cost_eur?: number | null
+          id?: string
+          jurisdiction_code: string
+          jurisdiction_name?: string | null
+          lock_expires_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          operation_type: string
+          perplexity_sources?: Json | null
+          processing_error?: string | null
+          proposed_chunks?: Json | null
+          proposed_office_updates?: Json | null
+          rejected_chunk_count?: number | null
+          requested_by?: string | null
+          requires_expert_review?: boolean | null
+          research_prompt?: string | null
+          research_result_raw?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_chunk_ids?: string[] | null
+          completed_at?: string | null
+          confidence_level?: string | null
+          created_at?: string | null
+          estimated_cost_eur?: number | null
+          id?: string
+          jurisdiction_code?: string
+          jurisdiction_name?: string | null
+          lock_expires_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          operation_type?: string
+          perplexity_sources?: Json | null
+          processing_error?: string | null
+          proposed_chunks?: Json | null
+          proposed_office_updates?: Json | null
+          rejected_chunk_count?: number | null
+          requested_by?: string | null
+          requires_expert_review?: boolean | null
+          research_prompt?: string | null
+          research_result_raw?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_kb_update_queue_locked_by_fkey"
+            columns: ["locked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_kb_update_queue_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_kb_update_queue_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_knowledge_coverage: {
+        Row: {
+          ai_researched_chunks: number | null
+          alerts: string[] | null
+          cov_assignment: string | null
+          cov_cease_desist: string | null
+          cov_deadlines: string | null
+          cov_exam_criteria: string | null
+          cov_fees: string | null
+          cov_jurisprudence: string | null
+          cov_legislation: string | null
+          cov_license: string | null
+          cov_oa_response: string | null
+          cov_opposition: string | null
+          cov_portfolio_report: string | null
+          cov_procedures: string | null
+          cov_renewal: string | null
+          cov_rep_requirements: string | null
+          cov_search_report: string | null
+          coverage_level: string | null
+          coverage_score: number | null
+          created_at: string | null
+          design_coverage_level: string | null
+          effective_score: number | null
+          flag_emoji: string | null
+          has_outdated_content: boolean | null
+          id: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_kb_update: string | null
+          last_verification: string | null
+          next_scheduled_update: string | null
+          office_id: string | null
+          outdated_since: string | null
+          patent_coverage_level: string | null
+          quality_penalty_applied: boolean | null
+          region: string | null
+          supported_presentation_languages: string[] | null
+          tm_coverage_level: string | null
+          total_kb_chunks: number | null
+          unverified_chunks: number | null
+          updated_at: string | null
+          verified_official_chunks: number | null
+          verified_secondary_chunks: number | null
+        }
+        Insert: {
+          ai_researched_chunks?: number | null
+          alerts?: string[] | null
+          cov_assignment?: string | null
+          cov_cease_desist?: string | null
+          cov_deadlines?: string | null
+          cov_exam_criteria?: string | null
+          cov_fees?: string | null
+          cov_jurisprudence?: string | null
+          cov_legislation?: string | null
+          cov_license?: string | null
+          cov_oa_response?: string | null
+          cov_opposition?: string | null
+          cov_portfolio_report?: string | null
+          cov_procedures?: string | null
+          cov_renewal?: string | null
+          cov_rep_requirements?: string | null
+          cov_search_report?: string | null
+          coverage_level?: string | null
+          coverage_score?: number | null
+          created_at?: string | null
+          design_coverage_level?: string | null
+          effective_score?: number | null
+          flag_emoji?: string | null
+          has_outdated_content?: boolean | null
+          id?: string
+          jurisdiction_code: string
+          jurisdiction_name: string
+          last_kb_update?: string | null
+          last_verification?: string | null
+          next_scheduled_update?: string | null
+          office_id?: string | null
+          outdated_since?: string | null
+          patent_coverage_level?: string | null
+          quality_penalty_applied?: boolean | null
+          region?: string | null
+          supported_presentation_languages?: string[] | null
+          tm_coverage_level?: string | null
+          total_kb_chunks?: number | null
+          unverified_chunks?: number | null
+          updated_at?: string | null
+          verified_official_chunks?: number | null
+          verified_secondary_chunks?: number | null
+        }
+        Update: {
+          ai_researched_chunks?: number | null
+          alerts?: string[] | null
+          cov_assignment?: string | null
+          cov_cease_desist?: string | null
+          cov_deadlines?: string | null
+          cov_exam_criteria?: string | null
+          cov_fees?: string | null
+          cov_jurisprudence?: string | null
+          cov_legislation?: string | null
+          cov_license?: string | null
+          cov_oa_response?: string | null
+          cov_opposition?: string | null
+          cov_portfolio_report?: string | null
+          cov_procedures?: string | null
+          cov_renewal?: string | null
+          cov_rep_requirements?: string | null
+          cov_search_report?: string | null
+          coverage_level?: string | null
+          coverage_score?: number | null
+          created_at?: string | null
+          design_coverage_level?: string | null
+          effective_score?: number | null
+          flag_emoji?: string | null
+          has_outdated_content?: boolean | null
+          id?: string
+          jurisdiction_code?: string
+          jurisdiction_name?: string
+          last_kb_update?: string | null
+          last_verification?: string | null
+          next_scheduled_update?: string | null
+          office_id?: string | null
+          outdated_since?: string | null
+          patent_coverage_level?: string | null
+          quality_penalty_applied?: boolean | null
+          region?: string | null
+          supported_presentation_languages?: string[] | null
+          tm_coverage_level?: string | null
+          total_kb_chunks?: number | null
+          unverified_chunks?: number | null
+          updated_at?: string | null
+          verified_official_chunks?: number | null
+          verified_secondary_chunks?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_knowledge_coverage_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_knowledge_global: {
         Row: {
           article_reference: string | null
