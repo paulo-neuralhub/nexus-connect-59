@@ -283,6 +283,7 @@ import {
   TelephonyConsumptionPage, 
   TelephonyAlertsPage 
 } from "./pages/backoffice/telephony";
+import BackofficeTelephonyPage from "./pages/backoffice/telephony/BackofficeTelephonyPage";
 import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
@@ -679,7 +680,7 @@ const App = () => (
                 <Route path="demo-mode" element={<DemoModePage />} />
                 <Route path="system-tests" element={<SystemTestsPage />} />
                 <Route path="voip" element={<VoipManagementPage />} />
-                <Route path="telephony" element={<TelephonyDashboard />} />
+                <Route path="telephony" element={<BackofficeTelephonyPage />} />
                 <Route path="telephony/provider" element={<TelephonyProviderPage />} />
                 <Route path="telephony/packs" element={<TelephonyPacksPage />} />
                 <Route path="telephony/consumption" element={<TelephonyConsumptionPage />} />

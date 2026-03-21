@@ -154,6 +154,7 @@ const sidebarSections: SidebarSection[] = [
     icon: Wrench,
     items: [
       { label: 'Calendar', path: '/backoffice/calendar', icon: Calendar },
+      { label: 'Telefonía', path: '/backoffice/telephony', icon: PhoneCall },
       { label: 'Configuración', path: '/backoffice/settings', icon: Settings },
     ],
   },
