@@ -12708,6 +12708,7 @@ export type Database = {
       }
       ipo_offices: {
         Row: {
+          accepted_filing_languages: string[] | null
           accepted_languages: Json | null
           accepted_mark_types: Json | null
           address: string | null
@@ -12726,6 +12727,7 @@ export type Database = {
           api_version: string | null
           appeal_procedure: Json | null
           approval_rate_pct: number | null
+          assignment_form_url: string | null
           auth_type: string | null
           automation_level: string | null
           automation_percentage: number | null
@@ -12760,6 +12762,7 @@ export type Database = {
           data_last_verified_by: string | null
           data_quality_flag: string | null
           data_quality_notes: string | null
+          data_source: string | null
           data_source_config: Json | null
           data_source_notes: string | null
           data_source_type: string | null
@@ -12775,15 +12778,24 @@ export type Database = {
           e_filing_url: string | null
           electronic_signature: boolean | null
           email_general: string | null
+          exam_criteria_url: string | null
+          exam_gazette_url: string | null
+          exam_guidelines_year: number | null
+          exam_type: string | null
           examiner_patterns: Json | null
           fax: string | null
           fee_last_verified_at: string | null
+          fee_schedule_url: string | null
           fees_source_notes: string | null
           fees_url: string | null
           filing_volume_growth_pct: number | null
           filing_volume_year: number | null
           flag: string | null
           flag_emoji: string | null
+          genius_coverage_level: string | null
+          genius_coverage_score: number | null
+          genius_kb_chunks: number | null
+          genius_last_kb_update: string | null
           grace_period_days: number | null
           handles_designs: boolean | null
           handles_patents: boolean | null
@@ -12797,6 +12809,7 @@ export type Database = {
           is_active: boolean | null
           is_connected: boolean | null
           languages: string[] | null
+          last_data_verification: string | null
           last_health_check: string | null
           last_interaction_at: string | null
           last_sync_at: string | null
@@ -12817,14 +12830,23 @@ export type Database = {
           office_acronym: string | null
           office_hours: string | null
           office_type: string | null
+          official_gazette_url: string | null
           online_payment: boolean | null
           open_data_available: boolean | null
           operational_status: string | null
+          opposition_count_from: string | null
+          opposition_extensible: boolean | null
+          opposition_form_url: string | null
+          opposition_legal_basis: string | null
+          opposition_max_extension_days: number | null
+          opposition_period_days: number | null
           opposition_procedure: Json | null
           opposition_success_rate: number | null
           paris_convention_member: boolean | null
           payment_methods: Json | null
           phone_general: string | null
+          poa_notarization_required: boolean | null
+          power_of_attorney_required: boolean | null
           preparation_tips: string | null
           priority_claim_months: number | null
           priority_score: number | null
@@ -12832,10 +12854,17 @@ export type Database = {
           rate_limit_per_day: number | null
           rate_limit_per_minute: number | null
           region: string | null
+          registration_timeline_days: number | null
           rejection_rate: number | null
           rejection_rate_pct: number | null
+          renewal_form_url: string | null
+          renewal_grace_period_days: number | null
+          renewal_period_years: number | null
           renewal_procedure: Json | null
+          rep_requirement_notes: string | null
+          rep_requirement_type: string | null
           requires_local_agent: boolean | null
+          requires_translation: boolean | null
           search_url: string | null
           spanish_companies_active: boolean | null
           special_requirements: Json | null
@@ -12885,6 +12914,7 @@ export type Database = {
           total_filings_tracked: number | null
           translation_languages: Json | null
           translation_required: boolean | null
+          translation_requirements: string | null
           ub_integration_notes: string | null
           ub_integration_status: string | null
           updated_at: string
@@ -12899,6 +12929,7 @@ export type Database = {
           working_hours: Json | null
         }
         Insert: {
+          accepted_filing_languages?: string[] | null
           accepted_languages?: Json | null
           accepted_mark_types?: Json | null
           address?: string | null
@@ -12917,6 +12948,7 @@ export type Database = {
           api_version?: string | null
           appeal_procedure?: Json | null
           approval_rate_pct?: number | null
+          assignment_form_url?: string | null
           auth_type?: string | null
           automation_level?: string | null
           automation_percentage?: number | null
@@ -12951,6 +12983,7 @@ export type Database = {
           data_last_verified_by?: string | null
           data_quality_flag?: string | null
           data_quality_notes?: string | null
+          data_source?: string | null
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
@@ -12966,15 +12999,24 @@ export type Database = {
           e_filing_url?: string | null
           electronic_signature?: boolean | null
           email_general?: string | null
+          exam_criteria_url?: string | null
+          exam_gazette_url?: string | null
+          exam_guidelines_year?: number | null
+          exam_type?: string | null
           examiner_patterns?: Json | null
           fax?: string | null
           fee_last_verified_at?: string | null
+          fee_schedule_url?: string | null
           fees_source_notes?: string | null
           fees_url?: string | null
           filing_volume_growth_pct?: number | null
           filing_volume_year?: number | null
           flag?: string | null
           flag_emoji?: string | null
+          genius_coverage_level?: string | null
+          genius_coverage_score?: number | null
+          genius_kb_chunks?: number | null
+          genius_last_kb_update?: string | null
           grace_period_days?: number | null
           handles_designs?: boolean | null
           handles_patents?: boolean | null
@@ -12988,6 +13030,7 @@ export type Database = {
           is_active?: boolean | null
           is_connected?: boolean | null
           languages?: string[] | null
+          last_data_verification?: string | null
           last_health_check?: string | null
           last_interaction_at?: string | null
           last_sync_at?: string | null
@@ -13008,14 +13051,23 @@ export type Database = {
           office_acronym?: string | null
           office_hours?: string | null
           office_type?: string | null
+          official_gazette_url?: string | null
           online_payment?: boolean | null
           open_data_available?: boolean | null
           operational_status?: string | null
+          opposition_count_from?: string | null
+          opposition_extensible?: boolean | null
+          opposition_form_url?: string | null
+          opposition_legal_basis?: string | null
+          opposition_max_extension_days?: number | null
+          opposition_period_days?: number | null
           opposition_procedure?: Json | null
           opposition_success_rate?: number | null
           paris_convention_member?: boolean | null
           payment_methods?: Json | null
           phone_general?: string | null
+          poa_notarization_required?: boolean | null
+          power_of_attorney_required?: boolean | null
           preparation_tips?: string | null
           priority_claim_months?: number | null
           priority_score?: number | null
@@ -13023,10 +13075,17 @@ export type Database = {
           rate_limit_per_day?: number | null
           rate_limit_per_minute?: number | null
           region?: string | null
+          registration_timeline_days?: number | null
           rejection_rate?: number | null
           rejection_rate_pct?: number | null
+          renewal_form_url?: string | null
+          renewal_grace_period_days?: number | null
+          renewal_period_years?: number | null
           renewal_procedure?: Json | null
+          rep_requirement_notes?: string | null
+          rep_requirement_type?: string | null
           requires_local_agent?: boolean | null
+          requires_translation?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
@@ -13076,6 +13135,7 @@ export type Database = {
           total_filings_tracked?: number | null
           translation_languages?: Json | null
           translation_required?: boolean | null
+          translation_requirements?: string | null
           ub_integration_notes?: string | null
           ub_integration_status?: string | null
           updated_at?: string
@@ -13090,6 +13150,7 @@ export type Database = {
           working_hours?: Json | null
         }
         Update: {
+          accepted_filing_languages?: string[] | null
           accepted_languages?: Json | null
           accepted_mark_types?: Json | null
           address?: string | null
@@ -13108,6 +13169,7 @@ export type Database = {
           api_version?: string | null
           appeal_procedure?: Json | null
           approval_rate_pct?: number | null
+          assignment_form_url?: string | null
           auth_type?: string | null
           automation_level?: string | null
           automation_percentage?: number | null
@@ -13142,6 +13204,7 @@ export type Database = {
           data_last_verified_by?: string | null
           data_quality_flag?: string | null
           data_quality_notes?: string | null
+          data_source?: string | null
           data_source_config?: Json | null
           data_source_notes?: string | null
           data_source_type?: string | null
@@ -13157,15 +13220,24 @@ export type Database = {
           e_filing_url?: string | null
           electronic_signature?: boolean | null
           email_general?: string | null
+          exam_criteria_url?: string | null
+          exam_gazette_url?: string | null
+          exam_guidelines_year?: number | null
+          exam_type?: string | null
           examiner_patterns?: Json | null
           fax?: string | null
           fee_last_verified_at?: string | null
+          fee_schedule_url?: string | null
           fees_source_notes?: string | null
           fees_url?: string | null
           filing_volume_growth_pct?: number | null
           filing_volume_year?: number | null
           flag?: string | null
           flag_emoji?: string | null
+          genius_coverage_level?: string | null
+          genius_coverage_score?: number | null
+          genius_kb_chunks?: number | null
+          genius_last_kb_update?: string | null
           grace_period_days?: number | null
           handles_designs?: boolean | null
           handles_patents?: boolean | null
@@ -13179,6 +13251,7 @@ export type Database = {
           is_active?: boolean | null
           is_connected?: boolean | null
           languages?: string[] | null
+          last_data_verification?: string | null
           last_health_check?: string | null
           last_interaction_at?: string | null
           last_sync_at?: string | null
@@ -13199,14 +13272,23 @@ export type Database = {
           office_acronym?: string | null
           office_hours?: string | null
           office_type?: string | null
+          official_gazette_url?: string | null
           online_payment?: boolean | null
           open_data_available?: boolean | null
           operational_status?: string | null
+          opposition_count_from?: string | null
+          opposition_extensible?: boolean | null
+          opposition_form_url?: string | null
+          opposition_legal_basis?: string | null
+          opposition_max_extension_days?: number | null
+          opposition_period_days?: number | null
           opposition_procedure?: Json | null
           opposition_success_rate?: number | null
           paris_convention_member?: boolean | null
           payment_methods?: Json | null
           phone_general?: string | null
+          poa_notarization_required?: boolean | null
+          power_of_attorney_required?: boolean | null
           preparation_tips?: string | null
           priority_claim_months?: number | null
           priority_score?: number | null
@@ -13214,10 +13296,17 @@ export type Database = {
           rate_limit_per_day?: number | null
           rate_limit_per_minute?: number | null
           region?: string | null
+          registration_timeline_days?: number | null
           rejection_rate?: number | null
           rejection_rate_pct?: number | null
+          renewal_form_url?: string | null
+          renewal_grace_period_days?: number | null
+          renewal_period_years?: number | null
           renewal_procedure?: Json | null
+          rep_requirement_notes?: string | null
+          rep_requirement_type?: string | null
           requires_local_agent?: boolean | null
+          requires_translation?: boolean | null
           search_url?: string | null
           spanish_companies_active?: boolean | null
           special_requirements?: Json | null
@@ -13267,6 +13356,7 @@ export type Database = {
           total_filings_tracked?: number | null
           translation_languages?: Json | null
           translation_required?: boolean | null
+          translation_requirements?: string | null
           ub_integration_notes?: string | null
           ub_integration_status?: string | null
           updated_at?: string
