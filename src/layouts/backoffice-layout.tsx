@@ -42,6 +42,7 @@ import {
   Wrench,
   Zap,
   Radar,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -124,6 +125,7 @@ const sidebarSections: SidebarSection[] = [
     icon: Bot,
     items: [
       { label: 'AI Brain', path: '/backoffice/ai', icon: Brain },
+      { label: 'IP-GENIUS', path: '/backoffice/genius', icon: Sparkles },
       { label: '🗺️ Conocimiento Global', path: '/backoffice/knowledge', icon: Globe },
       { label: 'Knowledge Bases', path: '/backoffice/knowledge-bases', icon: Library },
       { label: 'Automatizaciones', path: '/backoffice/automations', icon: Zap },
@@ -140,6 +142,7 @@ const sidebarSections: SidebarSection[] = [
       { label: 'Uso', path: '/backoffice/analytics/usage', icon: Activity },
       { label: 'Cohortes', path: '/backoffice/analytics/cohorts', icon: Calendar },
       { label: 'Tenants', path: '/backoffice/analytics/tenants', icon: Building2 },
+      { label: 'Product Analytics', path: '/backoffice/product-analytics', icon: BarChart3 },
     ],
   },
   {
