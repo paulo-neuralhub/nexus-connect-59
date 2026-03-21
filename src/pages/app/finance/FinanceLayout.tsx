@@ -7,8 +7,8 @@ import {
   Calendar, 
   Settings,
   TrendingUp,
-  Clock,
-  Wallet
+  Wallet,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModuleGate } from '@/components/common/ModuleGate';
@@ -21,6 +21,7 @@ const financeNavItems = [
   { to: '/app/finance/quotes', icon: FileText, label: 'Presupuestos' },
   { to: '/app/finance/expenses', icon: Wallet, label: 'Gastos' },
   { to: '/app/finance/provisions', icon: Wallet, label: 'Provisiones' },
+  { to: '/app/finance/services', icon: Package, label: 'Servicios' },
   { to: '/app/finance/clients', icon: Users, label: 'Clientes' },
   { to: '/app/finance/renewals', icon: Calendar, label: 'Renovaciones' },
   { to: '/app/finance/valuation', icon: TrendingUp, label: 'Valoración' },

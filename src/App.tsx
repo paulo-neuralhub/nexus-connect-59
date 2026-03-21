@@ -532,7 +532,8 @@ const App = () => (
                   <Route path="clients" element={<BillingClientsPage />} />
                   <Route path="renewals" element={<RenewalSchedulePage />} />
                   <Route path="valuation" element={<ValuationDashboardPage />} />
-                  <Route path="valuation/:id" element={<PortfolioDetailPage />} />
+                  <Route path="services" element={<ServicesCatalogPage />} />
+                  <Route path="setup" element={<FinanceSetupWizard />} />
                   <Route path="settings" element={<FinanceSettingsPage />} />
                 </Route>
                 <Route path="timetracking" element={<TimetrackingLayout />}>
