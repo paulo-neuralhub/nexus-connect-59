@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.crm-copilot]
 verify_jwt = false
+
+[functions.telephony-token]
+verify_jwt = false
+
+[functions.telephony-outbound]
+verify_jwt = false
+
+[functions.telephony-webhook]
+verify_jwt = false
