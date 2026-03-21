@@ -23,6 +23,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { fromTable } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useCommConfig } from '@/hooks/communications';
 import { toast } from 'sonner';
