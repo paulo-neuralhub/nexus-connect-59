@@ -541,9 +541,9 @@ export function DynamicSidebar({
                   <HelpCircle 
                     className="h-3 w-3 shrink-0" 
                     style={isHelpActive ? { 
-                      color: '#00b4d8',
-                      filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                    } : { color: 'rgba(255,255,255,0.28)' }} 
+                      color: '#6B7280',
+                      filter: 'drop-shadow(0 0 4px rgba(107,114,128,0.30))'
+                    } : { color: '#6B7280', opacity: 0.5 }} 
                   />
                   {!collapsed && <span className="flex-1">Ayuda</span>}
                 </Link>
