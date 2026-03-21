@@ -295,7 +295,7 @@ export default function MatterDetailPage() {
 
               {/* Communications Tab (COMM-01) */}
               {activeTab === 'communications' && (
-                <MatterCommunicationsTabV2 matterId={id!} matterReference={matter?.reference_number || matter?.reference} />
+                <MatterCommunicationsTabV2 matterId={id!} matterReference={matter?.reference} />
               )}
 
               {/* Spider Tab */}
