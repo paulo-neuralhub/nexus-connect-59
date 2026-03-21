@@ -458,7 +458,7 @@ export function IPSoftphone() {
 
               {/* Call button */}
               <Button
-                className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
                 onClick={handleDial}
                 disabled={!dialNumber.trim() || deviceStatus !== "ready"}
               >
