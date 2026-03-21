@@ -63,9 +63,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-const RATE_TYPE_CONFIG: Record<RateType, { label: string; icon: any; color: string }> = {
+const RATE_TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
   user: { label: 'Usuario', icon: User, color: 'bg-blue-100 text-blue-700' },
-  role: { label: 'Rol', icon: Users, color: 'bg-purple-100 text-purple-700' },
   matter_type: { label: 'Tipo Expediente', icon: Briefcase, color: 'bg-green-100 text-green-700' },
   client: { label: 'Cliente', icon: Building, color: 'bg-amber-100 text-amber-700' },
   default: { label: 'Por Defecto', icon: DollarSign, color: 'bg-gray-100 text-gray-700' },
@@ -187,16 +186,12 @@ export default function BillingRatesPage() {
                           <TableRow key={rate.id}>
                             <TableCell>
                               <div>
-                                <span className="font-medium">{rate.name || '-'}</span>
-                                {rate.description && (
-                                  <p className="text-xs text-muted-foreground">{rate.description}</p>
-                                )}
+                                <span className="font-medium">{rate.rate_name || '-'}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              {rate.rate_type === 'user' && rate.user?.full_name}
-                              {rate.rate_type === 'client' && rate.contact?.name}
-                              {rate.rate_type === 'role' && rate.role_name}
+                              {rate.rate_type === 'user' && rate.user ? `${rate.user.first_name} ${rate.user.last_name}` : ''}
+                              {rate.rate_type === 'client' && rate.account?.name}
                               {rate.rate_type === 'matter_type' && rate.matter_type}
                               {rate.rate_type === 'default' && 'Todos'}
                             </TableCell>
@@ -205,19 +200,18 @@ export default function BillingRatesPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm">
-                                  {format(new Date(rate.effective_from), 'dd/MM/yyyy')}
-                                </span>
-                                {rate.effective_until && (
+                                {rate.valid_from && (
+                                  <span className="text-sm">
+                                    {format(new Date(rate.valid_from), 'dd/MM/yyyy')}
+                                  </span>
+                                )}
+                                {rate.valid_until && (
                                   <>
                                     <span className="text-muted-foreground">→</span>
                                     <span className="text-sm">
-                                      {format(new Date(rate.effective_until), 'dd/MM/yyyy')}
+                                      {format(new Date(rate.valid_until), 'dd/MM/yyyy')}
                                     </span>
                                   </>
-                                )}
-                                {!rate.is_active && (
-                                  <Badge variant="outline" className="text-xs">Inactiva</Badge>
                                 )}
                               </div>
                             </TableCell>
@@ -290,11 +284,9 @@ interface RateFormDialogProps {
 
 function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFormDialogProps) {
   const [formData, setFormData] = useState({
-    rate_type: 'default' as RateType,
+    rate_type: 'default' as string,
     hourly_rate: '',
-    name: '',
-    description: '',
-    role_name: '',
+    rate_name: '',
     matter_type: '',
   });
 
@@ -305,18 +297,14 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
         setFormData({
           rate_type: rate.rate_type,
           hourly_rate: rate.hourly_rate.toString(),
-          name: rate.name || '',
-          description: rate.description || '',
-          role_name: rate.role_name || '',
+          rate_name: rate.rate_name || '',
           matter_type: rate.matter_type || '',
         });
       } else {
         setFormData({
           rate_type: 'default',
           hourly_rate: '',
-          name: '',
-          description: '',
-          role_name: '',
+          rate_name: '',
           matter_type: '',
         });
       }
@@ -331,9 +319,7 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
     onSave({
       rate_type: formData.rate_type,
       hourly_rate: parseFloat(formData.hourly_rate),
-      name: formData.name || undefined,
-      description: formData.description || undefined,
-      role_name: formData.rate_type === 'role' ? formData.role_name : undefined,
+      rate_name: formData.rate_name || `Tarifa ${formData.rate_type}`,
       matter_type: formData.rate_type === 'matter_type' ? formData.matter_type : undefined,
     });
   };

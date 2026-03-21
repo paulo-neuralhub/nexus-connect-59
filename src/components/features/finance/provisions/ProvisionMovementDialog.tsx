@@ -121,9 +121,7 @@ export function ProvisionMovementDialog({
         provision_id: provisionId,
         movement_type: movementType,
         amount,
-        description: formData.description || undefined,
-        reference: formData.reference || undefined,
-        movement_date: format(formData.movement_date, 'yyyy-MM-dd'),
+        description: formData.description || `Movimiento: ${movementType}`,
       });
       
       toast.success('Movimiento registrado correctamente');

@@ -1,24 +1,23 @@
 // src/hooks/finance/usePortfolioValuation.ts
+// REWRITTEN: Safely returns empty state since finance_portfolios/finance_portfolio_assets
+// tables don't exist. This is an Advanced feature that requires feature_valuation=true.
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
 import type { FinancePortfolio, PortfolioAsset, PortfolioMetrics } from '@/types/ip-finance.types';
 import { toast } from 'sonner';
+
+// All portfolio hooks return empty state safely — no crash
+// These will be connected to real tables when the Valuation module is fully implemented
 
 export function usePortfolios() {
   const { currentOrganization } = useOrganization();
 
   return useQuery({
     queryKey: ['finance-portfolios', currentOrganization?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('finance_portfolios')
-        .select('*')
-        .eq('organization_id', currentOrganization!.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as FinancePortfolio[];
+    queryFn: async (): Promise<FinancePortfolio[]> => {
+      // Tables don't exist yet — return empty
+      return [];
     },
     enabled: !!currentOrganization?.id,
   });
@@ -27,107 +26,36 @@ export function usePortfolios() {
 export function usePortfolio(portfolioId: string | undefined) {
   return useQuery({
     queryKey: ['finance-portfolio', portfolioId],
-    queryFn: async () => {
-      if (!portfolioId) return null;
-
-      const { data, error } = await supabase
-        .from('finance_portfolios')
-        .select('*')
-        .eq('id', portfolioId)
-        .single();
-
-      if (error) throw error;
-
-      // Get assets separately
-      const { data: assets } = await supabase
-        .from('finance_portfolio_assets')
-        .select('*')
-        .eq('portfolio_id', portfolioId)
-        .order('title');
-
-      return { ...data, assets: assets || [] } as FinancePortfolio;
+    queryFn: async (): Promise<FinancePortfolio | null> => {
+      return null;
     },
     enabled: !!portfolioId,
   });
 }
 
 export function useCreatePortfolio() {
-  const queryClient = useQueryClient();
-  const { currentOrganization } = useOrganization();
-
   return useMutation({
-    mutationFn: async (data: Partial<FinancePortfolio>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: portfolio, error } = await supabase
-        .from('finance_portfolios')
-        .insert({
-          organization_id: currentOrganization!.id,
-          name: data.name || 'Nuevo Portfolio',
-          description: data.description,
-          currency: data.currency || 'EUR',
-          valuation_frequency: data.valuation_frequency || 'quarterly',
-          auto_revalue: data.auto_revalue ?? true,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return portfolio as FinancePortfolio;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolios'] });
-      toast.success('Portfolio creado');
-    },
-    onError: (error) => {
-      toast.error('Error al crear portfolio: ' + error.message);
+    mutationFn: async (_data: Partial<FinancePortfolio>): Promise<FinancePortfolio> => {
+      toast.info('Módulo de valoración no disponible', {
+        description: 'Requiere el nivel Advanced del módulo financiero',
+      });
+      throw new Error('Valuation module not available');
     },
   });
 }
 
 export function useUpdatePortfolio() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<FinancePortfolio> }) => {
-      const { data: portfolio, error } = await supabase
-        .from('finance_portfolios')
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return portfolio as FinancePortfolio;
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolios'] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolio', id] });
-      toast.success('Portfolio actualizado');
+    mutationFn: async (_: { id: string; data: Partial<FinancePortfolio> }) => {
+      throw new Error('Valuation module not available');
     },
   });
 }
 
 export function useDeletePortfolio() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('finance_portfolios')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolios'] });
-      toast.success('Portfolio eliminado');
+    mutationFn: async (_id: string) => {
+      throw new Error('Valuation module not available');
     },
   });
 }
@@ -136,92 +64,33 @@ export function useDeletePortfolio() {
 export function usePortfolioAssets(portfolioId: string | undefined) {
   return useQuery({
     queryKey: ['portfolio-assets', portfolioId],
-    queryFn: async () => {
-      if (!portfolioId) return [];
-
-      const { data, error } = await supabase
-        .from('finance_portfolio_assets')
-        .select('*')
-        .eq('portfolio_id', portfolioId)
-        .order('title');
-
-      if (error) throw error;
-      return data as PortfolioAsset[];
+    queryFn: async (): Promise<PortfolioAsset[]> => {
+      return [];
     },
     enabled: !!portfolioId,
   });
 }
 
 export function useAddAssetToPortfolio() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ portfolioId, asset }: { portfolioId: string; asset: Partial<PortfolioAsset> }) => {
-      const { data, error } = await supabase
-        .from('finance_portfolio_assets')
-        .insert({
-          portfolio_id: portfolioId,
-          asset_type: asset.asset_type || 'trademark',
-          title: asset.title || 'Sin título',
-          ...asset,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as PortfolioAsset;
-    },
-    onSuccess: (_, { portfolioId }) => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio-assets', portfolioId] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolio', portfolioId] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolios'] });
-      toast.success('Activo añadido al portfolio');
+    mutationFn: async (_: { portfolioId: string; asset: Partial<PortfolioAsset> }) => {
+      throw new Error('Valuation module not available');
     },
   });
 }
 
 export function useUpdatePortfolioAsset() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, portfolioId, data }: { id: string; portfolioId: string; data: Partial<PortfolioAsset> }) => {
-      const { data: asset, error } = await supabase
-        .from('finance_portfolio_assets')
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return asset as PortfolioAsset;
-    },
-    onSuccess: (_, { portfolioId }) => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio-assets', portfolioId] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolio', portfolioId] });
+    mutationFn: async (_: { id: string; portfolioId: string; data: Partial<PortfolioAsset> }) => {
+      throw new Error('Valuation module not available');
     },
   });
 }
 
 export function useRemoveAssetFromPortfolio() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, portfolioId }: { id: string; portfolioId: string }) => {
-      const { error } = await supabase
-        .from('finance_portfolio_assets')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: (_, { portfolioId }) => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio-assets', portfolioId] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolio', portfolioId] });
-      queryClient.invalidateQueries({ queryKey: ['finance-portfolios'] });
-      toast.success('Activo eliminado del portfolio');
+    mutationFn: async (_: { id: string; portfolioId: string }) => {
+      throw new Error('Valuation module not available');
     },
   });
 }
@@ -231,50 +100,13 @@ export function usePortfolioValuationHistory(portfolioId: string | undefined) {
   return useQuery({
     queryKey: ['portfolio-valuations', portfolioId],
     queryFn: async () => {
-      if (!portfolioId) return [];
-
-      const { data, error } = await supabase
-        .from('finance_valuations')
-        .select('*')
-        .eq('portfolio_id', portfolioId)
-        .order('valuation_date', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      return [];
     },
     enabled: !!portfolioId,
   });
 }
 
 // Portfolio Metrics
-export function usePortfolioMetrics(portfolioId: string | undefined): PortfolioMetrics | null {
-  const { data: portfolio } = usePortfolio(portfolioId);
-  const { data: valuations } = usePortfolioValuationHistory(portfolioId);
-
-  if (!portfolio) return null;
-
-  const totalValue = portfolio.total_value || 0;
-  const totalCost = portfolio.total_cost || 0;
-  const unrealizedGain = totalValue - totalCost;
-  const roi = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
-
-  // Value change from last valuation
-  const lastValuation = valuations?.[1];
-  const valueChange = lastValuation 
-    ? totalValue - (lastValuation.estimated_value || 0)
-    : 0;
-  const valueChangePercent = lastValuation && lastValuation.estimated_value > 0
-    ? (valueChange / lastValuation.estimated_value) * 100
-    : 0;
-
-  return {
-    totalValue,
-    totalCost,
-    unrealizedGain,
-    roi,
-    valueChange,
-    valueChangePercent,
-    assetCount: portfolio.total_assets || 0,
-    currency: portfolio.currency,
-  };
+export function usePortfolioMetrics(_portfolioId: string | undefined): PortfolioMetrics | null {
+  return null;
 }

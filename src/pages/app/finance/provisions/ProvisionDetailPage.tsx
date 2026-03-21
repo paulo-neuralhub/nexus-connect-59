@@ -252,11 +252,11 @@ export default function ProvisionDetailPage() {
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(movement.movement_date), 'PPP', { locale: es })}
+                          {movement.created_at ? format(new Date(movement.created_at), 'PPP', { locale: es }) : ''}
                         </p>
-                        {movement.reference && (
+                        {movement.description && (
                           <p className="text-xs text-muted-foreground">
-                            Ref: {movement.reference}
+                            {movement.description}
                           </p>
                         )}
                         {movement.description && (
