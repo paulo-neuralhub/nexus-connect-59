@@ -297,13 +297,12 @@ export function usePaymentMethodCodes() {
         .select('*')
         .limit(0); // Table may not exist — return empty
       
-      // Return hardcoded payment methods since the table doesn't exist
       return [
-        { code: '01', description: 'Transferencia' },
-        { code: '02', description: 'Cheque' },
-        { code: '03', description: 'No se requiere pago' },
-        { code: '04', description: 'Domiciliación bancaria' },
-        { code: '05', description: 'Confirmación bancaria' },
+        { code: '01', name_es: 'Transferencia', name_en: 'Wire Transfer' },
+        { code: '02', name_es: 'Cheque', name_en: 'Cheque' },
+        { code: '03', name_es: 'No se requiere pago', name_en: 'No payment required' },
+        { code: '04', name_es: 'Domiciliación bancaria', name_en: 'Direct Debit' },
+        { code: '05', name_es: 'Confirmación bancaria', name_en: 'Bank Confirmation' },
       ] as PaymentMethodCode[];
     },
     staleTime: Infinity,
