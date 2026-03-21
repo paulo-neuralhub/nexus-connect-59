@@ -35,7 +35,7 @@ import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
-
+import { openSoftphone } from "@/components/telephony/IPSoftphone";
 export default function CRMV2AccountDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -121,6 +121,27 @@ export default function CRMV2AccountDetail() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const phoneNumber = account.phone || contacts[0]?.phone || "";
+                  if (phoneNumber) {
+                    openSoftphone(phoneNumber, {
+                      accountId: id,
+                      accountName: account.name,
+                      contactName: contacts[0]?.first_name
+                        ? `${contacts[0].first_name} ${contacts[0].last_name || ""}`
+                        : undefined,
+                      contactId: contacts[0]?.id,
+                    });
+                  } else {
+                    openSoftphone("", { accountId: id, accountName: account.name });
+                  }
+                }}
+              >
+                <Phone className="w-4 h-4 mr-1" /> Llamar
+              </Button>
               <Button variant="outline" size="sm">
                 <Edit className="w-4 h-4 mr-1" /> Editar
               </Button>
