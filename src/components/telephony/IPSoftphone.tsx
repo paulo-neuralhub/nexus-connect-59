@@ -237,7 +237,7 @@ export function IPSoftphone() {
           "fixed bottom-6 right-24 z-40",
           "flex items-center gap-2 rounded-2xl px-4 py-3 shadow-lg",
           "transition-all hover:scale-105",
-          isInCall ? "bg-emerald-600 text-white" : "bg-card text-card-foreground border"
+          isInCall ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground border"
         )}
       >
         <Phone className="h-4 w-4" />
