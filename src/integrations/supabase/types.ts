@@ -5501,6 +5501,713 @@ export type Database = {
         }
         Relationships: []
       }
+      comm_events: {
+        Row: {
+          event_data: Json | null
+          event_type: string
+          id: string
+          message_id: string | null
+          occurred_at: string | null
+          organization_id: string
+          provider_event_id: string | null
+          thread_id: string | null
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          message_id?: string | null
+          occurred_at?: string | null
+          organization_id: string
+          provider_event_id?: string | null
+          thread_id?: string | null
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          message_id?: string | null
+          occurred_at?: string | null
+          organization_id?: string
+          provider_event_id?: string | null
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "comm_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "comm_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_identity_map: {
+        Row: {
+          created_at: string | null
+          crm_account_id: string | null
+          crm_contact_id: string | null
+          email_addresses: string[] | null
+          id: string
+          organization_id: string
+          phone_numbers: string[] | null
+          resolution_method: string | null
+          updated_at: string | null
+          whatsapp_ids: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          crm_contact_id?: string | null
+          email_addresses?: string[] | null
+          id?: string
+          organization_id: string
+          phone_numbers?: string[] | null
+          resolution_method?: string | null
+          updated_at?: string | null
+          whatsapp_ids?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          crm_contact_id?: string | null
+          email_addresses?: string[] | null
+          id?: string
+          organization_id?: string
+          phone_numbers?: string[] | null
+          resolution_method?: string | null
+          updated_at?: string | null
+          whatsapp_ids?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_identity_map_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_identity_map_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_identity_map_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_internal_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          content_type: string | null
+          created_at: string | null
+          crm_account_id: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          matter_id: string | null
+          mentions: string[] | null
+          organization_id: string
+          read_by: Json | null
+          room_id: string
+          room_type: string
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          matter_id?: string | null
+          mentions?: string[] | null
+          organization_id: string
+          read_by?: Json | null
+          room_id: string
+          room_type?: string
+          sender_id: string
+          sender_name: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          matter_id?: string | null
+          mentions?: string[] | null
+          organization_id?: string
+          read_by?: Json | null
+          room_id?: string
+          room_type?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_internal_messages_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_internal_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_internal_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_internal_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_message_queue: {
+        Row: {
+          attempt_count: number | null
+          created_at: string | null
+          errors_detail: Json | null
+          id: string
+          idempotency_key: string
+          last_error: string | null
+          max_attempts: number | null
+          next_attempt_at: string | null
+          operation: string
+          organization_id: string
+          payload: Json
+          priority: number | null
+          processed_at: string | null
+          result: Json | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attempt_count?: number | null
+          created_at?: string | null
+          errors_detail?: Json | null
+          id?: string
+          idempotency_key: string
+          last_error?: string | null
+          max_attempts?: number | null
+          next_attempt_at?: string | null
+          operation: string
+          organization_id: string
+          payload: Json
+          priority?: number | null
+          processed_at?: string | null
+          result?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attempt_count?: number | null
+          created_at?: string | null
+          errors_detail?: Json | null
+          id?: string
+          idempotency_key?: string
+          last_error?: string | null
+          max_attempts?: number | null
+          next_attempt_at?: string | null
+          operation?: string
+          organization_id?: string
+          payload?: Json
+          priority?: number | null
+          processed_at?: string | null
+          result?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_message_queue_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_messages: {
+        Row: {
+          attachments: Json | null
+          body: string | null
+          body_html: string | null
+          channel: string
+          content_hash: string | null
+          content_type: string | null
+          created_at: string | null
+          delivered_at: string | null
+          draft_updated_at: string | null
+          email_in_reply_to: string | null
+          email_message_id: string | null
+          email_references: string[] | null
+          failed_reason: string | null
+          id: string
+          idempotency_key: string | null
+          is_draft: boolean | null
+          is_legally_critical: boolean | null
+          organization_id: string
+          provider: string | null
+          provider_message_id: string | null
+          read_at: string | null
+          retry_count: number | null
+          sender_email: string | null
+          sender_id: string | null
+          sender_name: string
+          sender_phone: string | null
+          sender_type: string
+          sent_at: string | null
+          status: string | null
+          telephony_cdr_id: string | null
+          template_language: string | null
+          template_name: string | null
+          template_params: Json | null
+          thread_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          body?: string | null
+          body_html?: string | null
+          channel: string
+          content_hash?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          draft_updated_at?: string | null
+          email_in_reply_to?: string | null
+          email_message_id?: string | null
+          email_references?: string[] | null
+          failed_reason?: string | null
+          id?: string
+          idempotency_key?: string | null
+          is_draft?: boolean | null
+          is_legally_critical?: boolean | null
+          organization_id: string
+          provider?: string | null
+          provider_message_id?: string | null
+          read_at?: string | null
+          retry_count?: number | null
+          sender_email?: string | null
+          sender_id?: string | null
+          sender_name: string
+          sender_phone?: string | null
+          sender_type: string
+          sent_at?: string | null
+          status?: string | null
+          telephony_cdr_id?: string | null
+          template_language?: string | null
+          template_name?: string | null
+          template_params?: Json | null
+          thread_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          body?: string | null
+          body_html?: string | null
+          channel?: string
+          content_hash?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          draft_updated_at?: string | null
+          email_in_reply_to?: string | null
+          email_message_id?: string | null
+          email_references?: string[] | null
+          failed_reason?: string | null
+          id?: string
+          idempotency_key?: string | null
+          is_draft?: boolean | null
+          is_legally_critical?: boolean | null
+          organization_id?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          read_at?: string | null
+          retry_count?: number | null
+          sender_email?: string | null
+          sender_id?: string | null
+          sender_name?: string
+          sender_phone?: string | null
+          sender_type?: string
+          sent_at?: string | null
+          status?: string | null
+          telephony_cdr_id?: string | null
+          template_language?: string | null
+          template_name?: string | null
+          template_params?: Json | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "comm_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_templates: {
+        Row: {
+          available_variables: Json | null
+          body_html: string | null
+          body_text: string | null
+          category: string
+          channel: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          is_system_default: boolean | null
+          name: string
+          organization_id: string
+          subject: string | null
+          updated_at: string | null
+          whatsapp_approval_status: string | null
+          whatsapp_template_language: string | null
+          whatsapp_template_name: string | null
+        }
+        Insert: {
+          available_variables?: Json | null
+          body_html?: string | null
+          body_text?: string | null
+          category: string
+          channel: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_default?: boolean | null
+          name: string
+          organization_id: string
+          subject?: string | null
+          updated_at?: string | null
+          whatsapp_approval_status?: string | null
+          whatsapp_template_language?: string | null
+          whatsapp_template_name?: string | null
+        }
+        Update: {
+          available_variables?: Json | null
+          body_html?: string | null
+          body_text?: string | null
+          category?: string
+          channel?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system_default?: boolean | null
+          name?: string
+          organization_id?: string
+          subject?: string | null
+          updated_at?: string | null
+          whatsapp_approval_status?: string | null
+          whatsapp_template_language?: string | null
+          whatsapp_template_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_tenant_config: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          current_month_emails: number | null
+          current_month_reset_at: string | null
+          current_month_sms: number | null
+          current_month_whatsapp: number | null
+          domain_verified: boolean | null
+          email_from_address: string | null
+          email_from_name: string | null
+          email_provider: string | null
+          email_reply_to: string | null
+          email_signature_html: string | null
+          id: string
+          internal_chat_enabled: boolean | null
+          is_active: boolean | null
+          max_email_per_month: number | null
+          max_sms_per_month: number | null
+          max_whatsapp_per_month: number | null
+          notify_new_message_email: boolean | null
+          notify_new_message_internal: boolean | null
+          organization_id: string
+          plan_code: string | null
+          retention_days: number | null
+          retention_policy: string | null
+          sending_domain: string | null
+          sms_enabled: boolean | null
+          smtp_host: string | null
+          smtp_port: number | null
+          smtp_secret_key: string | null
+          smtp_use_tls: boolean | null
+          updated_at: string | null
+          whatsapp_bsp: string | null
+          whatsapp_display_name: string | null
+          whatsapp_enabled: boolean | null
+          whatsapp_phone_number_id: string | null
+          whatsapp_webhook_verify_token: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          current_month_emails?: number | null
+          current_month_reset_at?: string | null
+          current_month_sms?: number | null
+          current_month_whatsapp?: number | null
+          domain_verified?: boolean | null
+          email_from_address?: string | null
+          email_from_name?: string | null
+          email_provider?: string | null
+          email_reply_to?: string | null
+          email_signature_html?: string | null
+          id?: string
+          internal_chat_enabled?: boolean | null
+          is_active?: boolean | null
+          max_email_per_month?: number | null
+          max_sms_per_month?: number | null
+          max_whatsapp_per_month?: number | null
+          notify_new_message_email?: boolean | null
+          notify_new_message_internal?: boolean | null
+          organization_id: string
+          plan_code?: string | null
+          retention_days?: number | null
+          retention_policy?: string | null
+          sending_domain?: string | null
+          sms_enabled?: boolean | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_secret_key?: string | null
+          smtp_use_tls?: boolean | null
+          updated_at?: string | null
+          whatsapp_bsp?: string | null
+          whatsapp_display_name?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_phone_number_id?: string | null
+          whatsapp_webhook_verify_token?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          current_month_emails?: number | null
+          current_month_reset_at?: string | null
+          current_month_sms?: number | null
+          current_month_whatsapp?: number | null
+          domain_verified?: boolean | null
+          email_from_address?: string | null
+          email_from_name?: string | null
+          email_provider?: string | null
+          email_reply_to?: string | null
+          email_signature_html?: string | null
+          id?: string
+          internal_chat_enabled?: boolean | null
+          is_active?: boolean | null
+          max_email_per_month?: number | null
+          max_sms_per_month?: number | null
+          max_whatsapp_per_month?: number | null
+          notify_new_message_email?: boolean | null
+          notify_new_message_internal?: boolean | null
+          organization_id?: string
+          plan_code?: string | null
+          retention_days?: number | null
+          retention_policy?: string | null
+          sending_domain?: string | null
+          sms_enabled?: boolean | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_secret_key?: string | null
+          smtp_use_tls?: boolean | null
+          updated_at?: string | null
+          whatsapp_bsp?: string | null
+          whatsapp_display_name?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_phone_number_id?: string | null
+          whatsapp_webhook_verify_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_tenant_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_threads: {
+        Row: {
+          additional_matter_ids: string[] | null
+          assigned_to: string | null
+          auto_indexed: boolean | null
+          channel: string
+          created_at: string | null
+          created_by: string | null
+          crm_account_id: string | null
+          crm_contact_id: string | null
+          email_thread_id: string | null
+          id: string
+          indexing_confidence: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          last_message_sender: string | null
+          matter_id: string | null
+          message_count: number | null
+          organization_id: string
+          participants: Json | null
+          status: string | null
+          subject: string | null
+          unread_count: number | null
+          updated_at: string | null
+          whatsapp_conversation_id: string | null
+        }
+        Insert: {
+          additional_matter_ids?: string[] | null
+          assigned_to?: string | null
+          auto_indexed?: boolean | null
+          channel: string
+          created_at?: string | null
+          created_by?: string | null
+          crm_account_id?: string | null
+          crm_contact_id?: string | null
+          email_thread_id?: string | null
+          id?: string
+          indexing_confidence?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          organization_id: string
+          participants?: Json | null
+          status?: string | null
+          subject?: string | null
+          unread_count?: number | null
+          updated_at?: string | null
+          whatsapp_conversation_id?: string | null
+        }
+        Update: {
+          additional_matter_ids?: string[] | null
+          assigned_to?: string | null
+          auto_indexed?: boolean | null
+          channel?: string
+          created_at?: string | null
+          created_by?: string | null
+          crm_account_id?: string | null
+          crm_contact_id?: string | null
+          email_thread_id?: string | null
+          id?: string
+          indexing_confidence?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender?: string | null
+          matter_id?: string | null
+          message_count?: number | null
+          organization_id?: string
+          participants?: Json | null
+          status?: string | null
+          subject?: string | null
+          unread_count?: number | null
+          updated_at?: string | null
+          whatsapp_conversation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_threads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_threads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_threads_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_threads_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_threads_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comm_threads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_messages: {
         Row: {
           attachments: Json | null
@@ -20545,6 +21252,19 @@ export type Database = {
         Args: { p_org_id: string; p_series?: string }
         Returns: string
       }
+      get_or_create_comm_thread: {
+        Args: {
+          p_account_id?: string
+          p_channel: string
+          p_contact_id?: string
+          p_created_by?: string
+          p_email_thread_id?: string
+          p_matter_id?: string
+          p_org_id: string
+          p_subject?: string
+        }
+        Returns: string
+      }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -20552,6 +21272,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_comm_counter: {
+        Args: { p_channel: string; p_org_id: string }
+        Returns: undefined
       }
       is_backoffice_staff: { Args: never; Returns: boolean }
       recalculate_tenant_flags: {
