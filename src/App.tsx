@@ -684,6 +684,7 @@ const App = () => (
                 <Route path="calendar" element={<BackofficeCalendarPage />} />
                 <Route path="product-analytics" element={<BackofficeProductAnalyticsPage />} />
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
+                <Route path="knowledge" element={<KnowledgeMapPage />} />
                 <Route path="demo-data" element={<DemoDataPage />} />
                 <Route path="demo-mode" element={<DemoModePage />} />
                 <Route path="system-tests" element={<SystemTestsPage />} />
