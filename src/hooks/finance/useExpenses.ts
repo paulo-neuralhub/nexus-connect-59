@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 
 export type ExpenseStatus = 'pending' | 'approved' | 'rejected' | 'reimbursed';
 export type ExpenseBillingStatus = 'unbilled' | 'ready' | 'billed' | 'written_off';
-export type ExpenseCategory = 'travel' | 'materials' | 'official_fees' | 'courier' | 'meals' | 'accommodation' | 'other';
+export type ExpenseCategory = 'official_fees' | 'translation' | 'courier' | 'travel' | 'certification' | 'apostille' | 'materials' | 'meals' | 'accommodation' | 'other';
 
 export interface Expense {
   id: string;
