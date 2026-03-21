@@ -150,6 +150,14 @@ const sidebarSections: SidebarSection[] = [
     ],
   },
   {
+    code: 'spider',
+    label: 'Spider',
+    icon: Radar,
+    items: [
+      { label: '🕷️ Spider', path: '/backoffice/spider', icon: Radar },
+    ],
+  },
+  {
     code: 'herramientas',
     label: 'Herramientas',
     icon: Wrench,
