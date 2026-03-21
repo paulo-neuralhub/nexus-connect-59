@@ -1,16 +1,17 @@
 /**
- * Expenses Page
- * List and manage expenses
- * L62-D: Finance Module
+ * Expenses Page — Enhanced
+ * IP-specific categories, receipt upload, NeoBadge KPIs
+ * PHASE 3: Finance Module
  */
 
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { NeoBadge } from '@/components/ui/neo-badge';
 import {
   Select,
   SelectContent,
@@ -53,15 +54,13 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
-  FileText,
-  Download,
-  Car,
-  Package,
   Building,
+  Languages,
   Send,
-  UtensilsCrossed,
-  Bed,
-  MoreHorizontal as MoreIcon,
+  Car,
+  FileCheck,
+  Stamp,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -78,17 +77,27 @@ import {
 import { ExpenseDialog } from '@/components/features/finance/expenses/ExpenseDialog';
 import { toast } from 'sonner';
 
+// IP-specific category icons
 const CategoryIcon = ({ category }: { category: ExpenseCategory }) => {
-  const icons: Record<ExpenseCategory, React.ReactNode> = {
-    travel: <Car className="h-4 w-4" />,
-    materials: <Package className="h-4 w-4" />,
-    official_fees: <Building className="h-4 w-4" />,
-    courier: <Send className="h-4 w-4" />,
-    meals: <UtensilsCrossed className="h-4 w-4" />,
-    accommodation: <Bed className="h-4 w-4" />,
-    other: <MoreIcon className="h-4 w-4" />,
+  const icons: Record<string, React.ReactNode> = {
+    official_fees: <Building className="h-4 w-4 text-blue-600" />,
+    translation: <Languages className="h-4 w-4 text-pink-600" />,
+    courier: <Send className="h-4 w-4 text-emerald-600" />,
+    travel: <Car className="h-4 w-4 text-amber-600" />,
+    certification: <FileCheck className="h-4 w-4 text-violet-600" />,
+    apostille: <Stamp className="h-4 w-4 text-red-600" />,
+    materials: <Package className="h-4 w-4 text-gray-600" />,
+    other: <Receipt className="h-4 w-4 text-muted-foreground" />,
   };
-  return icons[category] || null;
+  return icons[category] || icons.other;
+};
+
+// KPI colors
+const EXPENSE_KPI_COLORS: Record<string, string> = {
+  total: '#2563eb',
+  billable: '#10b981',
+  billed: '#8b5cf6',
+  pending: '#f59e0b',
 };
 
 export default function ExpensesPage() {
@@ -113,9 +122,9 @@ export default function ExpensesPage() {
   // Calculate summary stats
   const stats = {
     total: expenses.reduce((sum, e) => sum + e.total_amount, 0),
-    pending: expenses.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.total_amount, 0),
-    approved: expenses.filter(e => e.status === 'approved').reduce((sum, e) => sum + e.total_amount, 0),
-    unbilled: expenses.filter(e => e.is_billable && e.billing_status !== 'billed').reduce((sum, e) => sum + e.total_amount, 0),
+    billable: expenses.filter(e => e.is_billable).reduce((sum, e) => sum + e.total_amount, 0),
+    billed: expenses.filter(e => e.billing_status === 'billed').reduce((sum, e) => sum + e.total_amount, 0),
+    pending: expenses.filter(e => e.is_billable && e.billing_status !== 'billed').reduce((sum, e) => sum + e.total_amount, 0),
   };
 
   // Filter expenses
@@ -184,8 +193,8 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Gastos</h1>
-          <p className="text-muted-foreground">Gestión de gastos reembolsables</p>
+          <h1 className="text-2xl font-bold text-foreground">Gastos</h1>
+          <p className="text-muted-foreground">Registro y control de gastos por expediente</p>
         </div>
         <Button onClick={() => { setSelectedExpense(null); setShowDialog(true); }}>
           <Plus className="h-4 w-4 mr-2" />
@@ -193,32 +202,12 @@ export default function ExpensesPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{formatCurrency(stats.total)}</div>
-            <div className="text-sm text-muted-foreground">Total registrado</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats.pending)}</div>
-            <div className="text-sm text-muted-foreground">Pendiente aprobación</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.approved)}</div>
-            <div className="text-sm text-muted-foreground">Aprobado</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(stats.unbilled)}</div>
-            <div className="text-sm text-muted-foreground">Sin facturar</div>
-          </CardContent>
-        </Card>
+      {/* KPIs with NeoBadge */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <KpiCard label="Total registrado" value={formatCurrency(stats.total)} color={EXPENSE_KPI_COLORS.total} />
+        <KpiCard label="Facturables" value={formatCurrency(stats.billable)} color={EXPENSE_KPI_COLORS.billable} />
+        <KpiCard label="Facturados" value={formatCurrency(stats.billed)} color={EXPENSE_KPI_COLORS.billed} />
+        <KpiCard label="Pendientes" value={formatCurrency(stats.pending)} color={stats.pending > 0 ? EXPENSE_KPI_COLORS.pending : '#94a3b8'} />
       </div>
 
       {/* Filters */}
@@ -274,19 +263,20 @@ export default function ExpensesPage() {
                 <TableHead className="text-right">Importe</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Facturado</TableHead>
+                <TableHead>Justificante</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     Cargando...
                   </TableCell>
                 </TableRow>
               ) : filteredExpenses.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No hay gastos registrados
                   </TableCell>
                 </TableRow>
@@ -308,7 +298,7 @@ export default function ExpensesPage() {
                     </TableCell>
                     <TableCell>
                       {expense.matter ? (
-                        <span className="text-sm text-primary">{expense.matter.reference}</span>
+                        <span className="text-sm text-primary font-medium">{expense.matter.reference}</span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
@@ -333,6 +323,21 @@ export default function ExpensesPage() {
                       )}
                     </TableCell>
                     <TableCell>
+                      {expense.receipt_url ? (
+                        <a
+                          href={expense.receipt_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          Ver
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -340,14 +345,6 @@ export default function ExpensesPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {expense.receipt_url && (
-                            <DropdownMenuItem asChild>
-                              <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer">
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver justificante
-                              </a>
-                            </DropdownMenuItem>
-                          )}
                           {expense.status === 'pending' && (
                             <>
                               <DropdownMenuItem onClick={() => handleApprove(expense)}>
@@ -373,7 +370,7 @@ export default function ExpensesPage() {
                             </>
                           )}
                           {expense.status !== 'pending' && (
-                            <DropdownMenuItem onClick={() => handleEdit(expense)} disabled>
+                            <DropdownMenuItem onClick={() => handleEdit(expense)}>
                               <Eye className="mr-2 h-4 w-4" />
                               Ver detalle
                             </DropdownMenuItem>
@@ -437,5 +434,33 @@ export default function ExpensesPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+// --- Sub-components ---
+
+function KpiCard({ label, value, color }: { label: string; value: string; color: string }) {
+  const hasValue = !value.includes('0,00');
+
+  return (
+    <Card
+      className="border border-black/[0.06] rounded-[14px] hover:border-[rgba(0,180,216,0.15)] transition-colors"
+      style={{ background: '#f1f4f9' }}
+    >
+      <CardContent className="pt-4">
+        <div className="flex items-center gap-3">
+          <NeoBadge
+            value={value}
+            color={hasValue ? color : '#94a3b8'}
+            size="md"
+          />
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#0a2540' }}>
+              {label}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
