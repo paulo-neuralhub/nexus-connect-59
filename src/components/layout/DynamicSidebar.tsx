@@ -506,9 +506,9 @@ export function DynamicSidebar({
                   <Bell 
                     className="h-3 w-3 shrink-0" 
                     style={isAlertsActive ? { 
-                      color: '#ef4444',
+                      color: '#EF4444',
                       filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.30))'
-                    } : { color: 'rgba(255,255,255,0.28)' }} 
+                    } : { color: '#EF4444', opacity: 0.5 }} 
                   />
                   {!collapsed && (
                     <>
