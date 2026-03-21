@@ -283,6 +283,7 @@ import {
   TelephonyConsumptionPage, 
   TelephonyAlertsPage 
 } from "./pages/backoffice/telephony";
+import BackofficeTelephonyPage from "./pages/backoffice/telephony/BackofficeTelephonyPage";
 import EventLogPage from "./pages/backoffice/events/EventLogPage";
 import SystemLogsPage from "./pages/backoffice/logs";
 import BackofficeAlertsPage from "./pages/backoffice/alerts/BackofficeAlertsPage";
