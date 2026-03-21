@@ -118,6 +118,26 @@ export function CommunicationHistory({ contactId, organizationId, maxHeight = '4
         <ScrollArea style={{ maxHeight }} className="pr-4">
           <div className="space-y-3">
             {communications.map((comm) => {
+              // Render rich card for call activities
+              if (comm.type === 'call') {
+                const callData: CallActivityData = {
+                  id: comm.id,
+                  activity_type: 'call',
+                  subject: comm.subject,
+                  description: comm.content,
+                  outcome: comm.status,
+                  activity_date: comm.created_at,
+                  metadata: comm.metadata || {},
+                };
+                return (
+                  <CallActivityCard
+                    key={comm.id}
+                    activity={callData}
+                    onMatterLinked={() => refetch()}
+                  />
+                );
+              }
+
               const ChannelIcon = channelIcons[comm.type] || FileText;
               const statusInfo = statusConfig[comm.status] || statusConfig.completed;
               const StatusIcon = statusInfo.icon;
