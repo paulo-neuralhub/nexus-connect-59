@@ -16,7 +16,7 @@ import { HelpWidget } from "@/components/help/HelpWidget";
 import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
 import { PageContainer } from "@/components/layout/PageContainer";
-// SoftphoneWidget removed — only NexusGuide floating button allowed
+import { IPSoftphone } from "@/components/telephony/IPSoftphone";
 import { CallManager } from "@/components/telephony/CallManager";
 import { ModuleActivationDialog } from "@/components/modules";
 import { DemoTourNavigator, DemoScreenAnnotation } from "@/components/demo";
