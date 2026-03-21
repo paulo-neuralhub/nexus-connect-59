@@ -33,6 +33,7 @@ type CommunicationType = {
   content?: string | null;
   status: string;
   created_at: string;
+  metadata?: Record<string, unknown> | null;
 };
 
 const channelIcons: Record<string, typeof Mail> = {
