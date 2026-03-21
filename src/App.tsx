@@ -152,6 +152,7 @@ import TenantTelephonySettingsPage from "./pages/app/settings/telephony";
 import TenantTelephonyPacksPage from "./pages/app/settings/telephony/packs";
 import TenantTelephonyHistoryPage from "./pages/app/settings/telephony/historial";
 import IPChainPage from "./pages/app/ip-chain";
+import GeniusSettingsPage from "./pages/app/settings/genius";
 import TranslatorPage from "./pages/app/genius/translator";
 import DocumentTemplatesPage from "./pages/app/genius/templates";
 import DocumentTemplatesDashboard from "./pages/app/settings/templates";
