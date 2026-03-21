@@ -291,6 +291,11 @@ export default function MatterDetailPage() {
               {activeTab === 'details' && (
                 <MatterDetailsEditTab matter={matter} />
               )}
+
+              {/* Spider Tab */}
+              {activeTab === 'spider' && (
+                <MatterSpiderTab matterId={id!} />
+              )}
             </div>
           </div>
 
