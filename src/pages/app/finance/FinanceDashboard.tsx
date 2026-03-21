@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Plus, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Plus, AlertTriangle, Settings } from 'lucide-react';
 import { formatCurrency, INVOICE_STATUSES } from '@/lib/constants/finance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
   useUrgentInvoices,
   useMatterProfitability,
 } from '@/hooks/finance/useFinanceDashboard';
+import { useFiscalConfig } from '@/hooks/finance/useFiscalConfig';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
