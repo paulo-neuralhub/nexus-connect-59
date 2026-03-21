@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.spider-analyze]
 verify_jwt = false
+
+[functions.spider-scan]
+verify_jwt = false
