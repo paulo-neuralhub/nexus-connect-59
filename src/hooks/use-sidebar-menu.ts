@@ -422,7 +422,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleExpanded: false,
         moduleMenuItems: [
           { label: "OCR", path: "/app/tools/ocr", icon: "FileText" },
-          { label: "Comparador Visual", path: "/app/tools/comparator", icon: "Eye" },
+          { label: "Comparador Visual", path: "/app/tools", icon: "Eye" },
           { label: "Conectores", path: "/app/data-hub", icon: "Database" },
         ],
         moduleRequires: [],

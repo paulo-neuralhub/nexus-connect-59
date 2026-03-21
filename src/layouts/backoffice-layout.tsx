@@ -140,6 +140,7 @@ const sidebarSections: SidebarSection[] = [
       { label: 'Uso', path: '/backoffice/analytics/usage', icon: Activity },
       { label: 'Cohortes', path: '/backoffice/analytics/cohorts', icon: Calendar },
       { label: 'Tenants', path: '/backoffice/analytics/tenants', icon: Building2 },
+      { label: 'Product Analytics', path: '/backoffice/product-analytics', icon: BarChart3 },
     ],
   },
   {
