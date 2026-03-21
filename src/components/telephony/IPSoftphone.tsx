@@ -222,7 +222,7 @@ export function IPSoftphone() {
       >
         <Phone className="h-5 w-5" />
         {isInCall && (
-          <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary/70 animate-pulse" />
         )}
       </button>
     );
