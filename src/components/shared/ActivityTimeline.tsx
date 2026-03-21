@@ -35,6 +35,7 @@ import {
   type GroupedActivities,
 } from '@/hooks/legal-ops/useActivityLog';
 import { cn } from '@/lib/utils';
+import { CallActivityCard, type CallActivityData } from '@/components/telephony/CallActivityCard';
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
   matter_created: FilePlus,
