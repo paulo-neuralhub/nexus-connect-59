@@ -285,11 +285,9 @@ interface RateFormDialogProps {
 
 function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFormDialogProps) {
   const [formData, setFormData] = useState({
-    rate_type: 'default' as RateType,
+    rate_type: 'default' as string,
     hourly_rate: '',
-    name: '',
-    description: '',
-    role_name: '',
+    rate_name: '',
     matter_type: '',
   });
 
@@ -300,18 +298,14 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
         setFormData({
           rate_type: rate.rate_type,
           hourly_rate: rate.hourly_rate.toString(),
-          name: rate.name || '',
-          description: rate.description || '',
-          role_name: rate.role_name || '',
+          rate_name: rate.rate_name || '',
           matter_type: rate.matter_type || '',
         });
       } else {
         setFormData({
           rate_type: 'default',
           hourly_rate: '',
-          name: '',
-          description: '',
-          role_name: '',
+          rate_name: '',
           matter_type: '',
         });
       }
@@ -326,9 +320,7 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
     onSave({
       rate_type: formData.rate_type,
       hourly_rate: parseFloat(formData.hourly_rate),
-      name: formData.name || undefined,
-      description: formData.description || undefined,
-      role_name: formData.rate_type === 'role' ? formData.role_name : undefined,
+      rate_name: formData.rate_name || `Tarifa ${formData.rate_type}`,
       matter_type: formData.rate_type === 'matter_type' ? formData.matter_type : undefined,
     });
   };
