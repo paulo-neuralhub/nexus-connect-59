@@ -472,7 +472,7 @@ const App = () => (
                   <Route path="rankings" element={<RankingsPage />} />
                 </Route>
                 <Route path="genius" element={<GeniusLayout />}>
-                  <Route index element={<GeniusChatPage />} />
+                  <Route index element={<GeniusDashboard />} />
                   <Route path="analysis" element={<GeniusAnalysisPage />} />
                   <Route path="documents-gen" element={<GeniusDocumentsGenPage />} />
                   <Route path="predictions" element={<GeniusPredictionsPage />} />
