@@ -151,7 +151,7 @@ export function AppLayout() {
                 <NexusGuideButton />
                 <HelpWidget />
 
-                {/* Softphone removed */}
+                <IPSoftphone />
                 
                 {/* Click-to-Call Manager */}
                 <CallManager />
