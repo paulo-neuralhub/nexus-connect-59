@@ -275,6 +275,7 @@ import MarketConfigPage from "./pages/backoffice/market-config";
 import BackofficeCalendarPage from "./pages/backoffice/calendar";
 import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics";
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
+import KnowledgeMapPage from "./pages/backoffice/knowledge";
 import DemoDataPage from "./pages/backoffice/demo-data";
 import DemoModePage from "./pages/backoffice/demo-mode";
 import SystemTestsPage from "./pages/backoffice/system-tests";
@@ -683,6 +684,7 @@ const App = () => (
                 <Route path="calendar" element={<BackofficeCalendarPage />} />
                 <Route path="product-analytics" element={<BackofficeProductAnalyticsPage />} />
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
+                <Route path="knowledge" element={<KnowledgeMapPage />} />
                 <Route path="demo-data" element={<DemoDataPage />} />
                 <Route path="demo-mode" element={<DemoModePage />} />
                 <Route path="system-tests" element={<SystemTestsPage />} />
