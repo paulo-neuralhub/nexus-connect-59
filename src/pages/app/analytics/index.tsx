@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { usePageTitle } from '@/contexts/page-context';
-import { AnalyticsDashboard } from '@/components/features/analytics';
+import { AnalyticsTenantDashboard } from '@/components/features/analytics/AnalyticsTenantDashboard';
 
 export default function AnalyticsPage() {
   const { setTitle } = usePageTitle();
 
   useEffect(() => {
-    setTitle('Analytics & Reportes');
+    setTitle('Analytics');
   }, [setTitle]);
 
-  return <AnalyticsDashboard />;
+  return <AnalyticsTenantDashboard />;
 }
