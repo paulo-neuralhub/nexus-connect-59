@@ -6,7 +6,7 @@
 import * as React from 'react';
 import { 
   FileText, Calendar, FolderOpen, MessageCircle, Mail,
-  Euro, Settings
+  Euro, Settings, Sparkles
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
