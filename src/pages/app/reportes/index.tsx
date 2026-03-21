@@ -66,7 +66,7 @@ export default function ReportesPage() {
     mutationFn: async ({ defId, format: fmt, period }: { defId: string; format: string; period: string }) => {
       if (!currentOrganization?.id) throw new Error('No org');
 
-      // Insert execution
+      // Step 1: Insert execution as pending
       const { data, error } = await supabase
         .from('report_executions')
         .insert({
@@ -80,33 +80,20 @@ export default function ReportesPage() {
 
       if (error) throw error;
 
-      // Simulate completion (real Edge Function in Fase 4)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Step 2: Call Edge Function to generate
+      const { data: result, error: fnErr } = await supabase.functions.invoke('generate-report', {
+        body: { execution_id: data.id },
+      });
 
-      // Mark as completed
-      await supabase
-        .from('report_executions')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          duration_seconds: 2,
-        })
-        .eq('id', data.id);
+      if (fnErr) throw new Error(fnErr.message || 'Error generando reporte');
+      if (result?.error) throw new Error(result.error);
 
-      // Insert generated report
-      await supabase
-        .from('generated_reports')
-        .insert({
-          organization_id: currentOrganization.id,
-          execution_id: data.id,
-          report_name: selectedDef?.name || 'Reporte',
-          report_type: selectedDef?.report_type,
-          format: fmt,
-          storage_path: `reports/${currentOrganization.id}/${data.id}.${fmt}`,
-          expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-        });
+      // Step 3: Auto-download if URL available
+      if (result?.download_url) {
+        window.open(result.download_url, '_blank');
+      }
 
-      return data;
+      return { ...data, download_url: result?.download_url };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['generated-reports'] });
@@ -250,7 +237,24 @@ export default function ReportesPage() {
                           )}
                         </td>
                         <td className="py-2.5 text-right">
-                          <Button variant="ghost" size="sm" disabled>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              if (!report.storage_path) {
+                                toast.error('Sin archivo disponible');
+                                return;
+                              }
+                              const { data: signed, error: signErr } = await supabase.storage
+                                .from('reports')
+                                .createSignedUrl(report.storage_path, 3600);
+                              if (signErr || !signed?.signedUrl) {
+                                toast.error('Error obteniendo enlace de descarga');
+                                return;
+                              }
+                              window.open(signed.signedUrl, '_blank');
+                            }}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </td>
