@@ -610,6 +610,7 @@ const App = () => (
                 {/* Communications con Layout */}
                 <Route path="communications" element={<CommunicationsLayout />}>
                   <Route index element={<CommunicationsUnifiedPage />} />
+                  <Route path="internal" element={<InternalChatPage />} />
                   <Route path=":id" element={<CommunicationDetailPage />} />
                   <Route path="whatsapp" element={<WhatsAppInboxPage />} />
                   <Route path="whatsapp/:id" element={<CommunicationDetailPage />} />
