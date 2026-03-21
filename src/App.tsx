@@ -52,6 +52,7 @@ import MyOffersPage from "./pages/app/market/offers";
 import DataHubPage from "./pages/app/data-hub";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
+import GeniusDashboard from "./pages/app/genius/dashboard";
 import GeniusChatPage from "./pages/app/genius";
 import GeniusComparatorPage from "./pages/app/genius/comparator";
 import GeniusOppositionPage from "./pages/app/genius/opposition";
