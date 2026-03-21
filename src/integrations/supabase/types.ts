@@ -17712,6 +17712,545 @@ export type Database = {
         }
         Relationships: []
       }
+      telephony_cdrs: {
+        Row: {
+          answered_at: string | null
+          billable_minutes: number | null
+          billed_amount: number | null
+          created_at: string | null
+          crm_account_id: string | null
+          crm_activity_id: string | null
+          crm_contact_id: string | null
+          crm_deal_id: string | null
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          from_number: string
+          id: string
+          matter_id: string | null
+          organization_id: string
+          provider_call_sid: string
+          provider_code: string
+          provider_cost: number | null
+          provider_metadata: Json | null
+          recording_duration_seconds: number | null
+          recording_stored_path: string | null
+          recording_url: string | null
+          status: string | null
+          to_number: string
+          transcription_status: string | null
+          transcription_text: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          answered_at?: string | null
+          billable_minutes?: number | null
+          billed_amount?: number | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          crm_activity_id?: string | null
+          crm_contact_id?: string | null
+          crm_deal_id?: string | null
+          direction: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          from_number: string
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          provider_call_sid: string
+          provider_code: string
+          provider_cost?: number | null
+          provider_metadata?: Json | null
+          recording_duration_seconds?: number | null
+          recording_stored_path?: string | null
+          recording_url?: string | null
+          status?: string | null
+          to_number: string
+          transcription_status?: string | null
+          transcription_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          answered_at?: string | null
+          billable_minutes?: number | null
+          billed_amount?: number | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          crm_activity_id?: string | null
+          crm_contact_id?: string | null
+          crm_deal_id?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          from_number?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          provider_call_sid?: string
+          provider_code?: string
+          provider_cost?: number | null
+          provider_metadata?: Json | null
+          recording_duration_seconds?: number | null
+          recording_stored_path?: string | null
+          recording_url?: string | null
+          status?: string | null
+          to_number?: string
+          transcription_status?: string | null
+          transcription_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telephony_cdrs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telephony_ledger: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string | null
+          currency: string
+          description: string
+          id: string
+          margin: number | null
+          metadata: Json | null
+          organization_id: string
+          provider_cost: number | null
+          reference_id: string | null
+          reference_type: string | null
+          retail_price: number | null
+          transaction_type: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string | null
+          currency?: string
+          description: string
+          id?: string
+          margin?: number | null
+          metadata?: Json | null
+          organization_id: string
+          provider_cost?: number | null
+          reference_id?: string | null
+          reference_type?: string | null
+          retail_price?: number | null
+          transaction_type: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string | null
+          currency?: string
+          description?: string
+          id?: string
+          margin?: number | null
+          metadata?: Json | null
+          organization_id?: string
+          provider_cost?: number | null
+          reference_id?: string | null
+          reference_type?: string | null
+          retail_price?: number | null
+          transaction_type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telephony_ledger_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "telephony_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telephony_numbers: {
+        Row: {
+          country_code: string
+          created_at: string | null
+          friendly_name: string | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          monthly_cost: number
+          number_type: string | null
+          organization_id: string
+          phone_number: string
+          phone_number_sid: string | null
+          provider_code: string
+          provider_cost: number
+          purchased_at: string | null
+          released_at: string | null
+          sms_url: string | null
+          voice_url: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string | null
+          friendly_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          monthly_cost: number
+          number_type?: string | null
+          organization_id: string
+          phone_number: string
+          phone_number_sid?: string | null
+          provider_code: string
+          provider_cost: number
+          purchased_at?: string | null
+          released_at?: string | null
+          sms_url?: string | null
+          voice_url?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string | null
+          friendly_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          monthly_cost?: number
+          number_type?: string | null
+          organization_id?: string
+          phone_number?: string
+          phone_number_sid?: string | null
+          provider_code?: string
+          provider_cost?: number
+          purchased_at?: string | null
+          released_at?: string | null
+          sms_url?: string | null
+          voice_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telephony_numbers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telephony_pricing_rates: {
+        Row: {
+          billing_increment_seconds: number | null
+          created_at: string | null
+          destination_country: string
+          destination_country_code: string
+          destination_prefix: string
+          id: string
+          is_active: boolean | null
+          margin_pct: number | null
+          minimum_duration_seconds: number | null
+          number_type: string | null
+          provider_cost_per_min: number
+          retail_price_per_min: number
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          billing_increment_seconds?: number | null
+          created_at?: string | null
+          destination_country: string
+          destination_country_code: string
+          destination_prefix: string
+          id?: string
+          is_active?: boolean | null
+          margin_pct?: number | null
+          minimum_duration_seconds?: number | null
+          number_type?: string | null
+          provider_cost_per_min: number
+          retail_price_per_min: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          billing_increment_seconds?: number | null
+          created_at?: string | null
+          destination_country?: string
+          destination_country_code?: string
+          destination_prefix?: string
+          id?: string
+          is_active?: boolean | null
+          margin_pct?: number | null
+          minimum_duration_seconds?: number | null
+          number_type?: string | null
+          provider_cost_per_min?: number
+          retail_price_per_min?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      telephony_providers: {
+        Row: {
+          account_sid_secret_name: string | null
+          api_key_secret_name: string | null
+          api_secret_name: string | null
+          code: string
+          cost_per_min_eu_landline: number | null
+          cost_per_min_eu_mobile: number | null
+          cost_per_min_latam: number | null
+          cost_per_min_us: number | null
+          cost_per_number_month: number | null
+          cost_per_sms: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          master_account_id: string | null
+          name: string
+          priority: number | null
+          supports_recording: boolean | null
+          supports_subaccounts: boolean | null
+          supports_transcription: boolean | null
+          supports_webrtc: boolean | null
+          updated_at: string | null
+          webhook_base_url: string | null
+        }
+        Insert: {
+          account_sid_secret_name?: string | null
+          api_key_secret_name?: string | null
+          api_secret_name?: string | null
+          code: string
+          cost_per_min_eu_landline?: number | null
+          cost_per_min_eu_mobile?: number | null
+          cost_per_min_latam?: number | null
+          cost_per_min_us?: number | null
+          cost_per_number_month?: number | null
+          cost_per_sms?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          master_account_id?: string | null
+          name: string
+          priority?: number | null
+          supports_recording?: boolean | null
+          supports_subaccounts?: boolean | null
+          supports_transcription?: boolean | null
+          supports_webrtc?: boolean | null
+          updated_at?: string | null
+          webhook_base_url?: string | null
+        }
+        Update: {
+          account_sid_secret_name?: string | null
+          api_key_secret_name?: string | null
+          api_secret_name?: string | null
+          code?: string
+          cost_per_min_eu_landline?: number | null
+          cost_per_min_eu_mobile?: number | null
+          cost_per_min_latam?: number | null
+          cost_per_min_us?: number | null
+          cost_per_number_month?: number | null
+          cost_per_sms?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          master_account_id?: string | null
+          name?: string
+          priority?: number | null
+          supports_recording?: boolean | null
+          supports_subaccounts?: boolean | null
+          supports_transcription?: boolean | null
+          supports_webrtc?: boolean | null
+          updated_at?: string | null
+          webhook_base_url?: string | null
+        }
+        Relationships: []
+      }
+      telephony_tenants: {
+        Row: {
+          activated_at: string | null
+          addon_code: string | null
+          created_at: string | null
+          default_caller_id: string | null
+          id: string
+          included_minutes_monthly: number | null
+          is_active: boolean | null
+          is_trial: boolean | null
+          max_call_duration_minutes: number | null
+          max_concurrent_calls: number | null
+          minutes_reset_at: string | null
+          minutes_used_this_month: number | null
+          organization_id: string
+          provider_code: string | null
+          record_calls: boolean | null
+          subaccount_auth_token: string | null
+          subaccount_id: string | null
+          timezone: string | null
+          transcribe_calls: boolean | null
+          trial_minutes_remaining: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          addon_code?: string | null
+          created_at?: string | null
+          default_caller_id?: string | null
+          id?: string
+          included_minutes_monthly?: number | null
+          is_active?: boolean | null
+          is_trial?: boolean | null
+          max_call_duration_minutes?: number | null
+          max_concurrent_calls?: number | null
+          minutes_reset_at?: string | null
+          minutes_used_this_month?: number | null
+          organization_id: string
+          provider_code?: string | null
+          record_calls?: boolean | null
+          subaccount_auth_token?: string | null
+          subaccount_id?: string | null
+          timezone?: string | null
+          transcribe_calls?: boolean | null
+          trial_minutes_remaining?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          addon_code?: string | null
+          created_at?: string | null
+          default_caller_id?: string | null
+          id?: string
+          included_minutes_monthly?: number | null
+          is_active?: boolean | null
+          is_trial?: boolean | null
+          max_call_duration_minutes?: number | null
+          max_concurrent_calls?: number | null
+          minutes_reset_at?: string | null
+          minutes_used_this_month?: number | null
+          organization_id?: string
+          provider_code?: string | null
+          record_calls?: boolean | null
+          subaccount_auth_token?: string | null
+          subaccount_id?: string | null
+          timezone?: string | null
+          transcribe_calls?: boolean | null
+          trial_minutes_remaining?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telephony_tenants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "telephony_tenants_provider_code_fkey"
+            columns: ["provider_code"]
+            isOneToOne: false
+            referencedRelation: "telephony_providers"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      telephony_wallets: {
+        Row: {
+          alert_sent_at: string | null
+          auto_recharge_amount: number | null
+          auto_recharge_enabled: boolean | null
+          auto_recharge_threshold: number | null
+          created_at: string | null
+          currency: string
+          current_balance: number
+          id: string
+          low_balance_threshold: number | null
+          organization_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_sent_at?: string | null
+          auto_recharge_amount?: number | null
+          auto_recharge_enabled?: boolean | null
+          auto_recharge_threshold?: number | null
+          created_at?: string | null
+          currency?: string
+          current_balance?: number
+          id?: string
+          low_balance_threshold?: number | null
+          organization_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_sent_at?: string | null
+          auto_recharge_amount?: number | null
+          auto_recharge_enabled?: boolean | null
+          auto_recharge_threshold?: number | null
+          created_at?: string | null
+          currency?: string
+          current_balance?: number
+          id?: string
+          low_balance_threshold?: number | null
+          organization_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telephony_wallets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telephony_webrtc_sessions: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          device_id: string | null
+          id: string
+          organization_id: string
+          provider_code: string
+          status: string | null
+          token_expires_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          device_id?: string | null
+          id?: string
+          organization_id: string
+          provider_code: string
+          status?: string | null
+          token_expires_at: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          device_id?: string | null
+          id?: string
+          organization_id?: string
+          provider_code?: string
+          status?: string | null
+          token_expires_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       template_categories: {
         Row: {
           color: string | null
@@ -18569,6 +19108,24 @@ export type Database = {
     }
     Functions: {
       apply_research_data: { Args: { p_queue_id: string }; Returns: Json }
+      charge_call: {
+        Args: {
+          p_call_sid: string
+          p_destination_prefix: string
+          p_duration_seconds: number
+          p_number_type?: string
+          p_org_id: string
+        }
+        Returns: Json
+      }
+      get_max_call_duration: {
+        Args: {
+          p_destination_prefix: string
+          p_number_type?: string
+          p_org_id: string
+        }
+        Returns: number
+      }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {
