@@ -22324,6 +22324,10 @@ export type Database = {
         }
         Returns: Json
       }
+      genius_check_coverage: {
+        Args: { p_document_type?: string; p_jurisdiction_code: string }
+        Returns: Json
+      }
       genius_semantic_search: {
         Args: {
           p_doc_category?: string
@@ -22384,6 +22388,10 @@ export type Database = {
         Returns: undefined
       }
       is_backoffice_staff: { Args: never; Returns: boolean }
+      recalculate_genius_coverage: {
+        Args: { p_jurisdiction_code: string }
+        Returns: undefined
+      }
       recalculate_tenant_flags: {
         Args: {
           p_addons?: Json
