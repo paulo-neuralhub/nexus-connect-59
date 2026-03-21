@@ -1,33 +1,39 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Plus } from 'lucide-react';
-import { useFinanceStats, useUpcomingRenewals, useMatterCosts, useInvoices } from '@/hooks/use-finance';
-import { formatCurrency, INVOICE_STATUSES, COST_STATUSES } from '@/lib/constants/finance';
+import { ArrowRight, Plus, AlertTriangle } from 'lucide-react';
+import { formatCurrency, INVOICE_STATUSES } from '@/lib/constants/finance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { NeoBadge } from '@/components/ui/neo-badge';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-
-// Color mapping for Finance KPIs
-const FINANCE_COLORS: Record<string, string> = {
-  invoiced: '#10b981',     // green
-  pending: '#f59e0b',      // amber/orange
-  costs: '#2563eb',        // blue
-  renewals: '#00b4d8',     // accent cyan
-};
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
+import {
+  useFinanceDashboardKPIs,
+  useRevenueVsExpenses,
+  useServiceTypeBreakdown,
+  useUrgentInvoices,
+  useMatterProfitability,
+} from '@/hooks/finance/useFinanceDashboard';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell,
+} from 'recharts';
 
 function formatShortCurrency(value: number) {
-  if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
-  return `€${value.toFixed(0)}`;
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+  return value.toFixed(0);
 }
 
 export default function FinanceDashboard() {
-  const { data: stats } = useFinanceStats();
-  const { data: renewals = [] } = useUpcomingRenewals(60);
-  const { data: recentCosts = [] } = useMatterCosts();
-  const { data: recentInvoices = [] } = useInvoices();
-  
+  const { data: kpis } = useFinanceDashboardKPIs();
+  const { data: revenueExpenses = [] } = useRevenueVsExpenses();
+  const { data: serviceBreakdown = [] } = useServiceTypeBreakdown();
+  const { data: urgentInvoices = [] } = useUrgentInvoices();
+  const { data: profitability = [] } = useMatterProfitability();
+
+  const hasOverdue = (kpis?.overdueCount || 0) > 0;
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -49,238 +55,244 @@ export default function FinanceDashboard() {
           </Button>
         </div>
       </div>
-      
-      {/* Stats Cards with NeoBadge */}
+
+      {/* KPI NeoBadges */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
+        <KPICard
           label="Facturado este mes"
-          value={formatShortCurrency(stats?.invoicedThisMonth || 0)}
-          color={FINANCE_COLORS.invoiced}
+          value={formatShortCurrency(kpis?.invoicedThisMonth || 0)}
+          suffix="€"
+          color="#10b981"
         />
-        <StatCard
+        <KPICard
+          label="Cobrado este mes"
+          value={formatShortCurrency(kpis?.collectedThisMonth || 0)}
+          suffix="€"
+          color="#3B82F6"
+        />
+        <KPICard
           label="Pendiente cobro"
-          value={formatShortCurrency(stats?.pendingInvoicesTotal || 0)}
-          color={FINANCE_COLORS.pending}
+          value={formatShortCurrency(kpis?.pendingCollection || 0)}
+          suffix="€"
+          color="#F59E0B"
         />
-        <StatCard
-          label="Costes pendientes"
-          value={formatShortCurrency(stats?.pendingCostsTotal || 0)}
-          color={FINANCE_COLORS.costs}
-        />
-        <StatCard
-          label="Renovaciones próximas"
-          value={stats?.renewalsDue || 0}
-          color={FINANCE_COLORS.renewals}
+        <KPICard
+          label="Vencidas"
+          value={kpis?.overdueCount || 0}
+          color="#EF4444"
+          isAlert={hasOverdue}
         />
       </div>
-      
-      {/* Two column layout */}
+
+      {/* Charts row */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Recent Invoices */}
+        {/* Revenue vs Expenses */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Ingresos vs Gastos</CardTitle>
+            <p className="text-xs text-muted-foreground">Últimos 6 meses</p>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={revenueExpenses} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="label" fontSize={12} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                <YAxis fontSize={11} tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+                <Tooltip
+                  formatter={(v: number) => formatCurrency(v)}
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8 }}
+                />
+                <Legend />
+                <Bar dataKey="revenue" name="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" name="Gastos" fill="#EF4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Service type breakdown */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Por tipo de servicio</CardTitle>
+            <p className="text-xs text-muted-foreground">Este año</p>
+          </CardHeader>
+          <CardContent>
+            {serviceBreakdown.length === 0 ? (
+              <div className="flex items-center justify-center h-[260px] text-muted-foreground text-sm">
+                Sin datos de facturación este año
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie
+                    data={serviceBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={90}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
+                    fontSize={11}
+                  >
+                    {serviceBreakdown.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom row */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Urgent invoices */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Facturas recientes</CardTitle>
+              <CardTitle className="text-base">Facturas urgentes</CardTitle>
               <Link to="/app/finance/invoices" className="text-sm text-primary hover:underline flex items-center gap-1">
                 Ver todas <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            {recentInvoices.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No hay facturas</p>
+            {urgentInvoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No hay facturas urgentes 🎉</p>
             ) : (
-              <div className="space-y-3">
-                {recentInvoices.slice(0, 5).map(invoice => (
-                  <Link
-                    key={invoice.id}
-                    to={`/app/finance/invoices/${invoice.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{invoice.invoice_number}</p>
-                      <p className="text-xs text-muted-foreground">{invoice.client_name}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{formatCurrency(invoice.total)}</p>
-                      <span 
-                        className="text-xs px-2 py-0.5 rounded-full"
-                        style={{ 
-                          backgroundColor: `${INVOICE_STATUSES[invoice.status].color}20`,
-                          color: INVOICE_STATUSES[invoice.status].color 
-                        }}
-                      >
-                        {INVOICE_STATUSES[invoice.status].label}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+              <div className="space-y-2">
+                {urgentInvoices.map(inv => {
+                  const isOverdue = inv.days_overdue > 0;
+                  return (
+                    <Link
+                      key={inv.id}
+                      to={`/app/finance/invoices/${inv.id}`}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isOverdue && (
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive" />
+                          </span>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium">{inv.client_name}</p>
+                          <p className="text-xs text-muted-foreground">{inv.invoice_number}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">{formatCurrency(inv.total - inv.paid_amount)}</p>
+                        <p className={`text-xs ${isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                          {isOverdue ? `${inv.days_overdue}d vencida` : `${-inv.days_overdue}d restantes`}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
-        
-        {/* Recent Costs */}
+
+        {/* Profitability table */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Costes recientes</CardTitle>
-              <Link to="/app/finance/costs" className="text-sm text-primary hover:underline flex items-center gap-1">
-                Ver todos <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            <CardTitle className="text-base">Rentabilidad por expediente</CardTitle>
+            <p className="text-xs text-muted-foreground">Este trimestre</p>
           </CardHeader>
-          <CardContent>
-            {recentCosts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No hay costes registrados</p>
+          <CardContent className="p-0">
+            {profitability.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Sin datos este trimestre</p>
             ) : (
-              <div className="space-y-3">
-                {recentCosts.slice(0, 5).map(cost => (
-                  <div
-                    key={cost.id}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{cost.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {cost.matter?.reference} · {format(new Date(cost.cost_date), 'dd MMM', { locale: es })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{formatCurrency(cost.total_amount || 0)}</p>
-                      <span 
-                        className="text-xs px-2 py-0.5 rounded-full"
-                        style={{ 
-                          backgroundColor: `${COST_STATUSES[cost.status].color}20`,
-                          color: COST_STATUSES[cost.status].color 
-                        }}
-                      >
-                        {COST_STATUSES[cost.status].label}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Expediente</TableHead>
+                    <TableHead className="text-xs text-right">Facturado</TableHead>
+                    <TableHead className="text-xs text-right">Costes</TableHead>
+                    <TableHead className="text-xs text-right">Margen</TableHead>
+                    <TableHead className="text-xs text-right">%</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {profitability.slice(0, 8).map(row => (
+                    <TableRow key={row.matter_id}>
+                      <TableCell className="py-2">
+                        <Link to={`/app/docket/${row.matter_id}`} className="text-sm font-medium hover:text-primary">
+                          {row.reference}
+                        </Link>
+                        <p className="text-xs text-muted-foreground truncate max-w-[160px]">{row.title}</p>
+                      </TableCell>
+                      <TableCell className="text-right text-sm">{formatCurrency(row.invoiced)}</TableCell>
+                      <TableCell className="text-right text-sm text-muted-foreground">
+                        {formatCurrency(row.hours_cost + row.expenses)}
+                      </TableCell>
+                      <TableCell className={`text-right text-sm font-medium ${row.margin >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                        {formatCurrency(row.margin)}
+                      </TableCell>
+                      <TableCell className={`text-right text-sm ${row.margin_pct >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                        {row.margin_pct.toFixed(0)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
       </div>
-      
-      {/* Upcoming Renewals */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Próximas renovaciones</CardTitle>
-            <Link to="/app/finance/renewals" className="text-sm text-primary hover:underline flex items-center gap-1">
-              Ver calendario <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {renewals.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No hay renovaciones próximas</p>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-4">
-              {renewals.slice(0, 6).map(renewal => (
-                <Link
-                  key={renewal.id}
-                  to={`/app/docket/${renewal.matter_id}`}
-                  className="p-3 rounded-lg border hover:border-primary transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">{renewal.matter?.reference}</span>
-                    <span className="text-sm font-bold text-green-600">{formatCurrency(renewal.total_estimate || 0)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{renewal.matter?.mark_name || renewal.matter?.title}</p>
-                  <p className="text-xs text-orange-600 mt-1">
-                    Vence: {format(new Date(renewal.due_date), 'dd MMM yyyy', { locale: es })}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
 
-function StatCard({ 
-  label, 
-  value, 
-  color 
-}: { 
-  label: string; 
-  value: number | string; 
+function KPICard({ label, value, suffix, color, isAlert }: {
+  label: string;
+  value: number | string;
+  suffix?: string;
   color: string;
+  isAlert?: boolean;
 }) {
-  const numericValue = typeof value === 'number' ? value : 0;
-  const hasValue = numericValue > 0 || (typeof value === 'string' && value !== '€0' && value !== '€0K');
-  const isAlert = (label.toLowerCase().includes('pendiente') || label.toLowerCase().includes('vencid')) && hasValue;
-  
-  // Determine background gradient based on label
-  const getBgGradient = () => {
-    if (label.toLowerCase().includes('facturado')) return 'linear-gradient(135deg, #dbeafe 0%, #f1f4f9 100%)';
-    if (label.toLowerCase().includes('pendiente')) return 'linear-gradient(135deg, #fef3c7 0%, #f1f4f9 100%)';
-    if (label.toLowerCase().includes('coste')) return 'linear-gradient(135deg, #dbeafe 0%, #f1f4f9 100%)';
-    if (label.toLowerCase().includes('renovacion')) return 'linear-gradient(135deg, #cffafe 0%, #f1f4f9 100%)';
-    return '#f1f4f9';
-  };
-  
   return (
-    <div 
+    <div
       className="relative overflow-hidden transition-all duration-300 hover:shadow-md"
       style={{
         padding: '20px',
         borderRadius: '14px',
-        border: isAlert ? `1px solid ${color}40` : '1px solid rgba(0, 0, 0, 0.06)',
+        border: isAlert ? `1px solid ${color}40` : '1px solid hsl(var(--border))',
         borderLeft: isAlert ? `4px solid ${color}` : undefined,
-        background: getBgGradient(),
+        background: 'hsl(var(--card))',
       }}
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p 
-            className="text-[11px] font-semibold uppercase tracking-wider mb-2"
-            style={{ color: '#64748b' }}
-          >
+          <p className="text-[11px] font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
             {label}
           </p>
-          <p 
-            style={{ 
-              fontSize: '24px', 
-              fontWeight: 800, 
-              color: hasValue ? color : '#94a3b8',
-              letterSpacing: '-0.02em',
-              textShadow: '0 1px 2px rgba(0,0,0,0.05)',
-            }}
-          >
-            {value}
+          <p style={{ fontSize: '24px', fontWeight: 800, color, letterSpacing: '-0.02em' }}>
+            {value}{suffix}
           </p>
         </div>
-        <div 
-          style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: '#f1f4f9',
-            boxShadow: '6px 6px 14px #b5b9c4, -6px -6px 14px #ffffff, inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.06)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <span 
-            style={{ 
-              fontSize: '16px', 
-              fontWeight: 700, 
-              color: hasValue ? color : '#94a3b8',
-            }}
-          >
-            {typeof value === 'number' ? value : '€'}
-          </span>
+        <div className="flex-shrink-0">
+          <NeoBadge
+            value={isAlert && typeof value === 'number' && value > 0 ? '!' : '€'}
+            color={color}
+            size="md"
+            active={isAlert}
+          />
         </div>
       </div>
+      {/* LED pulse for overdue */}
+      {isAlert && (
+        <span className="absolute top-3 right-3 flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: color }} />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ backgroundColor: color }} />
+        </span>
+      )}
     </div>
   );
 }

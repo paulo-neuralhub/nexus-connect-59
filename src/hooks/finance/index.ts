@@ -7,3 +7,4 @@ export * from './useFiscalSettings';
 export * from './useRegulatorySubmissions';
 export * from './useExpenses';
 export * from './useProvisions';
+export * from './useFinanceDashboard';
