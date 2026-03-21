@@ -1,10 +1,9 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Mail, MessageSquare, SlidersHorizontal, LayoutList, FileText } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { to: "/app/communications", label: "Inbox", icon: LayoutList, end: true },
+  { to: "/app/communications", label: "Bandeja Unificada", icon: LayoutList, end: true },
   { to: "/app/communications/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { to: "/app/communications/email", label: "Email", icon: Mail },
   { to: "/app/communications/templates", label: "Templates", icon: FileText },
@@ -12,14 +11,19 @@ const tabs = [
 ];
 
 export default function CommunicationsLayout() {
+  const location = useLocation();
+  const isUnifiedInbox = location.pathname === '/app/communications';
+
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold text-foreground">Comunicaciones</h1>
-        <p className="text-sm text-muted-foreground">
-          Inbox unificado por organización (tabla: <span className="font-mono">communications</span>)
-        </p>
-      </header>
+    <div className={cn("space-y-4", isUnifiedInbox && "space-y-3")}>
+      {!isUnifiedInbox && (
+        <header className="space-y-1">
+          <h1 className="text-2xl font-bold text-foreground">Comunicaciones</h1>
+          <p className="text-sm text-muted-foreground">
+            Gestión omnicanal de comunicaciones
+          </p>
+        </header>
+      )}
 
       <nav className="flex flex-wrap gap-2">
         {tabs.map((t) => (

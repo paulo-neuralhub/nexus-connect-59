@@ -1,5 +1,5 @@
-import { CommunicationsInbox } from "@/components/legal-ops";
+import { CommUnifiedInbox } from "@/components/communications/unified";
 
 export default function CommunicationsUnifiedPage() {
-  return <CommunicationsInbox defaultChannel={null} defaultTab="all" />;
+  return <CommUnifiedInbox />;
 }
