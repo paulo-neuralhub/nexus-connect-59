@@ -71,3 +71,18 @@ verify_jwt = false
 
 [functions.generate-report]
 verify_jwt = false
+
+[functions.market-create-payment]
+verify_jwt = false
+
+[functions.market-release-milestone]
+verify_jwt = false
+
+[functions.market-open-dispute]
+verify_jwt = false
+
+[functions.market-auto-release-cron]
+verify_jwt = false
+
+[functions.market-agent-onboarding]
+verify_jwt = false
