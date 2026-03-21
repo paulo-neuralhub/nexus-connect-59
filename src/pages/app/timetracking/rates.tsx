@@ -186,16 +186,12 @@ export default function BillingRatesPage() {
                           <TableRow key={rate.id}>
                             <TableCell>
                               <div>
-                                <span className="font-medium">{rate.name || '-'}</span>
-                                {rate.description && (
-                                  <p className="text-xs text-muted-foreground">{rate.description}</p>
-                                )}
+                                <span className="font-medium">{rate.rate_name || '-'}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              {rate.rate_type === 'user' && rate.user?.full_name}
-                              {rate.rate_type === 'client' && rate.contact?.name}
-                              {rate.rate_type === 'role' && rate.role_name}
+                              {rate.rate_type === 'user' && rate.user ? `${rate.user.first_name} ${rate.user.last_name}` : ''}
+                              {rate.rate_type === 'client' && rate.account?.name}
                               {rate.rate_type === 'matter_type' && rate.matter_type}
                               {rate.rate_type === 'default' && 'Todos'}
                             </TableCell>
@@ -204,20 +200,20 @@ export default function BillingRatesPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm">
-                                  {format(new Date(rate.effective_from), 'dd/MM/yyyy')}
-                                </span>
-                                {rate.effective_until && (
+                                {rate.valid_from && (
+                                  <span className="text-sm">
+                                    {format(new Date(rate.valid_from), 'dd/MM/yyyy')}
+                                  </span>
+                                )}
+                                {rate.valid_until && (
                                   <>
                                     <span className="text-muted-foreground">→</span>
                                     <span className="text-sm">
-                                      {format(new Date(rate.effective_until), 'dd/MM/yyyy')}
+                                      {format(new Date(rate.valid_until), 'dd/MM/yyyy')}
                                     </span>
                                   </>
                                 )}
-                                {!rate.is_active && (
-                                  <Badge variant="outline" className="text-xs">Inactiva</Badge>
-                                )}
+                              </div>
                               </div>
                             </TableCell>
                             <TableCell>
