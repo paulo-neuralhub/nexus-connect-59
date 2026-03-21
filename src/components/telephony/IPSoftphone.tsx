@@ -23,20 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/contexts/organization-context";
 import { toast } from "sonner";
 
-// ── Softphone context for cross-component communication ──
-import { create } from "zustand" with { "resolution-mode": "import" };
-
 // Simple event bus for opening softphone with pre-dialed number
-type SoftphoneStore = {
-  isOpen: boolean;
-  preDialNumber: string;
-  preDialMeta: CallMetadata;
-  open: (number?: string, meta?: CallMetadata) => void;
-  close: () => void;
-  reset: () => void;
-};
-
-// We'll use a simple global state via module-level variable
 let _openCallback: ((number?: string, meta?: CallMetadata) => void) | null = null;
 
 export function openSoftphone(number?: string, meta?: CallMetadata) {
