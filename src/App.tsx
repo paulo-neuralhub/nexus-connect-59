@@ -684,6 +684,7 @@ const App = () => (
                 <Route path="settings" element={<BackofficeSettingsPage />} />
                 <Route path="calendar" element={<BackofficeCalendarPage />} />
                 <Route path="product-analytics" element={<BackofficeProductAnalyticsPage />} />
+                <Route path="genius" element={<BackofficeGeniusPage />} />
                 <Route path="knowledge-bases" element={<KnowledgeBasesPage />} />
                 <Route path="knowledge" element={<KnowledgeMapPage />} />
                 <Route path="demo-data" element={<DemoDataPage />} />
