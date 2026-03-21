@@ -275,6 +275,7 @@ import MarketConfigPage from "./pages/backoffice/market-config";
 import BackofficeCalendarPage from "./pages/backoffice/calendar";
 import BackofficeProductAnalyticsPage from "./pages/backoffice/product-analytics";
 import KnowledgeBasesPage from "./pages/backoffice/knowledge-bases";
+import KnowledgeMapPage from "./pages/backoffice/knowledge";
 import DemoDataPage from "./pages/backoffice/demo-data";
 import DemoModePage from "./pages/backoffice/demo-mode";
 import SystemTestsPage from "./pages/backoffice/system-tests";
