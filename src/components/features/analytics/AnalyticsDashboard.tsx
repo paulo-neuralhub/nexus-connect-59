@@ -16,8 +16,6 @@ import {
   Download,
   Calendar,
   Play,
-  Star,
-  StarOff,
   MoreVertical,
   Plus,
   Briefcase,
