@@ -12,3 +12,4 @@ export { CallInProgressModal } from './CallInProgressModal';
 export { CallCompletedModal } from './CallCompletedModal';
 export { RecordingPlayer } from './RecordingPlayer';
 export { CallManager } from './CallManager';
+export { IPSoftphone, openSoftphone } from './IPSoftphone';
