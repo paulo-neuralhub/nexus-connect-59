@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.genius-proactive]
 verify_jwt = false
+
+[functions.genius-research-jurisdiction]
+verify_jwt = false
+
+[functions.genius-approve-research]
+verify_jwt = false
+
+[functions.genius-monthly-update]
+verify_jwt = false
