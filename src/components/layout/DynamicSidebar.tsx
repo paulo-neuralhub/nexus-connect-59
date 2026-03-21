@@ -385,9 +385,9 @@ export function DynamicSidebar({
             <LayoutDashboard 
               className="h-3 w-3 shrink-0" 
               style={isDashboardActive ? { 
-                color: '#00b4d8',
-                filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-              } : { color: 'rgba(255,255,255,0.28)' }} 
+                color: '#3B82F6',
+                filter: 'drop-shadow(0 0 4px rgba(59,130,246,0.30))'
+              } : { color: '#3B82F6', opacity: 0.5 }} 
             />
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
