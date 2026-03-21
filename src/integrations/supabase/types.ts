@@ -8166,6 +8166,102 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          amount_eur: number | null
+          category: string | null
+          created_at: string | null
+          crm_account_id: string | null
+          currency: string | null
+          description: string
+          expense_date: string | null
+          id: string
+          invoice_id: string | null
+          is_billable: boolean | null
+          is_billed: boolean | null
+          matter_id: string | null
+          notes: string | null
+          organization_id: string
+          receipt_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          amount_eur?: number | null
+          category?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          currency?: string | null
+          description: string
+          expense_date?: string | null
+          id?: string
+          invoice_id?: string | null
+          is_billable?: boolean | null
+          is_billed?: boolean | null
+          matter_id?: string | null
+          notes?: string | null
+          organization_id: string
+          receipt_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          amount_eur?: number | null
+          category?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          currency?: string | null
+          description?: string
+          expense_date?: string | null
+          id?: string
+          invoice_id?: string | null
+          is_billable?: boolean | null
+          is_billed?: boolean | null
+          matter_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          receipt_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       extraction_suggestion_log: {
         Row: {
           accepted_value: string | null
@@ -10205,6 +10301,196 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          detail: string | null
+          discount_pct: number | null
+          id: string
+          invoice_id: string
+          jurisdiction_code: string | null
+          line_type: string
+          matter_id: string | null
+          nice_class: number | null
+          organization_id: string
+          quantity: number | null
+          sort_order: number | null
+          subtotal: number
+          tax_amount: number | null
+          tax_rate: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          detail?: string | null
+          discount_pct?: number | null
+          id?: string
+          invoice_id: string
+          jurisdiction_code?: string | null
+          line_type?: string
+          matter_id?: string | null
+          nice_class?: number | null
+          organization_id: string
+          quantity?: number | null
+          sort_order?: number | null
+          subtotal: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          unit?: string | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          detail?: string | null
+          discount_pct?: number | null
+          id?: string
+          invoice_id?: string
+          jurisdiction_code?: string | null
+          line_type?: string
+          matter_id?: string | null
+          nice_class?: number | null
+          organization_id?: string
+          quantity?: number | null
+          sort_order?: number | null
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          id: string
+          invoice_id: string
+          notes: string | null
+          organization_id: string
+          payment_date: string
+          payment_method: string | null
+          reference: string | null
+          stripe_payment_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          organization_id: string
+          payment_date?: string
+          payment_method?: string | null
+          reference?: string | null
+          stripe_payment_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          organization_id?: string
+          payment_date?: string
+          payment_method?: string | null
+          reference?: string | null
+          stripe_payment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_payments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_sequences: {
+        Row: {
+          format: string | null
+          id: string
+          last_number: number | null
+          organization_id: string
+          prefix: string | null
+          series: string
+          year: number
+        }
+        Insert: {
+          format?: string | null
+          id?: string
+          last_number?: number | null
+          organization_id: string
+          prefix?: string | null
+          series?: string
+          year?: number
+        }
+        Update: {
+          format?: string | null
+          id?: string
+          last_number?: number | null
+          organization_id?: string
+          prefix?: string | null
+          series?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           bank_account: string | null
@@ -10217,20 +10503,26 @@ export type Database = {
           correction_reason: string | null
           created_at: string
           created_by: string | null
+          crm_account_id: string | null
+          crm_deal_id: string | null
           currency: string | null
           discount_amount: number | null
           due_date: string | null
+          expenses_subtotal: number | null
           facturae_certificate_id: string | null
           facturae_signed: boolean | null
           facturae_xml: string | null
           footer_text: string | null
+          full_number: string | null
           id: string
           internal_notes: string | null
           invoice_date: string
           invoice_number: string
           invoice_series: string | null
           invoice_type: string | null
+          matter_id: string | null
           notes: string | null
+          official_fees_subtotal: number | null
           organization_id: string
           paid_amount: number | null
           paid_date: string | null
@@ -10240,8 +10532,10 @@ export type Database = {
           pdf_url: string | null
           period_end: string | null
           period_start: string | null
+          professional_fees_subtotal: number | null
           sent_at: string | null
           sent_to_email: string | null
+          series: string | null
           sii_csv: string | null
           sii_registration_key: string | null
           sii_response: Json | null
@@ -10282,20 +10576,26 @@ export type Database = {
           correction_reason?: string | null
           created_at?: string
           created_by?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
           currency?: string | null
           discount_amount?: number | null
           due_date?: string | null
+          expenses_subtotal?: number | null
           facturae_certificate_id?: string | null
           facturae_signed?: boolean | null
           facturae_xml?: string | null
           footer_text?: string | null
+          full_number?: string | null
           id?: string
           internal_notes?: string | null
           invoice_date?: string
           invoice_number: string
           invoice_series?: string | null
           invoice_type?: string | null
+          matter_id?: string | null
           notes?: string | null
+          official_fees_subtotal?: number | null
           organization_id: string
           paid_amount?: number | null
           paid_date?: string | null
@@ -10305,8 +10605,10 @@ export type Database = {
           pdf_url?: string | null
           period_end?: string | null
           period_start?: string | null
+          professional_fees_subtotal?: number | null
           sent_at?: string | null
           sent_to_email?: string | null
+          series?: string | null
           sii_csv?: string | null
           sii_registration_key?: string | null
           sii_response?: Json | null
@@ -10347,20 +10649,26 @@ export type Database = {
           correction_reason?: string | null
           created_at?: string
           created_by?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
           currency?: string | null
           discount_amount?: number | null
           due_date?: string | null
+          expenses_subtotal?: number | null
           facturae_certificate_id?: string | null
           facturae_signed?: boolean | null
           facturae_xml?: string | null
           footer_text?: string | null
+          full_number?: string | null
           id?: string
           internal_notes?: string | null
           invoice_date?: string
           invoice_number?: string
           invoice_series?: string | null
           invoice_type?: string | null
+          matter_id?: string | null
           notes?: string | null
+          official_fees_subtotal?: number | null
           organization_id?: string
           paid_amount?: number | null
           paid_date?: string | null
@@ -10370,8 +10678,10 @@ export type Database = {
           pdf_url?: string | null
           period_end?: string | null
           period_start?: string | null
+          professional_fees_subtotal?: number | null
           sent_at?: string | null
           sent_to_email?: string | null
+          series?: string | null
           sii_csv?: string | null
           sii_registration_key?: string | null
           sii_response?: Json | null
@@ -10402,6 +10712,27 @@ export type Database = {
           withholding_percent?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_crm_deal_id_fkey"
+            columns: ["crm_deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_organization_id_fkey"
             columns: ["organization_id"]
@@ -16123,6 +16454,177 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_items: {
+        Row: {
+          description: string
+          id: string
+          jurisdiction_code: string | null
+          line_type: string | null
+          organization_id: string
+          quantity: number | null
+          quote_id: string
+          sort_order: number | null
+          subtotal: number
+          tax_rate: number | null
+          unit_price: number
+        }
+        Insert: {
+          description: string
+          id?: string
+          jurisdiction_code?: string | null
+          line_type?: string | null
+          organization_id: string
+          quantity?: number | null
+          quote_id: string
+          sort_order?: number | null
+          subtotal: number
+          tax_rate?: number | null
+          unit_price: number
+        }
+        Update: {
+          description?: string
+          id?: string
+          jurisdiction_code?: string | null
+          line_type?: string | null
+          organization_id?: string
+          quantity?: number | null
+          quote_id?: string
+          sort_order?: number | null
+          subtotal?: number
+          tax_rate?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          accepted_at: string | null
+          client_email: string | null
+          client_name: string
+          converted_to_invoice_id: string | null
+          created_at: string | null
+          created_by: string | null
+          crm_account_id: string | null
+          crm_deal_id: string | null
+          currency: string | null
+          id: string
+          jurisdictions: Json | null
+          notes: string | null
+          organization_id: string
+          quote_number: string | null
+          rejected_at: string | null
+          sent_at: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          terms: string | null
+          total_amount: number | null
+          updated_at: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_email?: string | null
+          client_name: string
+          converted_to_invoice_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
+          currency?: string | null
+          id?: string
+          jurisdictions?: Json | null
+          notes?: string | null
+          organization_id: string
+          quote_number?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          terms?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_email?: string | null
+          client_name?: string
+          converted_to_invoice_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
+          currency?: string | null
+          id?: string
+          jurisdictions?: Json | null
+          notes?: string | null
+          organization_id?: string
+          quote_number?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          terms?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_converted_to_invoice_id_fkey"
+            columns: ["converted_to_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_crm_deal_id_fkey"
+            columns: ["crm_deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rag_chunks: {
         Row: {
           chunk_index: number | null
@@ -18477,6 +18979,8 @@ export type Database = {
           activity_type: string | null
           contact_id: string | null
           created_at: string | null
+          crm_account_id: string | null
+          crm_deal_id: string | null
           currency: string | null
           date: string
           description: string | null
@@ -18499,6 +19003,8 @@ export type Database = {
           activity_type?: string | null
           contact_id?: string | null
           created_at?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
           currency?: string | null
           date?: string
           description?: string | null
@@ -18521,6 +19027,8 @@ export type Database = {
           activity_type?: string | null
           contact_id?: string | null
           created_at?: string | null
+          crm_account_id?: string | null
+          crm_deal_id?: string | null
           currency?: string | null
           date?: string
           description?: string | null
@@ -18545,6 +19053,20 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_crm_deal_id_fkey"
+            columns: ["crm_deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
             referencedColumns: ["id"]
           },
           {
@@ -19125,6 +19647,10 @@ export type Database = {
           p_org_id: string
         }
         Returns: number
+      }
+      get_next_invoice_number: {
+        Args: { p_org_id: string; p_series?: string }
+        Returns: string
       }
       get_user_org_id: { Args: never; Returns: string }
       has_role: {
