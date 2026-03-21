@@ -35,7 +35,7 @@ import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
-
+import { openSoftphone } from "@/components/telephony/IPSoftphone";
 export default function CRMV2AccountDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
