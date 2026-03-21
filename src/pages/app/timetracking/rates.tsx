@@ -214,7 +214,6 @@ export default function BillingRatesPage() {
                                   </>
                                 )}
                               </div>
-                              </div>
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
