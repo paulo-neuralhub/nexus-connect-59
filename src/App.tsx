@@ -43,6 +43,25 @@ import MarketProfile from "./pages/app/market/profile";
 import AgentListPage from "./pages/app/market/agents";
 import AgentDetailPage from "./pages/app/market/agents/[id]";
 import MarketLandingPage from "./pages/market/MarketLandingPage";
+import AgentsDirectoryPage from "./pages/market/AgentsDirectoryPage";
+import AgentProfilePage from "./pages/market/AgentProfilePage";
+import ServiceRequestPage from "./pages/market/ServiceRequestPage";
+
+// Agent Area
+import AgentLayout from "./pages/agent/AgentLayout";
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentRequests from "./pages/agent/AgentRequests";
+import {
+  AgentProfile as AgentProfilePlaceholder,
+  AgentServicesPage as AgentServicesPlaceholder,
+  AgentCredentialsPage as AgentCredentialsPlaceholder,
+  AgentPaymentsPage as AgentPaymentsPlaceholder,
+  AgentReviewsPage as AgentReviewsPlaceholder,
+  AgentSettingsPage as AgentSettingsPlaceholder,
+} from "./pages/agent/AgentPlaceholders";
+
+// Backoffice Market
+import BackofficeMarketPage from "./pages/backoffice/market";
 import RfqListPage from "./pages/app/market/rfq";
 import CreateRfqRequestPage from "./pages/app/market/rfq/new";
 import RfqRequestDetailPage from "./pages/app/market/rfq/[id]";
@@ -373,6 +392,9 @@ const App = () => (
                 <Route path="/docket" element={<DocketLandingPage />} />
                 <Route path="/nexus" element={<NexusLandingPage />} />
                 <Route path="/market" element={<MarketLandingPage />} />
+                <Route path="/market/agents" element={<AgentsDirectoryPage />} />
+                <Route path="/market/agents/:slug" element={<AgentProfilePage />} />
+                <Route path="/market/request/:agentSlug" element={<ServiceRequestPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/spider-pro" element={<SpiderLandingPage />} />
                 <Route path="/products/:slug" element={<ProductLanding />} />
@@ -636,6 +658,19 @@ const App = () => (
               </Route>
               
               {/* BACKOFFICE - Panel de administración consolidado */}
+              {/* AGENT AREA - Protected */}
+              <Route path="/agent" element={<AuthGuard><AgentLayout /></AuthGuard>}>
+                <Route index element={<Navigate to="/agent/dashboard" replace />} />
+                <Route path="dashboard" element={<AgentDashboard />} />
+                <Route path="requests" element={<AgentRequests />} />
+                <Route path="profile" element={<AgentProfilePlaceholder />} />
+                <Route path="services" element={<AgentServicesPlaceholder />} />
+                <Route path="credentials" element={<AgentCredentialsPlaceholder />} />
+                <Route path="payments" element={<AgentPaymentsPlaceholder />} />
+                <Route path="reviews" element={<AgentReviewsPlaceholder />} />
+                <Route path="settings" element={<AgentSettingsPlaceholder />} />
+              </Route>
+
               <Route path="/backoffice" element={<AuthGuard><BackofficeLayout /></AuthGuard>}>
                 <Route index element={<BackofficeDashboard />} />
                 {/* Core */}
@@ -703,6 +738,7 @@ const App = () => (
                 <Route path="spider" element={<BackofficeSpiderPage />} />
                 <Route path="kill-switch" element={<KillSwitchPage />} />
                 <Route path="market-config" element={<MarketConfigPage />} />
+                <Route path="market" element={<BackofficeMarketPage />} />
                 {/* Stripe */}
                 <Route path="stripe" element={<StripeDashboard />} />
                 <Route path="stripe/config" element={<StripeConfigPage />} />
