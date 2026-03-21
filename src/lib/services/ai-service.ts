@@ -5,8 +5,8 @@ import type {
   AIConversation 
 } from '@/types/genius';
 
-const SUPABASE_URL = "https://dcdbpmbzizzzzdfkvohl.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjZGJwbWJ6aXp6enpkZmt2b2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3MjgzNTcsImV4cCI6MjA4NDMwNDM1N30.m-eYHXgQAPEejDLHKgJQaBiwEB19HJT3zjQSsPqLf5g";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://uaqniahteuzhetuyzvak.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhcW5pYWh0ZXV6aGV0dXl6dmFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTI5MjEsImV4cCI6MjA4OTQyODkyMX0.3z-NyjVkjqUMOIER-q2bVrWTf3M3RbZecJ1erinb0M8";
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
