@@ -351,17 +351,6 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
             </Select>
           </div>
 
-          {formData.rate_type === 'role' && (
-            <div className="space-y-2">
-              <Label>Nombre del rol</Label>
-              <Input
-                value={formData.role_name}
-                onChange={(e) => setFormData({ ...formData, role_name: e.target.value })}
-                placeholder="Ej: Socio, Asociado Senior..."
-              />
-            </div>
-          )}
-
           {formData.rate_type === 'matter_type' && (
             <div className="space-y-2">
               <Label>Tipo de expediente</Label>
@@ -386,6 +375,15 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
           )}
 
           <div className="space-y-2">
+            <Label>Nombre de la tarifa *</Label>
+            <Input
+              value={formData.rate_name}
+              onChange={(e) => setFormData({ ...formData, rate_name: e.target.value })}
+              placeholder="Ej: Tarifa estándar"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label>Tarifa por hora (€) *</Label>
             <Input
               type="number"
@@ -394,24 +392,6 @@ function RateFormDialog({ open, onOpenChange, rate, onSave, isLoading }: RateFor
               value={formData.hourly_rate}
               onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
               placeholder="150.00"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Nombre (opcional)</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: Tarifa estándar"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Descripción (opcional)</Label>
-            <Input
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Notas sobre esta tarifa..."
             />
           </div>
         </div>
