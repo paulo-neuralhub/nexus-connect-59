@@ -207,12 +207,12 @@ export function AnalyticsDashboard() {
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-xs text-muted-foreground">
-                      {report.run_count > 0 && (
-                        <span>{report.run_count} ejecuciones</span>
+                      {report.report_type && (
+                        <span>{report.report_type}</span>
                       )}
                     </div>
                     <div className="flex gap-1">
-                      {report.available_formats?.slice(0, 3).map((fmt: string) => (
+                      {report.output_formats?.slice(0, 3).map((fmt: string) => (
                         <Badge key={fmt} variant="secondary" className="text-xs">
                           {fmt.toUpperCase()}
                         </Badge>
