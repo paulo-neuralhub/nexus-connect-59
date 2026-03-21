@@ -225,7 +225,7 @@ export function DynamicSidebar({
       >
         <Icon 
           className="h-[9px] w-[9px] shrink-0" 
-          style={{ color: isActive ? '#00b4d8' : undefined }} 
+          style={{ color: isActive ? moduleColor : moduleColor, opacity: isActive ? 1 : 0.4 }} 
         />
         {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
         {!collapsed && badgeCount > 0 && (
