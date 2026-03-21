@@ -111,9 +111,7 @@ export function SpiderDashboardView() {
           <SpiderWatchesTab />
         </TabsContent>
         <TabsContent value="stats" className="mt-4">
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">Estadísticas disponibles próximamente</p>
-          </div>
+          <SpiderStatsTab />
         </TabsContent>
         <TabsContent value="config" className="mt-4">
           <SpiderConfigTab />
