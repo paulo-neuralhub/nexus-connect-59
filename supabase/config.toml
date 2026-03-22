@@ -134,3 +134,6 @@ verify_jwt = false
 
 [functions.internal-chat-index]
 verify_jwt = false
+
+[functions.internal-chat-heartbeat]
+verify_jwt = false
