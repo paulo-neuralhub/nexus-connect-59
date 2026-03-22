@@ -64,6 +64,101 @@ export type Database = {
           },
         ]
       }
+      account_relationships: {
+        Row: {
+          access_level: string | null
+          agent_account_id: string
+          agent_client_reference: string | null
+          billing_party: string | null
+          billing_split_pct: number | null
+          client_account_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          notify_agent_on_updates: boolean | null
+          notify_client_on_updates: boolean | null
+          organization_id: string
+          relationship_type: string
+          standard_instructions: Json | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          access_level?: string | null
+          agent_account_id: string
+          agent_client_reference?: string | null
+          billing_party?: string | null
+          billing_split_pct?: number | null
+          client_account_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          notify_agent_on_updates?: boolean | null
+          notify_client_on_updates?: boolean | null
+          organization_id: string
+          relationship_type?: string
+          standard_instructions?: Json | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          access_level?: string | null
+          agent_account_id?: string
+          agent_client_reference?: string | null
+          billing_party?: string | null
+          billing_split_pct?: number | null
+          client_account_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          notify_agent_on_updates?: boolean | null
+          notify_client_on_updates?: boolean | null
+          organization_id?: string
+          relationship_type?: string
+          standard_instructions?: Json | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_relationships_agent_account_id_fkey"
+            columns: ["agent_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationships_client_account_id_fkey"
+            columns: ["client_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationships_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activities: {
         Row: {
           call_duration: number | null
@@ -783,6 +878,67 @@ export type Database = {
           name?: string | null
         }
         Relationships: []
+      }
+      agent_portal_sessions: {
+        Row: {
+          active_client_account_id: string | null
+          active_filters: Json | null
+          agent_account_id: string
+          created_at: string | null
+          id: string
+          last_activity_at: string | null
+          organization_id: string
+          portal_user_id: string
+          updated_at: string | null
+          view_preferences: Json | null
+        }
+        Insert: {
+          active_client_account_id?: string | null
+          active_filters?: Json | null
+          agent_account_id: string
+          created_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          organization_id: string
+          portal_user_id: string
+          updated_at?: string | null
+          view_preferences?: Json | null
+        }
+        Update: {
+          active_client_account_id?: string | null
+          active_filters?: Json | null
+          agent_account_id?: string
+          created_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          organization_id?: string
+          portal_user_id?: string
+          updated_at?: string | null
+          view_preferences?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_portal_sessions_active_client_account_id_fkey"
+            columns: ["active_client_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_portal_sessions_agent_account_id_fkey"
+            columns: ["agent_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_portal_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agent_providers_config: {
         Row: {
@@ -5014,6 +5170,191 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_instruction_items: {
+        Row: {
+          account_id: string | null
+          assigned_agent_account_id: string | null
+          bulk_instruction_id: string
+          client_instruction_id: string | null
+          confirmed_at: string | null
+          created_at: string | null
+          executed_at: string | null
+          id: string
+          jurisdiction_code: string | null
+          matter_id: string | null
+          organization_id: string
+          response_text: string | null
+          specific_instruction: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          assigned_agent_account_id?: string | null
+          bulk_instruction_id: string
+          client_instruction_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          jurisdiction_code?: string | null
+          matter_id?: string | null
+          organization_id: string
+          response_text?: string | null
+          specific_instruction?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          assigned_agent_account_id?: string | null
+          bulk_instruction_id?: string
+          client_instruction_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          jurisdiction_code?: string | null
+          matter_id?: string | null
+          organization_id?: string
+          response_text?: string | null
+          specific_instruction?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_instruction_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instruction_items_assigned_agent_account_id_fkey"
+            columns: ["assigned_agent_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instruction_items_bulk_instruction_id_fkey"
+            columns: ["bulk_instruction_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_instructions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instruction_items_client_instruction_id_fkey"
+            columns: ["client_instruction_id"]
+            isOneToOne: false
+            referencedRelation: "portal_client_instructions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instruction_items_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instruction_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_instructions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          deadline_date: string | null
+          description: string
+          executed_count: number | null
+          failed_count: number | null
+          id: string
+          instruction_type: string
+          is_urgent: boolean | null
+          organization_id: string
+          sent_at: string | null
+          sent_by: string
+          status: string | null
+          target_family_id: string | null
+          target_ids: string[]
+          target_type: string
+          title: string
+          total_targets: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_date?: string | null
+          description: string
+          executed_count?: number | null
+          failed_count?: number | null
+          id?: string
+          instruction_type: string
+          is_urgent?: boolean | null
+          organization_id: string
+          sent_at?: string | null
+          sent_by: string
+          status?: string | null
+          target_family_id?: string | null
+          target_ids?: string[]
+          target_type?: string
+          title: string
+          total_targets?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_date?: string | null
+          description?: string
+          executed_count?: number | null
+          failed_count?: number | null
+          id?: string
+          instruction_type?: string
+          is_urgent?: boolean | null
+          organization_id?: string
+          sent_at?: string | null
+          sent_by?: string
+          status?: string | null
+          target_family_id?: string | null
+          target_ids?: string[]
+          target_type?: string
+          title?: string
+          total_targets?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_instructions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instructions_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instructions_target_family_id_fkey"
+            columns: ["target_family_id"]
+            isOneToOne: false
+            referencedRelation: "matter_families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           all_day: boolean | null
@@ -7244,10 +7585,20 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           agent_jurisdictions: string[] | null
+          agent_license_expiry: string | null
+          agent_license_jurisdictions: string[] | null
           agent_license_number: string | null
+          agent_license_type: string | null
+          agent_license_verified_at: string | null
+          agent_portal_branding: Json | null
+          agent_portal_slug: string | null
           annual_ip_budget_eur: number | null
           assigned_to: string | null
+          billing_consolidation_day: number | null
           billing_email: string | null
+          billing_grace_days: number | null
+          billing_period_day: number | null
+          billing_type: string | null
           city: string | null
           client_token: string | null
           client_type_id: string | null
@@ -7256,6 +7607,7 @@ export type Database = {
           created_at: string
           credit_limit: number | null
           currency: string | null
+          discount_pct: number | null
           email: string | null
           fax: string | null
           health_score: number | null
@@ -7263,15 +7615,19 @@ export type Database = {
           industry: string | null
           ip_portfolio_size: number | null
           is_active: boolean | null
+          is_agent: boolean | null
+          is_licensed_agent: boolean | null
           last_interaction_at: string | null
           legal_name: string | null
           lifecycle_stage: string | null
+          market_agent_id: string | null
           name: string
           notes: string | null
           organization_id: string
           payment_classification_id: string | null
           payment_terms: number | null
           phone: string | null
+          portal_type: string | null
           postal_code: string | null
           preferred_language: string | null
           rating_stars: number | null
@@ -7293,10 +7649,20 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agent_jurisdictions?: string[] | null
+          agent_license_expiry?: string | null
+          agent_license_jurisdictions?: string[] | null
           agent_license_number?: string | null
+          agent_license_type?: string | null
+          agent_license_verified_at?: string | null
+          agent_portal_branding?: Json | null
+          agent_portal_slug?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_consolidation_day?: number | null
           billing_email?: string | null
+          billing_grace_days?: number | null
+          billing_period_day?: number | null
+          billing_type?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
@@ -7305,6 +7671,7 @@ export type Database = {
           created_at?: string
           credit_limit?: number | null
           currency?: string | null
+          discount_pct?: number | null
           email?: string | null
           fax?: string | null
           health_score?: number | null
@@ -7312,15 +7679,19 @@ export type Database = {
           industry?: string | null
           ip_portfolio_size?: number | null
           is_active?: boolean | null
+          is_agent?: boolean | null
+          is_licensed_agent?: boolean | null
           last_interaction_at?: string | null
           legal_name?: string | null
           lifecycle_stage?: string | null
+          market_agent_id?: string | null
           name: string
           notes?: string | null
           organization_id: string
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_type?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -7342,10 +7713,20 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agent_jurisdictions?: string[] | null
+          agent_license_expiry?: string | null
+          agent_license_jurisdictions?: string[] | null
           agent_license_number?: string | null
+          agent_license_type?: string | null
+          agent_license_verified_at?: string | null
+          agent_portal_branding?: Json | null
+          agent_portal_slug?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_consolidation_day?: number | null
           billing_email?: string | null
+          billing_grace_days?: number | null
+          billing_period_day?: number | null
+          billing_type?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
@@ -7354,6 +7735,7 @@ export type Database = {
           created_at?: string
           credit_limit?: number | null
           currency?: string | null
+          discount_pct?: number | null
           email?: string | null
           fax?: string | null
           health_score?: number | null
@@ -7361,15 +7743,19 @@ export type Database = {
           industry?: string | null
           ip_portfolio_size?: number | null
           is_active?: boolean | null
+          is_agent?: boolean | null
+          is_licensed_agent?: boolean | null
           last_interaction_at?: string | null
           legal_name?: string | null
           lifecycle_stage?: string | null
+          market_agent_id?: string | null
           name?: string
           notes?: string | null
           organization_id?: string
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_type?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -7391,6 +7777,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_accounts_market_agent_id_fkey"
+            columns: ["market_agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
             referencedColumns: ["id"]
           },
           {
@@ -13019,11 +13412,15 @@ export type Database = {
       }
       invoices: {
         Row: {
+          agent_client_breakdown: Json | null
           bank_account: string | null
+          billing_account_id: string | null
           billing_client_id: string | null
           client_address: string | null
           client_name: string
           client_tax_id: string | null
+          consolidation_matters: Json | null
+          consolidation_period: string | null
           corrected_invoice_id: string | null
           correction_description: string | null
           correction_reason: string | null
@@ -13050,10 +13447,12 @@ export type Database = {
           invoice_number: string
           invoice_series: string | null
           invoice_type: string | null
+          is_consolidated_invoice: boolean | null
           matter_id: string | null
           notes: string | null
           official_fees_subtotal: number | null
           organization_id: string
+          owner_account_id: string | null
           paid_amount: number | null
           paid_date: string | null
           payment_method: string | null
@@ -13097,11 +13496,15 @@ export type Database = {
           withholding_percent: number | null
         }
         Insert: {
+          agent_client_breakdown?: Json | null
           bank_account?: string | null
+          billing_account_id?: string | null
           billing_client_id?: string | null
           client_address?: string | null
           client_name: string
           client_tax_id?: string | null
+          consolidation_matters?: Json | null
+          consolidation_period?: string | null
           corrected_invoice_id?: string | null
           correction_description?: string | null
           correction_reason?: string | null
@@ -13128,10 +13531,12 @@ export type Database = {
           invoice_number: string
           invoice_series?: string | null
           invoice_type?: string | null
+          is_consolidated_invoice?: boolean | null
           matter_id?: string | null
           notes?: string | null
           official_fees_subtotal?: number | null
           organization_id: string
+          owner_account_id?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
@@ -13175,11 +13580,15 @@ export type Database = {
           withholding_percent?: number | null
         }
         Update: {
+          agent_client_breakdown?: Json | null
           bank_account?: string | null
+          billing_account_id?: string | null
           billing_client_id?: string | null
           client_address?: string | null
           client_name?: string
           client_tax_id?: string | null
+          consolidation_matters?: Json | null
+          consolidation_period?: string | null
           corrected_invoice_id?: string | null
           correction_description?: string | null
           correction_reason?: string | null
@@ -13206,10 +13615,12 @@ export type Database = {
           invoice_number?: string
           invoice_series?: string | null
           invoice_type?: string | null
+          is_consolidated_invoice?: boolean | null
           matter_id?: string | null
           notes?: string | null
           official_fees_subtotal?: number | null
           organization_id?: string
+          owner_account_id?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
@@ -13254,6 +13665,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "invoices_billing_account_id_fkey"
+            columns: ["billing_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "invoices_crm_account_id_fkey"
             columns: ["crm_account_id"]
             isOneToOne: false
@@ -13279,6 +13697,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -14256,6 +14681,116 @@ export type Database = {
           right_type?: string | null
         }
         Relationships: []
+      }
+      ipo_incoming_documents: {
+        Row: {
+          action_taken: string | null
+          auto_matched: boolean | null
+          created_at: string | null
+          deadlines_created: Json | null
+          file_storage_path: string | null
+          id: string
+          match_confidence: number | null
+          matched_at: string | null
+          matched_by: string | null
+          matched_matter_id: string | null
+          organization_id: string
+          parsed_data: Json | null
+          parsing_confidence: number | null
+          parsing_status: string | null
+          processed_at: string | null
+          processed_by: string | null
+          processing_status: string | null
+          raw_email_content: string | null
+          raw_json_content: string | null
+          raw_xml_content: string | null
+          received_at: string | null
+          source_email_from: string | null
+          source_ipo_code: string | null
+          source_type: string
+        }
+        Insert: {
+          action_taken?: string | null
+          auto_matched?: boolean | null
+          created_at?: string | null
+          deadlines_created?: Json | null
+          file_storage_path?: string | null
+          id?: string
+          match_confidence?: number | null
+          matched_at?: string | null
+          matched_by?: string | null
+          matched_matter_id?: string | null
+          organization_id: string
+          parsed_data?: Json | null
+          parsing_confidence?: number | null
+          parsing_status?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_status?: string | null
+          raw_email_content?: string | null
+          raw_json_content?: string | null
+          raw_xml_content?: string | null
+          received_at?: string | null
+          source_email_from?: string | null
+          source_ipo_code?: string | null
+          source_type?: string
+        }
+        Update: {
+          action_taken?: string | null
+          auto_matched?: boolean | null
+          created_at?: string | null
+          deadlines_created?: Json | null
+          file_storage_path?: string | null
+          id?: string
+          match_confidence?: number | null
+          matched_at?: string | null
+          matched_by?: string | null
+          matched_matter_id?: string | null
+          organization_id?: string
+          parsed_data?: Json | null
+          parsing_confidence?: number | null
+          parsing_status?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_status?: string | null
+          raw_email_content?: string | null
+          raw_json_content?: string | null
+          raw_xml_content?: string | null
+          received_at?: string | null
+          source_email_from?: string | null
+          source_ipo_code?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ipo_incoming_documents_matched_by_fkey"
+            columns: ["matched_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ipo_incoming_documents_matched_matter_id_fkey"
+            columns: ["matched_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ipo_incoming_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ipo_incoming_documents_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ipo_market_intel: {
         Row: {
@@ -17967,6 +18502,221 @@ export type Database = {
           },
         ]
       }
+      matter_families: {
+        Row: {
+          covered_jurisdictions: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          family_name: string
+          family_type: string | null
+          id: string
+          organization_id: string
+          owner_account_id: string | null
+          pending_jurisdictions: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          covered_jurisdictions?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          family_name: string
+          family_type?: string | null
+          id?: string
+          organization_id: string
+          owner_account_id?: string | null
+          pending_jurisdictions?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          covered_jurisdictions?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          family_name?: string
+          family_type?: string | null
+          id?: string
+          organization_id?: string
+          owner_account_id?: string | null
+          pending_jurisdictions?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_families_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_families_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_families_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_field_change_proposals: {
+        Row: {
+          applied_at: string | null
+          change_reason: string | null
+          created_at: string | null
+          current_value: Json | null
+          field_name: string
+          id: string
+          matter_id: string
+          organization_id: string
+          proposed_by_account_id: string
+          proposed_by_user_id: string | null
+          proposed_value: Json
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          applied_at?: string | null
+          change_reason?: string | null
+          created_at?: string | null
+          current_value?: Json | null
+          field_name: string
+          id?: string
+          matter_id: string
+          organization_id: string
+          proposed_by_account_id: string
+          proposed_by_user_id?: string | null
+          proposed_value: Json
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          applied_at?: string | null
+          change_reason?: string | null
+          created_at?: string | null
+          current_value?: Json | null
+          field_name?: string
+          id?: string
+          matter_id?: string
+          organization_id?: string
+          proposed_by_account_id?: string
+          proposed_by_user_id?: string | null
+          proposed_value?: Json
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_field_change_proposals_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_change_proposals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_change_proposals_proposed_by_account_id_fkey"
+            columns: ["proposed_by_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_change_proposals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_field_permissions: {
+        Row: {
+          account_id: string
+          can_read: boolean | null
+          can_write: boolean | null
+          created_at: string | null
+          field_name: string
+          granted_by: string | null
+          id: string
+          matter_id: string | null
+          organization_id: string
+          requires_approval: boolean | null
+        }
+        Insert: {
+          account_id: string
+          can_read?: boolean | null
+          can_write?: boolean | null
+          created_at?: string | null
+          field_name: string
+          granted_by?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          requires_approval?: boolean | null
+        }
+        Update: {
+          account_id?: string
+          can_read?: boolean | null
+          can_write?: boolean | null
+          created_at?: string | null
+          field_name?: string
+          granted_by?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          requires_approval?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_field_permissions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_permissions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matter_parties: {
         Row: {
           client_id: string | null
@@ -18133,9 +18883,11 @@ export type Database = {
       }
       matters: {
         Row: {
+          agent_matter_reference: string | null
           application_number: string | null
           assigned_to: string | null
           auto_renewal: boolean | null
+          billing_account_id: string | null
           client_id: string | null
           cost_center: string | null
           created_at: string
@@ -18143,11 +18895,14 @@ export type Database = {
           currency: string | null
           estimated_value: number | null
           expiry_date: string | null
+          family_id: string | null
+          family_role: string | null
           filing_date: string | null
           filing_number: string | null
           goods_services: string | null
           id: string
           images: string[] | null
+          intermediate_agent_id: string | null
           internal_notes: string | null
           ip_type: string | null
           is_archived: boolean | null
@@ -18159,9 +18914,14 @@ export type Database = {
           next_renewal_date: string | null
           nice_classes: number[] | null
           notes: string | null
+          notify_billing_account: boolean | null
+          notify_owner_account: boolean | null
           official_fees: number | null
           organization_id: string
+          owner_account_id: string | null
           owner_name: string | null
+          owner_portal_visible: boolean | null
+          parent_matter_id: string | null
           priority_country: string | null
           priority_date: string | null
           priority_number: string | null
@@ -18180,9 +18940,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agent_matter_reference?: string | null
           application_number?: string | null
           assigned_to?: string | null
           auto_renewal?: boolean | null
+          billing_account_id?: string | null
           client_id?: string | null
           cost_center?: string | null
           created_at?: string
@@ -18190,11 +18952,14 @@ export type Database = {
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
+          family_id?: string | null
+          family_role?: string | null
           filing_date?: string | null
           filing_number?: string | null
           goods_services?: string | null
           id?: string
           images?: string[] | null
+          intermediate_agent_id?: string | null
           internal_notes?: string | null
           ip_type?: string | null
           is_archived?: boolean | null
@@ -18206,9 +18971,14 @@ export type Database = {
           next_renewal_date?: string | null
           nice_classes?: number[] | null
           notes?: string | null
+          notify_billing_account?: boolean | null
+          notify_owner_account?: boolean | null
           official_fees?: number | null
           organization_id: string
+          owner_account_id?: string | null
           owner_name?: string | null
+          owner_portal_visible?: boolean | null
+          parent_matter_id?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -18227,9 +18997,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agent_matter_reference?: string | null
           application_number?: string | null
           assigned_to?: string | null
           auto_renewal?: boolean | null
+          billing_account_id?: string | null
           client_id?: string | null
           cost_center?: string | null
           created_at?: string
@@ -18237,11 +19009,14 @@ export type Database = {
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
+          family_id?: string | null
+          family_role?: string | null
           filing_date?: string | null
           filing_number?: string | null
           goods_services?: string | null
           id?: string
           images?: string[] | null
+          intermediate_agent_id?: string | null
           internal_notes?: string | null
           ip_type?: string | null
           is_archived?: boolean | null
@@ -18253,9 +19028,14 @@ export type Database = {
           next_renewal_date?: string | null
           nice_classes?: number[] | null
           notes?: string | null
+          notify_billing_account?: boolean | null
+          notify_owner_account?: boolean | null
           official_fees?: number | null
           organization_id?: string
+          owner_account_id?: string | null
           owner_name?: string | null
+          owner_portal_visible?: boolean | null
+          parent_matter_id?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -18275,6 +19055,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matters_billing_account_id_fkey"
+            columns: ["billing_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matters_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
@@ -18282,10 +19069,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matters_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "matter_families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_intermediate_agent_id_fkey"
+            columns: ["intermediate_agent_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matters_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_parent_matter_id_fkey"
+            columns: ["parent_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
         ]
@@ -19458,6 +20273,11 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string | null
+          feature_agent_portal_enabled: boolean | null
+          feature_b2b2b_enabled: boolean | null
+          feature_matter_families_enabled: boolean | null
+          feature_smart_inbox_enabled: boolean | null
+          feature_storefront_enabled: boolean | null
           id: string
           is_platform_owner: boolean | null
           name: string
@@ -19470,6 +20290,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          feature_agent_portal_enabled?: boolean | null
+          feature_b2b2b_enabled?: boolean | null
+          feature_matter_families_enabled?: boolean | null
+          feature_smart_inbox_enabled?: boolean | null
+          feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
           name: string
@@ -19482,6 +20307,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          feature_agent_portal_enabled?: boolean | null
+          feature_b2b2b_enabled?: boolean | null
+          feature_matter_families_enabled?: boolean | null
+          feature_smart_inbox_enabled?: boolean | null
+          feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
           name?: string
@@ -19885,6 +20715,100 @@ export type Database = {
           {
             foreignKeyName: "platform_revenue_source_organization_id_fkey"
             columns: ["source_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_access: {
+        Row: {
+          created_at: string | null
+          crm_account_id: string | null
+          id: string
+          organization_id: string
+          portal_user_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          organization_id: string
+          portal_user_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          organization_id?: string
+          portal_user_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_access_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_client_instructions: {
+        Row: {
+          created_at: string | null
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_client_instructions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_service_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_service_requests_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
@@ -21636,6 +22560,102 @@ export type Database = {
         }
         Relationships: []
       }
+      service_storefront_items: {
+        Row: {
+          available_for_agents: boolean | null
+          available_for_corporate: boolean | null
+          available_for_direct_clients: boolean | null
+          available_jurisdictions: string[] | null
+          base_price_eur: number | null
+          category: string
+          created_at: string | null
+          description: string
+          estimated_days_max: number | null
+          estimated_days_min: number | null
+          id: string
+          includes_official_fees: boolean | null
+          intake_form_schema: Json | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          nice_classes: number[] | null
+          official_fees_estimate_eur: number | null
+          organization_id: string
+          price_type: string | null
+          service_catalog_id: string | null
+          short_description: string | null
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          available_for_agents?: boolean | null
+          available_for_corporate?: boolean | null
+          available_for_direct_clients?: boolean | null
+          available_jurisdictions?: string[] | null
+          base_price_eur?: number | null
+          category: string
+          created_at?: string | null
+          description: string
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          id?: string
+          includes_official_fees?: boolean | null
+          intake_form_schema?: Json | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          nice_classes?: number[] | null
+          official_fees_estimate_eur?: number | null
+          organization_id: string
+          price_type?: string | null
+          service_catalog_id?: string | null
+          short_description?: string | null
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          available_for_agents?: boolean | null
+          available_for_corporate?: boolean | null
+          available_for_direct_clients?: boolean | null
+          available_jurisdictions?: string[] | null
+          base_price_eur?: number | null
+          category?: string
+          created_at?: string | null
+          description?: string
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
+          id?: string
+          includes_official_fees?: boolean | null
+          intake_form_schema?: Json | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          nice_classes?: number[] | null
+          official_fees_estimate_eur?: number | null
+          organization_id?: string
+          price_type?: string | null
+          service_catalog_id?: string | null
+          short_description?: string | null
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_storefront_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_storefront_items_service_catalog_id_fkey"
+            columns: ["service_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "services_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_templates: {
         Row: {
           created_at: string | null
@@ -22768,6 +23788,131 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_orders: {
+        Row: {
+          buyer_account_id: string
+          buyer_notes: string | null
+          buyer_portal_user_id: string
+          converted_at: string | null
+          converted_by: string | null
+          converted_to_matter_id: string | null
+          converted_to_service_request_id: string | null
+          created_at: string | null
+          despacho_notes: string | null
+          id: string
+          includes_official_fees: boolean | null
+          intake_data: Json
+          on_behalf_of_account_id: string | null
+          organization_id: string
+          paid_at: string | null
+          payment_required: boolean | null
+          payment_status: string | null
+          quoted_price_eur: number | null
+          status: string | null
+          storefront_item_id: string
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_account_id: string
+          buyer_notes?: string | null
+          buyer_portal_user_id: string
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_to_matter_id?: string | null
+          converted_to_service_request_id?: string | null
+          created_at?: string | null
+          despacho_notes?: string | null
+          id?: string
+          includes_official_fees?: boolean | null
+          intake_data?: Json
+          on_behalf_of_account_id?: string | null
+          organization_id: string
+          paid_at?: string | null
+          payment_required?: boolean | null
+          payment_status?: string | null
+          quoted_price_eur?: number | null
+          status?: string | null
+          storefront_item_id: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_account_id?: string
+          buyer_notes?: string | null
+          buyer_portal_user_id?: string
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_to_matter_id?: string | null
+          converted_to_service_request_id?: string | null
+          created_at?: string | null
+          despacho_notes?: string | null
+          id?: string
+          includes_official_fees?: boolean | null
+          intake_data?: Json
+          on_behalf_of_account_id?: string | null
+          organization_id?: string
+          paid_at?: string | null
+          payment_required?: boolean | null
+          payment_status?: string | null
+          quoted_price_eur?: number | null
+          status?: string | null
+          storefront_item_id?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_orders_buyer_account_id_fkey"
+            columns: ["buyer_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_converted_by_fkey"
+            columns: ["converted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_converted_to_matter_id_fkey"
+            columns: ["converted_to_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_converted_to_service_request_id_fkey"
+            columns: ["converted_to_service_request_id"]
+            isOneToOne: false
+            referencedRelation: "portal_service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_on_behalf_of_account_id_fkey"
+            columns: ["on_behalf_of_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_orders_storefront_item_id_fkey"
+            columns: ["storefront_item_id"]
+            isOneToOne: false
+            referencedRelation: "service_storefront_items"
             referencedColumns: ["id"]
           },
         ]
@@ -24721,7 +25866,46 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      agent_portfolio_analytics: {
+        Row: {
+          active_matters: number | null
+          agent_account_id: string | null
+          client_account_id: string | null
+          client_name: string | null
+          deadlines_next_30d: number | null
+          deadlines_next_90d: number | null
+          invoiced_ytd_eur: number | null
+          last_matter_update: string | null
+          organization_id: string | null
+          overdue_deadlines: number | null
+          pending_invoices_eur: number | null
+          registered_matters: number | null
+          total_matters: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_relationships_agent_account_id_fkey"
+            columns: ["agent_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationships_client_account_id_fkey"
+            columns: ["client_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       activate_spider_for_tenant: {
@@ -24842,6 +26026,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      refresh_agent_portfolio_analytics: { Args: never; Returns: undefined }
       slugify: { Args: { input_text: string }; Returns: string }
       verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
