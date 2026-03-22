@@ -40,6 +40,9 @@ export function AppLayout() {
   // Track user presence for real-time collaboration
   usePresence();
   
+  // Silent page tracking for CoPilot learning
+  usePageTracking();
+  
   // Adjust viewport height for mobile
   useViewportHeight();
   
