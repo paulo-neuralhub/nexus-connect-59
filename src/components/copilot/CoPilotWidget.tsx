@@ -457,7 +457,7 @@ function CopilotCompact({
 function CopilotExpanded({
   isPro, name, avatarUrl, mode, briefing, hasBriefing, messages, inputValue,
   isThinking, queriesRemaining, queriesLimit, features,
-  inputRef, scrollRef, onInputChange, onSend, onCollapse,
+  inputRef, scrollRef, inputPlaceholder, onInputChange, onSend, onCollapse,
   onMarkBriefingRead, onDismissBriefing, onNavigate,
   memoryExplanation, isLoadingMemory, onFetchMemory,
 }: {
@@ -475,6 +475,7 @@ function CopilotExpanded({
   features: any;
   inputRef: React.RefObject<HTMLInputElement>;
   scrollRef: React.RefObject<HTMLDivElement>;
+  inputPlaceholder: string;
   memoryExplanation: any;
   isLoadingMemory: boolean;
   onFetchMemory: () => void;
