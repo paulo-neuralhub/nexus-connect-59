@@ -210,7 +210,7 @@ export function MessagePane({
                           </AvatarFallback>
                         </Avatar>
                         {isOnline && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 border border-background" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary border border-background" />
                         )}
                       </div>
                     </TooltipTrigger>
