@@ -1,17 +1,18 @@
-import { useVerifactuRecords } from '@/hooks/finance/useVerifactu';
+import { useVerifactuRecords, useRetryFailedVerifactu } from '@/hooks/finance/useVerifactu';
 import { useFiscalConfig } from '@/hooks/finance/useFiscalConfig';
 import { useFinanceFeature } from '@/hooks/finance/useFinanceModuleConfig';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Shield, AlertTriangle, CheckCircle, Clock, XCircle, Info } from 'lucide-react';
+import { Lock, Shield, AlertTriangle, CheckCircle, Clock, XCircle, Info, RefreshCw } from 'lucide-react';
 
 export default function VerifactuPage() {
   const { enabled, isLoading: featureLoading } = useFinanceFeature('feature_accounting');
   const { data: fiscalConfig } = useFiscalConfig();
   const verifactuEnabled = fiscalConfig?.verifactu_enabled;
   const { data: records, isLoading } = useVerifactuRecords();
+  const retryMutation = useRetryFailedVerifactu();
 
   if (featureLoading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!enabled) {
@@ -62,19 +63,33 @@ export default function VerifactuPage() {
     );
   }
 
-  const sent = records?.filter(r => r.status === 'accepted').length || 0;
-  const pending = records?.filter(r => r.status === 'pending' || r.status === 'sent').length || 0;
-  const errors = records?.filter(r => r.status === 'error').length || 0;
+  const sent = records?.filter(r => r.submission_status === 'accepted').length || 0;
+  const pending = records?.filter(r => r.submission_status === 'pending' || r.submission_status === 'sent').length || 0;
+  const errors = records?.filter(r => r.submission_status === 'error').length || 0;
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <Shield className="w-6 h-6 text-primary" />
-        <h1 className="text-2xl font-bold">Verifactu</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Shield className="w-6 h-6 text-primary" />
+          <h1 className="text-2xl font-bold">Verifactu</h1>
+          <Badge variant="outline" className="text-xs">Sandbox</Badge>
+        </div>
+        {errors > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => retryMutation.mutate()}
+            disabled={retryMutation.isPending}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${retryMutation.isPending ? 'animate-spin' : ''}`} />
+            Reintentar fallidas ({errors})
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 flex items-center gap-3"><CheckCircle className="w-5 h-5 text-green-500" /><div><p className="text-sm text-muted-foreground">Enviados ✓</p><p className="text-2xl font-bold">{sent}</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><CheckCircle className="w-5 h-5 text-green-500" /><div><p className="text-sm text-muted-foreground">Enviadas ✓</p><p className="text-2xl font-bold">{sent}</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><Clock className="w-5 h-5 text-yellow-500" /><div><p className="text-sm text-muted-foreground">Pendientes ⏳</p><p className="text-2xl font-bold">{pending}</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><XCircle className="w-5 h-5 text-destructive" /><div><p className="text-sm text-muted-foreground">Errores 🔴</p><p className="text-2xl font-bold">{errors}</p></div></CardContent></Card>
       </div>
@@ -86,7 +101,11 @@ export default function VerifactuPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nº Factura</TableHead><TableHead>Fecha</TableHead><TableHead>Hash</TableHead><TableHead>Estado</TableHead><TableHead>Respuesta AEAT</TableHead>
+                <TableHead>Nº Factura</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Hash</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Respuesta AEAT</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,15 +113,22 @@ export default function VerifactuPage() {
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.full_number || '—'}</TableCell>
                   <TableCell>{r.record_date}</TableCell>
-                  <TableCell className="font-mono text-xs truncate max-w-32">{r.hash_chain?.slice(0, 16) || '—'}...</TableCell>
+                  <TableCell className="font-mono text-xs truncate max-w-32">{r.chain_hash?.slice(0, 16) || '—'}…</TableCell>
                   <TableCell>
-                    <Badge variant={r.status === 'accepted' ? 'default' : r.status === 'error' ? 'destructive' : 'outline'} className="text-xs">
-                      {r.status === 'accepted' ? '✓ Aceptado' : r.status === 'error' ? '✗ Error' : r.status === 'sent' ? '→ Enviado' : '⏳ Pendiente'}
+                    <Badge variant={r.submission_status === 'accepted' ? 'default' : r.submission_status === 'error' ? 'destructive' : 'outline'} className="text-xs">
+                      {r.submission_status === 'accepted' ? '✓ Aceptado' : r.submission_status === 'error' ? '✗ Error' : r.submission_status === 'sent' ? '→ Enviado' : '⏳ Pendiente'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{r.error_message || (r.aeat_response ? 'OK' : '—')}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.error_description || (r.aeat_response ? 'OK' : '—')}</TableCell>
                 </TableRow>
               ))}
+              {(!records || records.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No hay registros Verifactu. Envía tu primera factura.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </Card>
