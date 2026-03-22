@@ -39,6 +39,7 @@ export function CoPilotAvatar({
   })
 
   const dragging = useRef(false)
+  const didDrag = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 })
 
   // Landing animation — solo una vez al montar
