@@ -240,9 +240,42 @@ async function generateBriefingForOrg(
   const totalItems = items.length;
 
   // ── Personalize briefing order based on user patterns ──
-  // Try to get the requesting user's priority pattern (if userId is provided in the call context)
+  // Load user's priority pattern for personalization
   let prioritizesFirst = "deadline"; // default
   let summaryStyle = "operativo y accionable"; // default
+
+  if (requestingUserId) {
+    try {
+      const { data: userPattern } = await db
+        .from("copilot_user_patterns")
+        .select("pattern_data")
+        .eq("user_id", requestingUserId)
+        .eq("organization_id", orgId)
+        .eq("pattern_type", "priority_behavior")
+        .maybeSingle();
+
+      if (userPattern?.pattern_data?.checks_first) {
+        const typeMap: Record<string, string> = {
+          deadline_viewed: "deadline", matter_opened: "deadline",
+          spider_alert_viewed: "spider", invoice_viewed: "invoice",
+          page_view: "deadline",
+        };
+        prioritizesFirst = typeMap[userPattern.pattern_data.checks_first] || "deadline";
+      }
+
+      const { data: userProfile } = await db
+        .from("profiles")
+        .select("role, department")
+        .eq("id", requestingUserId)
+        .single();
+
+      if (userProfile?.role === "admin" || userProfile?.role === "superadmin") {
+        summaryStyle = "ejecutivo y estratégico";
+      } else if (userProfile?.department === "patents") {
+        summaryStyle = "técnico, enfocado en patentes";
+      }
+    } catch { /* non-blocking */ }
+  }
 
   // Generate AI summary
   let summary: string;
