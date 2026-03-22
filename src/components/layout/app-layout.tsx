@@ -12,7 +12,7 @@ import { ContextualHelpProvider } from "@/components/help/ContextualHelpProvider
 import { TrialBanner } from "@/components/upgrade/TrialBanner";
 import { AlertBanner } from "@/components/alerts/AlertBanner";
 import { NexusGuideButton } from "@/components/nexus-guide";
-import { HelpWidget } from "@/components/help/HelpWidget";
+import { CoPilotWidget, CoPilotGuide } from "@/components/copilot";
 import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -149,7 +149,8 @@ export function AppLayout() {
                 </div>
                 {/* Timer stays floating on mobile; on desktop it's embedded in the sidebar */}
                 <NexusGuideButton />
-                <HelpWidget />
+                <CoPilotWidget />
+                <CoPilotGuide />
 
                 <IPSoftphone />
                 
