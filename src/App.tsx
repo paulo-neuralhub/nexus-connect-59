@@ -692,6 +692,9 @@ const App = () => (
                 <Route path="legal-ops/communications" element={<LegalOpsCommunicationsPage />} />
                 <Route path="legal-ops/signatures" element={<SignaturesListPage />} />
                 <Route path="legal-ops/signatures/:id" element={<SignatureDetailPage />} />
+                {/* Portal Management (Staff) */}
+                <Route path="portal/dashboard" element={<PortalManagementDashboard />} />
+                <Route path="portal/live-chat" element={<PortalLiveChatPanel />} />
               </Route>
               
               {/* BACKOFFICE - Panel de administración consolidado */}
