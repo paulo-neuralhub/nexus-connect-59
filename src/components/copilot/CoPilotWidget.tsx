@@ -198,6 +198,7 @@ export function CoPilotWidget() {
             features={features}
             inputRef={inputRef}
             scrollRef={scrollRef}
+            inputPlaceholder={inputPlaceholder}
             memoryExplanation={memoryExplanation}
             isLoadingMemory={isLoadingMemory}
             onFetchMemory={fetchMemoryExplanation}
