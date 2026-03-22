@@ -7627,7 +7627,20 @@ export type Database = {
           payment_classification_id: string | null
           payment_terms: number | null
           phone: string | null
+          portal_enabled: boolean | null
+          portal_invitation_expires_at: string | null
+          portal_invitation_token: string | null
+          portal_invited_at: string | null
+          portal_last_login: string | null
+          portal_login_count: number | null
+          portal_notification_email: boolean | null
+          portal_notification_push: boolean | null
+          portal_notification_sms: boolean | null
+          portal_notification_whatsapp: boolean | null
+          portal_nps_last_at: string | null
+          portal_nps_last_score: number | null
           portal_type: string | null
+          portal_user_id: string | null
           postal_code: string | null
           preferred_language: string | null
           rating_stars: number | null
@@ -7691,7 +7704,20 @@ export type Database = {
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_enabled?: boolean | null
+          portal_invitation_expires_at?: string | null
+          portal_invitation_token?: string | null
+          portal_invited_at?: string | null
+          portal_last_login?: string | null
+          portal_login_count?: number | null
+          portal_notification_email?: boolean | null
+          portal_notification_push?: boolean | null
+          portal_notification_sms?: boolean | null
+          portal_notification_whatsapp?: boolean | null
+          portal_nps_last_at?: string | null
+          portal_nps_last_score?: number | null
           portal_type?: string | null
+          portal_user_id?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -7755,7 +7781,20 @@ export type Database = {
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_enabled?: boolean | null
+          portal_invitation_expires_at?: string | null
+          portal_invitation_token?: string | null
+          portal_invited_at?: string | null
+          portal_last_login?: string | null
+          portal_login_count?: number | null
+          portal_notification_email?: boolean | null
+          portal_notification_push?: boolean | null
+          portal_notification_sms?: boolean | null
+          portal_notification_whatsapp?: boolean | null
+          portal_nps_last_at?: string | null
+          portal_nps_last_score?: number | null
           portal_type?: string | null
+          portal_user_id?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -18451,6 +18490,16 @@ export type Database = {
           mime_type: string | null
           name: string
           organization_id: string
+          portal_auto_publish: boolean | null
+          portal_requires_signature: boolean | null
+          portal_signature_data: Json | null
+          portal_signature_level: string | null
+          portal_signature_status: string | null
+          portal_signed_at: string | null
+          portal_signed_by: string | null
+          portal_visible: boolean | null
+          portal_visible_confirmed_at: string | null
+          portal_visible_confirmed_by: string | null
           uploaded_by: string | null
         }
         Insert: {
@@ -18467,6 +18516,16 @@ export type Database = {
           mime_type?: string | null
           name: string
           organization_id: string
+          portal_auto_publish?: boolean | null
+          portal_requires_signature?: boolean | null
+          portal_signature_data?: Json | null
+          portal_signature_level?: string | null
+          portal_signature_status?: string | null
+          portal_signed_at?: string | null
+          portal_signed_by?: string | null
+          portal_visible?: boolean | null
+          portal_visible_confirmed_at?: string | null
+          portal_visible_confirmed_by?: string | null
           uploaded_by?: string | null
         }
         Update: {
@@ -18483,6 +18542,16 @@ export type Database = {
           mime_type?: string | null
           name?: string
           organization_id?: string
+          portal_auto_publish?: boolean | null
+          portal_requires_signature?: boolean | null
+          portal_signature_data?: Json | null
+          portal_signature_level?: string | null
+          portal_signature_status?: string | null
+          portal_signed_at?: string | null
+          portal_signed_by?: string | null
+          portal_visible?: boolean | null
+          portal_visible_confirmed_at?: string | null
+          portal_visible_confirmed_by?: string | null
           uploaded_by?: string | null
         }
         Relationships: [
@@ -18498,6 +18567,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_documents_portal_visible_confirmed_by_fkey"
+            columns: ["portal_visible_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -18922,6 +18998,19 @@ export type Database = {
           owner_name: string | null
           owner_portal_visible: boolean | null
           parent_matter_id: string | null
+          portal_certificate_generated: boolean | null
+          portal_certificate_url: string | null
+          portal_client_notes: string | null
+          portal_intake_completed: boolean | null
+          portal_intake_completed_at: string | null
+          portal_show_costs: boolean | null
+          portal_show_deadlines: boolean | null
+          portal_show_reference_numbers: boolean | null
+          portal_status_label: string | null
+          portal_timeline_visible: boolean | null
+          portal_visible: boolean | null
+          portal_visible_confirmed_at: string | null
+          portal_visible_confirmed_by: string | null
           priority_country: string | null
           priority_date: string | null
           priority_number: string | null
@@ -18979,6 +19068,19 @@ export type Database = {
           owner_name?: string | null
           owner_portal_visible?: boolean | null
           parent_matter_id?: string | null
+          portal_certificate_generated?: boolean | null
+          portal_certificate_url?: string | null
+          portal_client_notes?: string | null
+          portal_intake_completed?: boolean | null
+          portal_intake_completed_at?: string | null
+          portal_show_costs?: boolean | null
+          portal_show_deadlines?: boolean | null
+          portal_show_reference_numbers?: boolean | null
+          portal_status_label?: string | null
+          portal_timeline_visible?: boolean | null
+          portal_visible?: boolean | null
+          portal_visible_confirmed_at?: string | null
+          portal_visible_confirmed_by?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -19036,6 +19138,19 @@ export type Database = {
           owner_name?: string | null
           owner_portal_visible?: boolean | null
           parent_matter_id?: string | null
+          portal_certificate_generated?: boolean | null
+          portal_certificate_url?: string | null
+          portal_client_notes?: string | null
+          portal_intake_completed?: boolean | null
+          portal_intake_completed_at?: string | null
+          portal_show_costs?: boolean | null
+          portal_show_deadlines?: boolean | null
+          portal_show_reference_numbers?: boolean | null
+          portal_status_label?: string | null
+          portal_timeline_visible?: boolean | null
+          portal_visible?: boolean | null
+          portal_visible_confirmed_at?: string | null
+          portal_visible_confirmed_by?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -19101,6 +19216,13 @@ export type Database = {
             columns: ["parent_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_portal_visible_confirmed_by_fkey"
+            columns: ["portal_visible_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -20280,9 +20402,26 @@ export type Database = {
           feature_storefront_enabled: boolean | null
           id: string
           is_platform_owner: boolean | null
+          logo_url: string | null
           name: string
           organization_type: string | null
           plan: string | null
+          portal_chatbot_name: string | null
+          portal_chatbot_welcome: string | null
+          portal_enabled: boolean | null
+          portal_favicon_url: string | null
+          portal_footer_text: string | null
+          portal_logo_dark_url: string | null
+          portal_max_clients: number | null
+          portal_name: string | null
+          portal_push_notifications_enabled: boolean | null
+          portal_pwa_enabled: boolean | null
+          portal_show_ipnexus_branding: boolean | null
+          portal_subdomain: string | null
+          portal_welcome_message: string | null
+          portal_welcome_title: string | null
+          primary_color: string | null
+          secondary_color: string | null
           settings: Json | null
           slug: string | null
           status: string | null
@@ -20297,9 +20436,26 @@ export type Database = {
           feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
+          logo_url?: string | null
           name: string
           organization_type?: string | null
           plan?: string | null
+          portal_chatbot_name?: string | null
+          portal_chatbot_welcome?: string | null
+          portal_enabled?: boolean | null
+          portal_favicon_url?: string | null
+          portal_footer_text?: string | null
+          portal_logo_dark_url?: string | null
+          portal_max_clients?: number | null
+          portal_name?: string | null
+          portal_push_notifications_enabled?: boolean | null
+          portal_pwa_enabled?: boolean | null
+          portal_show_ipnexus_branding?: boolean | null
+          portal_subdomain?: string | null
+          portal_welcome_message?: string | null
+          portal_welcome_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           settings?: Json | null
           slug?: string | null
           status?: string | null
@@ -20314,9 +20470,26 @@ export type Database = {
           feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
+          logo_url?: string | null
           name?: string
           organization_type?: string | null
           plan?: string | null
+          portal_chatbot_name?: string | null
+          portal_chatbot_welcome?: string | null
+          portal_enabled?: boolean | null
+          portal_favicon_url?: string | null
+          portal_footer_text?: string | null
+          portal_logo_dark_url?: string | null
+          portal_max_clients?: number | null
+          portal_name?: string | null
+          portal_push_notifications_enabled?: boolean | null
+          portal_pwa_enabled?: boolean | null
+          portal_show_ipnexus_branding?: boolean | null
+          portal_subdomain?: string | null
+          portal_welcome_message?: string | null
+          portal_welcome_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           settings?: Json | null
           slug?: string | null
           status?: string | null
@@ -20723,36 +20896,93 @@ export type Database = {
       }
       portal_access: {
         Row: {
+          activated_at: string | null
+          advanced_search_fee_eur: number | null
+          advanced_searches_used_month: number | null
+          can_complete_intake_forms: boolean | null
+          can_message_despacho: boolean | null
+          can_pay_invoices: boolean | null
           can_request_services: boolean | null
+          can_sign_documents: boolean | null
           can_submit_instructions: boolean | null
+          can_sync_calendar: boolean | null
+          can_use_advanced_search: boolean | null
+          can_use_basic_search: boolean | null
+          can_use_chatbot: boolean | null
+          can_view_alerts: boolean | null
+          can_view_deadlines: boolean | null
+          can_view_documents: boolean | null
           can_view_invoices: boolean | null
+          can_view_matters: boolean | null
           created_at: string | null
           crm_account_id: string | null
           id: string
+          invited_at: string | null
+          invited_by: string | null
+          last_activity_at: string | null
           organization_id: string
           portal_user_id: string | null
+          searches_reset_at: string | null
           status: string | null
         }
         Insert: {
+          activated_at?: string | null
+          advanced_search_fee_eur?: number | null
+          advanced_searches_used_month?: number | null
+          can_complete_intake_forms?: boolean | null
+          can_message_despacho?: boolean | null
+          can_pay_invoices?: boolean | null
           can_request_services?: boolean | null
+          can_sign_documents?: boolean | null
           can_submit_instructions?: boolean | null
+          can_sync_calendar?: boolean | null
+          can_use_advanced_search?: boolean | null
+          can_use_basic_search?: boolean | null
+          can_use_chatbot?: boolean | null
+          can_view_alerts?: boolean | null
+          can_view_deadlines?: boolean | null
+          can_view_documents?: boolean | null
           can_view_invoices?: boolean | null
+          can_view_matters?: boolean | null
           created_at?: string | null
           crm_account_id?: string | null
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_activity_at?: string | null
           organization_id: string
           portal_user_id?: string | null
+          searches_reset_at?: string | null
           status?: string | null
         }
         Update: {
+          activated_at?: string | null
+          advanced_search_fee_eur?: number | null
+          advanced_searches_used_month?: number | null
+          can_complete_intake_forms?: boolean | null
+          can_message_despacho?: boolean | null
+          can_pay_invoices?: boolean | null
           can_request_services?: boolean | null
+          can_sign_documents?: boolean | null
           can_submit_instructions?: boolean | null
+          can_sync_calendar?: boolean | null
+          can_use_advanced_search?: boolean | null
+          can_use_basic_search?: boolean | null
+          can_use_chatbot?: boolean | null
+          can_view_alerts?: boolean | null
+          can_view_deadlines?: boolean | null
+          can_view_documents?: boolean | null
           can_view_invoices?: boolean | null
+          can_view_matters?: boolean | null
           created_at?: string | null
           crm_account_id?: string | null
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_activity_at?: string | null
           organization_id?: string
           portal_user_id?: string | null
+          searches_reset_at?: string | null
           status?: string | null
         }
         Relationships: [
@@ -20764,7 +20994,448 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portal_access_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portal_access_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_agent_availability: {
+        Row: {
+          agent_id: string
+          avg_response_seconds: number | null
+          created_at: string | null
+          current_active_chats: number | null
+          id: string
+          last_heartbeat_at: string | null
+          max_concurrent_chats: number | null
+          organization_id: string
+          status: string | null
+          total_chats_today: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          avg_response_seconds?: number | null
+          created_at?: string | null
+          current_active_chats?: number | null
+          id?: string
+          last_heartbeat_at?: string | null
+          max_concurrent_chats?: number | null
+          organization_id: string
+          status?: string | null
+          total_chats_today?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          avg_response_seconds?: number | null
+          created_at?: string | null
+          current_active_chats?: number | null
+          id?: string
+          last_heartbeat_at?: string | null
+          max_concurrent_chats?: number | null
+          organization_id?: string
+          status?: string | null
+          total_chats_today?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_agent_availability_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_agent_availability_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_calendar_syncs: {
+        Row: {
+          access_token_encrypted: string | null
+          calendar_id: string | null
+          calendar_provider: string
+          created_at: string | null
+          crm_account_id: string
+          ical_url: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          organization_id: string
+          portal_user_id: string
+          refresh_token_encrypted: string | null
+          sync_appointments: boolean | null
+          sync_deadlines: boolean | null
+          sync_error: string | null
+          sync_renewals: boolean | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          calendar_id?: string | null
+          calendar_provider?: string
+          created_at?: string | null
+          crm_account_id: string
+          ical_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          organization_id: string
+          portal_user_id: string
+          refresh_token_encrypted?: string | null
+          sync_appointments?: boolean | null
+          sync_deadlines?: boolean | null
+          sync_error?: string | null
+          sync_renewals?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          calendar_id?: string | null
+          calendar_provider?: string
+          created_at?: string | null
+          crm_account_id?: string
+          ical_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          organization_id?: string
+          portal_user_id?: string
+          refresh_token_encrypted?: string | null
+          sync_appointments?: boolean | null
+          sync_deadlines?: boolean | null
+          sync_error?: string | null
+          sync_renewals?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_calendar_syncs_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_calendar_syncs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_certificates: {
+        Row: {
+          certificate_number: string | null
+          certificate_pdf_url: string | null
+          certificate_type: string | null
+          content_hash: string | null
+          crm_account_id: string
+          despacho_name: string
+          despacho_tax_id: string | null
+          downloaded_by_client: boolean | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          is_revoked: boolean | null
+          jurisdiction_code: string | null
+          mark_name: string
+          matter_id: string
+          nice_classes: number[] | null
+          organization_id: string
+          owner_name: string
+          registration_date: string | null
+          registration_number: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          verification_qr_url: string | null
+          verification_url: string | null
+          viewed_by_client: boolean | null
+        }
+        Insert: {
+          certificate_number?: string | null
+          certificate_pdf_url?: string | null
+          certificate_type?: string | null
+          content_hash?: string | null
+          crm_account_id: string
+          despacho_name: string
+          despacho_tax_id?: string | null
+          downloaded_by_client?: boolean | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_revoked?: boolean | null
+          jurisdiction_code?: string | null
+          mark_name: string
+          matter_id: string
+          nice_classes?: number[] | null
+          organization_id: string
+          owner_name: string
+          registration_date?: string | null
+          registration_number?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          verification_qr_url?: string | null
+          verification_url?: string | null
+          viewed_by_client?: boolean | null
+        }
+        Update: {
+          certificate_number?: string | null
+          certificate_pdf_url?: string | null
+          certificate_type?: string | null
+          content_hash?: string | null
+          crm_account_id?: string
+          despacho_name?: string
+          despacho_tax_id?: string | null
+          downloaded_by_client?: boolean | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_revoked?: boolean | null
+          jurisdiction_code?: string | null
+          mark_name?: string
+          matter_id?: string
+          nice_classes?: number[] | null
+          organization_id?: string
+          owner_name?: string
+          registration_date?: string | null
+          registration_number?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          verification_qr_url?: string | null
+          verification_url?: string | null
+          viewed_by_client?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_certificates_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_certificates_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_certificates_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_chat_messages: {
+        Row: {
+          ai_disclaimer_shown: boolean | null
+          ai_model_used: string | null
+          ai_sources_used: Json | null
+          attachments: Json | null
+          content: string
+          content_type: string | null
+          created_at: string | null
+          crm_account_id: string
+          id: string
+          invoice_id: string | null
+          matter_id: string | null
+          organization_id: string
+          read_at_agent: string | null
+          read_at_client: string | null
+          read_by_agent: boolean | null
+          read_by_client: boolean | null
+          sender_name: string | null
+          sender_type: string
+          sender_user_id: string | null
+        }
+        Insert: {
+          ai_disclaimer_shown?: boolean | null
+          ai_model_used?: string | null
+          ai_sources_used?: Json | null
+          attachments?: Json | null
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          crm_account_id: string
+          id?: string
+          invoice_id?: string | null
+          matter_id?: string | null
+          organization_id: string
+          read_at_agent?: string | null
+          read_at_client?: string | null
+          read_by_agent?: boolean | null
+          read_by_client?: boolean | null
+          sender_name?: string | null
+          sender_type: string
+          sender_user_id?: string | null
+        }
+        Update: {
+          ai_disclaimer_shown?: boolean | null
+          ai_model_used?: string | null
+          ai_sources_used?: Json | null
+          attachments?: Json | null
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          crm_account_id?: string
+          id?: string
+          invoice_id?: string | null
+          matter_id?: string | null
+          organization_id?: string
+          read_at_agent?: string | null
+          read_at_client?: string | null
+          read_by_agent?: boolean | null
+          read_by_client?: boolean | null
+          sender_name?: string | null
+          sender_type?: string
+          sender_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_chat_messages_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_messages_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_chat_sessions: {
+        Row: {
+          ai_context_summary: string | null
+          assigned_agent_id: string | null
+          assigned_at: string | null
+          client_feedback: string | null
+          client_rating: number | null
+          closed_at: string | null
+          created_at: string | null
+          crm_account_id: string
+          handoff_requested_at: string | null
+          handoff_trigger: string | null
+          human_joined_at: string | null
+          id: string
+          mode: string | null
+          organization_id: string
+          portal_user_id: string
+          rated_at: string | null
+          realtime_channel: string | null
+          sla_response_minutes: number | null
+          sla_warned_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_context_summary?: string | null
+          assigned_agent_id?: string | null
+          assigned_at?: string | null
+          client_feedback?: string | null
+          client_rating?: number | null
+          closed_at?: string | null
+          created_at?: string | null
+          crm_account_id: string
+          handoff_requested_at?: string | null
+          handoff_trigger?: string | null
+          human_joined_at?: string | null
+          id?: string
+          mode?: string | null
+          organization_id: string
+          portal_user_id: string
+          rated_at?: string | null
+          realtime_channel?: string | null
+          sla_response_minutes?: number | null
+          sla_warned_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_context_summary?: string | null
+          assigned_agent_id?: string | null
+          assigned_at?: string | null
+          client_feedback?: string | null
+          client_rating?: number | null
+          closed_at?: string | null
+          created_at?: string | null
+          crm_account_id?: string
+          handoff_requested_at?: string | null
+          handoff_trigger?: string | null
+          human_joined_at?: string | null
+          id?: string
+          mode?: string | null
+          organization_id?: string
+          portal_user_id?: string
+          rated_at?: string | null
+          realtime_channel?: string | null
+          sla_response_minutes?: number | null
+          sla_warned_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_chat_sessions_assigned_agent_id_fkey"
+            columns: ["assigned_agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_sessions_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_sessions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -20836,11 +21507,249 @@ export type Database = {
           },
         ]
       }
-      portal_notifications: {
+      portal_impersonation_sessions: {
         Row: {
           created_at: string | null
-          crm_account_id: string | null
+          duration_seconds: number | null
+          ended_at: string | null
           id: string
+          is_active: boolean | null
+          organization_id: string
+          pages_visited: string[] | null
+          purpose: string
+          staff_role: string
+          staff_user_id: string
+          started_at: string | null
+          target_crm_account_id: string
+          target_portal_user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          pages_visited?: string[] | null
+          purpose?: string
+          staff_role: string
+          staff_user_id: string
+          started_at?: string | null
+          target_crm_account_id: string
+          target_portal_user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          pages_visited?: string[] | null
+          purpose?: string
+          staff_role?: string
+          staff_user_id?: string
+          started_at?: string | null
+          target_crm_account_id?: string
+          target_portal_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_impersonation_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_impersonation_sessions_staff_user_id_fkey"
+            columns: ["staff_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_impersonation_sessions_target_crm_account_id_fkey"
+            columns: ["target_crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_intake_forms: {
+        Row: {
+          applied_by: string | null
+          applied_to_matter_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          crm_account_id: string
+          form_data: Json
+          form_type: string
+          id: string
+          matter_id: string | null
+          organization_id: string
+          portal_user_id: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applied_by?: string | null
+          applied_to_matter_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          crm_account_id: string
+          form_data?: Json
+          form_type?: string
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          portal_user_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applied_by?: string | null
+          applied_to_matter_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          crm_account_id?: string
+          form_data?: Json
+          form_type?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          portal_user_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_intake_forms_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_intake_forms_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_intake_forms_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_intake_forms_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_intake_forms_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          crm_account_id: string
+          email: string
+          expires_at: string | null
+          id: string
+          initial_permissions: Json | null
+          last_reminder_at: string | null
+          organization_id: string
+          reminder_count: number | null
+          sent_by: string | null
+          status: string | null
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          crm_account_id: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          initial_permissions?: Json | null
+          last_reminder_at?: string | null
+          organization_id: string
+          reminder_count?: number | null
+          sent_by?: string | null
+          status?: string | null
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          crm_account_id?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          initial_permissions?: Json | null
+          last_reminder_at?: string | null
+          organization_id?: string
+          reminder_count?: number | null
+          sent_by?: string | null
+          status?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_invitations_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_invitations_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          crm_account_id: string | null
+          dedup_key: string | null
+          document_id: string | null
+          icon: string | null
+          id: string
+          invoice_id: string | null
           is_read: boolean | null
           message: string | null
           metadata: Json | null
@@ -20849,12 +21758,20 @@ export type Database = {
           portal_user_id: string | null
           priority: string | null
           read_at: string | null
+          sent_email: boolean | null
+          sent_push: boolean | null
+          sent_whatsapp: boolean | null
           title: string
         }
         Insert: {
+          action_url?: string | null
           created_at?: string | null
           crm_account_id?: string | null
+          dedup_key?: string | null
+          document_id?: string | null
+          icon?: string | null
           id?: string
+          invoice_id?: string | null
           is_read?: boolean | null
           message?: string | null
           metadata?: Json | null
@@ -20863,12 +21780,20 @@ export type Database = {
           portal_user_id?: string | null
           priority?: string | null
           read_at?: string | null
+          sent_email?: boolean | null
+          sent_push?: boolean | null
+          sent_whatsapp?: boolean | null
           title: string
         }
         Update: {
+          action_url?: string | null
           created_at?: string | null
           crm_account_id?: string | null
+          dedup_key?: string | null
+          document_id?: string | null
+          icon?: string | null
           id?: string
+          invoice_id?: string | null
           is_read?: boolean | null
           message?: string | null
           metadata?: Json | null
@@ -20877,6 +21802,9 @@ export type Database = {
           portal_user_id?: string | null
           priority?: string | null
           read_at?: string | null
+          sent_email?: boolean | null
+          sent_push?: boolean | null
+          sent_whatsapp?: boolean | null
           title?: string
         }
         Relationships: [
@@ -20888,7 +21816,91 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portal_notifications_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "matter_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_notifications_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portal_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_nps_responses: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          crm_account_id: string
+          id: string
+          matter_id: string | null
+          organization_id: string
+          portal_user_id: string
+          reason: string | null
+          review_platform: string | null
+          review_requested: boolean | null
+          review_submitted: boolean | null
+          score: number
+          would_recommend: boolean | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          crm_account_id: string
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          portal_user_id: string
+          reason?: string | null
+          review_platform?: string | null
+          review_requested?: boolean | null
+          review_submitted?: boolean | null
+          score: number
+          would_recommend?: boolean | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          crm_account_id?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          portal_user_id?: string
+          reason?: string | null
+          review_platform?: string | null
+          review_requested?: boolean | null
+          review_submitted?: boolean | null
+          score?: number
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_nps_responses_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_nps_responses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_nps_responses_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -20898,31 +21910,73 @@ export type Database = {
       }
       portal_service_requests: {
         Row: {
+          client_notes: string | null
           created_at: string | null
           crm_account_id: string | null
+          despacho_notes: string | null
           id: string
+          jurisdictions: string[] | null
+          mark_name: string | null
+          market_service_request_id: string | null
+          nice_classes: number[] | null
           organization_id: string
+          paid_at: string | null
+          payment_status: string | null
+          portal_user_id: string | null
+          quote_notes: string | null
+          quote_valid_until: string | null
+          quoted_amount_eur: number | null
           service_type: string | null
           status: string | null
+          stripe_payment_intent_id: string | null
           updated_at: string | null
+          urgency: string | null
         }
         Insert: {
+          client_notes?: string | null
           created_at?: string | null
           crm_account_id?: string | null
+          despacho_notes?: string | null
           id?: string
+          jurisdictions?: string[] | null
+          mark_name?: string | null
+          market_service_request_id?: string | null
+          nice_classes?: number[] | null
           organization_id: string
+          paid_at?: string | null
+          payment_status?: string | null
+          portal_user_id?: string | null
+          quote_notes?: string | null
+          quote_valid_until?: string | null
+          quoted_amount_eur?: number | null
           service_type?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
           updated_at?: string | null
+          urgency?: string | null
         }
         Update: {
+          client_notes?: string | null
           created_at?: string | null
           crm_account_id?: string | null
+          despacho_notes?: string | null
           id?: string
+          jurisdictions?: string[] | null
+          mark_name?: string | null
+          market_service_request_id?: string | null
+          nice_classes?: number[] | null
           organization_id?: string
+          paid_at?: string | null
+          payment_status?: string | null
+          portal_user_id?: string | null
+          quote_notes?: string | null
+          quote_valid_until?: string | null
+          quoted_amount_eur?: number | null
           service_type?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
           updated_at?: string | null
+          urgency?: string | null
         }
         Relationships: [
           {
@@ -20930,6 +21984,13 @@ export type Database = {
             columns: ["crm_account_id"]
             isOneToOne: false
             referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_service_requests_market_service_request_id_fkey"
+            columns: ["market_service_request_id"]
+            isOneToOne: false
+            referencedRelation: "market_service_requests"
             referencedColumns: ["id"]
           },
           {
@@ -23124,6 +24185,10 @@ export type Database = {
           opposition_matter_id: string | null
           organization_id: string
           phonetic_score: number | null
+          portal_approved_at: string | null
+          portal_approved_by: string | null
+          portal_despacho_analysis: string | null
+          portal_visible: boolean | null
           semantic_score: number | null
           severity: string
           snoozed_until: string | null
@@ -23173,6 +24238,10 @@ export type Database = {
           opposition_matter_id?: string | null
           organization_id: string
           phonetic_score?: number | null
+          portal_approved_at?: string | null
+          portal_approved_by?: string | null
+          portal_despacho_analysis?: string | null
+          portal_visible?: boolean | null
           semantic_score?: number | null
           severity: string
           snoozed_until?: string | null
@@ -23222,6 +24291,10 @@ export type Database = {
           opposition_matter_id?: string | null
           organization_id?: string
           phonetic_score?: number | null
+          portal_approved_at?: string | null
+          portal_approved_by?: string | null
+          portal_despacho_analysis?: string | null
+          portal_visible?: boolean | null
           semantic_score?: number | null
           severity?: string
           snoozed_until?: string | null
@@ -23265,6 +24338,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_portal_approved_by_fkey"
+            columns: ["portal_approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
