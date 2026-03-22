@@ -64,11 +64,11 @@ export function CoPilotAvatar({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return
     dragging.current = true
+    didDrag.current = false
     dragStart.current = {
       x: e.clientX, y: e.clientY,
       right: pos.right, bottom: pos.bottom,
     }
-    e.preventDefault()
   }, [pos])
 
   useEffect(() => {
