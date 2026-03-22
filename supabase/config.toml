@@ -104,3 +104,24 @@ verify_jwt = false
 
 [functions.agent-field-proposal]
 verify_jwt = false
+
+[functions.portal-activate]
+verify_jwt = false
+
+[functions.portal-invite]
+verify_jwt = false
+
+[functions.portal-chatbot]
+verify_jwt = false
+
+[functions.portal-handoff]
+verify_jwt = false
+
+[functions.portal-generate-certificate]
+verify_jwt = false
+
+[functions.portal-notify]
+verify_jwt = false
+
+[functions.portal-impersonate]
+verify_jwt = false
