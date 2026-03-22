@@ -163,6 +163,16 @@ const sidebarSections: SidebarSection[] = [
     ],
   },
   {
+    code: 'platform_finance',
+    label: 'Finanzas IP-NEXUS',
+    icon: Wallet,
+    items: [
+      { label: 'Dashboard P&L', path: '/backoffice/finance', icon: BarChart3 },
+      { label: 'MRR / ARR', path: '/backoffice/finance/mrr', icon: TrendingUp },
+      { label: 'Pendientes', path: '/backoffice/finance/pending', icon: AlertTriangle },
+    ],
+  },
+  {
     code: 'herramientas',
     label: 'Herramientas',
     icon: Wrench,
