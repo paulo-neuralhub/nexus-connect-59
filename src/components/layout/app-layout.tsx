@@ -115,7 +115,6 @@ export function AppLayout() {
 
                 {/* CoPilot — self-contained widget */}
                 <CoPilotWidget />
-                <CoPilotGuide />
 
                 <IPSoftphone />
                 <CallManager />
