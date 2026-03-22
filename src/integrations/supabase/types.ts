@@ -19459,7 +19459,9 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_platform_owner: boolean | null
           name: string
+          organization_type: string | null
           plan: string | null
           settings: Json | null
           slug: string | null
@@ -19469,7 +19471,9 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_platform_owner?: boolean | null
           name: string
+          organization_type?: string | null
           plan?: string | null
           settings?: Json | null
           slug?: string | null
@@ -19479,7 +19483,9 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_platform_owner?: boolean | null
           name?: string
+          organization_type?: string | null
           plan?: string | null
           settings?: Json | null
           slug?: string | null
@@ -19622,6 +19628,268 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      platform_costs: {
+        Row: {
+          amount: number
+          amount_eur: number | null
+          auto_captured_at: string | null
+          cost_category: string
+          cost_subcategory: string | null
+          created_at: string | null
+          currency: string | null
+          description: string
+          id: string
+          journal_entry_id: string | null
+          notes: string | null
+          period_end: string
+          period_start: string
+          receipt_storage_path: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_reference_ids: Json | null
+          source_type: string | null
+          status: string | null
+          updated_at: string | null
+          vendor_invoice_number: string | null
+          vendor_name: string | null
+        }
+        Insert: {
+          amount: number
+          amount_eur?: number | null
+          auto_captured_at?: string | null
+          cost_category: string
+          cost_subcategory?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description: string
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          period_end: string
+          period_start: string
+          receipt_storage_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_reference_ids?: Json | null
+          source_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vendor_invoice_number?: string | null
+          vendor_name?: string | null
+        }
+        Update: {
+          amount?: number
+          amount_eur?: number | null
+          auto_captured_at?: string | null
+          cost_category?: string
+          cost_subcategory?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          receipt_storage_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_reference_ids?: Json | null
+          source_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vendor_invoice_number?: string | null
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_costs_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "fin_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_costs_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_mrr_snapshots: {
+        Row: {
+          arr_total: number | null
+          avg_revenue_per_tenant: number | null
+          calculated_at: string | null
+          churn_rate_pct: number | null
+          created_at: string | null
+          gross_margin_pct: number | null
+          gross_profit: number | null
+          id: string
+          marketplace_gmv: number | null
+          marketplace_revenue: number | null
+          mrr_churn: number | null
+          mrr_contraction: number | null
+          mrr_expansion: number | null
+          mrr_net_new: number | null
+          mrr_new: number | null
+          mrr_total: number | null
+          period_month: string
+          snapshot_date: string
+          tenants_by_plan: Json | null
+          tenants_churned: number | null
+          tenants_new: number | null
+          tenants_total: number | null
+          total_costs_month: number | null
+        }
+        Insert: {
+          arr_total?: number | null
+          avg_revenue_per_tenant?: number | null
+          calculated_at?: string | null
+          churn_rate_pct?: number | null
+          created_at?: string | null
+          gross_margin_pct?: number | null
+          gross_profit?: number | null
+          id?: string
+          marketplace_gmv?: number | null
+          marketplace_revenue?: number | null
+          mrr_churn?: number | null
+          mrr_contraction?: number | null
+          mrr_expansion?: number | null
+          mrr_net_new?: number | null
+          mrr_new?: number | null
+          mrr_total?: number | null
+          period_month: string
+          snapshot_date: string
+          tenants_by_plan?: Json | null
+          tenants_churned?: number | null
+          tenants_new?: number | null
+          tenants_total?: number | null
+          total_costs_month?: number | null
+        }
+        Update: {
+          arr_total?: number | null
+          avg_revenue_per_tenant?: number | null
+          calculated_at?: string | null
+          churn_rate_pct?: number | null
+          created_at?: string | null
+          gross_margin_pct?: number | null
+          gross_profit?: number | null
+          id?: string
+          marketplace_gmv?: number | null
+          marketplace_revenue?: number | null
+          mrr_churn?: number | null
+          mrr_contraction?: number | null
+          mrr_expansion?: number | null
+          mrr_net_new?: number | null
+          mrr_new?: number | null
+          mrr_total?: number | null
+          period_month?: string
+          snapshot_date?: string
+          tenants_by_plan?: Json | null
+          tenants_churned?: number | null
+          tenants_new?: number | null
+          tenants_total?: number | null
+          total_costs_month?: number | null
+        }
+        Relationships: []
+      }
+      platform_revenue: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          gross_amount: number
+          id: string
+          journal_entry_id: string | null
+          net_amount: number | null
+          notes: string | null
+          period_month: string | null
+          revenue_date: string
+          revenue_type: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_organization_id: string | null
+          source_reference_id: string | null
+          source_type: string | null
+          status: string | null
+          stripe_charge_id: string | null
+          stripe_fee: number | null
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          gross_amount: number
+          id?: string
+          journal_entry_id?: string | null
+          net_amount?: number | null
+          notes?: string | null
+          period_month?: string | null
+          revenue_date: string
+          revenue_type: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_organization_id?: string | null
+          source_reference_id?: string | null
+          source_type?: string | null
+          status?: string | null
+          stripe_charge_id?: string | null
+          stripe_fee?: number | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          gross_amount?: number
+          id?: string
+          journal_entry_id?: string | null
+          net_amount?: number | null
+          notes?: string | null
+          period_month?: string | null
+          revenue_date?: string
+          revenue_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_organization_id?: string | null
+          source_reference_id?: string | null
+          source_type?: string | null
+          status?: string | null
+          stripe_charge_id?: string | null
+          stripe_fee?: number | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_revenue_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "fin_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_source_organization_id_fkey"
+            columns: ["source_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       predictive_alerts: {
         Row: {
@@ -24468,6 +24736,18 @@ export type Database = {
       calculate_matter_metrics: {
         Args: { p_matter_id: string }
         Returns: undefined
+      }
+      calculate_mrr_snapshot: {
+        Args: { p_period_month?: string }
+        Returns: undefined
+      }
+      capture_ai_costs_to_platform: {
+        Args: { p_period_end?: string; p_period_start?: string }
+        Returns: number
+      }
+      capture_telephony_costs_to_platform: {
+        Args: { p_period_end?: string; p_period_start?: string }
+        Returns: number
       }
       charge_call: {
         Args: {
