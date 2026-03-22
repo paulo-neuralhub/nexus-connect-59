@@ -32,3 +32,6 @@ export * from './useMasterAutomationTemplates';
 
 // Knowledge Map
 export * from './useKnowledgeMap';
+
+// Platform Finance
+export * from './usePlatformFinance';
