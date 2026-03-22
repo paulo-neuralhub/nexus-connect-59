@@ -251,6 +251,10 @@ export default function CRMV2AccountDetail() {
                     />
                   </TabsContent>
                 )}
+
+                <TabsContent value="portal">
+                  <AccountPortalTab accountId={id} accountName={account.name} />
+                </TabsContent>
               </Tabs>
             </div>
 
