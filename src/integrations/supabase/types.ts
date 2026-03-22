@@ -7545,6 +7545,180 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_context_events: {
+        Row: {
+          created_at: string | null
+          crm_account_id: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          invoice_id: string | null
+          matter_id: string | null
+          organization_id: string
+          page_url: string | null
+          session_id: string | null
+          suggestion_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          invoice_id?: string | null
+          matter_id?: string | null
+          organization_id: string
+          page_url?: string | null
+          session_id?: string | null
+          suggestion_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          invoice_id?: string | null
+          matter_id?: string | null
+          organization_id?: string
+          page_url?: string | null
+          session_id?: string | null
+          suggestion_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_context_events_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_context_events_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_context_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_context_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_context_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_decision_log: {
+        Row: {
+          context_snapshot: Json
+          copilot_confidence_at_time: number | null
+          copilot_suggestion_id: string | null
+          created_at: string | null
+          crm_account_id: string | null
+          decision_type: string
+          id: string
+          jurisdiction_code: string | null
+          matter_id: string | null
+          matter_type: string | null
+          organization_id: string
+          outcome: string | null
+          outcome_updated_at: string | null
+          similarity_score: number | null
+          user_id: string
+          was_suggested_by_copilot: boolean | null
+        }
+        Insert: {
+          context_snapshot?: Json
+          copilot_confidence_at_time?: number | null
+          copilot_suggestion_id?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          decision_type: string
+          id?: string
+          jurisdiction_code?: string | null
+          matter_id?: string | null
+          matter_type?: string | null
+          organization_id: string
+          outcome?: string | null
+          outcome_updated_at?: string | null
+          similarity_score?: number | null
+          user_id: string
+          was_suggested_by_copilot?: boolean | null
+        }
+        Update: {
+          context_snapshot?: Json
+          copilot_confidence_at_time?: number | null
+          copilot_suggestion_id?: string | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          decision_type?: string
+          id?: string
+          jurisdiction_code?: string | null
+          matter_id?: string | null
+          matter_type?: string | null
+          organization_id?: string
+          outcome?: string | null
+          outcome_updated_at?: string | null
+          similarity_score?: number | null
+          user_id?: string
+          was_suggested_by_copilot?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_decision_log_copilot_suggestion_id_fkey"
+            columns: ["copilot_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_suggestions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_decision_log_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_decision_log_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_decision_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_decision_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       copilot_guide_steps: {
         Row: {
           action_type: string | null
@@ -7590,46 +7764,263 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_org_patterns: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          last_updated_at: string | null
+          organization_id: string
+          pattern_data: Json
+          pattern_type: string
+          sample_size: number | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id: string
+          pattern_data?: Json
+          pattern_type: string
+          sample_size?: number | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id?: string
+          pattern_data?: Json
+          pattern_type?: string
+          sample_size?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_org_patterns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_suggestions: {
+        Row: {
+          acted_at: string | null
+          action_primary_label: string | null
+          action_primary_url: string | null
+          action_secondary_label: string | null
+          action_secondary_url: string | null
+          action_taken: string | null
+          body: string
+          confidence_score: number | null
+          created_at: string | null
+          crm_account_id: string | null
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string
+          matter_id: string | null
+          organization_id: string
+          shown_at: string | null
+          suggestion_type: string
+          title: string
+          trigger_source: string | null
+          trigger_source_id: string | null
+          user_id: string
+        }
+        Insert: {
+          acted_at?: string | null
+          action_primary_label?: string | null
+          action_primary_url?: string | null
+          action_secondary_label?: string | null
+          action_secondary_url?: string | null
+          action_taken?: string | null
+          body: string
+          confidence_score?: number | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          shown_at?: string | null
+          suggestion_type: string
+          title: string
+          trigger_source?: string | null
+          trigger_source_id?: string | null
+          user_id: string
+        }
+        Update: {
+          acted_at?: string | null
+          action_primary_label?: string | null
+          action_primary_url?: string | null
+          action_secondary_label?: string | null
+          action_secondary_url?: string | null
+          action_taken?: string | null
+          body?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          crm_account_id?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          shown_at?: string | null
+          suggestion_type?: string
+          title?: string
+          trigger_source?: string | null
+          trigger_source_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_suggestions_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_suggestions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_suggestions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_user_patterns: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          last_updated_at: string | null
+          organization_id: string
+          pattern_data: Json
+          pattern_type: string
+          sample_size: number | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id: string
+          pattern_data?: Json
+          pattern_type: string
+          sample_size?: number | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id?: string
+          pattern_data?: Json
+          pattern_type?: string
+          sample_size?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_user_patterns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_user_patterns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       copilot_user_preferences: {
         Row: {
           briefing_dismissed_dates: string[] | null
+          bubble_state: string | null
           copilot_position: string | null
           copilot_size: string | null
           copilot_visible: boolean | null
           created_at: string | null
+          greeting_enabled: boolean | null
           guide_dismissed_ids: string[] | null
           id: string
+          last_greeted_date: string | null
+          learning_enabled: boolean | null
           organization_id: string
+          position_x: number | null
+          position_y: number | null
           preferred_response_length: string | null
           show_rag_sources: boolean | null
+          suggestion_confidence_threshold: number | null
+          suggestions_enabled: boolean | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           briefing_dismissed_dates?: string[] | null
+          bubble_state?: string | null
           copilot_position?: string | null
           copilot_size?: string | null
           copilot_visible?: boolean | null
           created_at?: string | null
+          greeting_enabled?: boolean | null
           guide_dismissed_ids?: string[] | null
           id?: string
+          last_greeted_date?: string | null
+          learning_enabled?: boolean | null
           organization_id: string
+          position_x?: number | null
+          position_y?: number | null
           preferred_response_length?: string | null
           show_rag_sources?: boolean | null
+          suggestion_confidence_threshold?: number | null
+          suggestions_enabled?: boolean | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           briefing_dismissed_dates?: string[] | null
+          bubble_state?: string | null
           copilot_position?: string | null
           copilot_size?: string | null
           copilot_visible?: boolean | null
           created_at?: string | null
+          greeting_enabled?: boolean | null
           guide_dismissed_ids?: string[] | null
           id?: string
+          last_greeted_date?: string | null
+          learning_enabled?: boolean | null
           organization_id?: string
+          position_x?: number | null
+          position_y?: number | null
           preferred_response_length?: string | null
           show_rag_sources?: boolean | null
+          suggestion_confidence_threshold?: number | null
+          suggestions_enabled?: boolean | null
           updated_at?: string | null
           user_id?: string
         }
@@ -7643,6 +8034,57 @@ export type Database = {
           },
           {
             foreignKeyName: "copilot_user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_writing_memory: {
+        Row: {
+          context_type: string
+          created_at: string | null
+          id: string
+          last_analyzed_at: string | null
+          organization_id: string
+          sample_count: number | null
+          style_profile: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          context_type: string
+          created_at?: string | null
+          id?: string
+          last_analyzed_at?: string | null
+          organization_id: string
+          sample_count?: number | null
+          style_profile?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          context_type?: string
+          created_at?: string | null
+          id?: string
+          last_analyzed_at?: string | null
+          organization_id?: string
+          sample_count?: number | null
+          style_profile?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_writing_memory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_writing_memory_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
