@@ -166,6 +166,46 @@ export function CoPilotWidget() {
   }, [])
 
   const { suggestion, bubbleState, dismissSuggestion } = useAgentBrain(orgId)
+  const [executing, setExecuting] = useState<string | null>(null)
+
+  const executeAction = async (
+    type: string,
+    payload: Record<string, unknown>
+  ) => {
+    setExecuting('Iniciando...')
+    try {
+      if (type === 'navigate' && payload.path) {
+        setExecuting('Navegando...')
+        await new Promise(r => setTimeout(r, 500))
+        window.location.href = payload.path as string
+        return
+      }
+      if (type === 'create_deadline') {
+        setExecuting('Creando plazo...')
+        const client: any = supabase
+        await client.from('matter_deadlines').insert({
+          matter_id: payload.matter_id,
+          organization_id: orgId,
+          title: payload.title as string,
+          deadline_date: payload.due_date as string,
+          status: 'pending',
+          deadline_type: 'internal',
+        })
+        setExecuting('✓ Plazo creado')
+        setTimeout(() => setExecuting(null), 2000)
+        return
+      }
+      if (type === 'analyze') {
+        setExecuting('Analizando...')
+        setPanel('open')
+        setExecuting(null)
+        return
+      }
+    } catch {
+      setExecuting('Error. Intenta de nuevo.')
+      setTimeout(() => setExecuting(null), 3000)
+    }
+  }
 
   // Show urgent suggestions automatically
   useEffect(() => {
