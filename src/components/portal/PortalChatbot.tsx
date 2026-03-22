@@ -33,8 +33,7 @@ export default function PortalChatbot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatbotName = org?.portal_chatbot_name || 'Asistente';
 
-  // Don't show chatbot if impersonating or no permission
-  if (isImpersonating || !permissions?.can_use_chatbot) return null;
+  const shouldHide = isImpersonating || !permissions?.can_use_chatbot;
 
   const suggestions = [
     '¿Cuál es el estado de mis marcas?',
