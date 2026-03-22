@@ -337,6 +337,11 @@ import AnalyticsUsagePage from "./pages/backoffice/analytics/usage";
 import AnalyticsCohortsPage from "./pages/backoffice/analytics/cohorts";
 import AnalyticsTenantsPage from "./pages/backoffice/analytics/tenants";
 
+// Platform Finance Backoffice
+import BackofficeFinancePage from "./pages/backoffice/finance";
+import BackofficeFinanceMrrPage from "./pages/backoffice/finance/mrr";
+import BackofficeFinancePendingPage from "./pages/backoffice/finance/pending";
+
 // Landings Backoffice
 import LandingsDashboard from "./pages/backoffice/landings";
 import LandingPagesListPage from "./pages/backoffice/landings/pages";
