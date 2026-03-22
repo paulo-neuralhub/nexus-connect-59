@@ -168,7 +168,7 @@ const sidebarSections: SidebarSection[] = [
     icon: Wallet,
     items: [
       { label: 'Dashboard P&L', path: '/backoffice/finance', icon: BarChart3 },
-      { label: 'MRR / ARR', path: '/backoffice/finance/mrr', icon: TrendingUp },
+      { label: 'MRR / ARR', path: '/backoffice/finance/mrr', icon: LineChart },
       { label: 'Pendientes', path: '/backoffice/finance/pending', icon: AlertTriangle },
     ],
   },
