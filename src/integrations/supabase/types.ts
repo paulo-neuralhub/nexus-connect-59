@@ -13202,6 +13202,7 @@ export type Database = {
           channel_type: string
           created_at: string | null
           created_by: string | null
+          crm_account_id: string | null
           description: string | null
           id: string
           is_archived: boolean | null
@@ -13216,6 +13217,7 @@ export type Database = {
           channel_type?: string
           created_at?: string | null
           created_by?: string | null
+          crm_account_id?: string | null
           description?: string | null
           id?: string
           is_archived?: boolean | null
@@ -13230,6 +13232,7 @@ export type Database = {
           channel_type?: string
           created_at?: string | null
           created_by?: string | null
+          crm_account_id?: string | null
           description?: string | null
           id?: string
           is_archived?: boolean | null
@@ -13246,6 +13249,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_channels_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
             referencedColumns: ["id"]
           },
           {
@@ -13312,6 +13322,7 @@ export type Database = {
       }
       internal_messages: {
         Row: {
+          ai_classification: string | null
           attachments: Json | null
           channel_id: string
           content: string
@@ -13324,10 +13335,14 @@ export type Database = {
           mentions: string[] | null
           organization_id: string
           reactions: Json | null
+          referenced_matter_id: string | null
           reply_to_id: string | null
           sender_id: string
+          sender_role_snapshot: string | null
+          user_indexing_decision: string | null
         }
         Insert: {
+          ai_classification?: string | null
           attachments?: Json | null
           channel_id: string
           content: string
@@ -13340,10 +13355,14 @@ export type Database = {
           mentions?: string[] | null
           organization_id: string
           reactions?: Json | null
+          referenced_matter_id?: string | null
           reply_to_id?: string | null
           sender_id: string
+          sender_role_snapshot?: string | null
+          user_indexing_decision?: string | null
         }
         Update: {
+          ai_classification?: string | null
           attachments?: Json | null
           channel_id?: string
           content?: string
@@ -13356,8 +13375,11 @@ export type Database = {
           mentions?: string[] | null
           organization_id?: string
           reactions?: Json | null
+          referenced_matter_id?: string | null
           reply_to_id?: string | null
           sender_id?: string
+          sender_role_snapshot?: string | null
+          user_indexing_decision?: string | null
         }
         Relationships: [
           {
@@ -13372,6 +13394,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_referenced_matter_id_fkey"
+            columns: ["referenced_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
           {
@@ -19207,42 +19236,67 @@ export type Database = {
       }
       matter_timeline_events: {
         Row: {
+          actor_id: string | null
+          actor_type: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
+          event_date: string | null
           event_type: string
           id: string
           is_internal: boolean | null
+          is_visible_in_portal: boolean | null
           matter_id: string
           metadata: Json | null
           organization_id: string
+          source_id: string | null
+          source_table: string | null
           title: string
         }
         Insert: {
+          actor_id?: string | null
+          actor_type?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          event_date?: string | null
           event_type: string
           id?: string
           is_internal?: boolean | null
+          is_visible_in_portal?: boolean | null
           matter_id: string
           metadata?: Json | null
           organization_id: string
+          source_id?: string | null
+          source_table?: string | null
           title: string
         }
         Update: {
+          actor_id?: string | null
+          actor_type?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          event_date?: string | null
           event_type?: string
           id?: string
           is_internal?: boolean | null
+          is_visible_in_portal?: boolean | null
           matter_id?: string
           metadata?: Json | null
           organization_id?: string
+          source_id?: string | null
+          source_table?: string | null
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "matter_timeline_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "matter_timeline_events_created_by_fkey"
             columns: ["created_by"]
@@ -20947,11 +21001,25 @@ export type Database = {
           code: string
           created_at: string | null
           description: string | null
+          feature_advanced_analytics: boolean | null
+          feature_api_access: boolean | null
+          feature_b2b2b: boolean | null
+          feature_data_hub: boolean | null
+          feature_genius_pro: boolean | null
+          feature_internal_chat: boolean | null
+          feature_ip_chain: boolean | null
+          feature_marketing: boolean | null
+          feature_portal: boolean | null
           features: Json | null
+          genius_basic_queries_month: number | null
+          genius_pro_docs_month: number | null
           genius_pro_models_allowed: Json | null
+          genius_pro_queries_month: number | null
+          highlight_label: string | null
           id: string
           included_modules: string[] | null
           is_active: boolean | null
+          is_public: boolean | null
           max_contacts: number | null
           max_genius_queries_monthly: number | null
           max_jurisdictions: number | null
@@ -20961,6 +21029,7 @@ export type Database = {
           max_users: number | null
           monthly_price_eur: number | null
           name: string
+          portal_clients_limit: number | null
           sort_order: number | null
           tier: number | null
           updated_at: string | null
@@ -20970,11 +21039,25 @@ export type Database = {
           code: string
           created_at?: string | null
           description?: string | null
+          feature_advanced_analytics?: boolean | null
+          feature_api_access?: boolean | null
+          feature_b2b2b?: boolean | null
+          feature_data_hub?: boolean | null
+          feature_genius_pro?: boolean | null
+          feature_internal_chat?: boolean | null
+          feature_ip_chain?: boolean | null
+          feature_marketing?: boolean | null
+          feature_portal?: boolean | null
           features?: Json | null
+          genius_basic_queries_month?: number | null
+          genius_pro_docs_month?: number | null
           genius_pro_models_allowed?: Json | null
+          genius_pro_queries_month?: number | null
+          highlight_label?: string | null
           id?: string
           included_modules?: string[] | null
           is_active?: boolean | null
+          is_public?: boolean | null
           max_contacts?: number | null
           max_genius_queries_monthly?: number | null
           max_jurisdictions?: number | null
@@ -20984,6 +21067,7 @@ export type Database = {
           max_users?: number | null
           monthly_price_eur?: number | null
           name: string
+          portal_clients_limit?: number | null
           sort_order?: number | null
           tier?: number | null
           updated_at?: string | null
@@ -20993,11 +21077,25 @@ export type Database = {
           code?: string
           created_at?: string | null
           description?: string | null
+          feature_advanced_analytics?: boolean | null
+          feature_api_access?: boolean | null
+          feature_b2b2b?: boolean | null
+          feature_data_hub?: boolean | null
+          feature_genius_pro?: boolean | null
+          feature_internal_chat?: boolean | null
+          feature_ip_chain?: boolean | null
+          feature_marketing?: boolean | null
+          feature_portal?: boolean | null
           features?: Json | null
+          genius_basic_queries_month?: number | null
+          genius_pro_docs_month?: number | null
           genius_pro_models_allowed?: Json | null
+          genius_pro_queries_month?: number | null
+          highlight_label?: string | null
           id?: string
           included_modules?: string[] | null
           is_active?: boolean | null
+          is_public?: boolean | null
           max_contacts?: number | null
           max_genius_queries_monthly?: number | null
           max_jurisdictions?: number | null
@@ -21007,6 +21105,7 @@ export type Database = {
           max_users?: number | null
           monthly_price_eur?: number | null
           name?: string
+          portal_clients_limit?: number | null
           sort_order?: number | null
           tier?: number | null
           updated_at?: string | null
