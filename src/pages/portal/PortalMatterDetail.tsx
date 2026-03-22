@@ -164,15 +164,11 @@ export default function PortalMatterDetail() {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+             <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Clock className="w-4 h-4" />
               <span className="text-sm">Próximo plazo</span>
             </div>
-            <p className="font-semibold">
-              {matter.next_deadline 
-                ? format(new Date(matter.next_deadline.date), 'd MMM yyyy', { locale: es })
-                : 'Sin plazos'}
-            </p>
+            <p className="font-semibold">Sin plazos</p>
           </CardContent>
         </Card>
       </div>
@@ -241,29 +237,7 @@ export default function PortalMatterDetail() {
           </Card>
 
           {/* Próximo plazo destacado */}
-          {matter.next_deadline && (
-            <Card className="border-amber-200 bg-amber-50/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-amber-700">
-                  <AlertCircle className="w-5 h-5" />
-                  Próximo plazo
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{matter.next_deadline.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(matter.next_deadline.date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <Link to={`/portal/${slug}/deadlines`}>Ver plazos</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Próximo plazo - coming soon */}
         </TabsContent>
 
         <TabsContent value="documents">
@@ -322,7 +296,7 @@ export default function PortalMatterDetail() {
                 <History className="w-5 h-5" />
                 Historial
               </CardTitle>
-              <CardDescription>Actividad del expediente ({matter.activities_count || 0} registros)</CardDescription>
+              <CardDescription>Actividad del expediente ({matter.documents_count || 0} registros)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">

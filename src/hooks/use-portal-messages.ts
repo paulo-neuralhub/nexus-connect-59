@@ -1,40 +1,28 @@
 /**
- * Hook para mensajes del Portal Cliente
- * CRUD de mensajes entre cliente y despacho
+ * Hook para mensajes del Portal Cliente — V2
+ * Uses portal_chat_messages + portal_chat_sessions
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { usePortalAuth } from './usePortalAuth';
 import { toast } from 'sonner';
-
-// =============================================
-// TYPES
-// =============================================
+import { useEffect } from 'react';
 
 export interface PortalMessage {
   id: string;
-  portal_id: string;
-  portal_user_id: string | null;
-  contact_id: string | null;
-  matter_id: string | null;
-  thread_id: string | null;
-  parent_id: string | null;
-  direction: 'inbound' | 'outbound';
-  subject: string | null;
-  body: string;
-  attachments: Array<{
-    name: string;
-    url: string;
-    size?: number;
-    type?: string;
-  }>;
-  status: 'draft' | 'sent' | 'delivered' | 'read' | 'replied';
-  read_at: string | null;
-  replied_at: string | null;
-  replied_by: string | null;
+  sender_type: string;
+  sender_name: string | null;
+  content: string;
+  content_type: string;
+  attachments: any[];
+  read_by_client: boolean;
+  read_by_agent: boolean;
   created_at: string;
-  updated_at: string;
+  direction: 'inbound' | 'outbound';
+  body: string;
+  status: string;
 }
 
 export interface PortalThread {
@@ -47,6 +35,7 @@ export interface PortalThread {
   participants: string[];
   matter_id: string | null;
   matter_reference: string | null;
+  mode: string;
 }
 
 interface SendMessageParams {
@@ -57,182 +46,190 @@ interface SendMessageParams {
   attachments?: Array<{ name: string; url: string }>;
 }
 
-// =============================================
-// HOOKS
-// =============================================
-
-/**
- * Hook para obtener las conversaciones (threads) del usuario
- */
 export function usePortalThreads() {
-  const { user } = usePortalAuth();
+  const { user, org } = usePortalAuth();
 
   return useQuery({
-    queryKey: ['portal-threads', user?.id],
+    queryKey: ['portal-threads', user?.contactId],
     queryFn: async (): Promise<PortalThread[]> => {
-      if (!user?.portal?.id) return [];
+      if (!user?.contactId || !org?.id) return [];
 
-      // Obtener mensajes agrupados por thread
-      const { data: messages, error } = await supabase
-        .from('portal_messages')
-        .select(`
-          id,
-          thread_id,
-          subject,
-          body,
-          direction,
-          status,
-          created_at,
-          read_at,
-          matter_id,
-          matters(reference)
-        `)
-        .eq('portal_id', user.portal.id)
-        .order('created_at', { ascending: false });
+      const { data: sessions, error } = await fromTable('portal_chat_sessions')
+        .select('*')
+        .eq('crm_account_id', user.contactId)
+        .eq('organization_id', org.id)
+        .order('updated_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching portal messages:', error);
-        throw error;
+      if (error || !sessions) return [];
+
+      const threads: PortalThread[] = [];
+
+      for (const session of sessions) {
+        // Get last message
+        const { data: lastMsg } = await fromTable('portal_chat_messages')
+          .select('content, created_at, sender_type, read_by_client')
+          .eq('organization_id', org.id)
+          .eq('crm_account_id', user.contactId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // Count unread
+        const { count: unreadCount } = await fromTable('portal_chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', org.id)
+          .eq('crm_account_id', user.contactId)
+          .eq('read_by_client', false)
+          .neq('sender_type', 'client');
+
+        threads.push({
+          thread_id: session.id,
+          subject: session.ai_context_summary || 'Conversación',
+          last_message: lastMsg?.content?.substring(0, 100) || '',
+          last_message_date: lastMsg?.created_at || session.created_at,
+          unread_count: unreadCount || 0,
+          message_count: 0,
+          participants: [],
+          matter_id: null,
+          matter_reference: null,
+          mode: session.mode || 'ai',
+        });
       }
 
-      // Agrupar por thread
-      const threadsMap = new Map<string, PortalThread>();
-
-      for (const msg of messages || []) {
-        const threadId = msg.thread_id || msg.id;
-        
-        if (!threadsMap.has(threadId)) {
-          threadsMap.set(threadId, {
-            thread_id: threadId,
-            subject: msg.subject || 'Sin asunto',
-            last_message: msg.body.substring(0, 100),
-            last_message_date: msg.created_at,
-            unread_count: 0,
-            message_count: 0,
-            participants: [],
-            matter_id: msg.matter_id,
-            matter_reference: (msg.matters as any)?.reference || null,
-          });
-        }
-
-        const thread = threadsMap.get(threadId)!;
-        thread.message_count++;
-        
-        if (!msg.read_at && msg.direction === 'outbound') {
-          thread.unread_count++;
-        }
-      }
-
-      return Array.from(threadsMap.values());
+      return threads;
     },
-    enabled: !!user?.portal?.id,
-    staleTime: 30000, // 30 segundos
+    enabled: !!user?.contactId && !!org?.id,
+    staleTime: 30000,
   });
 }
 
-/**
- * Hook para obtener mensajes de un thread específico
- */
 export function usePortalThreadMessages(threadId: string | null) {
-  const { user } = usePortalAuth();
+  const { user, org } = usePortalAuth();
 
   return useQuery({
     queryKey: ['portal-thread-messages', threadId],
     queryFn: async (): Promise<PortalMessage[]> => {
-      if (!user?.portal?.id || !threadId) return [];
+      if (!user?.contactId || !org?.id) return [];
 
-      const { data, error } = await supabase
-        .from('portal_messages')
+      // Get all messages for this account (session-based)
+      const { data, error } = await fromTable('portal_chat_messages')
         .select('*')
-        .eq('portal_id', user.portal.id)
-        .or(`thread_id.eq.${threadId},id.eq.${threadId}`)
+        .eq('organization_id', org.id)
+        .eq('crm_account_id', user.contactId)
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching thread messages:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      return (data as PortalMessage[]) || [];
+      return (data || []).map((msg: any) => ({
+        id: msg.id,
+        sender_type: msg.sender_type,
+        sender_name: msg.sender_name,
+        content: msg.content,
+        content_type: msg.content_type || 'text',
+        attachments: msg.attachments || [],
+        read_by_client: msg.read_by_client || false,
+        read_by_agent: msg.read_by_agent || false,
+        created_at: msg.created_at,
+        // Map to old interface for compatibility
+        direction: msg.sender_type === 'client' ? 'inbound' as const : 'outbound' as const,
+        body: msg.content,
+        status: msg.read_by_client ? 'read' : 'sent',
+      }));
     },
-    enabled: !!user?.portal?.id && !!threadId,
-    staleTime: 10000, // 10 segundos
+    enabled: !!user?.contactId && !!org?.id && !!threadId,
+    staleTime: 10000,
   });
 }
 
-/**
- * Hook para enviar un mensaje
- */
 export function useSendPortalMessage() {
   const queryClient = useQueryClient();
-  const { user } = usePortalAuth();
+  const { user, org } = usePortalAuth();
 
   return useMutation({
     mutationFn: async (params: SendMessageParams) => {
-      if (!user?.portal?.id) {
-        throw new Error('Usuario no autenticado');
-      }
+      if (!user?.contactId || !org?.id) throw new Error('Not authenticated');
 
-      const threadId = params.thread_id || crypto.randomUUID();
-
-      const { data, error } = await supabase
-        .from('portal_messages')
+      const { error } = await fromTable('portal_chat_messages')
         .insert({
-          portal_id: user.portal.id,
-          portal_user_id: user.id,
-          thread_id: threadId,
-          direction: 'inbound',
-          subject: params.subject || null,
-          body: params.body,
-          matter_id: params.matter_id || null,
+          organization_id: org.id,
+          crm_account_id: user.contactId,
+          sender_type: 'client',
+          sender_user_id: user.id,
+          sender_name: user.name,
+          content: params.body,
+          content_type: 'text',
           attachments: params.attachments || [],
-          status: 'sent',
-        })
-        .select()
-        .single();
+          matter_id: params.matter_id || null,
+          read_by_client: true,
+          read_by_agent: false,
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       toast.success('Mensaje enviado');
       queryClient.invalidateQueries({ queryKey: ['portal-threads'] });
       queryClient.invalidateQueries({ queryKey: ['portal-thread-messages'] });
     },
-    onError: (error) => {
-      console.error('Error sending message:', error);
+    onError: () => {
       toast.error('Error al enviar el mensaje');
     },
   });
 }
 
-/**
- * Hook para marcar mensajes como leídos
- */
 export function useMarkMessagesRead() {
   const queryClient = useQueryClient();
-  const { user } = usePortalAuth();
+  const { user, org } = usePortalAuth();
 
   return useMutation({
-    mutationFn: async (threadId: string) => {
-      if (!user?.portal?.id) return;
+    mutationFn: async (_threadId: string) => {
+      if (!user?.contactId || !org?.id) return;
 
-      const { error } = await supabase
-        .from('portal_messages')
-        .update({ 
-          read_at: new Date().toISOString(),
-          status: 'read' 
+      await fromTable('portal_chat_messages')
+        .update({
+          read_by_client: true,
+          read_at_client: new Date().toISOString(),
         })
-        .eq('portal_id', user.portal.id)
-        .or(`thread_id.eq.${threadId},id.eq.${threadId}`)
-        .eq('direction', 'outbound')
-        .is('read_at', null);
-
-      if (error) throw error;
+        .eq('organization_id', org.id)
+        .eq('crm_account_id', user.contactId)
+        .eq('read_by_client', false)
+        .neq('sender_type', 'client');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-threads'] });
-      queryClient.invalidateQueries({ queryKey: ['portal-thread-messages'] });
     },
   });
+}
+
+/**
+ * Hook for realtime subscription on portal_chat_messages
+ */
+export function usePortalMessagesRealtime() {
+  const { user, org } = usePortalAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!user?.contactId || !org?.id) return;
+
+    const channel = supabase
+      .channel('portal-chat-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'portal_chat_messages',
+          filter: `crm_account_id=eq.${user.contactId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['portal-thread-messages'] });
+          queryClient.invalidateQueries({ queryKey: ['portal-threads'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.contactId, org?.id, queryClient]);
 }

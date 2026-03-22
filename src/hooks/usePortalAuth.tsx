@@ -1,52 +1,103 @@
-// @ts-nocheck
 /**
- * Portal Authentication Hook
- * Sistema de autenticación para clientes externos (portal público)
+ * Portal Authentication Hook — V2
+ * Uses Supabase Auth + portal_access table (Phase 1 schema)
  */
 
 import { useState, useEffect, createContext, useContext, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { toast } from 'sonner';
-import type { Json } from '@/integrations/supabase/types';
 
 // =============================================
 // TYPES
 // =============================================
 
-interface PortalBranding {
+export interface PortalPermissions {
+  can_view_matters: boolean;
+  can_view_documents: boolean;
+  can_view_invoices: boolean;
+  can_view_deadlines: boolean;
+  can_view_alerts: boolean;
+  can_request_services: boolean;
+  can_pay_invoices: boolean;
+  can_sign_documents: boolean;
+  can_use_basic_search: boolean;
+  can_use_advanced_search: boolean;
+  can_message_despacho: boolean;
+  can_use_chatbot: boolean;
+  can_complete_intake_forms: boolean;
+  can_sync_calendar: boolean;
+}
+
+export interface PortalOrg {
   id: string;
   slug: string;
   name: string;
-  logo_url?: string;
-  primary_color?: string;
-  organization_id: string;
+  portal_name: string | null;
+  logo_url: string | null;
+  primary_color: string | null;
+  secondary_color: string | null;
+  portal_chatbot_name: string | null;
+  portal_show_ipnexus_branding: boolean;
+  portal_footer_text: string | null;
+}
+
+export interface PortalCrmAccount {
+  id: string;
+  name: string;
+  email: string;
+  portal_notification_email: boolean;
 }
 
 export interface PortalUser {
-  id: string;
+  id: string; // auth.uid()
   email: string;
   name: string;
   role: string;
-  permissions: Record<string, boolean>;
-  portal: PortalBranding;
-  contactId?: string;
-}
-
-interface PortalSession {
-  token: string;
-  odisplayP: string;
-  expiresAt: number;
+  permissions: PortalPermissions;
+  portal: {
+    id: string;
+    slug: string;
+    name: string;
+    logo_url?: string;
+    primary_color?: string;
+    organization_id: string;
+  };
+  contactId: string;
 }
 
 interface PortalAuthContextType {
   user: PortalUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  portalAccess: any | null;
+  crmAccount: PortalCrmAccount | null;
+  org: PortalOrg | null;
+  permissions: PortalPermissions | null;
+  isImpersonating: boolean;
+  impersonateSessionId: string | null;
   login: (email: string, portalSlug: string) => Promise<void>;
   verifyMagicLink: (token: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
+
+const defaultPermissions: PortalPermissions = {
+  can_view_matters: true,
+  can_view_documents: true,
+  can_view_invoices: true,
+  can_view_deadlines: true,
+  can_view_alerts: false,
+  can_request_services: false,
+  can_pay_invoices: false,
+  can_sign_documents: false,
+  can_use_basic_search: false,
+  can_use_advanced_search: false,
+  can_message_despacho: true,
+  can_use_chatbot: true,
+  can_complete_intake_forms: true,
+  can_sync_calendar: true,
+};
 
 // =============================================
 // CONTEXT
@@ -60,300 +111,220 @@ const PortalAuthContext = createContext<PortalAuthContextType | null>(null);
 
 export function PortalAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<PortalUser | null>(null);
+  const [portalAccess, setPortalAccess] = useState<any | null>(null);
+  const [crmAccount, setCrmAccount] = useState<PortalCrmAccount | null>(null);
+  const [org, setOrg] = useState<PortalOrg | null>(null);
+  const [permissions, setPermissions] = useState<PortalPermissions | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [impersonateSessionId, setImpersonateSessionId] = useState<string | null>(null);
 
-  // Validar sesión existente
-  const validateSession = useCallback(async (sessionData: PortalSession): Promise<PortalUser | null> => {
-    // Verificar expiración
-    if (Date.now() > sessionData.expiresAt) {
-      localStorage.removeItem('portal_session');
-      return null;
-    }
-
+  const loadPortalData = useCallback(async (authUserId: string, authEmail: string) => {
     try {
-      // Verificar que el usuario existe y está activo
-      const { data: portalUser, error } = await supabase
-        .from('portal_users')
-        .select(`
-          id, email, name, role, permissions, status,
-          portal:client_portals!portal_id(
-            id, portal_slug, portal_name, branding_config, 
-            organization_id, is_active, client_id
-          )
-        `)
-        .eq('id', sessionData.odisplayP)
+      // Query portal_access + crm_accounts + organizations
+      const { data: paData, error: paError } = await fromTable('portal_access')
+        .select('*')
+        .eq('portal_user_id', authUserId)
         .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      if (paError || !paData) {
+        return null;
+      }
+
+      // Get CRM account
+      const { data: caData } = await fromTable('crm_accounts')
+        .select('id, name, email, portal_notification_email')
+        .eq('id', paData.crm_account_id)
         .single();
 
-      if (error || !portalUser || !portalUser.portal) {
-        localStorage.removeItem('portal_session');
-        return null;
-      }
+      // Get organization
+      const { data: orgData } = await fromTable('organizations')
+        .select(`
+          id, slug, name, portal_name, logo_url,
+          primary_color, secondary_color,
+          portal_chatbot_name, portal_show_ipnexus_branding,
+          portal_footer_text
+        `)
+        .eq('id', paData.organization_id)
+        .single();
 
-      const portal = portalUser.portal as {
-        id: string;
-        portal_slug: string;
-        portal_name: string;
-        branding_config: Json;
-        organization_id: string;
-        is_active: boolean;
-        client_id: string;
+      if (!caData || !orgData) return null;
+
+      const perms: PortalPermissions = {
+        can_view_matters: paData.can_view_matters ?? true,
+        can_view_documents: paData.can_view_documents ?? true,
+        can_view_invoices: paData.can_view_invoices ?? true,
+        can_view_deadlines: paData.can_view_deadlines ?? true,
+        can_view_alerts: paData.can_view_alerts ?? false,
+        can_request_services: paData.can_request_services ?? false,
+        can_pay_invoices: paData.can_pay_invoices ?? false,
+        can_sign_documents: paData.can_sign_documents ?? false,
+        can_use_basic_search: paData.can_use_basic_search ?? false,
+        can_use_advanced_search: paData.can_use_advanced_search ?? false,
+        can_message_despacho: paData.can_message_despacho ?? true,
+        can_use_chatbot: paData.can_use_chatbot ?? true,
+        can_complete_intake_forms: paData.can_complete_intake_forms ?? true,
+        can_sync_calendar: paData.can_sync_calendar ?? true,
       };
 
-      if (!portal.is_active) {
-        localStorage.removeItem('portal_session');
-        return null;
-      }
+      const orgInfo: PortalOrg = {
+        id: orgData.id,
+        slug: orgData.slug || '',
+        name: orgData.name || '',
+        portal_name: orgData.portal_name,
+        logo_url: orgData.logo_url,
+        primary_color: orgData.primary_color,
+        secondary_color: orgData.secondary_color,
+        portal_chatbot_name: orgData.portal_chatbot_name,
+        portal_show_ipnexus_branding: orgData.portal_show_ipnexus_branding ?? true,
+        portal_footer_text: orgData.portal_footer_text,
+      };
 
-      const branding = portal.branding_config as Record<string, unknown> || {};
+      const crmInfo: PortalCrmAccount = {
+        id: caData.id,
+        name: caData.name || '',
+        email: caData.email || '',
+        portal_notification_email: caData.portal_notification_email ?? true,
+      };
 
-      return {
-        id: portalUser.id,
-        email: portalUser.email || '',
-        name: portalUser.name || '',
-        role: portalUser.role || 'viewer',
-        permissions: (portalUser.permissions as Record<string, boolean>) || {},
+      const portalUser: PortalUser = {
+        id: authUserId,
+        email: authEmail,
+        name: caData.name || authEmail,
+        role: paData.access_level || 'viewer',
+        permissions: perms,
         portal: {
-          id: portal.id,
-          slug: portal.portal_slug,
-          name: portal.portal_name || '',
-          logo_url: branding.logo_url as string | undefined,
-          primary_color: branding.primary_color as string | undefined,
-          organization_id: portal.organization_id
+          id: orgInfo.id,
+          slug: orgInfo.slug,
+          name: orgInfo.portal_name || orgInfo.name,
+          logo_url: orgInfo.logo_url || undefined,
+          primary_color: orgInfo.primary_color || undefined,
+          organization_id: orgInfo.id,
         },
-        contactId: portal.client_id,
+        contactId: caData.id,
       };
-    } catch {
-      localStorage.removeItem('portal_session');
+
+      // Inject branding into DOM
+      const root = document.documentElement;
+      root.style.setProperty('--portal-primary', orgInfo.primary_color || '#1E40AF');
+      root.style.setProperty('--portal-secondary', orgInfo.secondary_color || '#3B82F6');
+      document.title = orgInfo.portal_name || `Portal ${orgInfo.name}`;
+
+      setPortalAccess(paData);
+      setCrmAccount(crmInfo);
+      setOrg(orgInfo);
+      setPermissions(perms);
+      setUser(portalUser);
+
+      // Update last activity
+      fromTable('portal_access')
+        .update({ last_activity_at: new Date().toISOString() })
+        .eq('id', paData.id)
+        .then(() => {});
+
+      return portalUser;
+    } catch (err) {
+      console.error('Error loading portal data:', err);
       return null;
     }
   }, []);
 
-  // Inicialización
+  // Init: check Supabase Auth session
   useEffect(() => {
-    const initAuth = async () => {
-      const savedSession = localStorage.getItem('portal_session');
-      if (savedSession) {
-        try {
-          const session = JSON.parse(savedSession) as PortalSession;
-          const validUser = await validateSession(session);
-          if (validUser) {
-            setUser(validUser);
-          }
-        } catch {
-          localStorage.removeItem('portal_session');
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await loadPortalData(session.user.id, session.user.email || '');
         }
+      } catch {
+        // No session
       }
       setIsLoading(false);
     };
 
-    initAuth();
-  }, [validateSession]);
+    init();
 
-  // Login - Enviar magic link
-  const login = useCallback(async (email: string, portalSlug: string) => {
-    // Buscar usuario en portal_users
-    const { data: portalUser, error } = await supabase
-      .from('portal_users')
-      .select(`
-        id, email, name, status,
-        portal:client_portals!portal_id(
-          id, portal_slug, portal_name, is_active
-        )
-      `)
-      .eq('email', email.toLowerCase())
-      .eq('status', 'active')
-      .single();
-
-    if (error || !portalUser) {
-      throw new Error('Usuario no encontrado o sin acceso');
+    // Detect impersonation mode
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('impersonate')) {
+      setIsImpersonating(true);
+      setImpersonateSessionId(params.get('impersonate'));
     }
 
-    const portal = portalUser.portal as { 
-      id: string; 
-      portal_slug: string; 
-      portal_name: string;
-      is_active: boolean;
-    };
-
-    if (!portal || portal.portal_slug !== portalSlug) {
-      throw new Error('Usuario no tiene acceso a este portal');
-    }
-
-    if (!portal.is_active) {
-      throw new Error('Este portal está desactivado');
-    }
-
-    // Generar magic link token
-    const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
-
-    const { error: updateError } = await supabase
-      .from('portal_users')
-      .update({
-        magic_link_token: token,
-        magic_link_expires_at: expiresAt.toISOString()
-      })
-      .eq('id', portalUser.id);
-
-    if (updateError) {
-      throw new Error('Error al generar enlace de acceso');
-    }
-
-    // Enviar email con magic link
-    try {
-      await supabase.functions.invoke('send-email', {
-        body: {
-          to: email,
-          template: 'portal-magic-link',
-          data: {
-            name: portalUser.name,
-            portalName: portal.portal_name,
-            magicLink: `${window.location.origin}/portal/${portalSlug}?token=${token}`,
-            expiresIn: '15 minutos'
-          }
-        }
-      });
-    } catch {
-      // Si falla el email, igual continuar (para desarrollo)
-      console.warn('No se pudo enviar email, usar token directamente:', token);
-    }
-  }, []);
-
-  // Verificar magic link
-  const verifyMagicLink = useCallback(async (token: string): Promise<boolean> => {
-    const { data: portalUser, error } = await supabase
-      .from('portal_users')
-      .select(`
-        id, email, name, role, permissions,
-        portal:client_portals!portal_id(
-          id, portal_slug, portal_name, branding_config, 
-          organization_id, is_active
-        )
-      `)
-      .eq('magic_link_token', token)
-      .gt('magic_link_expires_at', new Date().toISOString())
-      .single();
-
-    if (error || !portalUser) {
-      throw new Error('Enlace inválido o expirado');
-    }
-
-    const portal = portalUser.portal as {
-      id: string;
-      portal_slug: string;
-      portal_name: string;
-      branding_config: Json;
-      organization_id: string;
-      is_active: boolean;
-    };
-
-    if (!portal || !portal.is_active) {
-      throw new Error('Este portal está desactivado');
-    }
-
-    // Limpiar token y actualizar último login
-    await supabase
-      .from('portal_users')
-      .update({
-        magic_link_token: null,
-        magic_link_expires_at: null,
-        last_login_at: new Date().toISOString(),
-        status: 'active'
-      })
-      .eq('id', portalUser.id);
-
-    // Actualizar último acceso del portal
-    await supabase
-      .from('client_portals')
-      .update({
-        last_accessed_at: new Date().toISOString()
-      })
-      .eq('id', portal.id);
-
-    // Crear sesión local
-    const sessionToken = crypto.randomUUID();
-    const sessionData: PortalSession = {
-      token: sessionToken,
-      odisplayP: portalUser.id,
-      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 días
-    };
-
-    localStorage.setItem('portal_session', JSON.stringify(sessionData));
-
-    const branding = portal.branding_config as Record<string, unknown> || {};
-
-    setUser({
-      id: portalUser.id,
-      email: portalUser.email || '',
-      name: portalUser.name || '',
-      role: portalUser.role || 'viewer',
-      permissions: (portalUser.permissions as Record<string, boolean>) || {},
-      portal: {
-        id: portal.id,
-        slug: portal.portal_slug,
-        name: portal.portal_name || '',
-        logo_url: branding.logo_url as string | undefined,
-        primary_color: branding.primary_color as string | undefined,
-        organization_id: portal.organization_id
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await loadPortalData(session.user.id, session.user.email || '');
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setPortalAccess(null);
+        setCrmAccount(null);
+        setOrg(null);
+        setPermissions(null);
       }
     });
 
-    // Log de actividad (skip type check for portal_activity_log)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any).from('portal_activity_log').insert({
-      portal_id: portal.id,
-      actor_type: 'portal_user',
-      actor_external_id: portalUser.id,
-      actor_name: portalUser.name || portalUser.email,
-      action: 'login',
-      details: { method: 'magic_link' }
+    return () => subscription.unsubscribe();
+  }, [loadPortalData]);
+
+  // Login with email/password (Supabase Auth)
+  const login = useCallback(async (email: string, _portalSlug: string) => {
+    // For portal clients, we use signInWithPassword
+    // The actual password login is handled by the portal-activate flow
+    // This is a placeholder for magic link flow
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+      },
     });
 
+    if (error) throw new Error(error.message);
+    toast.success('Enlace de acceso enviado a tu email');
+  }, []);
+
+  const verifyMagicLink = useCallback(async (_token: string): Promise<boolean> => {
+    // OTP verification is handled by Supabase Auth automatically
     return true;
   }, []);
 
-  // Logout
   const logout = useCallback(async () => {
-    if (user) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from('portal_activity_log').insert({
-        portal_id: user.portal.id,
-        actor_type: 'portal_user',
-        actor_external_id: user.id,
-        actor_name: user.name || user.email,
-        action: 'logout',
-        details: {}
-      });
-    }
-    localStorage.removeItem('portal_session');
+    await supabase.auth.signOut();
     setUser(null);
+    setPortalAccess(null);
+    setCrmAccount(null);
+    setOrg(null);
+    setPermissions(null);
     toast.success('Sesión cerrada');
-  }, [user]);
+  }, []);
 
-  // Refrescar sesión
   const refreshSession = useCallback(async () => {
-    const savedSession = localStorage.getItem('portal_session');
-    if (savedSession) {
-      const session = JSON.parse(savedSession) as PortalSession;
-      const validUser = await validateSession(session);
-      if (validUser) {
-        setUser(validUser);
-      } else {
-        setUser(null);
-      }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await loadPortalData(session.user.id, session.user.email || '');
+    } else {
+      setUser(null);
     }
-  }, [validateSession]);
+  }, [loadPortalData]);
 
   return (
     <PortalAuthContext.Provider value={{
       user,
       isLoading,
       isAuthenticated: !!user,
+      portalAccess,
+      crmAccount,
+      org,
+      permissions,
+      isImpersonating,
+      impersonateSessionId,
       login,
       verifyMagicLink,
       logout,
-      refreshSession
+      refreshSession,
     }}>
       {children}
     </PortalAuthContext.Provider>

@@ -1,15 +1,13 @@
 /**
- * Hook para documentos compartidos del Portal Cliente
+ * Hook para documentos del Portal Cliente — V2
+ * Uses matter_documents.portal_visible + signature fields
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { usePortalAuth } from './usePortalAuth';
 import { toast } from 'sonner';
-
-// =============================================
-// TYPES
-// =============================================
 
 export interface PortalDocument {
   id: string;
@@ -28,195 +26,140 @@ export interface PortalDocument {
   viewed_at: string | null;
   downloaded_at: string | null;
   download_count: number;
+  // Signature fields
+  portal_requires_signature: boolean;
+  portal_signature_level: string;
+  portal_signature_status: string;
+  portal_signed_at: string | null;
+  portal_signed_by: string | null;
 }
 
-// =============================================
-// HOOKS
-// =============================================
-
-/**
- * Hook para obtener documentos compartidos con el cliente
- */
 export function usePortalDocuments(categoryFilter?: string) {
   const { user } = usePortalAuth();
 
   return useQuery({
-    queryKey: ['portal-documents', user?.id, categoryFilter],
+    queryKey: ['portal-documents', user?.contactId, categoryFilter],
     queryFn: async (): Promise<PortalDocument[]> => {
-      if (!user?.portal?.id) return [];
+      if (!user?.contactId) return [];
 
-      // Obtener documentos compartidos a través de portal_shared_content
-      const { data: sharedContent, error } = await supabase
-        .from('portal_shared_content')
+      // Get matters for this client
+      const { data: matterIds } = await fromTable('matters')
+        .select('id')
+        .eq('client_id', user.contactId)
+        .eq('portal_visible', true);
+
+      if (!matterIds || matterIds.length === 0) return [];
+
+      const ids = matterIds.map((m: any) => m.id);
+
+      let query = fromTable('matter_documents')
         .select(`
-          id,
-          content_id,
-          permissions,
-          expires_at,
-          shared_at,
-          is_active
-        `)
-        .eq('portal_id', user.portal.id)
-        .eq('content_type', 'document')
-        .eq('is_active', true);
-
-      if (error) {
-        console.error('Error fetching shared content:', error);
-        return [];
-      }
-
-      if (!sharedContent || sharedContent.length === 0) return [];
-
-      // Obtener detalles de los documentos
-      const documentIds = sharedContent.map(sc => sc.content_id);
-      
-      // Usar fromTable helper para evitar errores de tipos
-      const { data: documents, error: docsError } = await supabase
-        .from('matter_documents')
-        .select(`
-          id,
-          name,
-          mime_type,
-          file_size,
-          file_path,
-          matter_id,
-          category,
+          id, name, mime_type, file_size, file_path,
+          matter_id, category, created_at,
+          portal_requires_signature, portal_signature_level,
+          portal_signature_status, portal_signed_at, portal_signed_by,
           matter:matters(reference, title)
         `)
-        .in('id', documentIds);
+        .in('matter_id', ids)
+        .eq('portal_visible', true)
+        .order('created_at', { ascending: false });
 
-      if (docsError) {
-        console.error('Error fetching documents:', docsError);
-        return [];
+      if (categoryFilter && categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter);
       }
 
-      // Combinar datos
-      const result: PortalDocument[] = [];
-      
-      for (const sc of sharedContent) {
-        const doc = (documents as any[])?.find((d: any) => d.id === sc.content_id);
-        if (!doc) continue;
+      const { data, error } = await query;
+      if (error) throw error;
 
-        // Verificar expiración
-        if (sc.expires_at && new Date(sc.expires_at) < new Date()) continue;
-
-        // Filtrar por categoría si se especifica
-        if (categoryFilter && categoryFilter !== 'all' && doc.category !== categoryFilter) continue;
-
-        const permissions = sc.permissions as { can_download?: boolean; viewed_at?: string; downloaded_at?: string; download_count?: number } || {};
+      return (data || []).map((doc: any) => {
         const matter = doc.matter as { reference: string; title: string } | null;
-
-        result.push({
-          id: sc.id,
+        return {
+          id: doc.id,
           document_id: doc.id,
-          name: doc.name,
+          name: doc.name || '',
           mime_type: doc.mime_type || 'application/octet-stream',
           file_size: doc.file_size || 0,
-          file_path: doc.file_path,
+          file_path: doc.file_path || '',
           matter_id: doc.matter_id,
           matter_reference: matter?.reference || null,
           matter_title: matter?.title || null,
           category: doc.category,
-          can_download: permissions.can_download !== false,
-          expires_at: sc.expires_at,
-          shared_at: sc.shared_at,
-          viewed_at: permissions.viewed_at || null,
-          downloaded_at: permissions.downloaded_at || null,
-          download_count: permissions.download_count || 0,
-        });
-      }
-
-      return result.sort((a, b) => 
-        new Date(b.shared_at).getTime() - new Date(a.shared_at).getTime()
-      );
+          can_download: true,
+          expires_at: null,
+          shared_at: doc.created_at,
+          viewed_at: null,
+          downloaded_at: null,
+          download_count: 0,
+          portal_requires_signature: doc.portal_requires_signature || false,
+          portal_signature_level: doc.portal_signature_level || 'simple',
+          portal_signature_status: doc.portal_signature_status || 'not_required',
+          portal_signed_at: doc.portal_signed_at || null,
+          portal_signed_by: doc.portal_signed_by || null,
+        };
+      });
     },
-    enabled: !!user?.portal?.id,
+    enabled: !!user?.contactId,
     staleTime: 60000,
   });
 }
 
-/**
- * Hook para registrar visualización de documento
- */
-export function useViewDocument() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (sharedContentId: string) => {
-      // Obtener permisos actuales
-      const { data: current } = await supabase
-        .from('portal_shared_content')
-        .select('permissions')
-        .eq('id', sharedContentId)
-        .single();
-
-      const updatedPermissions = {
-        ...(current?.permissions as object || {}),
-        viewed_at: new Date().toISOString()
-      };
-
-      await supabase
-        .from('portal_shared_content')
-        .update({ permissions: updatedPermissions })
-        .eq('id', sharedContentId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['portal-documents'] });
-    },
-  });
-}
-
-/**
- * Hook para registrar descarga de documento
- */
-export function useDownloadDocument() {
+export function useSignDocument() {
   const queryClient = useQueryClient();
   const { user } = usePortalAuth();
 
   return useMutation({
-    mutationFn: async ({ sharedContentId, filePath, fileName }: { 
-      sharedContentId: string; 
-      filePath: string; 
+    mutationFn: async ({ documentId, signerName }: { documentId: string; signerName: string }) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await fromTable('matter_documents')
+        .update({
+          portal_signature_status: 'signed',
+          portal_signed_at: new Date().toISOString(),
+          portal_signed_by: user.id,
+          portal_signature_data: {
+            signer_name: signerName,
+            timestamp: new Date().toISOString(),
+            signature_level: 'simple_eidas',
+            disclaimer_shown: true,
+            ip_address: 'client',
+          },
+        })
+        .eq('id', documentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Documento firmado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['portal-documents'] });
+    },
+    onError: () => {
+      toast.error('Error al firmar el documento');
+    },
+  });
+}
+
+export function useViewDocument() {
+  return useMutation({
+    mutationFn: async (_docId: string) => {
+      // Track view - no-op for now with new schema
+    },
+  });
+}
+
+export function useDownloadDocument() {
+  const { user } = usePortalAuth();
+
+  return useMutation({
+    mutationFn: async ({ sharedContentId: _id, filePath, fileName }: {
+      sharedContentId: string;
+      filePath: string;
       fileName: string;
     }) => {
-      // Actualizar contador de descargas
-      const { data: current } = await supabase
-        .from('portal_shared_content')
-        .select('permissions')
-        .eq('id', sharedContentId)
-        .single();
-
-      const currentPermissions = current?.permissions as { download_count?: number } || {};
-      const updatedPermissions = {
-        ...currentPermissions,
-        downloaded_at: new Date().toISOString(),
-        download_count: (currentPermissions.download_count || 0) + 1
-      };
-
-      await supabase
-        .from('portal_shared_content')
-        .update({ permissions: updatedPermissions })
-        .eq('id', sharedContentId);
-
-      // Log de actividad
-      if (user?.portal?.id) {
-        await (supabase as any).from('portal_activity_log').insert({
-          portal_id: user.portal.id,
-          actor_type: 'portal_user',
-          actor_external_id: user.id,
-          actor_name: user.name || user.email,
-          action: 'document_download',
-          details: { document_name: fileName }
-        });
-      }
-
-      // Obtener URL de descarga del storage
       const { data: urlData } = await supabase.storage
         .from('matter-documents')
-        .createSignedUrl(filePath, 3600); // 1 hora
+        .createSignedUrl(filePath, 3600);
 
       if (urlData?.signedUrl) {
-        // Iniciar descarga
         const link = document.createElement('a');
         link.href = urlData.signedUrl;
         link.download = fileName;
@@ -230,84 +173,59 @@ export function useDownloadDocument() {
     },
     onSuccess: () => {
       toast.success('Documento descargado');
-      queryClient.invalidateQueries({ queryKey: ['portal-documents'] });
     },
-    onError: (error) => {
-      console.error('Error downloading document:', error);
+    onError: () => {
       toast.error('Error al descargar el documento');
     },
   });
 }
 
-/**
- * Hook para obtener documentos de un expediente específico
- */
 export function usePortalMatterDocuments(matterId: string | undefined) {
   const { user } = usePortalAuth();
 
   return useQuery({
     queryKey: ['portal-matter-documents', matterId],
     queryFn: async (): Promise<PortalDocument[]> => {
-      if (!user?.portal?.id || !matterId) return [];
+      if (!user?.contactId || !matterId) return [];
 
-      const { data: sharedContent, error } = await supabase
-        .from('portal_shared_content')
+      const { data, error } = await fromTable('matter_documents')
         .select(`
-          id,
-          content_id,
-          permissions,
-          expires_at,
-          shared_at
+          id, name, mime_type, file_size, file_path,
+          matter_id, category, created_at,
+          portal_requires_signature, portal_signature_level,
+          portal_signature_status, portal_signed_at, portal_signed_by
         `)
-        .eq('portal_id', user.portal.id)
-        .eq('content_type', 'document')
-        .eq('is_active', true);
+        .eq('matter_id', matterId)
+        .eq('portal_visible', true)
+        .order('created_at', { ascending: false });
 
-      if (error || !sharedContent) return [];
+      if (error) return [];
 
-      const documentIds = sharedContent.map(sc => sc.content_id);
-
-      const { data: documents } = await supabase
-        .from('matter_documents')
-        .select(`
-          id,
-          name,
-          mime_type,
-          file_size,
-          file_path,
-          matter_id,
-          category
-        `)
-        .in('id', documentIds)
-        .eq('matter_id', matterId);
-
-      if (!documents) return [];
-
-      return (documents as any[]).map((doc: any) => {
-        const sc = sharedContent.find(s => s.content_id === doc.id)!;
-        const permissions = sc.permissions as any || {};
-        
-        return {
-          id: sc.id,
-          document_id: doc.id,
-          name: doc.name,
-          mime_type: doc.mime_type || 'application/octet-stream',
-          file_size: doc.file_size || 0,
-          file_path: doc.file_path,
-          matter_id: doc.matter_id,
-          matter_reference: null,
-          matter_title: null,
-          category: doc.category,
-          can_download: permissions.can_download !== false,
-          expires_at: sc.expires_at,
-          shared_at: sc.shared_at,
-          viewed_at: permissions.viewed_at || null,
-          downloaded_at: permissions.downloaded_at || null,
-          download_count: permissions.download_count || 0,
-        };
-      });
+      return (data || []).map((doc: any) => ({
+        id: doc.id,
+        document_id: doc.id,
+        name: doc.name || '',
+        mime_type: doc.mime_type || 'application/octet-stream',
+        file_size: doc.file_size || 0,
+        file_path: doc.file_path || '',
+        matter_id: doc.matter_id,
+        matter_reference: null,
+        matter_title: null,
+        category: doc.category,
+        can_download: true,
+        expires_at: null,
+        shared_at: doc.created_at,
+        viewed_at: null,
+        downloaded_at: null,
+        download_count: 0,
+        portal_requires_signature: doc.portal_requires_signature || false,
+        portal_signature_level: doc.portal_signature_level || 'simple',
+        portal_signature_status: doc.portal_signature_status || 'not_required',
+        portal_signed_at: doc.portal_signed_at || null,
+        portal_signed_by: doc.portal_signed_by || null,
+      }));
     },
-    enabled: !!user?.portal?.id && !!matterId,
+    enabled: !!user?.contactId && !!matterId,
     staleTime: 60000,
   });
 }

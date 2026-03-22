@@ -252,31 +252,31 @@ export default function PortalProfile() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {user.permissions?.view_matters && (
+            {user.permissions?.can_view_matters && (
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Ver expedientes
               </Badge>
             )}
-            {user.permissions?.view_documents && (
+            {user.permissions?.can_view_documents && (
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Ver documentos
               </Badge>
             )}
-            {user.permissions?.download_documents && (
+            {user.permissions?.can_sign_documents && (
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
-                Descargar documentos
+                Firmar documentos
               </Badge>
             )}
-            {user.permissions?.view_invoices && (
+            {user.permissions?.can_view_invoices && (
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Ver facturas
               </Badge>
             )}
-            {user.permissions?.send_messages && (
+            {user.permissions?.can_message_despacho && (
               <Badge variant="outline" className="bg-green-50 text-green-700">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Enviar mensajes

@@ -1,5 +1,10 @@
+/**
+ * Hook para facturas del Portal Cliente — V2
+ * Uses invoices with billing_client_id = crm_account_id
+ */
+
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase';
 import { usePortalAuth } from './usePortalAuth';
 import type { Invoice } from '@/types/finance';
 
@@ -12,10 +17,9 @@ export function usePortalInvoices(statusFilter?: string) {
     queryFn: async (): Promise<Invoice[]> => {
       if (!contactId) return [];
 
-      let query = supabase
-        .from('invoices')
+      let query = fromTable('invoices')
         .select('*')
-        .or(`billing_client_id.eq.${contactId},client_email.eq.${user.email}`)
+        .or(`billing_client_id.eq.${contactId},client_id.eq.${contactId}`)
         .order('invoice_date', { ascending: false });
 
       if (statusFilter && statusFilter !== 'all') {

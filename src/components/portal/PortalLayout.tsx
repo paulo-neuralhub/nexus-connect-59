@@ -1,6 +1,6 @@
 /**
- * Portal Layout
- * Layout para el portal público de clientes
+ * Portal Layout — V2
+ * Layout para el portal público de clientes con impersonation banner
  */
 
 import { Outlet, Link, useLocation, Navigate, useParams } from 'react-router-dom';
@@ -17,15 +17,30 @@ import {
   Loader2,
   CheckCircle,
   Clock,
-  Bell
+  Bell,
+  Eye,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function PortalLayout() {
   const { slug } = useParams<{ slug: string }>();
-  const { user, isLoading, isAuthenticated, logout } = usePortalAuth();
+  const { user, isLoading, isAuthenticated, logout, isImpersonating, impersonateSessionId, crmAccount } = usePortalAuth();
   const location = useLocation();
+
+  const handleEndImpersonation = async () => {
+    if (!impersonateSessionId) return;
+    try {
+      await supabase.functions.invoke('portal-impersonate', {
+        body: { action: 'end', session_id: impersonateSessionId },
+      });
+    } catch { /* ignore */ }
+    window.close();
+  };
 
   if (isLoading) {
     return (
@@ -51,18 +66,41 @@ export default function PortalLayout() {
     { href: 'messages', label: 'Mensajes', icon: MessageSquare },
   ];
 
-  // Aplicar colores personalizados del portal
   const portalStyle: React.CSSProperties = user.portal.primary_color 
     ? { '--portal-primary': user.portal.primary_color } as React.CSSProperties
     : {};
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col" style={portalStyle}>
+      {/* Impersonation Banner */}
+      {isImpersonating && (
+        <div 
+          className="sticky top-0 z-[60] bg-amber-100 border-b border-amber-400 print:hidden"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-amber-800 font-medium">
+                <Eye className="w-4 h-4" />
+                <span>👁️ Viendo portal de <strong>{crmAccount?.name || 'cliente'}</strong> — Solo tú ves este banner.</span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-amber-400 text-amber-800 hover:bg-amber-200"
+                onClick={handleEndImpersonation}
+              >
+                <X className="w-3 h-3 mr-1" />
+                Salir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-background border-b sticky top-0 z-50 shadow-sm">
+      <header className="bg-background border-b sticky top-0 z-50 shadow-sm" style={isImpersonating ? { top: '40px' } : {}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo/Nombre del portal */}
             <Link to={`/portal/${slug}/dashboard`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {user.portal.logo_url ? (
                 <img 
@@ -85,9 +123,7 @@ export default function PortalLayout() {
               </span>
             </Link>
 
-            {/* Usuario y acciones */}
             <div className="flex items-center gap-3">
-              {/* Notificaciones */}
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
@@ -95,7 +131,6 @@ export default function PortalLayout() {
                 </Badge>
               </Button>
 
-              {/* Info usuario */}
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-xs font-medium text-primary">
@@ -107,7 +142,6 @@ export default function PortalLayout() {
                 </span>
               </div>
 
-              {/* Logout */}
               <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground">
                 <LogOut className="w-4 h-4" />
                 <span className="ml-2 hidden sm:inline">Salir</span>
@@ -117,7 +151,7 @@ export default function PortalLayout() {
         </div>
       </header>
 
-      {/* Navegación */}
+      {/* Navigation */}
       <nav className="bg-background border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-1 overflow-x-auto scrollbar-hide">
@@ -160,9 +194,13 @@ export default function PortalLayout() {
         </div>
       </div>
 
-      {/* Contenido */}
+      {/* Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        <TooltipProvider>
+          <ImpersonationContext.Provider value={isImpersonating}>
+            <Outlet />
+          </ImpersonationContext.Provider>
+        </TooltipProvider>
       </main>
 
       {/* Footer */}
@@ -186,4 +224,11 @@ export default function PortalLayout() {
       </footer>
     </div>
   );
+}
+
+// Context for impersonation state
+import { createContext, useContext } from 'react';
+const ImpersonationContext = createContext(false);
+export function useIsImpersonating() {
+  return useContext(ImpersonationContext);
 }
