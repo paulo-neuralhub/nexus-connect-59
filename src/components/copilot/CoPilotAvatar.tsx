@@ -305,6 +305,7 @@ export function CoPilotAvatar({
           ref={avatarRef}
           onClick={e => {
             e.stopPropagation()
+            if (didDrag.current) return
             onAvatarClick()
           }}
           style={{
