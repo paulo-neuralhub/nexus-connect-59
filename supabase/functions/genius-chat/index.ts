@@ -47,6 +47,24 @@ function detectProposedAction(
 const DISCLAIMER_SUFFIX =
   "\n\n⚠️ *Información orientativa. No constituye asesoramiento legal. Verificar con profesional de PI.*";
 
+// ── CoPilot system prompt builders ──────────────────────
+function buildBasicSystemPrefix(): string {
+  return `Eres CoPilot Nexus, el asistente inteligente de IP-NEXUS.
+Tu función principal es GUIAR al usuario dentro de la aplicación y responder preguntas sobre PI de forma clara y sencilla. Eres proactivo: si detectas un plazo próximo o una alerta importante, lo mencionas sin que te pregunten.
+Respuestas: concisas (máx 3 párrafos), en lenguaje no técnico.
+DISCLAIMER siempre al final: '⚠️ Información orientativa. Consulta con un profesional PI para decisiones importantes.'
+
+`;
+}
+
+function buildProSystemPrefix(): string {
+  return `Eres IP-Genius CoPilot, agente experto en propiedad intelectual global con acceso a 200+ jurisdicciones.
+Eres altamente técnico, preciso y proactivo. Puedes generar documentos legales, analizar expedientes en profundidad y ejecutar acciones en la plataforma.
+SIEMPRE incluyes disclaimer legal al final de cada respuesta sobre temas legales específicos.
+
+`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -136,17 +154,28 @@ serve(async (req) => {
       );
     }
 
+    // ── Dynamic model selection based on copilot_mode ───
+    const isModeBasic = config.copilot_mode === "basic";
+    const modelToUse = isModeBasic
+      ? (config.model_basic || "claude-haiku-4-5-20251001")
+      : (config.model_pro || "claude-sonnet-4-20250514");
+    const maxTokens = isModeBasic ? 800 : 2000;
+    const temperature = isModeBasic ? 0.3 : 0.1;
+    const copilotName = config.copilot_name || (isModeBasic ? "CoPilot Nexus" : "IP-Genius CoPilot");
+
     // ── Parse body ──────────────────────────────────────
     const body = await req.json();
     const {
       conversation_id,
       message,
       context_matter_id,
+      context_page,
       stream = false,
     } = body as {
       conversation_id?: string;
       message: string;
       context_matter_id?: string;
+      context_page?: string;
       stream?: boolean;
     };
 
@@ -181,7 +210,7 @@ serve(async (req) => {
       const { data: matter } = await db
         .from("matters")
         .select(
-          "id, reference, title, type, status, filing_date, registration_number, expiry_date, nice_classes"
+          "id, reference, title, type, status, filing_date, registration_number, expiry_date, nice_classes, jurisdiction"
         )
         .eq("id", context_matter_id)
         .eq("organization_id", orgId)
@@ -201,6 +230,7 @@ EXPEDIENTE ACTIVO:
 - Referencia: ${matter.reference}
 - Título: ${matter.title}
 - Tipo: ${matter.type} | Estado: ${matter.status}
+- Jurisdicción: ${matter.jurisdiction || "N/A"}
 - Fecha solicitud: ${matter.filing_date || "N/A"}
 - Nº registro: ${matter.registration_number || "Pendiente"}
 - Vencimiento: ${matter.expiry_date || "N/A"}
@@ -225,7 +255,6 @@ ${
     let ragContext = "";
 
     if (openaiKey) {
-      // Vector search via embeddings
       try {
         const embResp = await fetch("https://api.openai.com/v1/embeddings", {
           method: "POST",
@@ -270,7 +299,7 @@ ${
     if (!ragContext) {
       const keywords = message
         .split(/\s+/)
-        .filter((w) => w.length > 3)
+        .filter((w: string) => w.length > 3)
         .slice(0, 5)
         .join(" & ");
       if (keywords) {
@@ -310,8 +339,14 @@ ${
       .limit(20);
 
     // ── Step 4: Build prompt ────────────────────────────
-    const systemPrompt = `Eres IP-GENIUS, el asistente de propiedad intelectual de IP-NEXUS.
-Asistes a profesionales de PI con formación y experiencia legal.
+    // Dynamic system prompt based on copilot mode
+    const modePrefix = isModeBasic ? buildBasicSystemPrefix() : buildProSystemPrefix();
+
+    const contextPageSection = context_page
+      ? `\nCONTEXTO ACTUAL: El usuario está en la página ${context_page}. Adapta tus respuestas a lo que el usuario está viendo ahora.\n`
+      : "";
+
+    const systemPrompt = `${modePrefix}${contextPageSection}Asistes a profesionales de PI con formación y experiencia legal.
 
 REGLAS ABSOLUTAS:
 1. Cita artículos exactos al hacer afirmaciones legales (ej: "Art. 7.1.b RMUE")
@@ -350,17 +385,17 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
         content: m.content,
       }));
 
-    const anthropicBody = {
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
-      temperature: 0.1,
+    const anthropicBody: Record<string, unknown> = {
+      model: modelToUse,
+      max_tokens: maxTokens,
+      temperature,
       system: systemPrompt,
       messages: anthropicMessages,
     };
 
     if (stream) {
       // ── Streaming mode ──────────────────────────────
-      anthropicBody["stream" as keyof typeof anthropicBody] = true as any;
+      anthropicBody.stream = true;
 
       const llmResp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -381,15 +416,12 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
         );
       }
 
-      // We need to collect the full response for DB persistence
-      // while streaming to client. Use TransformStream.
       let fullAssistantContent = "";
 
       const { readable, writable } = new TransformStream();
       const writer = writable.getWriter();
       const encoder = new TextEncoder();
 
-      // Process stream in background
       (async () => {
         const reader = llmResp.body!.getReader();
         const decoder = new TextDecoder();
@@ -414,7 +446,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
                 const evt = JSON.parse(jsonStr);
                 if (evt.type === "content_block_delta" && evt.delta?.text) {
                   fullAssistantContent += evt.delta.text;
-                  // Forward as OpenAI-compatible SSE
                   const ssePayload = JSON.stringify({
                     choices: [{ delta: { content: evt.delta.text } }],
                   });
@@ -444,7 +475,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
 
         // Persist messages after stream completes
         try {
-          // Save user message
           await db.from("genius_messages").insert({
             organization_id: orgId,
             conversation_id: convId,
@@ -452,13 +482,12 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
             content: message,
           });
 
-          // Save assistant message
           await db.from("genius_messages").insert({
             organization_id: orgId,
             conversation_id: convId,
             role: "assistant",
             content: fullAssistantContent,
-            model_used: "claude-sonnet-4-20250514",
+            model_used: modelToUse,
             rag_sources: ragSources.map((s: any) => ({
               source: s.source,
               id: s.id,
@@ -468,7 +497,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
             })),
           });
 
-          // Detect action proposals in assistant response
           const detectedAction = detectProposedAction(fullAssistantContent);
           if (detectedAction) {
             await db.from("genius_messages").insert({
@@ -483,7 +511,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
             });
           }
 
-          // Update conversation
           await db
             .from("genius_conversations")
             .update({
@@ -493,7 +520,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
             })
             .eq("id", convId);
 
-          // Increment counter
           await db.rpc("increment_genius_counter", {
             p_org_id: orgId,
             p_type: "query",
@@ -538,11 +564,9 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
     const tokensInput = llmData.usage?.input_tokens || 0;
     const tokensOutput = llmData.usage?.output_tokens || 0;
 
-    // Append disclaimer
     assistantContent += DISCLAIMER_SUFFIX;
 
     // ── Step 6: Persist ─────────────────────────────────
-    // User message
     await db.from("genius_messages").insert({
       organization_id: orgId,
       conversation_id: convId,
@@ -550,7 +574,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
       content: message,
     });
 
-    // Assistant message
     const { data: savedMsg } = await db
       .from("genius_messages")
       .insert({
@@ -558,7 +581,7 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
         conversation_id: convId,
         role: "assistant",
         content: assistantContent,
-        model_used: "claude-sonnet-4-20250514",
+        model_used: modelToUse,
         tokens_input: tokensInput,
         tokens_output: tokensOutput,
         rag_sources: ragSources.map((s: any) => ({
@@ -572,7 +595,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
       .select("id")
       .single();
 
-    // Detect action proposals
     const detectedAction = detectProposedAction(assistantContent);
     let actionMessage = null;
     if (detectedAction) {
@@ -593,7 +615,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
       actionMessage = actMsg;
     }
 
-    // Update conversation
     await db
       .from("genius_conversations")
       .update({
@@ -603,7 +624,6 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
       })
       .eq("id", convId);
 
-    // Increment counter
     await db.rpc("increment_genius_counter", {
       p_org_id: orgId,
       p_type: "query",
@@ -616,7 +636,9 @@ ${ragContext ? `FUENTES RELEVANTES (RAG):\n${ragContext}` : "No se encontraron f
           id: savedMsg?.id,
           role: "assistant",
           content: assistantContent,
-          model_used: "claude-sonnet-4-20250514",
+          model_used: modelToUse,
+          copilot_mode: config.copilot_mode || "basic",
+          copilot_name: copilotName,
           tokens_input: tokensInput,
           tokens_output: tokensOutput,
           rag_sources: ragSources.map((s: any) => ({
