@@ -39,6 +39,7 @@ export function CoPilotAvatar({
   })
 
   const dragging = useRef(false)
+  const didDrag = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 })
 
   // Landing animation — solo una vez al montar
@@ -63,11 +64,11 @@ export function CoPilotAvatar({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return
     dragging.current = true
+    didDrag.current = false
     dragStart.current = {
       x: e.clientX, y: e.clientY,
       right: pos.right, bottom: pos.bottom,
     }
-    e.preventDefault()
   }, [pos])
 
   useEffect(() => {
@@ -75,6 +76,9 @@ export function CoPilotAvatar({
       if (!dragging.current) return
       const dx = dragStart.current.x - e.clientX
       const dy = dragStart.current.y - e.clientY
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        didDrag.current = true
+      }
       setPos({
         right: Math.max(8, Math.min(window.innerWidth - 72, dragStart.current.right + dx)),
         bottom: Math.max(8, Math.min(window.innerHeight - 72, dragStart.current.bottom + dy)),
@@ -138,8 +142,8 @@ export function CoPilotAvatar({
   const accentColor = isBasic ? '#1E293B' : '#F59E0B'
   const accentColorRgb = isBasic ? '30,41,59' : '245,158,11'
   const avatarSrc = isBasic
-    ? '/assets/copilot-nexus-avatar.jpg'
-    : '/assets/copilot-genius-avatar.jpg'
+    ? '/assets/copilot-nexus-avatar.jpeg'
+    : '/assets/copilot-genius-avatar.jpeg'
   const avatarAlt = isBasic ? 'Nexus' : 'Genius'
   const avatarInitial = isBasic ? 'N' : 'G'
   const avatarBg = isBasic ? '#E2E8F0' : '#FEF3C7'
@@ -301,6 +305,7 @@ export function CoPilotAvatar({
           ref={avatarRef}
           onClick={e => {
             e.stopPropagation()
+            if (didDrag.current) return
             onAvatarClick()
           }}
           style={{

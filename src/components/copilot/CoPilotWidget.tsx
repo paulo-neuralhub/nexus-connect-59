@@ -750,8 +750,8 @@ function CopilotExpanded({
                 }}>
                   <img
                     src={isPro
-                      ? '/assets/copilot-genius-avatar.jpg'
-                      : '/assets/copilot-nexus-avatar.jpg'}
+                      ? '/assets/copilot-genius-avatar.jpeg'
+                      : '/assets/copilot-nexus-avatar.jpeg'}
                     style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
                     alt=""
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
