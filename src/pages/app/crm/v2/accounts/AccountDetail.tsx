@@ -232,6 +232,21 @@ export default function CRMV2AccountDetail() {
                 <TabsContent value="documents">
                   <AccountDocumentsTab accountId={id} />
                 </TabsContent>
+
+                {(account as any).is_agent && (
+                  <TabsContent value="agent">
+                    <AccountAgentTab
+                      accountId={id}
+                      accountName={account.name}
+                      isAgent={true}
+                      isLicensedAgent={(account as any).is_licensed_agent}
+                      agentLicenseType={(account as any).agent_license_type}
+                      billingType={(account as any).billing_type}
+                      discountPct={(account as any).discount_pct}
+                      portalType={(account as any).portal_type}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </div>
 
