@@ -132,7 +132,7 @@ export function MessagePane({
 
       {/* Indexing suggestion banner */}
       {indexingSuggestions.length > 0 && (
-        <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 space-y-1">
+        <div className="px-4 py-2 bg-accent/50 border-b border-accent space-y-1">
           {indexingSuggestions.slice(0, 2).map(notif => {
             // Extract matter_id from action_url
             const matterMatch = notif.action_url?.match(/matters\/([^?]+)/);
