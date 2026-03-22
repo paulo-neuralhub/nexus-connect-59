@@ -227,15 +227,15 @@ export function CoPilotWidget() {
             width: 64,
             height: 64,
             borderRadius: '50%',
-            overflow: 'hidden',
-            border: '2.5px solid #1E293B',
-            boxShadow: '0 4px 14px rgba(30,41,59,0.35)',
+            background: 'red',
+            border: '3px solid blue',
+            animation: 'copilotBreath 1s ease-in-out infinite',
             cursor: 'pointer',
             padding: 0,
-            background: '#E2E8F0',
-            animation: 'copilotBreath 3.5s ease-in-out infinite',
+            overflow: 'hidden',
             position: 'relative',
             display: 'block',
+            zIndex: 9999,
           }}
         >
           <img
