@@ -375,6 +375,18 @@ import PortalInvoices from "./pages/portal/PortalInvoices";
 import PortalCatalog from "./pages/portal/PortalCatalog";
 import PortalMessages from "./pages/portal/PortalMessages";
 
+// Agent Portal Pages (B2B2B)
+import AgentPortalLayout from "./pages/portal/agent/AgentPortalLayout";
+import AgentPortalDashboard from "./pages/portal/agent/AgentDashboard";
+import AgentPortalMatters from "./pages/portal/agent/AgentMatters";
+import AgentPortalStorefront from "./pages/portal/agent/AgentStorefront";
+import AgentPortalAnalytics from "./pages/portal/agent/AgentAnalytics";
+import AgentPortalInbox from "./pages/portal/agent/AgentInbox";
+import AgentPortalMessages from "./pages/portal/agent/AgentMessages";
+
+// Smart Inbox
+import SmartInboxPage from "./pages/app/smart-inbox";
+
 // Layout
 import { AppLayout } from "@/components/layout/app-layout";
 import { AuthGuard } from "@/components/layout/auth-guard";
