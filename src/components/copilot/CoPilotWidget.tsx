@@ -738,12 +738,40 @@ function CopilotExpanded({
 
             {isThinking && (
               <div className="flex justify-start">
-                <CompactAvatar src={avatarUrl} name={name} size={24} className="mr-2 mt-1 flex-shrink-0" />
-                <div className="bg-muted rounded-xl px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="h-2 w-2 rounded-full bg-foreground/30 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="h-2 w-2 rounded-full bg-foreground/30 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="h-2 w-2 rounded-full bg-foreground/30 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 14px',
+                  background: '#F8FAFC',
+                  borderRadius: '12px 12px 12px 4px',
+                  maxWidth: 200,
+                  marginTop: 8,
+                }}>
+                  <img
+                    src={isPro
+                      ? '/assets/copilot-genius-avatar.jpg'
+                      : '/assets/copilot-nexus-avatar.jpg'}
+                    style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
+                    alt=""
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <span style={{ fontSize: 12, color: '#6B7280' }}>
+                    {isPro ? 'Genius' : 'Nexus'} está pensando
+                  </span>
+                  <div style={{ display: 'flex', gap: 3 }}>
+                    <span className="copilot-dot" style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: '#9CA3AF',
+                    }} />
+                    <span className="copilot-dot" style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: '#9CA3AF',
+                    }} />
+                    <span className="copilot-dot" style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: '#9CA3AF',
+                    }} />
                   </div>
                 </div>
               </div>
