@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.market-agent-onboarding]
 verify_jwt = false
+
+[functions.finance-verifactu]
+verify_jwt = false
