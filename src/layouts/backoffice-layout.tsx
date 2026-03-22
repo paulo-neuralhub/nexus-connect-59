@@ -43,6 +43,7 @@ import {
   Zap,
   Radar,
   Sparkles,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -159,6 +160,16 @@ const sidebarSections: SidebarSection[] = [
     icon: Radar,
     items: [
       { label: '🕷️ Spider', path: '/backoffice/spider', icon: Radar },
+    ],
+  },
+  {
+    code: 'platform_finance',
+    label: 'Finanzas IP-NEXUS',
+    icon: Wallet,
+    items: [
+      { label: 'Dashboard P&L', path: '/backoffice/finance', icon: BarChart3 },
+      { label: 'MRR / ARR', path: '/backoffice/finance/mrr', icon: LineChart },
+      { label: 'Pendientes', path: '/backoffice/finance/pending', icon: AlertTriangle },
     ],
   },
   {
