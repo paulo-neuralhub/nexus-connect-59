@@ -541,6 +541,12 @@ const App = () => (
                   <Route path="services" element={<ServicesCatalogPage />} />
                   <Route path="setup" element={<FinanceSetupWizard />} />
                   <Route path="settings" element={<FinanceSettingsPage />} />
+                  <Route path="accounting" element={<JournalPage />} />
+                  <Route path="accounting/chart" element={<ChartOfAccountsPage />} />
+                  <Route path="bank" element={<BankAccountsPage />} />
+                  <Route path="bank/:id" element={<BankReconciliationPage />} />
+                  <Route path="reports/vat" element={<VatBookPage />} />
+                  <Route path="reports/verifactu" element={<VerifactuPage />} />
                 </Route>
                 <Route path="timetracking" element={<TimetrackingLayout />}>
                   <Route index element={<TimesheetPage />} />
