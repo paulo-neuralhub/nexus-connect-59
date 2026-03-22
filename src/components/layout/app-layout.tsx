@@ -11,7 +11,7 @@ import { MobileBottomNav, OfflineBanner, PWAInstallPrompt } from "@/components/m
 import { ContextualHelpProvider } from "@/components/help/ContextualHelpProvider";
 import { TrialBanner } from "@/components/upgrade/TrialBanner";
 import { AlertBanner } from "@/components/alerts/AlertBanner";
-import { CoPilotWidget, CoPilotGuide } from "@/components/copilot";
+import { CoPilotWidget } from "@/components/copilot";
 import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
 import { usePageTracking } from "@/hooks/usePageTracking";
@@ -115,7 +115,6 @@ export function AppLayout() {
 
                 {/* CoPilot — self-contained widget */}
                 <CoPilotWidget />
-                <CoPilotGuide />
 
                 <IPSoftphone />
                 <CallManager />
