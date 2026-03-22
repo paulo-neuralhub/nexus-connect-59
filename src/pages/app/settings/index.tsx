@@ -314,6 +314,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
           <InternalReferenceConfigPage />
         </RequirePermission>
       )}
+
+      {activeTab === 'copilot' && (
+        <RequirePermission permission="settings.update">
+          <CopilotSettings />
+        </RequirePermission>
+      )}
     </>
   );
 }
