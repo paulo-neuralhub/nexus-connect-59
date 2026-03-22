@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -6,10 +6,23 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Compass, Sparkles, Save, Loader2 } from 'lucide-react';
+import { Compass, Sparkles, Save, Loader2, Brain, Trash2, Shield } from 'lucide-react';
 import { fromTable } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CoPilotMemoryPanel } from '@/components/copilot/CoPilotMemoryPanel';
+import type { MemoryExplanation } from '@/hooks/use-copilot';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const TIMEZONES = [
   { value: 'Europe/Madrid', label: 'Madrid', offset: 'UTC+1/+2' },
@@ -57,11 +70,20 @@ interface UserPrefs {
   copilot_visible: boolean;
   copilot_size: string;
   preferred_response_length: string;
+  learning_enabled: boolean;
+  suggestions_enabled: boolean;
+  greeting_enabled: boolean;
 }
 
 export default function CopilotSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingMemory, setDeletingMemory] = useState(false);
+  const [memoryData, setMemoryData] = useState<MemoryExplanation | null>(null);
+  const [loadingMemory, setLoadingMemory] = useState(false);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
   const [orgConfig, setOrgConfig] = useState<OrgConfig>({
     copilot_mode: 'basic',
     copilot_name: 'CoPilot Nexus',
@@ -75,6 +97,9 @@ export default function CopilotSettings() {
     copilot_visible: true,
     copilot_size: 'bubble',
     preferred_response_length: 'normal',
+    learning_enabled: true,
+    suggestions_enabled: true,
+    greeting_enabled: true,
   });
 
   useEffect(() => {
@@ -85,12 +110,14 @@ export default function CopilotSettings() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUserId(user.id);
 
       const { data: profile } = await fromTable('profiles')
         .select('organization_id')
         .eq('id', user.id)
         .single();
       if (!profile?.organization_id) return;
+      setOrgId(profile.organization_id);
 
       const { data: gtc } = await fromTable('genius_tenant_config')
         .select('copilot_mode, copilot_name, briefing_enabled, briefing_hour, timezone, guide_mode_enabled, proactive_enabled')
@@ -110,7 +137,7 @@ export default function CopilotSettings() {
       }
 
       const { data: prefs } = await fromTable('copilot_user_preferences')
-        .select('copilot_visible, copilot_size, preferred_response_length')
+        .select('copilot_visible, copilot_size, preferred_response_length, learning_enabled, suggestions_enabled, greeting_enabled')
         .eq('user_id', user.id)
         .eq('organization_id', profile.organization_id)
         .maybeSingle();
@@ -120,6 +147,9 @@ export default function CopilotSettings() {
           copilot_visible: prefs.copilot_visible ?? true,
           copilot_size: prefs.copilot_size || 'bubble',
           preferred_response_length: prefs.preferred_response_length || 'normal',
+          learning_enabled: prefs.learning_enabled ?? true,
+          suggestions_enabled: prefs.suggestions_enabled ?? true,
+          greeting_enabled: prefs.greeting_enabled ?? true,
         });
       }
     } catch (err) {
@@ -153,7 +183,6 @@ export default function CopilotSettings() {
         })
         .eq('organization_id', profile.organization_id);
 
-      // Also update org timezone
       await fromTable('organizations')
         .update({ timezone: orgConfig.timezone })
         .eq('id', profile.organization_id);
@@ -178,6 +207,9 @@ export default function CopilotSettings() {
           copilot_visible: userPrefs.copilot_visible,
           copilot_size: userPrefs.copilot_size,
           preferred_response_length: userPrefs.preferred_response_length,
+          learning_enabled: userPrefs.learning_enabled,
+          suggestions_enabled: userPrefs.suggestions_enabled,
+          greeting_enabled: userPrefs.greeting_enabled,
         },
       });
 
@@ -187,6 +219,43 @@ export default function CopilotSettings() {
       toast.error('Error al guardar preferencias');
     } finally {
       setSaving(false);
+    }
+  }
+
+  const fetchMemory = useCallback(async () => {
+    setLoadingMemory(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('copilot-memory-explain');
+      if (error) throw error;
+      setMemoryData(data as MemoryExplanation);
+    } catch {
+      console.error('Error fetching memory explanation');
+    } finally {
+      setLoadingMemory(false);
+    }
+  }, []);
+
+  async function deleteAllLearningData() {
+    if (!userId || !orgId) return;
+    setDeletingMemory(true);
+    try {
+      await fromTable('copilot_user_patterns')
+        .delete()
+        .eq('user_id', userId)
+        .eq('organization_id', orgId);
+
+      await fromTable('copilot_writing_memory')
+        .delete()
+        .eq('user_id', userId)
+        .eq('organization_id', orgId);
+
+      setMemoryData(null);
+      toast.success('Historial borrado. El CoPilot empezará a aprender de nuevo.');
+    } catch (err) {
+      console.error('Error deleting learning data:', err);
+      toast.error('Error al borrar datos de aprendizaje');
+    } finally {
+      setDeletingMemory(false);
     }
   }
 
@@ -358,6 +427,28 @@ export default function CopilotSettings() {
             />
           </div>
 
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Saludo diario</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">Saludo personalizado al abrir la app</p>
+            </div>
+            <Switch
+              checked={userPrefs.greeting_enabled}
+              onCheckedChange={(v) => setUserPrefs(p => ({ ...p, greeting_enabled: v }))}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Sugerencias proactivas</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">Sugerencias contextuales según la página</p>
+            </div>
+            <Switch
+              checked={userPrefs.suggestions_enabled}
+              onCheckedChange={(v) => setUserPrefs(p => ({ ...p, suggestions_enabled: v }))}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Tamaño por defecto</Label>
             <Select
@@ -396,6 +487,92 @@ export default function CopilotSettings() {
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Guardar preferencias
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Learning & Memory (GDPR) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Brain className={isPro ? 'h-5 w-5 text-amber-500' : 'h-5 w-5 text-primary'} />
+            Mi historial de aprendizaje
+          </CardTitle>
+          <CardDescription className="flex items-center gap-1.5">
+            <Shield className="h-3.5 w-3.5" />
+            Transparencia GDPR — Controla qué sabe el CoPilot sobre ti
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Learning toggle */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div>
+              <Label className="font-medium">Permitir aprendizaje</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                El CoPilot aprende de tus patrones para personalizar sugerencias
+              </p>
+            </div>
+            <Switch
+              checked={userPrefs.learning_enabled}
+              onCheckedChange={(v) => {
+                setUserPrefs(p => ({ ...p, learning_enabled: v }));
+                // Save immediately
+                supabase.functions.invoke('genius-user-prefs', {
+                  body: { learning_enabled: v },
+                }).catch(() => {});
+                toast.success(v ? 'Aprendizaje activado' : 'Aprendizaje desactivado');
+              }}
+            />
+          </div>
+
+          {/* Memory Panel */}
+          <div className="rounded-lg border p-4">
+            <CoPilotMemoryPanel
+              isPro={isPro}
+              isLoading={loadingMemory}
+              data={memoryData}
+              onFetch={fetchMemory}
+              onBack={() => {}} // Not needed in settings context
+              onDeleteAll={deleteAllLearningData}
+            />
+          </div>
+
+          {/* Delete all data */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                disabled={deletingMemory}
+              >
+                {deletingMemory ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
+                Borrar todo mi historial de aprendizaje
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Confirmas?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se borrarán todos los patrones aprendidos sobre ti.
+                  El CoPilot empezará desde cero.
+                  <br /><br />
+                  <strong>Esta acción no se puede deshacer.</strong>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={deleteAllLearningData}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Sí, borrar todo
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

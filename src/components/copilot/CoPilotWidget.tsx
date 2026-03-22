@@ -59,9 +59,20 @@ export function CoPilotWidget() {
     bubbleState, showGreeting, setShowGreeting,
     dragPosition, onDragEnd,
     activeSuggestion, actOnSuggestion, dismissSuggestion,
-    trackEvent,
+    trackEvent, currentPage,
     memoryExplanation, isLoadingMemory, fetchMemoryExplanation,
   } = copilot;
+
+  // Contextual placeholder based on current page
+  const inputPlaceholder = currentPage.includes('/matters/')
+    ? 'Pregunta sobre este expediente...'
+    : currentPage.includes('/spider')
+    ? 'Analiza esta alerta de similitud...'
+    : currentPage.includes('/crm/')
+    ? '¿Qué me dices de este cliente?'
+    : currentPage.includes('/dashboard')
+    ? '¿En qué puedo ayudarte hoy?'
+    : 'Pregunta lo que necesites...';
 
   // Auto-focus input when expanding
   useEffect(() => {
@@ -187,6 +198,7 @@ export function CoPilotWidget() {
             features={features}
             inputRef={inputRef}
             scrollRef={scrollRef}
+            inputPlaceholder={inputPlaceholder}
             memoryExplanation={memoryExplanation}
             isLoadingMemory={isLoadingMemory}
             onFetchMemory={fetchMemoryExplanation}
@@ -445,7 +457,7 @@ function CopilotCompact({
 function CopilotExpanded({
   isPro, name, avatarUrl, mode, briefing, hasBriefing, messages, inputValue,
   isThinking, queriesRemaining, queriesLimit, features,
-  inputRef, scrollRef, onInputChange, onSend, onCollapse,
+  inputRef, scrollRef, inputPlaceholder, onInputChange, onSend, onCollapse,
   onMarkBriefingRead, onDismissBriefing, onNavigate,
   memoryExplanation, isLoadingMemory, onFetchMemory,
 }: {
@@ -463,6 +475,7 @@ function CopilotExpanded({
   features: any;
   inputRef: React.RefObject<HTMLInputElement>;
   scrollRef: React.RefObject<HTMLDivElement>;
+  inputPlaceholder: string;
   memoryExplanation: any;
   isLoadingMemory: boolean;
   onFetchMemory: () => void;
@@ -707,7 +720,7 @@ function CopilotExpanded({
               value={inputValue}
               onChange={(e) => onInputChange(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSend()}
-              placeholder="Escribe tu pregunta..."
+              placeholder={inputPlaceholder}
               className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-muted-foreground"
               disabled={isThinking}
             />
@@ -725,14 +738,41 @@ function CopilotExpanded({
             </Button>
           </div>
 
-          {/* Upgrade footer (Basic only) */}
+          {/* Query counter (Basic) or upgrade footer */}
           {!isPro && (
             <div className="px-3 py-2 border-t bg-muted/20 flex-shrink-0">
+              {queriesLimit > 0 && (
+                <div className="mb-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                    <span>Consultas este mes</span>
+                    <span className={cn(
+                      'font-mono',
+                      queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-destructive font-medium' :
+                      queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-amber-600' : ''
+                    )}>
+                      {queriesLimit - queriesRemaining}/{queriesLimit}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all',
+                        queriesRemaining <= 0 ? 'bg-destructive' :
+                        queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'bg-amber-500' :
+                        'bg-primary'
+                      )}
+                      style={{ width: `${Math.min(100, ((queriesLimit - queriesRemaining) / queriesLimit) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               <button
                 onClick={() => onNavigate('/app/settings/billing')}
                 className="text-[10px] text-muted-foreground hover:text-primary transition-colors w-full text-center"
               >
-                Actualiza a IP-Genius Pro para análisis legal profundo →
+                {queriesRemaining <= 0
+                  ? '⚡ Sin consultas disponibles — Actualizar a Pro →'
+                  : 'Actualiza a IP-Genius Pro para análisis legal profundo →'}
               </button>
             </div>
           )}
