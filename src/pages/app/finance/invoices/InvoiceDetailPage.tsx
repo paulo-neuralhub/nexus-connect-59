@@ -289,6 +289,14 @@ export default function InvoiceDetailPage() {
             ) : null}
           </CardContent>
         </Card>
+
+        {/* Verifactu Section */}
+        <VerifactuInvoiceSection
+          invoiceId={invoiceId}
+          verifactuStatus={(inv as any).verifactu_status}
+          verifactuHash={(inv as any).verifactu_hash}
+          verifactuQr={(inv as any).verifactu_qr}
+        />
       </div>
 
       {/* Email Dialog */}
