@@ -783,6 +783,28 @@ export function CoPilotWidget() {
         </div>
       )}
 
+      {/* ── PROGRESS INDICATOR ─────────────────────────── */}
+      {executing && (
+        <div className="cp-tooltip" style={{
+          background: '#1E293B', color: 'white',
+          borderRadius: 12, padding: '10px 16px',
+          fontSize: 12, display: 'flex',
+          alignItems: 'center', gap: 8,
+          maxWidth: 220,
+        }}>
+          {executing.startsWith('✓') ? (
+            <span style={{ color: '#34D399', fontSize: 16 }}>✓</span>
+          ) : (
+            <div style={{ display: 'flex', gap: 3 }}>
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+            </div>
+          )}
+          <span>{executing}</span>
+        </div>
+      )}
+
       {/* ── CÍRCULO DEL AVATAR ────────────────────────── */}
       <div className="cp-bubble-wrapper">
         <div className="cp-ring" />
