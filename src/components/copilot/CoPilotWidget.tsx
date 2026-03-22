@@ -40,9 +40,32 @@ const CSS_CONTENT = `
   }
   .cp-dot:nth-child(2) { animation-delay: 0.2s; }
   .cp-dot:nth-child(3) { animation-delay: 0.4s; }
+  .cp-bubble-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cp-ring {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(30,41,59,0.4);
+    animation: cpRing 2.5s ease-out infinite;
+    pointer-events: none;
+  }
+  .cp-ring:nth-child(2) {
+    animation-delay: 0.8s;
+    border-color: rgba(30,41,59,0.2);
+  }
+  @keyframes cpRing {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
   @keyframes cpBreath {
-    0%, 100% { transform: scale(1); opacity: 0.9; }
-    50% { transform: scale(1.06); opacity: 1; }
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(30,41,59,0.35); }
+    50% { transform: scale(1.09); box-shadow: 0 6px 28px rgba(30,41,59,0.55); }
   }
   @keyframes cpSlideUp {
     from { opacity: 0; transform: translateY(20px) scale(0.94); }
@@ -598,22 +621,26 @@ export function CoPilotWidget() {
       )}
 
       {/* ── CÍRCULO DEL AVATAR ────────────────────────── */}
-      <div
-        ref={bubbleRef}
-        className={`cp-bubble${breathing ? ' breathing' : ''}`}
-        onClick={() => {
-          if (moved.current) return
-          if (panel === 'closed') setPanel('bubble')
-          else if (panel === 'bubble') setPanel('open')
-          else setPanel('closed')
-        }}
-      >
-        <img
-          src={AVATAR}
-          alt="CoPilot Nexus"
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          onError={e => { e.currentTarget.style.display = 'none' }}
-        />
+      <div className="cp-bubble-wrapper">
+        <div className="cp-ring" />
+        <div className="cp-ring" />
+        <div
+          ref={bubbleRef}
+          className={`cp-bubble${breathing ? ' breathing' : ''}`}
+          onClick={() => {
+            if (moved.current) return
+            if (panel === 'closed') setPanel('bubble')
+            else if (panel === 'bubble') setPanel('open')
+            else setPanel('closed')
+          }}
+        >
+          <img
+            src={AVATAR}
+            alt="CoPilot Nexus"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={e => { e.currentTarget.style.display = 'none' }}
+          />
+        </div>
       </div>
     </div>
   )
