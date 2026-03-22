@@ -90,6 +90,18 @@ const CSS_CONTENT = `
     90%  { transform: translateY(-2px) scale(1.02); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
+  .cp-highlight {
+    outline: 2.5px solid #F59E0B !important;
+    outline-offset: 4px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 0 6px rgba(245,158,11,0.15) !important;
+    transition: all 0.4s ease !important;
+    animation: cpHighlightPulse 1s ease-in-out 3 !important;
+  }
+  @keyframes cpHighlightPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(245,158,11,0.15); }
+    50% { box-shadow: 0 0 0 10px rgba(245,158,11,0.05); }
+  }
   @keyframes cpAttentive {
     0%, 100% { transform: scale(1); box-shadow: 0 4px 24px rgba(30,41,59,0.40); }
     50% { transform: scale(1.07); box-shadow: 0 6px 30px rgba(30,41,59,0.60); }
@@ -198,6 +210,47 @@ export function CoPilotWidget() {
 
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
+
+  // ── Avatar movement toward relevant element ────────────
+  const lastMovePath = useRef('')
+  useEffect(() => {
+    if (location.pathname === lastMovePath.current) return
+    lastMovePath.current = location.pathname
+
+    const t = setTimeout(() => {
+      if (panel === 'open') return
+
+      let targetEl: Element | null = null
+
+      if (location.pathname.match(/\/matters\/[a-f0-9-]{36}|\/expedientes\/[a-f0-9-]{36}/)) {
+        targetEl = document.querySelector('[data-copilot="matter-deadlines"]')
+          || document.querySelector('[data-copilot="matter-header"]')
+      } else if (location.pathname.includes('/spider')
+              || location.pathname.includes('/alerts')) {
+        targetEl = document.querySelector('[data-copilot="alert-critical"]')
+          || document.querySelector('[data-copilot="spider-dashboard"]')
+      } else if (location.pathname.includes('/calendar')
+              || location.pathname.includes('/calendario')) {
+        targetEl = document.querySelector('[data-copilot="calendar-urgent"]')
+      }
+
+      if (!targetEl) return
+
+      const rect = targetEl.getBoundingClientRect()
+      const newRight = Math.max(16, window.innerWidth - rect.right - 80)
+      const newBottom = Math.max(16, window.innerHeight - rect.bottom - 20)
+
+      setPos({ right: newRight, bottom: newBottom })
+      localStorage.setItem('cp_pos_v3', JSON.stringify({ right: newRight, bottom: newBottom }))
+
+      targetEl.classList.add('cp-highlight')
+      setTimeout(() => {
+        targetEl?.classList.remove('cp-highlight')
+      }, 3000)
+    }, 800)
+
+    return () => clearTimeout(t)
+  }, [location.pathname, panel])
 
   // ── Drag ──────────────────────────────────────────────
   const onMouseDown = (e: React.MouseEvent) => {

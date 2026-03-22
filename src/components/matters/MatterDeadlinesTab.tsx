@@ -82,7 +82,7 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
   const overdueCount = (deadlines || []).filter(d => !d.is_completed && isPast(new Date(d.due_date))).length;
 
   return (
-    <div className="space-y-3">
+    <div data-copilot="matter-deadlines" className="space-y-3">
       {/* Sub-tabs outside the card */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -205,7 +205,7 @@ export function MatterDetailHeader({
   const isTrademark = matter.matter_type?.startsWith('TM') || matter.matter_type === 'trademark' || matter.matter_type === 'NC';
 
   return (
-    <div className="bg-gradient-to-b from-white to-slate-50/50 border-b border-slate-200">
+    <div data-copilot="matter-header" className="bg-gradient-to-b from-white to-slate-50/50 border-b border-slate-200">
 
       {/* Top Navigation Bar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100">
