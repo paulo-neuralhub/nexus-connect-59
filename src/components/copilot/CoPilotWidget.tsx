@@ -166,6 +166,46 @@ export function CoPilotWidget() {
   }, [])
 
   const { suggestion, bubbleState, dismissSuggestion } = useAgentBrain(orgId)
+  const [executing, setExecuting] = useState<string | null>(null)
+
+  const executeAction = async (
+    type: string,
+    payload: Record<string, unknown>
+  ) => {
+    setExecuting('Iniciando...')
+    try {
+      if (type === 'navigate' && payload.path) {
+        setExecuting('Navegando...')
+        await new Promise(r => setTimeout(r, 500))
+        window.location.href = payload.path as string
+        return
+      }
+      if (type === 'create_deadline') {
+        setExecuting('Creando plazo...')
+        const client: any = supabase
+        await client.from('matter_deadlines').insert({
+          matter_id: payload.matter_id,
+          organization_id: orgId,
+          title: payload.title as string,
+          deadline_date: payload.due_date as string,
+          status: 'pending',
+          deadline_type: 'internal',
+        })
+        setExecuting('✓ Plazo creado')
+        setTimeout(() => setExecuting(null), 2000)
+        return
+      }
+      if (type === 'analyze') {
+        setExecuting('Analizando...')
+        setPanel('open')
+        setExecuting(null)
+        return
+      }
+    } catch {
+      setExecuting('Error. Intenta de nuevo.')
+      setTimeout(() => setExecuting(null), 3000)
+    }
+  }
 
   // Show urgent suggestions automatically
   useEffect(() => {
@@ -682,8 +722,8 @@ export function CoPilotWidget() {
             {suggestion && suggestion.actionLabel && (
               <button
                 onClick={() => {
-                  if (suggestion.actionType === 'navigate' && suggestion.actionPayload?.path) {
-                    window.location.href = suggestion.actionPayload.path as string
+                  if (suggestion.actionType && suggestion.actionPayload) {
+                    executeAction(suggestion.actionType, suggestion.actionPayload)
                   }
                   dismissSuggestion()
                   setPanel('closed')
@@ -740,6 +780,28 @@ export function CoPilotWidget() {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── PROGRESS INDICATOR ─────────────────────────── */}
+      {executing && (
+        <div className="cp-tooltip" style={{
+          background: '#1E293B', color: 'white',
+          borderRadius: 12, padding: '10px 16px',
+          fontSize: 12, display: 'flex',
+          alignItems: 'center', gap: 8,
+          maxWidth: 220,
+        }}>
+          {executing.startsWith('✓') ? (
+            <span style={{ color: '#34D399', fontSize: 16 }}>✓</span>
+          ) : (
+            <div style={{ display: 'flex', gap: 3 }}>
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+              <span className="cp-dot" style={{ background: 'rgba(255,255,255,0.6)' }} />
+            </div>
+          )}
+          <span>{executing}</span>
         </div>
       )}
 
