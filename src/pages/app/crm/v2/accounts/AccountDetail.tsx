@@ -19,7 +19,7 @@ import {
 import {
   ArrowLeft, Edit, Star, MoreHorizontal, Mail, Phone,
   Archive, Trash2, Building2, Users, Briefcase, TrendingUp,
-  Clock, FileText, AlertTriangle
+  Clock, FileText, AlertTriangle, Globe
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
