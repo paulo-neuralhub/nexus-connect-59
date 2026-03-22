@@ -625,39 +625,67 @@ export function CoPilotWidget() {
           >
             {greeting || '¿En qué puedo ayudarte? 👋'}
           </p>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => { setGreeting(''); setPanel('open') }}
-              style={{
-                background: ACCENT,
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                padding: '7px 16px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              Abrir →
-            </button>
-            <button
-              onClick={() => { setGreeting(''); setPanel('closed') }}
-              style={{
-                background: 'transparent',
-                color: '#9CA3AF',
-                border: '1px solid #E5E7EB',
-                borderRadius: 8,
-                padding: '7px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              Más tarde
-            </button>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {suggestion && suggestion.actionLabel && (
+              <button
+                onClick={() => {
+                  if (suggestion.actionType === 'navigate' && suggestion.actionPayload?.path) {
+                    window.location.href = suggestion.actionPayload.path as string
+                  }
+                  dismissSuggestion()
+                  setPanel('closed')
+                }}
+                style={{
+                  background: suggestion.type === 'urgent' ? '#EF4444'
+                           : suggestion.type === 'high' ? '#F59E0B'
+                           : ACCENT,
+                  color: 'white', border: 'none', borderRadius: 8,
+                  padding: '7px 16px', fontSize: 12,
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                {suggestion.actionLabel}
+              </button>
+            )}
+            {suggestion ? (
+              <button
+                onClick={() => { dismissSuggestion(); setGreeting(''); setPanel('closed') }}
+                style={{
+                  background: 'transparent', color: '#9CA3AF',
+                  border: '1px solid #E5E7EB', borderRadius: 8,
+                  padding: '7px 12px', fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                Descartar
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => { setGreeting(''); setPanel('open') }}
+                  style={{
+                    background: ACCENT, color: 'white',
+                    border: 'none', borderRadius: 8,
+                    padding: '7px 16px', fontSize: 12,
+                    fontWeight: 600, cursor: 'pointer',
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  Abrir →
+                </button>
+                <button
+                  onClick={() => { setGreeting(''); setPanel('closed') }}
+                  style={{
+                    background: 'transparent', color: '#9CA3AF',
+                    border: '1px solid #E5E7EB', borderRadius: 8,
+                    padding: '7px 12px', fontSize: 12, cursor: 'pointer',
+                  }}
+                >
+                  Más tarde
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
