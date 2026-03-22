@@ -325,7 +325,7 @@ export function CoPilotWidget() {
             }}
           >
             <img
-              src="/assets/copilot-nexus-avatar.jpg"
+              src="/assets/copilot-nexus-avatar.jpeg"
               alt="Nexus"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={e => { e.currentTarget.style.display = 'none'; }}
