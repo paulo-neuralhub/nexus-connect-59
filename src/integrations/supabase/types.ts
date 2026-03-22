@@ -13207,7 +13207,9 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_default: boolean | null
+          last_message_at: string | null
           matter_id: string | null
+          message_count: number | null
           name: string
           organization_id: string
           slug: string
@@ -13222,7 +13224,9 @@ export type Database = {
           id?: string
           is_archived?: boolean | null
           is_default?: boolean | null
+          last_message_at?: string | null
           matter_id?: string | null
+          message_count?: number | null
           name: string
           organization_id: string
           slug: string
@@ -13237,7 +13241,9 @@ export type Database = {
           id?: string
           is_archived?: boolean | null
           is_default?: boolean | null
+          last_message_at?: string | null
           matter_id?: string | null
+          message_count?: number | null
           name?: string
           organization_id?: string
           slug?: string
@@ -13323,6 +13329,11 @@ export type Database = {
       internal_messages: {
         Row: {
           ai_classification: string | null
+          ai_confidence: number | null
+          ai_reason: string | null
+          ai_suggested_action: string | null
+          ai_suggested_matter_id: string | null
+          app_context: Json | null
           attachments: Json | null
           channel_id: string
           content: string
@@ -13330,11 +13341,16 @@ export type Database = {
           created_at: string | null
           edited_at: string | null
           id: string
+          indexed_at: string | null
+          indexed_by: string | null
+          indexed_to_matter_id: string | null
           is_deleted: boolean | null
           is_edited: boolean | null
           mentions: string[] | null
           organization_id: string
           reactions: Json | null
+          referenced_deadline_id: string | null
+          referenced_invoice_id: string | null
           referenced_matter_id: string | null
           reply_to_id: string | null
           sender_id: string
@@ -13343,6 +13359,11 @@ export type Database = {
         }
         Insert: {
           ai_classification?: string | null
+          ai_confidence?: number | null
+          ai_reason?: string | null
+          ai_suggested_action?: string | null
+          ai_suggested_matter_id?: string | null
+          app_context?: Json | null
           attachments?: Json | null
           channel_id: string
           content: string
@@ -13350,11 +13371,16 @@ export type Database = {
           created_at?: string | null
           edited_at?: string | null
           id?: string
+          indexed_at?: string | null
+          indexed_by?: string | null
+          indexed_to_matter_id?: string | null
           is_deleted?: boolean | null
           is_edited?: boolean | null
           mentions?: string[] | null
           organization_id: string
           reactions?: Json | null
+          referenced_deadline_id?: string | null
+          referenced_invoice_id?: string | null
           referenced_matter_id?: string | null
           reply_to_id?: string | null
           sender_id: string
@@ -13363,6 +13389,11 @@ export type Database = {
         }
         Update: {
           ai_classification?: string | null
+          ai_confidence?: number | null
+          ai_reason?: string | null
+          ai_suggested_action?: string | null
+          ai_suggested_matter_id?: string | null
+          app_context?: Json | null
           attachments?: Json | null
           channel_id?: string
           content?: string
@@ -13370,11 +13401,16 @@ export type Database = {
           created_at?: string | null
           edited_at?: string | null
           id?: string
+          indexed_at?: string | null
+          indexed_by?: string | null
+          indexed_to_matter_id?: string | null
           is_deleted?: boolean | null
           is_edited?: boolean | null
           mentions?: string[] | null
           organization_id?: string
           reactions?: Json | null
+          referenced_deadline_id?: string | null
+          referenced_invoice_id?: string | null
           referenced_matter_id?: string | null
           reply_to_id?: string | null
           sender_id?: string
@@ -13383,10 +13419,31 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "internal_messages_ai_suggested_matter_id_fkey"
+            columns: ["ai_suggested_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "internal_messages_channel_id_fkey"
             columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "internal_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_indexed_by_fkey"
+            columns: ["indexed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_indexed_to_matter_id_fkey"
+            columns: ["indexed_to_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
           {
@@ -25590,6 +25647,7 @@ export type Database = {
       }
       staff_notifications: {
         Row: {
+          action_url: string | null
           body: string | null
           created_at: string | null
           icon: string | null
@@ -25597,6 +25655,7 @@ export type Database = {
           is_read: boolean | null
           link: string | null
           organization_id: string
+          priority: string | null
           read_at: string | null
           source_id: string | null
           source_type: string | null
@@ -25605,6 +25664,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          action_url?: string | null
           body?: string | null
           created_at?: string | null
           icon?: string | null
@@ -25612,6 +25672,7 @@ export type Database = {
           is_read?: boolean | null
           link?: string | null
           organization_id: string
+          priority?: string | null
           read_at?: string | null
           source_id?: string | null
           source_type?: string | null
@@ -25620,6 +25681,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          action_url?: string | null
           body?: string | null
           created_at?: string | null
           icon?: string | null
@@ -25627,6 +25689,7 @@ export type Database = {
           is_read?: boolean | null
           link?: string | null
           organization_id?: string
+          priority?: string | null
           read_at?: string | null
           source_id?: string | null
           source_type?: string | null

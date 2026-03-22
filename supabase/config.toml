@@ -125,3 +125,12 @@ verify_jwt = false
 
 [functions.portal-impersonate]
 verify_jwt = false
+
+[functions.internal-chat-send]
+verify_jwt = false
+
+[functions.internal-chat-classifier]
+verify_jwt = false
+
+[functions.internal-chat-index]
+verify_jwt = false
