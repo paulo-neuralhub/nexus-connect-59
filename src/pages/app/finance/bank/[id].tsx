@@ -95,9 +95,17 @@ export default function BankReconciliationPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{account?.account_name || 'Cuenta bancaria'}</h1>
-        <p className="text-muted-foreground">{account?.bank_name} · {account?.iban ? `···${account.iban.slice(-4)}` : ''} · Saldo: {fmt(account?.current_balance || 0)} €</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{account?.account_name || 'Cuenta bancaria'}</h1>
+          <p className="text-muted-foreground">{account?.bank_name} · {account?.iban ? `···${account.iban.slice(-4)}` : ''} · Saldo: {fmt(account?.current_balance || 0)} €</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+            <Upload className="w-4 h-4 mr-2" />Importar extracto
+          </Button>
+          <FintocConnect bankAccountId={id} />
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
