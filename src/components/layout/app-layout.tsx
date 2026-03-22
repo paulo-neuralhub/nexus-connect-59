@@ -149,7 +149,8 @@ export function AppLayout() {
                 </div>
                 {/* Timer stays floating on mobile; on desktop it's embedded in the sidebar */}
                 <NexusGuideButton />
-                <HelpWidget />
+                <CoPilotWidget />
+                <CoPilotGuide />
 
                 <IPSoftphone />
                 
