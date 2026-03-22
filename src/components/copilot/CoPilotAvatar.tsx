@@ -76,6 +76,9 @@ export function CoPilotAvatar({
       if (!dragging.current) return
       const dx = dragStart.current.x - e.clientX
       const dy = dragStart.current.y - e.clientY
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        didDrag.current = true
+      }
       setPos({
         right: Math.max(8, Math.min(window.innerWidth - 72, dragStart.current.right + dx)),
         bottom: Math.max(8, Math.min(window.innerHeight - 72, dragStart.current.bottom + dy)),
