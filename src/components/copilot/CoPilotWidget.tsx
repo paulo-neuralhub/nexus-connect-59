@@ -42,7 +42,13 @@ function PriorityIcon({ type, priority }: { type: string; priority: string }) {
 }
 
 // ── Main Widget ─────────────────────────────────────────────
-export function CoPilotWidget() {
+interface CoPilotWidgetProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
+  const controlled = isOpen !== undefined;
   const copilot = useCopilot();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
