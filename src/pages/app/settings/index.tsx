@@ -77,6 +77,7 @@ const ORG_TABS = [
   { id: 'automations', label: 'Automatizaciones', icon: Zap, permission: 'settings.update' },
   { id: 'deadlines', label: 'Reglas de Plazos', icon: CalendarClock, permission: 'settings.update' },
   { id: 'internal-reference', label: 'Referencia Interna', icon: Hash, permission: 'settings.update' },
+  { id: 'copilot', label: 'CoPilot', icon: Compass, permission: 'settings.update' },
 ];
 
 // Tabs for user settings
