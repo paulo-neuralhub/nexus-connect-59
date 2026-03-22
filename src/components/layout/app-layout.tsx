@@ -152,7 +152,7 @@ export function AppLayout() {
                   </main>
                 </div>
                 {/* Timer stays floating on mobile; on desktop it's embedded in the sidebar */}
-                <NexusGuideButton />
+                {/* NexusGuideButton removed — CoPilotGuide replaces it */}
                 <CoPilotWidget />
                 <CoPilotGuide />
 
