@@ -46,10 +46,19 @@ export function CoPilotWidget() {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bubbleRef = useRef<HTMLButtonElement>(null);
+  const hasLanded = useRef(false);
 
   const [chatState, setChatState] = useState<WidgetState>('minimized');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [showGreeting, setShowGreeting] = useState(false);
+
+  // ── Drag state ──
+  const [position, setPosition] = useState({ right: 24, bottom: 24 });
+  const isDragging = useRef(false);
+  const didDrag = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 });
 
   const {
     isPro, mode, name, avatarUrl,
@@ -71,6 +80,78 @@ export function CoPilotWidget() {
     : currentPage.includes('/dashboard')
     ? '¿En qué puedo ayudarte hoy?'
     : 'Pregunta lo que necesites...';
+
+  // ── Landing animation ──
+  useEffect(() => {
+    if (hasLanded.current || !bubbleRef.current) return;
+    hasLanded.current = true;
+    const el = bubbleRef.current;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'copilotLand 1.4s cubic-bezier(0.22,1,0.36,1) forwards';
+    el.addEventListener('animationend', () => {
+      el.style.animation = 'copilotBreath 3.5s ease-in-out infinite';
+    }, { once: true });
+  }, []);
+
+  // ── Load saved position ──
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('copilot_pos');
+      if (saved) setPosition(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  // ── Drag handlers ──
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button[data-no-drag]')) return;
+    isDragging.current = true;
+    didDrag.current = false;
+    dragStart.current = {
+      x: e.clientX, y: e.clientY,
+      right: position.right, bottom: position.bottom,
+    };
+  };
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      didDrag.current = true;
+      const dx = dragStart.current.x - e.clientX;
+      const dy = dragStart.current.y - e.clientY;
+      setPosition({
+        right: Math.max(8, dragStart.current.right + dx),
+        bottom: Math.max(8, dragStart.current.bottom + dy),
+      });
+    };
+    const onUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      setPosition(p => {
+        localStorage.setItem('copilot_pos', JSON.stringify(p));
+        return p;
+      });
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  // ── Daily greeting ──
+  useEffect(() => {
+    const today = new Date().toDateString();
+    if (localStorage.getItem('copilot_greeted') === today) return;
+    const t = setTimeout(() => {
+      localStorage.setItem('copilot_greeted', today);
+      setShowGreeting(true);
+      setChatState('bubble');
+      setTimeout(() => setShowGreeting(false), 8000);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   // Auto-focus input when opening chat
   useEffect(() => {
@@ -115,15 +196,33 @@ export function CoPilotWidget() {
     }
   }, [inputValue, isThinking, sendMessage]);
 
+  // Greeting text
+  const greetingText = (() => {
+    const hour = new Date().getHours();
+    const saludo = hour < 12 ? 'Buenos días ☀️'
+                 : hour < 20 ? 'Buenas tardes 🌤️'
+                 : 'Buenas noches 🌙';
+    return `${saludo} Soy Nexus, tu asistente de PI.`;
+  })();
+
   // Don't show on help pages
   if (copilot.currentPage.startsWith('/app/help')) return null;
 
+  const handleBubbleClick = () => {
+    if (didDrag.current) { didDrag.current = false; return; }
+    setChatState('bubble');
+  };
+
   return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998 }}>
+    <div
+      style={{ position: 'fixed', bottom: position.bottom, right: position.right, zIndex: 9998 }}
+      onMouseDown={handleMouseDown}
+    >
       {/* ESTADO MINIMIZADO — Avatar circular */}
       {chatState === 'minimized' && (
         <button
-          onClick={() => setChatState('bubble')}
+          ref={bubbleRef}
+          onClick={handleBubbleClick}
           style={{
             width: 64,
             height: 64,
@@ -160,12 +259,14 @@ export function CoPilotWidget() {
             padding: '12px 16px',
             maxWidth: 240,
             border: '1px solid rgba(30,41,59,0.12)',
+            animation: 'copilotSlideUp 0.3s ease-out',
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#374151' }}>
-              ¿En qué puedo ayudarte? 👋
+              {showGreeting ? greetingText : '¿En qué puedo ayudarte? 👋'}
             </p>
             <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
               <button
+                data-no-drag
                 onClick={() => setChatState('open')}
                 style={{
                   background: '#1E293B', color: 'white',
@@ -177,6 +278,7 @@ export function CoPilotWidget() {
                 Abrir chat →
               </button>
               <button
+                data-no-drag
                 onClick={() => setChatState('minimized')}
                 style={{
                   background: 'transparent', color: '#9CA3AF',
@@ -190,7 +292,7 @@ export function CoPilotWidget() {
           </div>
 
           <button
-            onClick={() => setChatState('minimized')}
+            onClick={() => { if (!didDrag.current) setChatState('minimized'); didDrag.current = false; }}
             style={{
               width: 64, height: 64, borderRadius: '50%',
               overflow: 'hidden',
@@ -210,7 +312,6 @@ export function CoPilotWidget() {
           </button>
         </div>
       )}
-
       {/* ESTADO OPEN — Panel de chat completo */}
       {chatState === 'open' && (
         <CopilotExpanded
