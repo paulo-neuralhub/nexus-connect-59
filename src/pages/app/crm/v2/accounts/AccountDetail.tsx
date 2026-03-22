@@ -33,6 +33,7 @@ import { AccountPortfolioTab } from "./tabs/AccountPortfolioTab";
 import { AccountDealsTab } from "./tabs/AccountDealsTab";
 import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
+import { AccountAgentTab } from "./tabs/AccountAgentTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
 import { openSoftphone } from "@/components/telephony/IPSoftphone";
