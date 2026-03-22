@@ -178,6 +178,8 @@ export default function BankReconciliationPage() {
           <TransactionsTable transactions={transactions} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
+
+      {id && <BankImportWizard open={showImport} onOpenChange={setShowImport} bankAccountId={id} />}
     </div>
   );
 }
