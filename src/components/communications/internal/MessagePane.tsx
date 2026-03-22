@@ -142,8 +142,8 @@ export function MessagePane({
 
             return (
               <div key={notif.id} className="flex items-center gap-2 text-xs">
-                <Sparkles className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-                <span className="flex-1 text-amber-800 dark:text-amber-200 truncate">{notif.title}</span>
+                <Sparkles className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                <span className="flex-1 text-foreground truncate">{notif.title}</span>
                 {matterId && messageId && (
                   <div className="flex gap-1 flex-shrink-0">
                     <Button
