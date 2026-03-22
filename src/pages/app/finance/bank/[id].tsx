@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Lock, Link2, Upload, Check, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import BankImportWizard from '@/components/finance/bank/BankImportWizard';
+import FintocConnect from '@/components/finance/bank/FintocConnect';
 
 const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
