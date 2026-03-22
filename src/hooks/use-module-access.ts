@@ -66,6 +66,28 @@ const MODULE_FLAG_MAP: Record<string, string> = {
   api: 'has_api_access',
 };
 
+// Hook to check if current user is a superadmin (bypasses all module gates)
+function useIsSuperadminForModules() {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['is-superadmin-modules', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('superadmins')
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (error) return false;
+      return !!data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
 // Hook to get tenant feature flags (the REAL source of truth)
 export function useTenantFeatureFlags() {
   const { currentOrganization } = useOrganization();
@@ -89,21 +111,26 @@ export function useTenantFeatureFlags() {
 
 // Hook para verificar acceso a un módulo específico
 // Now uses tenant_feature_flags (which actually exists) instead of organization_module_licenses
+// SUPER ADMINS bypass all module checks
 export function useModuleAccess(moduleCode: ModuleCode) {
-  const { data: flags, isLoading } = useTenantFeatureFlags();
+  const { data: flags, isLoading: flagsLoading } = useTenantFeatureFlags();
+  const { data: isSuperadmin, isLoading: superLoading } = useIsSuperadminForModules();
 
   const flagColumn = MODULE_FLAG_MAP[moduleCode];
-  // If no mapping exists (core, marketing, datahub, legalops, migrator), grant access by default
-  const hasAccess = !flagColumn
+  
+  // Super admins always have access to everything
+  const hasAccess = isSuperadmin
     ? true
-    : flags
-      ? (flags as any)[flagColumn] === true
-      : false;
+    : !flagColumn
+      ? true
+      : flags
+        ? (flags as any)[flagColumn] === true
+        : false;
 
   return {
     hasAccess,
     license: null as ModuleLicense | null,
-    isLoading,
+    isLoading: flagsLoading || superLoading,
     tier: null as TierCode | null,
     features: [] as string[],
     isTrialing: flags?.is_in_trial === true,
