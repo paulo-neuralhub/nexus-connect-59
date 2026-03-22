@@ -11,7 +11,7 @@ import { MobileBottomNav, OfflineBanner, PWAInstallPrompt } from "@/components/m
 import { ContextualHelpProvider } from "@/components/help/ContextualHelpProvider";
 import { TrialBanner } from "@/components/upgrade/TrialBanner";
 import { AlertBanner } from "@/components/alerts/AlertBanner";
-import { NexusGuideButton } from "@/components/nexus-guide";
+// NexusGuideButton removed — CoPilotGuide handles guided tours now
 import { CoPilotWidget, CoPilotGuide } from "@/components/copilot";
 import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
