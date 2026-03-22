@@ -243,7 +243,7 @@ export function MessagePane({
                       </Badge>
                     )}
                     {msg.user_indexing_decision === 'indexed' && (
-                      <Badge variant="default" className="h-3.5 text-[8px] px-1 py-0 bg-green-600">
+                      <Badge variant="default" className="h-3.5 text-[8px] px-1 py-0 bg-primary">
                         ✓ Indexado
                       </Badge>
                     )}
