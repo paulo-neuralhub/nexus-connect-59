@@ -136,7 +136,34 @@ export function CoPilotWidget() {
   const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 })
   const bubbleRef = useRef<HTMLDivElement>(null)
   const didLand = useRef(false)
-  const [breathing, setBreathing] = useState(false)
+
+  // ── Agent Brain ────────────────────────────────────────
+  const [orgId, setOrgId] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return
+      const client: any = supabase
+      client.from('profiles')
+        .select('organization_id')
+        .eq('id', data.user.id)
+        .single()
+        .then(({ data: p }: any) => {
+          if (p) setOrgId(p.organization_id)
+        })
+    })
+  }, [])
+
+  const { suggestion, bubbleState, dismissSuggestion } = useAgentBrain(orgId)
+
+  // Show urgent suggestions automatically
+  useEffect(() => {
+    if (!suggestion) return
+    if (panel === 'open') return
+    if (suggestion.type === 'urgent' || suggestion.type === 'high') {
+      setGreeting(suggestion.emoji + ' ' + suggestion.title + '\n' + suggestion.body)
+      setPanel('bubble')
+    }
+  }, [suggestion])
 
   // ── Landing animation ──────────────────────────────────
   useEffect(() => {
