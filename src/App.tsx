@@ -154,6 +154,12 @@ import FinanceSettingsPage from "./pages/app/finance/settings";
 import ValuationDashboardPage from "./pages/app/finance/valuation";
 import FinanceSetupWizard from "./pages/app/finance/setup";
 import ServicesCatalogPage from "./pages/app/finance/services";
+import JournalPage from "./pages/app/finance/accounting";
+import ChartOfAccountsPage from "./pages/app/finance/accounting/chart";
+import BankAccountsPage from "./pages/app/finance/bank";
+import BankReconciliationPage from "./pages/app/finance/bank/[id]";
+import VatBookPage from "./pages/app/finance/reports/vat";
+import VerifactuPage from "./pages/app/finance/reports/verifactu";
 import SettingsPage from "./pages/app/settings";
 import TeamSettingsPage from "./pages/app/settings/team";
 import RolesSettingsPage from "./pages/app/settings/roles";
@@ -535,6 +541,12 @@ const App = () => (
                   <Route path="services" element={<ServicesCatalogPage />} />
                   <Route path="setup" element={<FinanceSetupWizard />} />
                   <Route path="settings" element={<FinanceSettingsPage />} />
+                  <Route path="accounting" element={<JournalPage />} />
+                  <Route path="accounting/chart" element={<ChartOfAccountsPage />} />
+                  <Route path="bank" element={<BankAccountsPage />} />
+                  <Route path="bank/:id" element={<BankReconciliationPage />} />
+                  <Route path="reports/vat" element={<VatBookPage />} />
+                  <Route path="reports/verifactu" element={<VerifactuPage />} />
                 </Route>
                 <Route path="timetracking" element={<TimetrackingLayout />}>
                   <Route index element={<TimesheetPage />} />
