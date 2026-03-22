@@ -1,28 +1,36 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import { useAgentBrain } from '@/hooks/use-agent-brain'
 
 // ── Inyectar CSS en el <head> del documento ──────────────
 const CSS_ID = 'copilot-widget-styles'
 const CSS_CONTENT = `
   .cp-bubble {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    overflow: hidden;
+    width: 64px; height: 64px; border-radius: 50%;
+    overflow: hidden; cursor: pointer; background: #E2E8F0;
+    display: block; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+  }
+  .cp-bubble:hover { transform: scale(1.08); }
+  .cp-bubble.state-standby {
     border: 2.5px solid #1E293B;
-    box-shadow: 0 4px 20px rgba(30,41,59,0.35);
-    cursor: pointer;
-    background: #E2E8F0;
-    display: block;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .cp-bubble:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 28px rgba(30,41,59,0.5);
-  }
-  .cp-bubble.breathing {
+    box-shadow: 0 4px 20px rgba(30,41,59,0.30);
     animation: cpBreath 3.5s ease-in-out infinite;
+  }
+  .cp-bubble.state-attentive {
+    border: 2.5px solid #1E293B;
+    box-shadow: 0 4px 24px rgba(30,41,59,0.50);
+    animation: cpAttentive 2s ease-in-out infinite;
+  }
+  .cp-bubble.state-urgent {
+    border: 2.5px solid #EF4444;
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+    animation: cpUrgent 1.5s ease-in-out infinite;
+  }
+  .cp-bubble.state-speaking {
+    border: 2.5px solid #F59E0B;
+    box-shadow: 0 4px 24px rgba(245,158,11,0.45);
+    animation: cpBreath 2s ease-in-out infinite;
   }
   .cp-panel {
     animation: cpSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
@@ -82,6 +90,14 @@ const CSS_CONTENT = `
     90%  { transform: translateY(-2px) scale(1.02); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
+  @keyframes cpAttentive {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 24px rgba(30,41,59,0.40); }
+    50% { transform: scale(1.07); box-shadow: 0 6px 30px rgba(30,41,59,0.60); }
+  }
+  @keyframes cpUrgent {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+  }
 `
 
 function injectCSS() {
@@ -120,7 +136,34 @@ export function CoPilotWidget() {
   const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 })
   const bubbleRef = useRef<HTMLDivElement>(null)
   const didLand = useRef(false)
-  const [breathing, setBreathing] = useState(false)
+
+  // ── Agent Brain ────────────────────────────────────────
+  const [orgId, setOrgId] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return
+      const client: any = supabase
+      client.from('profiles')
+        .select('organization_id')
+        .eq('id', data.user.id)
+        .single()
+        .then(({ data: p }: any) => {
+          if (p) setOrgId(p.organization_id)
+        })
+    })
+  }, [])
+
+  const { suggestion, bubbleState, dismissSuggestion } = useAgentBrain(orgId)
+
+  // Show urgent suggestions automatically
+  useEffect(() => {
+    if (!suggestion) return
+    if (panel === 'open') return
+    if (suggestion.type === 'urgent' || suggestion.type === 'high') {
+      setGreeting(suggestion.emoji + ' ' + suggestion.title + '\n' + suggestion.body)
+      setPanel('bubble')
+    }
+  }, [suggestion])
 
   // ── Landing animation ──────────────────────────────────
   useEffect(() => {
@@ -138,7 +181,6 @@ export function CoPilotWidget() {
       el.style.animation = 'cpLand 1.2s cubic-bezier(0.22,1,0.36,1) forwards'
       el.addEventListener('animationend', () => {
         el.style.animation = ''
-        setBreathing(true)
       }, { once: true })
     }, 400)
 
@@ -583,39 +625,67 @@ export function CoPilotWidget() {
           >
             {greeting || '¿En qué puedo ayudarte? 👋'}
           </p>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => { setGreeting(''); setPanel('open') }}
-              style={{
-                background: ACCENT,
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                padding: '7px 16px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              Abrir →
-            </button>
-            <button
-              onClick={() => { setGreeting(''); setPanel('closed') }}
-              style={{
-                background: 'transparent',
-                color: '#9CA3AF',
-                border: '1px solid #E5E7EB',
-                borderRadius: 8,
-                padding: '7px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              Más tarde
-            </button>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {suggestion && suggestion.actionLabel && (
+              <button
+                onClick={() => {
+                  if (suggestion.actionType === 'navigate' && suggestion.actionPayload?.path) {
+                    window.location.href = suggestion.actionPayload.path as string
+                  }
+                  dismissSuggestion()
+                  setPanel('closed')
+                }}
+                style={{
+                  background: suggestion.type === 'urgent' ? '#EF4444'
+                           : suggestion.type === 'high' ? '#F59E0B'
+                           : ACCENT,
+                  color: 'white', border: 'none', borderRadius: 8,
+                  padding: '7px 16px', fontSize: 12,
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                {suggestion.actionLabel}
+              </button>
+            )}
+            {suggestion ? (
+              <button
+                onClick={() => { dismissSuggestion(); setGreeting(''); setPanel('closed') }}
+                style={{
+                  background: 'transparent', color: '#9CA3AF',
+                  border: '1px solid #E5E7EB', borderRadius: 8,
+                  padding: '7px 12px', fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                Descartar
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => { setGreeting(''); setPanel('open') }}
+                  style={{
+                    background: ACCENT, color: 'white',
+                    border: 'none', borderRadius: 8,
+                    padding: '7px 16px', fontSize: 12,
+                    fontWeight: 600, cursor: 'pointer',
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  Abrir →
+                </button>
+                <button
+                  onClick={() => { setGreeting(''); setPanel('closed') }}
+                  style={{
+                    background: 'transparent', color: '#9CA3AF',
+                    border: '1px solid #E5E7EB', borderRadius: 8,
+                    padding: '7px 12px', fontSize: 12, cursor: 'pointer',
+                  }}
+                >
+                  Más tarde
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -626,7 +696,7 @@ export function CoPilotWidget() {
         <div className="cp-ring" />
         <div
           ref={bubbleRef}
-          className={`cp-bubble${breathing ? ' breathing' : ''}`}
+          className={`cp-bubble state-${panel === 'open' ? 'speaking' : bubbleState}`}
           onClick={() => {
             if (moved.current) return
             if (panel === 'closed') setPanel('bubble')
