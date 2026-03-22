@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
+import { useAuth } from '@/contexts/auth-context';
 
 export type ModuleCode = 
   | 'core' 
