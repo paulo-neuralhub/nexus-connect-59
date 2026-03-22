@@ -300,13 +300,16 @@ export function useCopilot() {
   }, [userPrefs.position_x, userPrefs.position_y]);
 
   // ── Greeting logic (once per day, 2s delay) ─────────────
+  // Toggle to true to force greeting for visual verification, then set back to false
+  const FORCE_GREETING_TEST = false;
+
   useEffect(() => {
     if (greetingShownRef.current) return;
     if (panelState !== 'bubble') return;
     if (userPrefs.greeting_enabled === false) return;
 
     const today = new Date().toISOString().split('T')[0];
-    if (userPrefs.last_greeted_date === today) return;
+    if (!FORCE_GREETING_TEST && userPrefs.last_greeted_date === today) return;
 
     const timer = setTimeout(() => {
       setShowGreeting(true);

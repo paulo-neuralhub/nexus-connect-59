@@ -175,7 +175,7 @@ export function CoPilotBubble({
         whileTap={isDragging ? {} : { scale: 0.95 }}
         drag
         dragMomentum={false}
-        dragElastic={0.1}
+        dragElastic={0}
         onDragStart={() => {
           dragRef.current.moved = true;
           setIsDragging(true);
