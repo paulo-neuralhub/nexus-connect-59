@@ -59,9 +59,20 @@ export function CoPilotWidget() {
     bubbleState, showGreeting, setShowGreeting,
     dragPosition, onDragEnd,
     activeSuggestion, actOnSuggestion, dismissSuggestion,
-    trackEvent,
+    trackEvent, currentPage,
     memoryExplanation, isLoadingMemory, fetchMemoryExplanation,
   } = copilot;
+
+  // Contextual placeholder based on current page
+  const inputPlaceholder = currentPage.includes('/matters/')
+    ? 'Pregunta sobre este expediente...'
+    : currentPage.includes('/spider')
+    ? 'Analiza esta alerta de similitud...'
+    : currentPage.includes('/crm/')
+    ? '¿Qué me dices de este cliente?'
+    : currentPage.includes('/dashboard')
+    ? '¿En qué puedo ayudarte hoy?'
+    : 'Pregunta lo que necesites...';
 
   // Auto-focus input when expanding
   useEffect(() => {
