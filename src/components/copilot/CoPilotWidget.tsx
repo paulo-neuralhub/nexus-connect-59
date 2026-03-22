@@ -235,33 +235,39 @@ export function CoPilotWidget() {
     >
       {/* ESTADO MINIMIZADO — Avatar circular */}
       {chatState === 'minimized' && (
-        <button
-          ref={bubbleRef}
-          onClick={handleBubbleClick}
+        <div
           style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            overflow: 'hidden',
-            border: '2.5px solid #1E293B',
-            boxShadow: '0 4px 14px rgba(30,41,59,0.35)',
-            cursor: 'pointer',
-            padding: 0,
-            background: '#E2E8F0',
             animation: 'copilotBreath 3.5s ease-in-out infinite',
-            position: 'relative',
-            display: 'block',
+            display: 'inline-block',
+            borderRadius: '50%',
           }}
         >
-          <img
-            src="/assets/copilot-nexus-avatar.jpg"
-            alt="Nexus"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={e => {
-              e.currentTarget.style.display = 'none';
+          <button
+            ref={bubbleRef}
+            onClick={handleBubbleClick}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2.5px solid #1E293B',
+              boxShadow: '0 4px 14px rgba(30,41,59,0.35)',
+              cursor: 'pointer',
+              padding: 0,
+              background: '#E2E8F0',
+              display: 'block',
             }}
-          />
-        </button>
+          >
+            <img
+              src="/assets/copilot-nexus-avatar.jpeg"
+              alt="Nexus"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </button>
+        </div>
       )}
 
       {/* ESTADO BUBBLE — Avatar + tooltip */}
@@ -319,7 +325,7 @@ export function CoPilotWidget() {
             }}
           >
             <img
-              src="/assets/copilot-nexus-avatar.jpg"
+              src="/assets/copilot-nexus-avatar.jpeg"
               alt="Nexus"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={e => { e.currentTarget.style.display = 'none'; }}
