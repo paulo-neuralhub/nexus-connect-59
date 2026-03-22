@@ -1,8 +1,6 @@
 // ============================================================
-// CoPilotWidget — Main CoPilot UI component
-// Replaces HelpWidget. Supports Basic (navy) and Pro (amber) modes.
-// States: bubble → compact → expanded → guide
-// Integrates: drag, greeting, suggestions, memory panel, tracking
+// CoPilotWidget — Self-contained CoPilot UI
+// States: minimized (avatar) → bubble (tooltip) → open (chat)
 // ============================================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -18,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useCopilot, type CopilotPanelState } from '@/hooks/use-copilot';
-import { CoPilotBubble } from './CoPilotBubble';
 import { CoPilotMemoryPanel } from './CoPilotMemoryPanel';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
@@ -41,29 +38,24 @@ function PriorityIcon({ type, priority }: { type: string; priority: string }) {
   return <Clock className="h-4 w-4 text-amber-500" />;
 }
 
-// ── Main Widget ─────────────────────────────────────────────
-interface CoPilotWidgetProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-}
+type WidgetState = 'minimized' | 'bubble' | 'open';
 
-export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
-  const controlled = isOpen !== undefined;
+// ── Main Widget ─────────────────────────────────────────────
+export function CoPilotWidget() {
   const copilot = useCopilot();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const [chatState, setChatState] = useState<WidgetState>('minimized');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
 
   const {
-    isPro, mode, name, avatarUrl, panelState, setPanelState,
+    isPro, mode, name, avatarUrl,
     urgentCount, briefing, hasBriefing, markBriefingRead,
     dismissBriefing, alerts, pageSuggestion, sendMessage,
     isThinking, features, queriesRemaining, queriesLimit,
-    bubbleState, showGreeting, setShowGreeting,
-    dragPosition, onDragEnd,
     activeSuggestion, actOnSuggestion, dismissSuggestion,
     trackEvent, currentPage,
     memoryExplanation, isLoadingMemory, fetchMemoryExplanation,
@@ -80,12 +72,12 @@ export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
     ? '¿En qué puedo ayudarte hoy?'
     : 'Pregunta lo que necesites...';
 
-  // Auto-focus input when expanding
+  // Auto-focus input when opening chat
   useEffect(() => {
-    if (panelState === 'expanded' && inputRef.current) {
+    if (chatState === 'open' && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 200);
     }
-  }, [panelState]);
+  }, [chatState]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -125,29 +117,102 @@ export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
 
   // Don't show on help pages
   if (copilot.currentPage.startsWith('/app/help')) return null;
-  if (!controlled && panelState === 'hidden') return null;
 
-  // ── Controlled mode: only render the expanded panel ──
-  if (controlled) {
-    const handleControlledClose = () => {
-      onClose?.();
-    };
+  return (
+    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998 }}>
+      {/* ESTADO MINIMIZADO — Avatar circular */}
+      {chatState === 'minimized' && (
+        <button
+          onClick={() => setChatState('bubble')}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: '2.5px solid #1E293B',
+            boxShadow: '0 4px 14px rgba(30,41,59,0.35)',
+            cursor: 'pointer',
+            padding: 0,
+            background: '#E2E8F0',
+            animation: 'copilotBreath 3.5s ease-in-out infinite',
+            position: 'relative',
+            display: 'block',
+          }}
+        >
+          <img
+            src="/assets/copilot-nexus-avatar.jpg"
+            alt="Nexus"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </button>
+      )}
 
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 100,
-          right: 24,
-          width: 380,
-          maxHeight: 560,
-          borderRadius: 16,
-          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.20)',
-          animation: 'copilotSlideUp 0.3s ease-out',
-          zIndex: 9999,
-          overflow: 'hidden',
-        }}
-      >
+      {/* ESTADO BUBBLE — Avatar + tooltip */}
+      {chatState === 'bubble' && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+          <div style={{
+            background: 'white',
+            borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            padding: '12px 16px',
+            maxWidth: 240,
+            border: '1px solid rgba(30,41,59,0.12)',
+          }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#374151' }}>
+              ¿En qué puedo ayudarte? 👋
+            </p>
+            <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+              <button
+                onClick={() => setChatState('open')}
+                style={{
+                  background: '#1E293B', color: 'white',
+                  border: 'none', borderRadius: 8,
+                  padding: '6px 14px', fontSize: 12,
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                Abrir chat →
+              </button>
+              <button
+                onClick={() => setChatState('minimized')}
+                style={{
+                  background: 'transparent', color: '#9CA3AF',
+                  border: '1px solid #E5E7EB', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                Más tarde
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setChatState('minimized')}
+            style={{
+              width: 64, height: 64, borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2.5px solid #1E293B',
+              boxShadow: '0 4px 14px rgba(30,41,59,0.35)',
+              cursor: 'pointer', padding: 0,
+              background: '#E2E8F0',
+              display: 'block',
+            }}
+          >
+            <img
+              src="/assets/copilot-nexus-avatar.jpg"
+              alt="Nexus"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={e => { e.currentTarget.style.display = 'none'; }}
+            />
+          </button>
+        </div>
+      )}
+
+      {/* ESTADO OPEN — Panel de chat completo */}
+      {chatState === 'open' && (
         <CopilotExpanded
           isPro={isPro}
           name={name}
@@ -169,346 +234,16 @@ export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
           onFetchMemory={fetchMemoryExplanation}
           onInputChange={setInputValue}
           onSend={handleSend}
-          onCollapse={handleControlledClose}
+          onCollapse={() => setChatState('minimized')}
           onMarkBriefingRead={markBriefingRead}
           onDismissBriefing={dismissBriefing}
           onNavigate={(url) => {
             navigate(url);
-            handleControlledClose();
+            setChatState('minimized');
           }}
         />
-      </div>
-    );
-  }
-
-  // ── Uncontrolled (legacy) mode ──
-  return (
-    <div className="fixed bottom-6 right-6 z-40">
-      <AnimatePresence mode="wait">
-        {panelState === 'bubble' && (
-          <div key="bubble-wrapper">
-            {activeSuggestion && !showGreeting && (
-              <SuggestionTooltip
-                isPro={isPro}
-                suggestion={activeSuggestion}
-                onAct={(action) => {
-                  actOnSuggestion(action);
-                  if (action === 'primary' && activeSuggestion.action_primary_url) {
-                    navigate(activeSuggestion.action_primary_url);
-                  }
-                }}
-                onDismiss={dismissSuggestion}
-              />
-            )}
-
-            <CoPilotBubble
-              isPro={isPro}
-              name={name}
-              avatarUrl={avatarUrl}
-              urgentCount={urgentCount}
-              bubbleState={bubbleState}
-              showGreeting={showGreeting}
-              dragPosition={dragPosition}
-              onClick={() => setPanelState('compact')}
-              onDragEnd={onDragEnd}
-              onDismissGreeting={() => setShowGreeting(false)}
-            />
-          </div>
-        )}
-
-        {panelState === 'compact' && (
-          <CopilotCompact
-            key="compact"
-            isPro={isPro}
-            name={name}
-            avatarUrl={avatarUrl}
-            urgentCount={urgentCount}
-            briefing={briefing}
-            hasBriefing={hasBriefing}
-            pageSuggestion={pageSuggestion}
-            alerts={alerts}
-            features={features}
-            activeSuggestion={activeSuggestion}
-            onExpand={() => setPanelState('expanded')}
-            onCollapse={() => setPanelState('bubble')}
-            onInputClick={() => setPanelState('expanded')}
-            onNavigate={(url) => {
-              navigate(url);
-              setPanelState('bubble');
-            }}
-            onActSuggestion={actOnSuggestion}
-            onDismissSuggestion={dismissSuggestion}
-          />
-        )}
-
-        {panelState === 'expanded' && (
-          <CopilotExpanded
-            key="expanded"
-            isPro={isPro}
-            name={name}
-            avatarUrl={avatarUrl}
-            mode={mode}
-            briefing={briefing}
-            hasBriefing={hasBriefing}
-            messages={messages}
-            inputValue={inputValue}
-            isThinking={isThinking}
-            queriesRemaining={queriesRemaining}
-            queriesLimit={queriesLimit}
-            features={features}
-            inputRef={inputRef}
-            scrollRef={scrollRef}
-            inputPlaceholder={inputPlaceholder}
-            memoryExplanation={memoryExplanation}
-            isLoadingMemory={isLoadingMemory}
-            onFetchMemory={fetchMemoryExplanation}
-            onInputChange={setInputValue}
-            onSend={handleSend}
-            onCollapse={() => setPanelState('bubble')}
-            onMarkBriefingRead={markBriefingRead}
-            onDismissBriefing={dismissBriefing}
-            onNavigate={(url) => {
-              navigate(url);
-              setPanelState('bubble');
-            }}
-          />
-        )}
-      </AnimatePresence>
+      )}
     </div>
-  );
-}
-
-// ── Suggestion Tooltip ──────────────────────────────────────
-
-function SuggestionTooltip({
-  isPro,
-  suggestion,
-  onAct,
-  onDismiss,
-}: {
-  isPro: boolean;
-  suggestion: {
-    title: string;
-    body: string;
-    action_primary_label: string | null;
-    action_primary_url: string | null;
-  };
-  onAct: (action: 'primary' | 'secondary') => void;
-  onDismiss: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.9 }}
-      className="absolute bottom-[72px] right-0 z-50"
-    >
-      <div className={cn(
-        'relative p-3 rounded-xl shadow-lg max-w-[280px] border',
-        isPro
-          ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800'
-          : 'bg-background border-border'
-      )}>
-        <button
-          onClick={onDismiss}
-          className="absolute top-1.5 right-1.5 p-0.5 rounded hover:bg-muted/50 transition-colors"
-        >
-          <X className="h-3 w-3 text-muted-foreground" />
-        </button>
-        <p className="text-xs font-semibold text-foreground pr-4">{suggestion.title}</p>
-        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{suggestion.body}</p>
-        {suggestion.action_primary_label && (
-          <button
-            onClick={() => onAct('primary')}
-            className={cn(
-              'mt-2 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
-              isPro
-                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90'
-            )}
-          >
-            {suggestion.action_primary_label}
-          </button>
-        )}
-        {/* Arrow */}
-        <div className={cn(
-          'absolute -bottom-1.5 right-5 h-3 w-3 rotate-45 border-r border-b',
-          isPro
-            ? 'bg-orange-50 dark:bg-orange-900/20 border-amber-200 dark:border-amber-800'
-            : 'bg-background border-border'
-        )} />
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Compact Panel ───────────────────────────────────────────
-
-function CopilotCompact({
-  isPro, name, avatarUrl, urgentCount, briefing, hasBriefing, pageSuggestion,
-  alerts, features, activeSuggestion, onExpand, onCollapse, onInputClick, onNavigate,
-  onActSuggestion, onDismissSuggestion,
-}: {
-  isPro: boolean;
-  name: string;
-  avatarUrl: string;
-  urgentCount: number;
-  briefing: any;
-  hasBriefing: boolean;
-  pageSuggestion: string;
-  alerts: any;
-  features: any;
-  activeSuggestion: any;
-  onExpand: () => void;
-  onCollapse: () => void;
-  onInputClick: () => void;
-  onNavigate: (url: string) => void;
-  onActSuggestion: (action: 'primary' | 'secondary') => void;
-  onDismissSuggestion: () => void;
-}) {
-  const width = isPro ? 400 : 360;
-  const height = isPro ? 360 : 320;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      className="absolute bottom-0 right-0 bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
-      style={{ width, maxHeight: height }}
-    >
-      {/* Header */}
-      <div className={cn(
-        'flex items-center justify-between px-4 py-2.5',
-        isPro
-          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-          : 'bg-[#1E293B] text-white'
-      )}>
-        <div className="flex items-center gap-2">
-          <CompactAvatar src={avatarUrl} name={name} size={28} />
-          <span className="text-sm font-semibold">{name}</span>
-          <Badge variant="secondary" className={cn(
-            'text-[10px] px-1.5 py-0',
-            isPro
-              ? 'bg-amber-200/20 text-amber-100 border-amber-200/30'
-              : 'bg-white/10 text-white/70 border-white/20'
-          )}>
-            {isPro ? 'PRO' : 'BASIC'}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-1">
-          <button onClick={onExpand} className="p-1 hover:bg-white/10 rounded transition-colors" title="Expandir">
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={onCollapse} className="p-1 hover:bg-white/10 rounded transition-colors" title="Cerrar">
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="p-3 space-y-2.5 overflow-y-auto" style={{ maxHeight: height - 48 }}>
-        {/* Active suggestion card */}
-        {activeSuggestion && (
-          <div className={cn(
-            'rounded-lg border p-3',
-            isPro
-              ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10'
-              : 'border-primary/20 bg-primary/5'
-          )}>
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-xs font-medium text-foreground">{activeSuggestion.title}</p>
-              <button onClick={onDismissSuggestion} className="p-0.5 hover:bg-muted rounded">
-                <X className="h-3 w-3 text-muted-foreground" />
-              </button>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">{activeSuggestion.body}</p>
-            {activeSuggestion.action_primary_label && (
-              <button
-                onClick={() => {
-                  onActSuggestion('primary');
-                  if (activeSuggestion.action_primary_url) {
-                    onNavigate(activeSuggestion.action_primary_url);
-                  }
-                }}
-                className={cn(
-                  'mt-2 text-[11px] font-medium px-2.5 py-1 rounded-md',
-                  isPro
-                    ? 'bg-amber-500 text-white hover:bg-amber-600'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                )}
-              >
-                {activeSuggestion.action_primary_label}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Briefing alert */}
-        {hasBriefing && briefing?.content_json?.items?.length > 0 && (
-          <div className="rounded-lg border-2 border-amber-300 bg-amber-50 dark:bg-amber-900/10 p-3">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1.5">
-              📋 {briefing.urgent_items} items requieren atención
-            </p>
-            <div className="space-y-1">
-              {briefing.content_json.items.slice(0, isPro ? 3 : 2).map((item: any, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => item.action_url && onNavigate(item.action_url)}
-                  className="flex items-center gap-2 text-xs text-foreground/80 hover:text-foreground w-full text-left"
-                >
-                  <PriorityIcon type={item.type} priority={item.priority} />
-                  <span className="truncate">{item.title}</span>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={onExpand}
-              className="flex items-center gap-1 mt-2 text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900"
-            >
-              Ver todo <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
-        )}
-
-        {/* No alerts state */}
-        {(!hasBriefing || briefing?.urgent_items === 0) && urgentCount === 0 && !activeSuggestion && (
-          <div className="text-center py-3">
-            <p className="text-sm text-muted-foreground">Todo en orden ✅</p>
-            <p className="text-xs text-muted-foreground mt-1">{pageSuggestion}</p>
-          </div>
-        )}
-
-        {/* Pro quick actions */}
-        {isPro && (
-          <div className="flex gap-1.5">
-            {[
-              { icon: FileText, label: 'Documento', action: onExpand },
-              { icon: Search, label: 'Analizar', action: onExpand },
-              { icon: BarChart3, label: 'Portfolio', action: onExpand },
-            ].map(({ icon: Icon, label, action }) => (
-              <button
-                key={label}
-                onClick={action}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80 transition-colors"
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Input */}
-        <button
-          onClick={onInputClick}
-          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground hover:bg-muted transition-colors text-left"
-        >
-          <Send className="h-3.5 w-3.5 flex-shrink-0" />
-          Pregúntame algo...
-        </button>
-      </div>
-    </motion.div>
   );
 }
 
@@ -557,8 +292,8 @@ function CopilotExpanded({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="absolute bottom-0 right-0 bg-background border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col"
-      style={{ width, height }}
+      className="bg-background border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col"
+      style={{ width, height, position: 'absolute', bottom: 0, right: 0 }}
     >
       {/* Header */}
       <div className={cn(
@@ -760,18 +495,9 @@ function CopilotExpanded({
                     {isPro ? 'Genius' : 'Nexus'} está pensando
                   </span>
                   <div style={{ display: 'flex', gap: 3 }}>
-                    <span className="copilot-dot" style={{
-                      width: 5, height: 5, borderRadius: '50%',
-                      background: '#9CA3AF',
-                    }} />
-                    <span className="copilot-dot" style={{
-                      width: 5, height: 5, borderRadius: '50%',
-                      background: '#9CA3AF',
-                    }} />
-                    <span className="copilot-dot" style={{
-                      width: 5, height: 5, borderRadius: '50%',
-                      background: '#9CA3AF',
-                    }} />
+                    <span className="copilot-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#9CA3AF' }} />
+                    <span className="copilot-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#9CA3AF' }} />
+                    <span className="copilot-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#9CA3AF' }} />
                   </div>
                 </div>
               </div>
@@ -826,7 +552,7 @@ function CopilotExpanded({
             </Button>
           </div>
 
-          {/* Query counter (Basic) or upgrade footer */}
+          {/* Query counter (Basic) */}
           {!isPro && queriesLimit > 0 && (() => {
             const pct = Math.round((queriesRemaining / queriesLimit) * 100);
             const isLow = queriesRemaining < 10;
@@ -841,32 +567,22 @@ function CopilotExpanded({
                 {!isEmpty ? (
                   <>
                     <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginBottom: 4,
-                      fontSize: 11,
+                      display: 'flex', justifyContent: 'space-between',
+                      marginBottom: 4, fontSize: 11,
                       color: isLow ? '#D97706' : '#9CA3AF',
                     }}>
                       <span>{queriesRemaining} consultas restantes</span>
                       <span>{queriesLimit}/mes</span>
                     </div>
-                    <div style={{
-                      height: 3, borderRadius: 2,
-                      background: '#E5E7EB', overflow: 'hidden',
-                    }}>
+                    <div style={{ height: 3, borderRadius: 2, background: '#E5E7EB', overflow: 'hidden' }}>
                       <div style={{
-                        height: '100%',
-                        width: `${pct}%`,
+                        height: '100%', width: `${pct}%`,
                         background: isLow ? '#F59E0B' : '#1E293B',
-                        borderRadius: 2,
-                        transition: 'width 0.3s ease',
+                        borderRadius: 2, transition: 'width 0.3s ease',
                       }} />
                     </div>
                     {isLow && (
-                      <div style={{
-                        fontSize: 10, color: '#D97706',
-                        marginTop: 4, textAlign: 'center',
-                      }}>
+                      <div style={{ fontSize: 10, color: '#D97706', marginTop: 4, textAlign: 'center' }}>
                         <button
                           onClick={() => onNavigate('/app/settings/billing')}
                           style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 'inherit' }}
@@ -884,16 +600,9 @@ function CopilotExpanded({
                     <button
                       onClick={() => onNavigate('/app/settings/billing')}
                       style={{
-                        marginTop: 6,
-                        background: '#F59E0B',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: 8,
-                        padding: '6px 16px',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        width: '100%',
+                        marginTop: 6, background: '#F59E0B', color: 'white',
+                        border: 'none', borderRadius: 8, padding: '6px 16px',
+                        fontSize: 12, fontWeight: 600, cursor: 'pointer', width: '100%',
                       }}
                     >
                       Actualizar a Pro →
