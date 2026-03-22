@@ -11,6 +11,7 @@ import { useDashboardHome } from "@/hooks/use-dashboard-home";
 import { useDashboardMetrics, DashboardWelcomeHeader } from "@/components/dashboard";
 import { FeatureGuide } from "@/components/help";
 import { useContextualHelp } from "@/hooks/useContextualHelp";
+import { BriefingCard } from "@/components/copilot";
  
  // Command Center Components
  import {
