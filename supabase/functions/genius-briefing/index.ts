@@ -572,7 +572,7 @@ serve(async (req) => {
     const tz = orgConfig?.timezone || "Europe/Madrid";
     const localDate = getOrgLocalDate(tz);
 
-    const result = await generateBriefingForOrg(db, orgId, anthropicKey, force, localDate);
+    const result = await generateBriefingForOrg(db, orgId, anthropicKey, force, localDate, userId);
 
     // Update last_briefing_date
     if (!result.was_cached) {
