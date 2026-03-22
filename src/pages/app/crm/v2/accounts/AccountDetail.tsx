@@ -193,6 +193,11 @@ export default function CRMV2AccountDetail() {
                   <TabsTrigger value="documents" className="gap-1.5">
                     <FileText className="w-3.5 h-3.5" /> Documentos
                   </TabsTrigger>
+                  {(account as any).is_agent && (
+                    <TabsTrigger value="agent" className="gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> Agente
+                    </TabsTrigger>
+                  )}
                 </TabsList>
 
                 <TabsContent value="overview">
