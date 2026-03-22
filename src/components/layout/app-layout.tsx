@@ -15,6 +15,7 @@ import { NexusGuideButton } from "@/components/nexus-guide";
 import { CoPilotWidget, CoPilotGuide } from "@/components/copilot";
 import { GlobalTimer } from "@/components/timetracking";
 import { usePresence } from "@/hooks/use-realtime-collab";
+import { usePageTracking } from "@/hooks/usePageTracking";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { IPSoftphone } from "@/components/telephony/IPSoftphone";
 import { CallManager } from "@/components/telephony/CallManager";
