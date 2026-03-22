@@ -837,33 +837,81 @@ function CopilotExpanded({
                       'font-mono',
                       queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-destructive font-medium' :
                       queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-amber-600' : ''
-                    )}>
-                      {queriesLimit - queriesRemaining}/{queriesLimit}
-                    </span>
+          {(() => {
+            const pct = queriesLimit > 0 ? Math.round((queriesRemaining / queriesLimit) * 100) : 100;
+            const isLow = queriesRemaining < 10;
+            const isEmpty = queriesRemaining === 0;
+            return (
+              <div style={{
+                padding: '8px 14px',
+                borderTop: '1px solid #F1F5F9',
+                background: isEmpty ? '#FEF2F2' : '#F8FAFC',
+              }}>
+                {!isEmpty ? (
+                  <>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: 4,
+                      fontSize: 11,
+                      color: isLow ? '#D97706' : '#9CA3AF',
+                    }}>
+                      <span>{queriesRemaining} consultas restantes</span>
+                      <span>{queriesLimit}/mes</span>
+                    </div>
+                    <div style={{
+                      height: 3, borderRadius: 2,
+                      background: '#E5E7EB', overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${pct}%`,
+                        background: isLow ? '#F59E0B' : '#1E293B',
+                        borderRadius: 2,
+                        transition: 'width 0.3s ease',
+                      }} />
+                    </div>
+                    {isLow && (
+                      <div style={{
+                        fontSize: 10, color: '#D97706',
+                        marginTop: 4, textAlign: 'center',
+                      }}>
+                        <button
+                          onClick={() => onNavigate('/app/settings/billing')}
+                          style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 'inherit' }}
+                        >
+                          Actualiza a Pro para consultas ilimitadas →
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 12, color: '#EF4444', fontWeight: 600 }}>
+                      Límite mensual alcanzado
+                    </div>
+                    <button
+                      onClick={() => onNavigate('/app/settings/billing')}
+                      style={{
+                        marginTop: 6,
+                        background: '#F59E0B',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '6px 16px',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        width: '100%',
+                      }}
+                    >
+                      Actualizar a Pro →
+                    </button>
                   </div>
-                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={cn(
-                        'h-full rounded-full transition-all',
-                        queriesRemaining <= 0 ? 'bg-destructive' :
-                        queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'bg-amber-500' :
-                        'bg-primary'
-                      )}
-                      style={{ width: `${Math.min(100, ((queriesLimit - queriesRemaining) / queriesLimit) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-              <button
-                onClick={() => onNavigate('/app/settings/billing')}
-                className="text-[10px] text-muted-foreground hover:text-primary transition-colors w-full text-center"
-              >
-                {queriesRemaining <= 0
-                  ? '⚡ Sin consultas disponibles — Actualizar a Pro →'
-                  : 'Actualiza a IP-Genius Pro para análisis legal profundo →'}
-              </button>
-            </div>
-          )}
+                )}
+              </div>
+            );
+          })()}
         </>
       )}
     </motion.div>
