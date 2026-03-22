@@ -90,6 +90,14 @@ const CSS_CONTENT = `
     90%  { transform: translateY(-2px) scale(1.02); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
+  @keyframes cpAttentive {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 24px rgba(30,41,59,0.40); }
+    50% { transform: scale(1.07); box-shadow: 0 6px 30px rgba(30,41,59,0.60); }
+  }
+  @keyframes cpUrgent {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+  }
 `
 
 function injectCSS() {
