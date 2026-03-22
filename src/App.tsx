@@ -758,6 +758,10 @@ const App = () => (
                 <Route path="kill-switch" element={<KillSwitchPage />} />
                 <Route path="market-config" element={<MarketConfigPage />} />
                 <Route path="market" element={<BackofficeMarketPage />} />
+                {/* Platform Finance */}
+                <Route path="finance" element={<BackofficeFinancePage />} />
+                <Route path="finance/mrr" element={<BackofficeFinanceMrrPage />} />
+                <Route path="finance/pending" element={<BackofficeFinancePendingPage />} />
                 {/* Stripe */}
                 <Route path="stripe" element={<StripeDashboard />} />
                 <Route path="stripe/config" element={<StripeConfigPage />} />
