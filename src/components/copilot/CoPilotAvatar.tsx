@@ -138,8 +138,8 @@ export function CoPilotAvatar({
   const accentColor = isBasic ? '#1E293B' : '#F59E0B'
   const accentColorRgb = isBasic ? '30,41,59' : '245,158,11'
   const avatarSrc = isBasic
-    ? '/assets/copilot-nexus-avatar.jpg'
-    : '/assets/copilot-genius-avatar.jpg'
+    ? '/assets/copilot-nexus-avatar.jpeg'
+    : '/assets/copilot-genius-avatar.jpeg'
   const avatarAlt = isBasic ? 'Nexus' : 'Genius'
   const avatarInitial = isBasic ? 'N' : 'G'
   const avatarBg = isBasic ? '#E2E8F0' : '#FEF3C7'
