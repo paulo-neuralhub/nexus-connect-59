@@ -237,29 +237,7 @@ export default function PortalMatterDetail() {
           </Card>
 
           {/* Próximo plazo destacado */}
-          {matter.next_deadline && (
-            <Card className="border-amber-200 bg-amber-50/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-amber-700">
-                  <AlertCircle className="w-5 h-5" />
-                  Próximo plazo
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{matter.next_deadline.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(matter.next_deadline.date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <Link to={`/portal/${slug}/deadlines`}>Ver plazos</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Próximo plazo - coming soon */}
         </TabsContent>
 
         <TabsContent value="documents">
