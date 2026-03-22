@@ -164,15 +164,11 @@ export default function PortalMatterDetail() {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+             <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <Clock className="w-4 h-4" />
               <span className="text-sm">Próximo plazo</span>
             </div>
-            <p className="font-semibold">
-              {matter.next_deadline 
-                ? format(new Date(matter.next_deadline.date), 'd MMM yyyy', { locale: es })
-                : 'Sin plazos'}
-            </p>
+            <p className="font-semibold">Sin plazos</p>
           </CardContent>
         </Card>
       </div>
