@@ -7545,6 +7545,111 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_guide_steps: {
+        Row: {
+          action_type: string | null
+          content: string
+          copilot_message: string | null
+          created_at: string | null
+          guide_id: string
+          id: string
+          is_skippable: boolean | null
+          requires_pro: boolean | null
+          step_order: number
+          target_route: string | null
+          target_selector: string | null
+          title: string
+        }
+        Insert: {
+          action_type?: string | null
+          content: string
+          copilot_message?: string | null
+          created_at?: string | null
+          guide_id: string
+          id?: string
+          is_skippable?: boolean | null
+          requires_pro?: boolean | null
+          step_order: number
+          target_route?: string | null
+          target_selector?: string | null
+          title: string
+        }
+        Update: {
+          action_type?: string | null
+          content?: string
+          copilot_message?: string | null
+          created_at?: string | null
+          guide_id?: string
+          id?: string
+          is_skippable?: boolean | null
+          requires_pro?: boolean | null
+          step_order?: number
+          target_route?: string | null
+          target_selector?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      copilot_user_preferences: {
+        Row: {
+          briefing_dismissed_dates: string[] | null
+          copilot_position: string | null
+          copilot_size: string | null
+          copilot_visible: boolean | null
+          created_at: string | null
+          guide_dismissed_ids: string[] | null
+          id: string
+          organization_id: string
+          preferred_response_length: string | null
+          show_rag_sources: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          briefing_dismissed_dates?: string[] | null
+          copilot_position?: string | null
+          copilot_size?: string | null
+          copilot_visible?: boolean | null
+          created_at?: string | null
+          guide_dismissed_ids?: string[] | null
+          id?: string
+          organization_id: string
+          preferred_response_length?: string | null
+          show_rag_sources?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          briefing_dismissed_dates?: string[] | null
+          copilot_position?: string | null
+          copilot_size?: string | null
+          copilot_visible?: boolean | null
+          created_at?: string | null
+          guide_dismissed_ids?: string[] | null
+          id?: string
+          organization_id?: string
+          preferred_response_length?: string | null
+          show_rag_sources?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_user_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       correction_reason_codes: {
         Row: {
           category: string | null
@@ -11040,6 +11145,76 @@ export type Database = {
           },
         ]
       }
+      genius_daily_briefings: {
+        Row: {
+          briefing_date: string
+          content_json: Json
+          created_at: string | null
+          generation_seconds: number | null
+          id: string
+          model_used: string | null
+          organization_id: string
+          read_at: string | null
+          read_by: string | null
+          total_items: number | null
+          urgent_items: number | null
+          user_id: string | null
+          was_read: boolean | null
+        }
+        Insert: {
+          briefing_date?: string
+          content_json?: Json
+          created_at?: string | null
+          generation_seconds?: number | null
+          id?: string
+          model_used?: string | null
+          organization_id: string
+          read_at?: string | null
+          read_by?: string | null
+          total_items?: number | null
+          urgent_items?: number | null
+          user_id?: string | null
+          was_read?: boolean | null
+        }
+        Update: {
+          briefing_date?: string
+          content_json?: Json
+          created_at?: string | null
+          generation_seconds?: number | null
+          id?: string
+          model_used?: string | null
+          organization_id?: string
+          read_at?: string | null
+          read_by?: string | null
+          total_items?: number | null
+          urgent_items?: number | null
+          user_id?: string | null
+          was_read?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_daily_briefings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_daily_briefings_read_by_fkey"
+            columns: ["read_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_daily_briefings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_generated_docs: {
         Row: {
           approved_at: string | null
@@ -11789,6 +11964,12 @@ export type Database = {
       }
       genius_tenant_config: {
         Row: {
+          briefing_enabled: boolean | null
+          briefing_hour: number | null
+          context_page_enabled: boolean | null
+          copilot_avatar_url: string | null
+          copilot_mode: string | null
+          copilot_name: string | null
           created_at: string | null
           current_month_actions: number | null
           current_month_documents: number | null
@@ -11801,17 +11982,29 @@ export type Database = {
           feature_document_generation: boolean | null
           feature_proactive_analysis: boolean | null
           feature_web_search: boolean | null
+          guide_mode_enabled: boolean | null
           id: string
           is_active: boolean | null
+          last_briefing_at: string | null
+          last_briefing_date: string | null
           max_actions_per_month: number | null
           max_documents_per_month: number | null
           max_queries_per_month: number | null
+          model_basic: string | null
+          model_pro: string | null
           organization_id: string
           plan_code: string | null
           preferred_language: string | null
+          proactive_enabled: boolean | null
           updated_at: string | null
         }
         Insert: {
+          briefing_enabled?: boolean | null
+          briefing_hour?: number | null
+          context_page_enabled?: boolean | null
+          copilot_avatar_url?: string | null
+          copilot_mode?: string | null
+          copilot_name?: string | null
           created_at?: string | null
           current_month_actions?: number | null
           current_month_documents?: number | null
@@ -11824,17 +12017,29 @@ export type Database = {
           feature_document_generation?: boolean | null
           feature_proactive_analysis?: boolean | null
           feature_web_search?: boolean | null
+          guide_mode_enabled?: boolean | null
           id?: string
           is_active?: boolean | null
+          last_briefing_at?: string | null
+          last_briefing_date?: string | null
           max_actions_per_month?: number | null
           max_documents_per_month?: number | null
           max_queries_per_month?: number | null
+          model_basic?: string | null
+          model_pro?: string | null
           organization_id: string
           plan_code?: string | null
           preferred_language?: string | null
+          proactive_enabled?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          briefing_enabled?: boolean | null
+          briefing_hour?: number | null
+          context_page_enabled?: boolean | null
+          copilot_avatar_url?: string | null
+          copilot_mode?: string | null
+          copilot_name?: string | null
           created_at?: string | null
           current_month_actions?: number | null
           current_month_documents?: number | null
@@ -11847,14 +12052,20 @@ export type Database = {
           feature_document_generation?: boolean | null
           feature_proactive_analysis?: boolean | null
           feature_web_search?: boolean | null
+          guide_mode_enabled?: boolean | null
           id?: string
           is_active?: boolean | null
+          last_briefing_at?: string | null
+          last_briefing_date?: string | null
           max_actions_per_month?: number | null
           max_documents_per_month?: number | null
           max_queries_per_month?: number | null
+          model_basic?: string | null
+          model_pro?: string | null
           organization_id?: string
           plan_code?: string | null
           preferred_language?: string | null
+          proactive_enabled?: boolean | null
           updated_at?: string | null
         }
         Relationships: [
@@ -27951,6 +28162,10 @@ export type Database = {
       refresh_agent_portfolio_analytics: { Args: never; Returns: undefined }
       reset_monthly_plan_counters: { Args: never; Returns: undefined }
       slugify: { Args: { input_text: string }; Returns: string }
+      sync_plan_to_genius_config: {
+        Args: { p_plan_code: string }
+        Returns: number
+      }
       verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
     Enums: {
