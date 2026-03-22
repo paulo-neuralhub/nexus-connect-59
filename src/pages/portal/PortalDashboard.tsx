@@ -283,6 +283,11 @@ export default function PortalDashboard() {
         </Card>
       </div>
 
+      {/* Trademark Timeline */}
+      {matters && matters.length > 0 && (
+        <PortalTrademarkTimeline matters={matters} slug={slug || ''} />
+      )}
+
       {/* Expedientes Recientes */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
