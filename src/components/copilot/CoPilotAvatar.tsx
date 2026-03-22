@@ -86,11 +86,18 @@ export function CoPilotAvatar({
     }
     const handleMouseUp = () => {
       if (!dragging.current) return
+      const wasDrag = didDrag.current
       dragging.current = false
-      setPos(p => {
-        localStorage.setItem('copilot_position', JSON.stringify(p))
-        return p
-      })
+      if (wasDrag) {
+        setPos(p => {
+          localStorage.setItem('copilot_position', JSON.stringify(p))
+          return p
+        })
+        // Reset didDrag after a tick so the click event (which fires after mouseup) still sees it
+        setTimeout(() => { didDrag.current = false }, 0)
+      } else {
+        didDrag.current = false
+      }
     }
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
