@@ -374,6 +374,10 @@ import PortalDocuments from "./pages/portal/PortalDocuments";
 import PortalInvoices from "./pages/portal/PortalInvoices";
 import PortalCatalog from "./pages/portal/PortalCatalog";
 import PortalMessages from "./pages/portal/PortalMessages";
+import PortalAcceptInvitation from "./pages/portal/PortalAcceptInvitation";
+import CertificateVerification from "./pages/portal/CertificateVerification";
+import PortalManagementDashboard from "./pages/app/portal/PortalManagementDashboard";
+import PortalLiveChatPanel from "./pages/app/portal/PortalLiveChatPanel";
 
 // Agent Portal Pages (B2B2B)
 import AgentPortalLayout from "./pages/portal/agent/AgentPortalLayout";
@@ -688,6 +692,9 @@ const App = () => (
                 <Route path="legal-ops/communications" element={<LegalOpsCommunicationsPage />} />
                 <Route path="legal-ops/signatures" element={<SignaturesListPage />} />
                 <Route path="legal-ops/signatures/:id" element={<SignatureDetailPage />} />
+                {/* Portal Management (Staff) */}
+                <Route path="portal/dashboard" element={<PortalManagementDashboard />} />
+                <Route path="portal/live-chat" element={<PortalLiveChatPanel />} />
               </Route>
               
               {/* BACKOFFICE - Panel de administración consolidado */}
@@ -799,10 +806,14 @@ const App = () => (
               
               {/* PUBLIC SIGNATURE PAGE - No auth required */}
               <Route path="/sign/:token" element={<SignDocumentPage />} />
+
+              {/* PUBLIC CERTIFICATE VERIFICATION - No auth required */}
+              <Route path="/verify/:certificateNumber" element={<CertificateVerification />} />
               
 {/* CLIENT PORTAL - Public facing for external clients */}
               <Route path="/portal" element={<PortalIndex />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLogin /></PortalAuthProvider>} />
+              <Route path="/portal/:slug/accept" element={<PortalAcceptInvitation />} />
               <Route path="/portal/:slug/reset-password" element={<PortalResetPassword />} />
               <Route path="/portal/:slug/update-password" element={<PortalUpdatePassword />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLayout /></PortalAuthProvider>}>

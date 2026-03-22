@@ -6,6 +6,7 @@
 import { useTranslation } from 'react-i18next';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
 import { usePortalMatters } from '@/hooks/use-portal-matters';
+import { PortalTrademarkTimeline } from '@/components/portal/PortalTrademarkTimeline';
 import { usePortalDocuments } from '@/hooks/use-portal-documents';
 import { usePortalThreads } from '@/hooks/use-portal-messages';
 import { usePortalInvoices } from '@/hooks/use-portal-invoices';
@@ -281,6 +282,11 @@ export default function PortalDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Trademark Timeline */}
+      {matters && matters.length > 0 && (
+        <PortalTrademarkTimeline matters={matters} slug={slug || ''} />
+      )}
 
       {/* Expedientes Recientes */}
       <Card>
