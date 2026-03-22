@@ -177,8 +177,11 @@ const Dashboard = () => {
           />
         ) : null}
 
-        {/* Welcome Header Card - Saludo + Búsqueda + Notificaciones + Perfil */}
-        <DashboardWelcomeHeader plazosEstaSemana={data?.upcomingDeadlines || 0} />
+         {/* CoPilot Briefing Card */}
+         <BriefingCard />
+
+         {/* Welcome Header Card - Saludo + Búsqueda + Notificaciones + Perfil */}
+         <DashboardWelcomeHeader plazosEstaSemana={data?.upcomingDeadlines || 0} />
  
         {/* 1. BADGES URGENTES (Solo si hay valores > 0) */}
         <UrgentBadges 
