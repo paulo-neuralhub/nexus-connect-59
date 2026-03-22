@@ -25,6 +25,7 @@ import {
   FileStack,
   Zap,
   Hash,
+  Compass,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
