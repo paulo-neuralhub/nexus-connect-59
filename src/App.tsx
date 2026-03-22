@@ -678,6 +678,8 @@ const App = () => (
                   <Route path="templates" element={<CommunicationsTemplatesPage />} />
                   <Route path="settings" element={<CommunicationsSettingsPage />} />
                 </Route>
+                {/* Smart Inbox */}
+                <Route path="smart-inbox" element={<SmartInboxPage />} />
                 <Route path="onboarding" element={<Onboarding />} />
                 {/* Legal Ops */}
                 <Route path="legal-ops" element={<Navigate to="/app/legal-ops/assistant" replace />} />
