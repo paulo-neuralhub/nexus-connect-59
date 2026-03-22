@@ -202,8 +202,8 @@ export function useCopilot() {
   const availableGuides = ctx?.available_guides ?? [];
 
   const urgentCount = useMemo(() => {
-    let count = alerts.fatalDeadlines.length + alerts.criticalSpider + alerts.overdueInvoices;
-    if (briefing && !briefing.was_read && briefing.urgent_items > 0) {
+    let count = (alerts.fatalDeadlines?.length ?? 0) + (alerts.criticalSpider ?? 0) + (alerts.overdueInvoices ?? 0);
+    if (briefing && !briefing.was_read && (briefing.urgent_items ?? 0) > 0) {
       count += briefing.urgent_items;
     }
     return count;
