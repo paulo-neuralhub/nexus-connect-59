@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import { useAgentBrain } from '@/hooks/use-agent-brain'
 
 // ── Inyectar CSS en el <head> del documento ──────────────
 const CSS_ID = 'copilot-widget-styles'
