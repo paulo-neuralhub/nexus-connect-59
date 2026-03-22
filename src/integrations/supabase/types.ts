@@ -7244,10 +7244,20 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           agent_jurisdictions: string[] | null
+          agent_license_expiry: string | null
+          agent_license_jurisdictions: string[] | null
           agent_license_number: string | null
+          agent_license_type: string | null
+          agent_license_verified_at: string | null
+          agent_portal_branding: Json | null
+          agent_portal_slug: string | null
           annual_ip_budget_eur: number | null
           assigned_to: string | null
+          billing_consolidation_day: number | null
           billing_email: string | null
+          billing_grace_days: number | null
+          billing_period_day: number | null
+          billing_type: string | null
           city: string | null
           client_token: string | null
           client_type_id: string | null
@@ -7256,6 +7266,7 @@ export type Database = {
           created_at: string
           credit_limit: number | null
           currency: string | null
+          discount_pct: number | null
           email: string | null
           fax: string | null
           health_score: number | null
@@ -7263,15 +7274,19 @@ export type Database = {
           industry: string | null
           ip_portfolio_size: number | null
           is_active: boolean | null
+          is_agent: boolean | null
+          is_licensed_agent: boolean | null
           last_interaction_at: string | null
           legal_name: string | null
           lifecycle_stage: string | null
+          market_agent_id: string | null
           name: string
           notes: string | null
           organization_id: string
           payment_classification_id: string | null
           payment_terms: number | null
           phone: string | null
+          portal_type: string | null
           postal_code: string | null
           preferred_language: string | null
           rating_stars: number | null
@@ -7293,10 +7308,20 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agent_jurisdictions?: string[] | null
+          agent_license_expiry?: string | null
+          agent_license_jurisdictions?: string[] | null
           agent_license_number?: string | null
+          agent_license_type?: string | null
+          agent_license_verified_at?: string | null
+          agent_portal_branding?: Json | null
+          agent_portal_slug?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_consolidation_day?: number | null
           billing_email?: string | null
+          billing_grace_days?: number | null
+          billing_period_day?: number | null
+          billing_type?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
@@ -7305,6 +7330,7 @@ export type Database = {
           created_at?: string
           credit_limit?: number | null
           currency?: string | null
+          discount_pct?: number | null
           email?: string | null
           fax?: string | null
           health_score?: number | null
@@ -7312,15 +7338,19 @@ export type Database = {
           industry?: string | null
           ip_portfolio_size?: number | null
           is_active?: boolean | null
+          is_agent?: boolean | null
+          is_licensed_agent?: boolean | null
           last_interaction_at?: string | null
           legal_name?: string | null
           lifecycle_stage?: string | null
+          market_agent_id?: string | null
           name: string
           notes?: string | null
           organization_id: string
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_type?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -7342,10 +7372,20 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agent_jurisdictions?: string[] | null
+          agent_license_expiry?: string | null
+          agent_license_jurisdictions?: string[] | null
           agent_license_number?: string | null
+          agent_license_type?: string | null
+          agent_license_verified_at?: string | null
+          agent_portal_branding?: Json | null
+          agent_portal_slug?: string | null
           annual_ip_budget_eur?: number | null
           assigned_to?: string | null
+          billing_consolidation_day?: number | null
           billing_email?: string | null
+          billing_grace_days?: number | null
+          billing_period_day?: number | null
+          billing_type?: string | null
           city?: string | null
           client_token?: string | null
           client_type_id?: string | null
@@ -7354,6 +7394,7 @@ export type Database = {
           created_at?: string
           credit_limit?: number | null
           currency?: string | null
+          discount_pct?: number | null
           email?: string | null
           fax?: string | null
           health_score?: number | null
@@ -7361,15 +7402,19 @@ export type Database = {
           industry?: string | null
           ip_portfolio_size?: number | null
           is_active?: boolean | null
+          is_agent?: boolean | null
+          is_licensed_agent?: boolean | null
           last_interaction_at?: string | null
           legal_name?: string | null
           lifecycle_stage?: string | null
+          market_agent_id?: string | null
           name?: string
           notes?: string | null
           organization_id?: string
           payment_classification_id?: string | null
           payment_terms?: number | null
           phone?: string | null
+          portal_type?: string | null
           postal_code?: string | null
           preferred_language?: string | null
           rating_stars?: number | null
@@ -7391,6 +7436,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_accounts_market_agent_id_fkey"
+            columns: ["market_agent_id"]
+            isOneToOne: false
+            referencedRelation: "market_agents"
             referencedColumns: ["id"]
           },
           {
@@ -13019,11 +13071,15 @@ export type Database = {
       }
       invoices: {
         Row: {
+          agent_client_breakdown: Json | null
           bank_account: string | null
+          billing_account_id: string | null
           billing_client_id: string | null
           client_address: string | null
           client_name: string
           client_tax_id: string | null
+          consolidation_matters: Json | null
+          consolidation_period: string | null
           corrected_invoice_id: string | null
           correction_description: string | null
           correction_reason: string | null
@@ -13050,10 +13106,12 @@ export type Database = {
           invoice_number: string
           invoice_series: string | null
           invoice_type: string | null
+          is_consolidated_invoice: boolean | null
           matter_id: string | null
           notes: string | null
           official_fees_subtotal: number | null
           organization_id: string
+          owner_account_id: string | null
           paid_amount: number | null
           paid_date: string | null
           payment_method: string | null
@@ -13097,11 +13155,15 @@ export type Database = {
           withholding_percent: number | null
         }
         Insert: {
+          agent_client_breakdown?: Json | null
           bank_account?: string | null
+          billing_account_id?: string | null
           billing_client_id?: string | null
           client_address?: string | null
           client_name: string
           client_tax_id?: string | null
+          consolidation_matters?: Json | null
+          consolidation_period?: string | null
           corrected_invoice_id?: string | null
           correction_description?: string | null
           correction_reason?: string | null
@@ -13128,10 +13190,12 @@ export type Database = {
           invoice_number: string
           invoice_series?: string | null
           invoice_type?: string | null
+          is_consolidated_invoice?: boolean | null
           matter_id?: string | null
           notes?: string | null
           official_fees_subtotal?: number | null
           organization_id: string
+          owner_account_id?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
@@ -13175,11 +13239,15 @@ export type Database = {
           withholding_percent?: number | null
         }
         Update: {
+          agent_client_breakdown?: Json | null
           bank_account?: string | null
+          billing_account_id?: string | null
           billing_client_id?: string | null
           client_address?: string | null
           client_name?: string
           client_tax_id?: string | null
+          consolidation_matters?: Json | null
+          consolidation_period?: string | null
           corrected_invoice_id?: string | null
           correction_description?: string | null
           correction_reason?: string | null
@@ -13206,10 +13274,12 @@ export type Database = {
           invoice_number?: string
           invoice_series?: string | null
           invoice_type?: string | null
+          is_consolidated_invoice?: boolean | null
           matter_id?: string | null
           notes?: string | null
           official_fees_subtotal?: number | null
           organization_id?: string
+          owner_account_id?: string | null
           paid_amount?: number | null
           paid_date?: string | null
           payment_method?: string | null
@@ -13254,6 +13324,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "invoices_billing_account_id_fkey"
+            columns: ["billing_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "invoices_crm_account_id_fkey"
             columns: ["crm_account_id"]
             isOneToOne: false
@@ -13279,6 +13356,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -18133,9 +18217,11 @@ export type Database = {
       }
       matters: {
         Row: {
+          agent_matter_reference: string | null
           application_number: string | null
           assigned_to: string | null
           auto_renewal: boolean | null
+          billing_account_id: string | null
           client_id: string | null
           cost_center: string | null
           created_at: string
@@ -18143,11 +18229,14 @@ export type Database = {
           currency: string | null
           estimated_value: number | null
           expiry_date: string | null
+          family_id: string | null
+          family_role: string | null
           filing_date: string | null
           filing_number: string | null
           goods_services: string | null
           id: string
           images: string[] | null
+          intermediate_agent_id: string | null
           internal_notes: string | null
           ip_type: string | null
           is_archived: boolean | null
@@ -18159,9 +18248,14 @@ export type Database = {
           next_renewal_date: string | null
           nice_classes: number[] | null
           notes: string | null
+          notify_billing_account: boolean | null
+          notify_owner_account: boolean | null
           official_fees: number | null
           organization_id: string
+          owner_account_id: string | null
           owner_name: string | null
+          owner_portal_visible: boolean | null
+          parent_matter_id: string | null
           priority_country: string | null
           priority_date: string | null
           priority_number: string | null
@@ -18180,9 +18274,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agent_matter_reference?: string | null
           application_number?: string | null
           assigned_to?: string | null
           auto_renewal?: boolean | null
+          billing_account_id?: string | null
           client_id?: string | null
           cost_center?: string | null
           created_at?: string
@@ -18190,11 +18286,14 @@ export type Database = {
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
+          family_id?: string | null
+          family_role?: string | null
           filing_date?: string | null
           filing_number?: string | null
           goods_services?: string | null
           id?: string
           images?: string[] | null
+          intermediate_agent_id?: string | null
           internal_notes?: string | null
           ip_type?: string | null
           is_archived?: boolean | null
@@ -18206,9 +18305,14 @@ export type Database = {
           next_renewal_date?: string | null
           nice_classes?: number[] | null
           notes?: string | null
+          notify_billing_account?: boolean | null
+          notify_owner_account?: boolean | null
           official_fees?: number | null
           organization_id: string
+          owner_account_id?: string | null
           owner_name?: string | null
+          owner_portal_visible?: boolean | null
+          parent_matter_id?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -18227,9 +18331,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agent_matter_reference?: string | null
           application_number?: string | null
           assigned_to?: string | null
           auto_renewal?: boolean | null
+          billing_account_id?: string | null
           client_id?: string | null
           cost_center?: string | null
           created_at?: string
@@ -18237,11 +18343,14 @@ export type Database = {
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
+          family_id?: string | null
+          family_role?: string | null
           filing_date?: string | null
           filing_number?: string | null
           goods_services?: string | null
           id?: string
           images?: string[] | null
+          intermediate_agent_id?: string | null
           internal_notes?: string | null
           ip_type?: string | null
           is_archived?: boolean | null
@@ -18253,9 +18362,14 @@ export type Database = {
           next_renewal_date?: string | null
           nice_classes?: number[] | null
           notes?: string | null
+          notify_billing_account?: boolean | null
+          notify_owner_account?: boolean | null
           official_fees?: number | null
           organization_id?: string
+          owner_account_id?: string | null
           owner_name?: string | null
+          owner_portal_visible?: boolean | null
+          parent_matter_id?: string | null
           priority_country?: string | null
           priority_date?: string | null
           priority_number?: string | null
@@ -18275,6 +18389,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matters_billing_account_id_fkey"
+            columns: ["billing_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matters_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
@@ -18282,10 +18403,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matters_intermediate_agent_id_fkey"
+            columns: ["intermediate_agent_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matters_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_parent_matter_id_fkey"
+            columns: ["parent_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
         ]
@@ -19458,6 +19600,11 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string | null
+          feature_agent_portal_enabled: boolean | null
+          feature_b2b2b_enabled: boolean | null
+          feature_matter_families_enabled: boolean | null
+          feature_smart_inbox_enabled: boolean | null
+          feature_storefront_enabled: boolean | null
           id: string
           is_platform_owner: boolean | null
           name: string
@@ -19470,6 +19617,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          feature_agent_portal_enabled?: boolean | null
+          feature_b2b2b_enabled?: boolean | null
+          feature_matter_families_enabled?: boolean | null
+          feature_smart_inbox_enabled?: boolean | null
+          feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
           name: string
@@ -19482,6 +19634,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          feature_agent_portal_enabled?: boolean | null
+          feature_b2b2b_enabled?: boolean | null
+          feature_matter_families_enabled?: boolean | null
+          feature_smart_inbox_enabled?: boolean | null
+          feature_storefront_enabled?: boolean | null
           id?: string
           is_platform_owner?: boolean | null
           name?: string
