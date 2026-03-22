@@ -621,22 +621,26 @@ export function CoPilotWidget() {
       )}
 
       {/* ── CÍRCULO DEL AVATAR ────────────────────────── */}
-      <div
-        ref={bubbleRef}
-        className={`cp-bubble${breathing ? ' breathing' : ''}`}
-        onClick={() => {
-          if (moved.current) return
-          if (panel === 'closed') setPanel('bubble')
-          else if (panel === 'bubble') setPanel('open')
-          else setPanel('closed')
-        }}
-      >
-        <img
-          src={AVATAR}
-          alt="CoPilot Nexus"
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          onError={e => { e.currentTarget.style.display = 'none' }}
-        />
+      <div className="cp-bubble-wrapper">
+        <div className="cp-ring" />
+        <div className="cp-ring" />
+        <div
+          ref={bubbleRef}
+          className={`cp-bubble${breathing ? ' breathing' : ''}`}
+          onClick={() => {
+            if (moved.current) return
+            if (panel === 'closed') setPanel('bubble')
+            else if (panel === 'bubble') setPanel('open')
+            else setPanel('closed')
+          }}
+        >
+          <img
+            src={AVATAR}
+            alt="CoPilot Nexus"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={e => { e.currentTarget.style.display = 'none' }}
+          />
+        </div>
       </div>
     </div>
   )
