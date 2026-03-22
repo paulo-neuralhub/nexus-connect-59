@@ -374,6 +374,10 @@ import PortalDocuments from "./pages/portal/PortalDocuments";
 import PortalInvoices from "./pages/portal/PortalInvoices";
 import PortalCatalog from "./pages/portal/PortalCatalog";
 import PortalMessages from "./pages/portal/PortalMessages";
+import PortalAcceptInvitation from "./pages/portal/PortalAcceptInvitation";
+import CertificateVerification from "./pages/portal/CertificateVerification";
+import PortalManagementDashboard from "./pages/app/portal/PortalManagementDashboard";
+import PortalLiveChatPanel from "./pages/app/portal/PortalLiveChatPanel";
 
 // Agent Portal Pages (B2B2B)
 import AgentPortalLayout from "./pages/portal/agent/AgentPortalLayout";
