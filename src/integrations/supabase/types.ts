@@ -20723,6 +20723,9 @@ export type Database = {
       }
       portal_access: {
         Row: {
+          can_request_services: boolean | null
+          can_submit_instructions: boolean | null
+          can_view_invoices: boolean | null
           created_at: string | null
           crm_account_id: string | null
           id: string
@@ -20731,6 +20734,9 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          can_request_services?: boolean | null
+          can_submit_instructions?: boolean | null
+          can_view_invoices?: boolean | null
           created_at?: string | null
           crm_account_id?: string | null
           id?: string
@@ -20739,6 +20745,9 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          can_request_services?: boolean | null
+          can_submit_instructions?: boolean | null
+          can_view_invoices?: boolean | null
           created_at?: string | null
           crm_account_id?: string | null
           id?: string
@@ -20766,22 +20775,120 @@ export type Database = {
       portal_client_instructions: {
         Row: {
           created_at: string | null
+          crm_account_id: string | null
           id: string
+          instruction_text: string | null
+          instruction_type: string | null
+          matter_id: string | null
           organization_id: string
+          priority: string | null
+          status: string | null
+          submitted_by: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          crm_account_id?: string | null
           id?: string
+          instruction_text?: string | null
+          instruction_type?: string | null
+          matter_id?: string | null
           organization_id: string
+          priority?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          crm_account_id?: string | null
           id?: string
+          instruction_text?: string | null
+          instruction_type?: string | null
+          matter_id?: string | null
           organization_id?: string
+          priority?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "portal_client_instructions_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_client_instructions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portal_client_instructions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_notifications: {
+        Row: {
+          created_at: string | null
+          crm_account_id: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          notification_type: string
+          organization_id: string
+          portal_user_id: string | null
+          priority: string | null
+          read_at: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type: string
+          organization_id: string
+          portal_user_id?: string | null
+          priority?: string | null
+          read_at?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          crm_account_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          organization_id?: string
+          portal_user_id?: string | null
+          priority?: string | null
+          read_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_notifications_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_notifications_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -20792,20 +20899,39 @@ export type Database = {
       portal_service_requests: {
         Row: {
           created_at: string | null
+          crm_account_id: string | null
           id: string
           organization_id: string
+          service_type: string | null
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          crm_account_id?: string | null
           id?: string
           organization_id: string
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          crm_account_id?: string | null
           id?: string
           organization_id?: string
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "portal_service_requests_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "portal_service_requests_organization_id_fkey"
             columns: ["organization_id"]
