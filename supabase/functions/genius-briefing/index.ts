@@ -24,7 +24,8 @@ async function generateBriefingForOrg(
   orgId: string,
   anthropicKey: string | undefined,
   force: boolean,
-  localDate: string // YYYY-MM-DD in org's timezone
+  localDate: string, // YYYY-MM-DD in org's timezone
+  requestingUserId?: string | null // for personalization
 ): Promise<{ briefing_id?: string; total_items: number; urgent_items: number; summary: string; was_cached: boolean }> {
   // Check existing briefing using the org's local date
   const { data: existing } = await db
@@ -238,6 +239,44 @@ async function generateBriefingForOrg(
   const urgentItems = items.filter((i) => i.priority === "fatal" || i.priority === "high").length;
   const totalItems = items.length;
 
+  // ── Personalize briefing order based on user patterns ──
+  // Load user's priority pattern for personalization
+  let prioritizesFirst = "deadline"; // default
+  let summaryStyle = "operativo y accionable"; // default
+
+  if (requestingUserId) {
+    try {
+      const { data: userPattern } = await db
+        .from("copilot_user_patterns")
+        .select("pattern_data")
+        .eq("user_id", requestingUserId)
+        .eq("organization_id", orgId)
+        .eq("pattern_type", "priority_behavior")
+        .maybeSingle();
+
+      if (userPattern?.pattern_data?.checks_first) {
+        const typeMap: Record<string, string> = {
+          deadline_viewed: "deadline", matter_opened: "deadline",
+          spider_alert_viewed: "spider", invoice_viewed: "invoice",
+          page_view: "deadline",
+        };
+        prioritizesFirst = typeMap[userPattern.pattern_data.checks_first] || "deadline";
+      }
+
+      const { data: userProfile } = await db
+        .from("profiles")
+        .select("role, department")
+        .eq("id", requestingUserId)
+        .single();
+
+      if (userProfile?.role === "admin" || userProfile?.role === "superadmin") {
+        summaryStyle = "ejecutivo y estratégico";
+      } else if (userProfile?.department === "patents") {
+        summaryStyle = "técnico, enfocado en patentes";
+      }
+    } catch { /* non-blocking */ }
+  }
+
   // Generate AI summary
   let summary: string;
   const modelForBriefing = gtc?.model_basic || "claude-haiku-4-5-20251001";
@@ -246,6 +285,18 @@ async function generateBriefingForOrg(
     summary = "Sin alertas urgentes hoy. ✅ Tu cartera está al día.";
   } else if (anthropicKey && urgentItems > 0) {
     try {
+      // Reorder items based on user's priority pattern
+      const priorityWeights: Record<string, number> = {
+        fatal: 100, high: 80, medium: 50, low: 20,
+      };
+
+      items.sort((a, b) => {
+        // If item type matches what user checks first, boost it
+        if (a.type === prioritizesFirst && b.type !== prioritizesFirst) return -1;
+        if (b.type === prioritizesFirst && a.type !== prioritizesFirst) return 1;
+        return (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
+      });
+
       const itemsSummaryText = items
         .slice(0, 10)
         .map((i) => `[${i.priority}] ${i.title}: ${i.description}`)
@@ -262,7 +313,7 @@ async function generateBriefingForOrg(
           model: modelForBriefing,
           max_tokens: 200,
           temperature: 0.3,
-          system: "Genera un resumen ejecutivo de 2-3 líneas para el briefing matutino de un despacho de PI. Sé directo y prioriza lo más urgente. Responde en español.",
+          system: `Genera un resumen ${summaryStyle} de 2-3 líneas para el briefing matutino de un despacho de PI. El usuario suele revisar primero: ${prioritizesFirst}. Prioriza eso en el briefing. Sé directo. Responde en español.`,
           messages: [
             {
               role: "user",
@@ -521,7 +572,7 @@ serve(async (req) => {
     const tz = orgConfig?.timezone || "Europe/Madrid";
     const localDate = getOrgLocalDate(tz);
 
-    const result = await generateBriefingForOrg(db, orgId, anthropicKey, force, localDate);
+    const result = await generateBriefingForOrg(db, orgId, anthropicKey, force, localDate, userId);
 
     // Update last_briefing_date
     if (!result.was_cached) {
