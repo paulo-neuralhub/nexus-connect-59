@@ -213,7 +213,22 @@ export function CoPilotWidget() {
     setChatState('bubble');
   };
 
+  const breathStyle = `
+    @keyframes copilotBreath {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+    @keyframes copilotLand {
+      0% { opacity: 0; transform: translateY(40px) scale(0.8); }
+      60% { opacity: 1; transform: translateY(-8px) scale(1.05); }
+      80% { transform: translateY(4px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  `;
+
   return (
+    <>
+    <style>{breathStyle}</style>
     <div
       style={{ position: 'fixed', bottom: position.bottom, right: position.right, zIndex: 9998 }}
       onMouseDown={handleMouseDown}
@@ -345,6 +360,7 @@ export function CoPilotWidget() {
         />
       )}
     </div>
+    </>
   );
 }
 
