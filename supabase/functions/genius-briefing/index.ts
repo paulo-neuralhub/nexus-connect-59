@@ -43,11 +43,9 @@ serve(async (req) => {
       const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: claimsData } = await supabaseAuth.auth.getClaims(
-        authHeader.replace("Bearer ", "")
-      );
-      if (claimsData?.claims?.sub) {
-        userId = claimsData.claims.sub as string;
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+      if (user?.id) {
+        userId = user.id;
         const { data: profile } = await db
           .from("profiles")
           .select("organization_id")
