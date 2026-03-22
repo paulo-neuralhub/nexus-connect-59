@@ -90,6 +90,18 @@ const CSS_CONTENT = `
     90%  { transform: translateY(-2px) scale(1.02); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
+  .cp-highlight {
+    outline: 2.5px solid #F59E0B !important;
+    outline-offset: 4px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 0 6px rgba(245,158,11,0.15) !important;
+    transition: all 0.4s ease !important;
+    animation: cpHighlightPulse 1s ease-in-out 3 !important;
+  }
+  @keyframes cpHighlightPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(245,158,11,0.15); }
+    50% { box-shadow: 0 0 0 10px rgba(245,158,11,0.05); }
+  }
   @keyframes cpAttentive {
     0%, 100% { transform: scale(1); box-shadow: 0 4px 24px rgba(30,41,59,0.40); }
     50% { transform: scale(1.07); box-shadow: 0 6px 30px rgba(30,41,59,0.60); }
