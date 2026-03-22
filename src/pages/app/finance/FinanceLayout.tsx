@@ -46,7 +46,7 @@ const advancedReportsItems = [
   { to: '/app/finance/reports/verifactu', icon: Shield, label: 'Verifactu' },
 ];
 
-function NavItem({ item, disabled }: { item: typeof basicNavItems[0] & { end?: boolean }; disabled?: boolean }) {
+function NavItem({ item, disabled }: { item: { to: string; icon: any; label: string; end?: boolean }; disabled?: boolean }) {
   if (disabled) {
     return (
       <TooltipProvider>
