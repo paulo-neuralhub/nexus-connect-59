@@ -798,7 +798,7 @@ const App = () => (
               {/* PUBLIC SIGNATURE PAGE - No auth required */}
               <Route path="/sign/:token" element={<SignDocumentPage />} />
               
-              {/* CLIENT PORTAL - Public facing for external clients */}
+{/* CLIENT PORTAL - Public facing for external clients */}
               <Route path="/portal" element={<PortalIndex />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLogin /></PortalAuthProvider>} />
               <Route path="/portal/:slug/reset-password" element={<PortalResetPassword />} />
@@ -811,6 +811,17 @@ const App = () => (
                 <Route path="invoices" element={<PortalInvoices />} />
                 <Route path="catalog" element={<PortalCatalog />} />
                 <Route path="messages" element={<PortalMessages />} />
+              </Route>
+
+              {/* AGENT PORTAL - B2B2B */}
+              <Route path="/portal/:slug/agent" element={<PortalAuthProvider><AgentPortalLayout /></PortalAuthProvider>}>
+                <Route index element={<AgentPortalDashboard />} />
+                <Route path="dashboard" element={<AgentPortalDashboard />} />
+                <Route path="matters" element={<AgentPortalMatters />} />
+                <Route path="storefront" element={<AgentPortalStorefront />} />
+                <Route path="analytics" element={<AgentPortalAnalytics />} />
+                <Route path="inbox" element={<AgentPortalInbox />} />
+                <Route path="messages" element={<AgentPortalMessages />} />
               </Route>
               
                 {/* 404 */}
