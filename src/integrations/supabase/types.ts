@@ -13142,6 +13142,254 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_channel_members: {
+        Row: {
+          channel_id: string
+          id: string
+          is_muted: boolean | null
+          joined_at: string | null
+          last_read_at: string | null
+          organization_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          id?: string
+          is_muted?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          organization_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          id?: string
+          is_muted?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          organization_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "internal_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_channel_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_channels: {
+        Row: {
+          channel_type: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_archived: boolean | null
+          is_default: boolean | null
+          matter_id: string | null
+          name: string
+          organization_id: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          channel_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_default?: boolean | null
+          matter_id?: string | null
+          name: string
+          organization_id: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_default?: boolean | null
+          matter_id?: string | null
+          name?: string
+          organization_id?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_channels_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_channels_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_channels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_message_reads: {
+        Row: {
+          id: string
+          message_id: string
+          organization_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          organization_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          organization_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "internal_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_message_reads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_message_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_messages: {
+        Row: {
+          attachments: Json | null
+          channel_id: string
+          content: string
+          content_type: string | null
+          created_at: string | null
+          edited_at: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          mentions: string[] | null
+          organization_id: string
+          reactions: Json | null
+          reply_to_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          channel_id: string
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          mentions?: string[] | null
+          organization_id: string
+          reactions?: Json | null
+          reply_to_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          channel_id?: string
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          mentions?: string[] | null
+          organization_id?: string
+          reactions?: Json | null
+          reply_to_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "internal_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "internal_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_notifications: {
         Row: {
           action_url: string | null
@@ -18957,6 +19205,67 @@ export type Database = {
           },
         ]
       }
+      matter_timeline_events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          event_type: string
+          id: string
+          is_internal: boolean | null
+          matter_id: string
+          metadata: Json | null
+          organization_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          is_internal?: boolean | null
+          matter_id: string
+          metadata?: Json | null
+          organization_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          is_internal?: boolean | null
+          matter_id?: string
+          metadata?: Json | null
+          organization_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_timeline_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_timeline_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matters: {
         Row: {
           agent_matter_reference: string | null
@@ -20632,6 +20941,176 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_definitions: {
+        Row: {
+          annual_price_eur: number | null
+          code: string
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          genius_pro_models_allowed: Json | null
+          id: string
+          included_modules: string[] | null
+          is_active: boolean | null
+          max_contacts: number | null
+          max_genius_queries_monthly: number | null
+          max_jurisdictions: number | null
+          max_matters: number | null
+          max_spider_alerts_monthly: number | null
+          max_storage_gb: number | null
+          max_users: number | null
+          monthly_price_eur: number | null
+          name: string
+          sort_order: number | null
+          tier: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          annual_price_eur?: number | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          genius_pro_models_allowed?: Json | null
+          id?: string
+          included_modules?: string[] | null
+          is_active?: boolean | null
+          max_contacts?: number | null
+          max_genius_queries_monthly?: number | null
+          max_jurisdictions?: number | null
+          max_matters?: number | null
+          max_spider_alerts_monthly?: number | null
+          max_storage_gb?: number | null
+          max_users?: number | null
+          monthly_price_eur?: number | null
+          name: string
+          sort_order?: number | null
+          tier?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          annual_price_eur?: number | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          genius_pro_models_allowed?: Json | null
+          id?: string
+          included_modules?: string[] | null
+          is_active?: boolean | null
+          max_contacts?: number | null
+          max_genius_queries_monthly?: number | null
+          max_jurisdictions?: number | null
+          max_matters?: number | null
+          max_spider_alerts_monthly?: number | null
+          max_storage_gb?: number | null
+          max_users?: number | null
+          monthly_price_eur?: number | null
+          name?: string
+          sort_order?: number | null
+          tier?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      plan_feature_overrides: {
+        Row: {
+          created_at: string | null
+          feature_key: string
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          override_value: Json
+          reason: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_key: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          override_value: Json
+          reason?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_key?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          override_value?: Json
+          reason?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_feature_overrides_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_feature_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_usage_counters: {
+        Row: {
+          current_contacts: number | null
+          current_matters: number | null
+          current_storage_mb: number | null
+          current_users: number | null
+          genius_queries_this_month: number | null
+          id: string
+          month_reset_at: string | null
+          organization_id: string
+          spider_alerts_this_month: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          current_contacts?: number | null
+          current_matters?: number | null
+          current_storage_mb?: number | null
+          current_users?: number | null
+          genius_queries_this_month?: number | null
+          id?: string
+          month_reset_at?: string | null
+          organization_id: string
+          spider_alerts_this_month?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          current_contacts?: number | null
+          current_matters?: number | null
+          current_storage_mb?: number | null
+          current_users?: number | null
+          genius_queries_this_month?: number | null
+          id?: string
+          month_reset_at?: string | null
+          organization_id?: string
+          spider_alerts_this_month?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_usage_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_costs: {
         Row: {
           amount: number
@@ -22280,33 +22759,45 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          chat_status: string | null
           created_at: string | null
+          department: string | null
           first_name: string | null
           id: string
           last_name: string | null
+          last_seen_at: string | null
           organization_id: string | null
+          position_title: string | null
           preferences: Json | null
           role: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          chat_status?: string | null
           created_at?: string | null
+          department?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
+          last_seen_at?: string | null
           organization_id?: string | null
+          position_title?: string | null
           preferences?: Json | null
           role?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          chat_status?: string | null
           created_at?: string | null
+          department?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          last_seen_at?: string | null
           organization_id?: string | null
+          position_title?: string | null
           preferences?: Json | null
           role?: string | null
           updated_at?: string | null
@@ -24998,6 +25489,69 @@ export type Database = {
           },
         ]
       }
+      staff_notifications: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_read: boolean | null
+          link: string | null
+          organization_id: string
+          read_at: string | null
+          source_id: string | null
+          source_type: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          organization_id: string
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          organization_id?: string
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_orders: {
         Row: {
           buyer_account_id: string
@@ -27233,6 +27787,7 @@ export type Database = {
         Returns: undefined
       }
       refresh_agent_portfolio_analytics: { Args: never; Returns: undefined }
+      reset_monthly_plan_counters: { Args: never; Returns: undefined }
       slugify: { Args: { input_text: string }; Returns: string }
       verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
