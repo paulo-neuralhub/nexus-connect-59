@@ -7,23 +7,30 @@ import { useAgentBrain } from '@/hooks/use-agent-brain'
 const CSS_ID = 'copilot-widget-styles'
 const CSS_CONTENT = `
   .cp-bubble {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    overflow: hidden;
+    width: 64px; height: 64px; border-radius: 50%;
+    overflow: hidden; cursor: pointer; background: #E2E8F0;
+    display: block; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+  }
+  .cp-bubble:hover { transform: scale(1.08); }
+  .cp-bubble.state-standby {
     border: 2.5px solid #1E293B;
-    box-shadow: 0 4px 20px rgba(30,41,59,0.35);
-    cursor: pointer;
-    background: #E2E8F0;
-    display: block;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .cp-bubble:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 28px rgba(30,41,59,0.5);
-  }
-  .cp-bubble.breathing {
+    box-shadow: 0 4px 20px rgba(30,41,59,0.30);
     animation: cpBreath 3.5s ease-in-out infinite;
+  }
+  .cp-bubble.state-attentive {
+    border: 2.5px solid #1E293B;
+    box-shadow: 0 4px 24px rgba(30,41,59,0.50);
+    animation: cpAttentive 2s ease-in-out infinite;
+  }
+  .cp-bubble.state-urgent {
+    border: 2.5px solid #EF4444;
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+    animation: cpUrgent 1.5s ease-in-out infinite;
+  }
+  .cp-bubble.state-speaking {
+    border: 2.5px solid #F59E0B;
+    box-shadow: 0 4px 24px rgba(245,158,11,0.45);
+    animation: cpBreath 2s ease-in-out infinite;
   }
   .cp-panel {
     animation: cpSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
