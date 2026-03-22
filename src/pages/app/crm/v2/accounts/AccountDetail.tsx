@@ -33,6 +33,7 @@ import { AccountPortfolioTab } from "./tabs/AccountPortfolioTab";
 import { AccountDealsTab } from "./tabs/AccountDealsTab";
 import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
+import { AccountAgentTab } from "./tabs/AccountAgentTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
 import { openSoftphone } from "@/components/telephony/IPSoftphone";
@@ -192,6 +193,11 @@ export default function CRMV2AccountDetail() {
                   <TabsTrigger value="documents" className="gap-1.5">
                     <FileText className="w-3.5 h-3.5" /> Documentos
                   </TabsTrigger>
+                  {(account as any).is_agent && (
+                    <TabsTrigger value="agent" className="gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> Agente
+                    </TabsTrigger>
+                  )}
                 </TabsList>
 
                 <TabsContent value="overview">
@@ -226,6 +232,21 @@ export default function CRMV2AccountDetail() {
                 <TabsContent value="documents">
                   <AccountDocumentsTab accountId={id} />
                 </TabsContent>
+
+                {(account as any).is_agent && (
+                  <TabsContent value="agent">
+                    <AccountAgentTab
+                      accountId={id}
+                      accountName={account.name}
+                      isAgent={true}
+                      isLicensedAgent={(account as any).is_licensed_agent}
+                      agentLicenseType={(account as any).agent_license_type}
+                      billingType={(account as any).billing_type}
+                      discountPct={(account as any).discount_pct}
+                      portalType={(account as any).portal_type}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </div>
 

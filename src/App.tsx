@@ -375,6 +375,18 @@ import PortalInvoices from "./pages/portal/PortalInvoices";
 import PortalCatalog from "./pages/portal/PortalCatalog";
 import PortalMessages from "./pages/portal/PortalMessages";
 
+// Agent Portal Pages (B2B2B)
+import AgentPortalLayout from "./pages/portal/agent/AgentPortalLayout";
+import AgentPortalDashboard from "./pages/portal/agent/AgentDashboard";
+import AgentPortalMatters from "./pages/portal/agent/AgentMatters";
+import AgentPortalStorefront from "./pages/portal/agent/AgentStorefront";
+import AgentPortalAnalytics from "./pages/portal/agent/AgentAnalytics";
+import AgentPortalInbox from "./pages/portal/agent/AgentInbox";
+import AgentPortalMessages from "./pages/portal/agent/AgentMessages";
+
+// Smart Inbox
+import SmartInboxPage from "./pages/app/smart-inbox";
+
 // Layout
 import { AppLayout } from "@/components/layout/app-layout";
 import { AuthGuard } from "@/components/layout/auth-guard";
@@ -666,6 +678,8 @@ const App = () => (
                   <Route path="templates" element={<CommunicationsTemplatesPage />} />
                   <Route path="settings" element={<CommunicationsSettingsPage />} />
                 </Route>
+                {/* Smart Inbox */}
+                <Route path="smart-inbox" element={<SmartInboxPage />} />
                 <Route path="onboarding" element={<Onboarding />} />
                 {/* Legal Ops */}
                 <Route path="legal-ops" element={<Navigate to="/app/legal-ops/assistant" replace />} />
@@ -786,7 +800,7 @@ const App = () => (
               {/* PUBLIC SIGNATURE PAGE - No auth required */}
               <Route path="/sign/:token" element={<SignDocumentPage />} />
               
-              {/* CLIENT PORTAL - Public facing for external clients */}
+{/* CLIENT PORTAL - Public facing for external clients */}
               <Route path="/portal" element={<PortalIndex />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLogin /></PortalAuthProvider>} />
               <Route path="/portal/:slug/reset-password" element={<PortalResetPassword />} />
@@ -799,6 +813,17 @@ const App = () => (
                 <Route path="invoices" element={<PortalInvoices />} />
                 <Route path="catalog" element={<PortalCatalog />} />
                 <Route path="messages" element={<PortalMessages />} />
+              </Route>
+
+              {/* AGENT PORTAL - B2B2B */}
+              <Route path="/portal/:slug/agent" element={<PortalAuthProvider><AgentPortalLayout /></PortalAuthProvider>}>
+                <Route index element={<AgentPortalDashboard />} />
+                <Route path="dashboard" element={<AgentPortalDashboard />} />
+                <Route path="matters" element={<AgentPortalMatters />} />
+                <Route path="storefront" element={<AgentPortalStorefront />} />
+                <Route path="analytics" element={<AgentPortalAnalytics />} />
+                <Route path="inbox" element={<AgentPortalInbox />} />
+                <Route path="messages" element={<AgentPortalMessages />} />
               </Route>
               
                 {/* 404 */}
