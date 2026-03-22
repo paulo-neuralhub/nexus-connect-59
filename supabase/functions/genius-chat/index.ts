@@ -344,7 +344,61 @@ ${
       ? `\nCONTEXTO ACTUAL: El usuario está en la página ${context_page}. Adapta tus respuestas a lo que el usuario está viendo ahora.\n`
       : "";
 
-    const systemPrompt = `${modePrefix}${contextPageSection}Asistes a profesionales de PI con formación y experiencia legal.
+    // ── Load user/org patterns for personalization ──────
+    let personalizedPrefix = "";
+    try {
+      const { data: userPatterns } = await db
+        .from("copilot_user_patterns")
+        .select("pattern_type, pattern_data, confidence_score")
+        .eq("user_id", userId)
+        .gte("confidence_score", 0.60);
+
+      const { data: orgPatterns } = await db
+        .from("copilot_org_patterns")
+        .select("pattern_type, pattern_data, confidence_score")
+        .eq("organization_id", orgId)
+        .gte("confidence_score", 0.60);
+
+      // Check if message requests writing (email, letter, document)
+      const needsWritingStyle = /email|carta|escrito|redact|borrador|draft/i.test(message);
+      let writingStyle: any = null;
+      if (needsWritingStyle) {
+        const { data: wm } = await db
+          .from("copilot_writing_memory")
+          .select("style_profile")
+          .eq("user_id", userId)
+          .eq("organization_id", orgId)
+          .eq("context_type", "client_email")
+          .maybeSingle();
+        writingStyle = wm?.style_profile;
+      }
+
+      if (userPatterns?.length || orgPatterns?.length || writingStyle) {
+        const sections: string[] = [];
+        if (userPatterns?.length) {
+          sections.push(
+            "CONTEXTO PERSONALIZADO:\n" +
+            userPatterns.map((p: any) => `- ${p.pattern_type}: ${JSON.stringify(p.pattern_data)}`).join("\n")
+          );
+        }
+        if (orgPatterns?.length) {
+          sections.push(
+            "PATRONES DEL DESPACHO:\n" +
+            orgPatterns.map((p: any) => `- ${p.pattern_type}: ${JSON.stringify(p.pattern_data)}`).join("\n")
+          );
+        }
+        if (writingStyle) {
+          sections.push(
+            `ESTILO DE ESCRITURA DEL USUARIO: ${JSON.stringify(writingStyle)}\nUsa este estilo si generas emails o documentos.`
+          );
+        }
+        personalizedPrefix = sections.join("\n\n") + "\n\n---\n\n";
+      }
+    } catch (patternErr) {
+      console.error("Pattern loading error (non-blocking):", patternErr);
+    }
+
+    const systemPrompt = `${personalizedPrefix}${modePrefix}${contextPageSection}Asistes a profesionales de PI con formación y experiencia legal.
 
 REGLAS ABSOLUTAS:
 1. Cita artículos exactos al hacer afirmaciones legales (ej: "Art. 7.1.b RMUE")

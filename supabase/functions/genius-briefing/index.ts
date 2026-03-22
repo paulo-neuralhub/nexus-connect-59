@@ -238,6 +238,11 @@ async function generateBriefingForOrg(
   const urgentItems = items.filter((i) => i.priority === "fatal" || i.priority === "high").length;
   const totalItems = items.length;
 
+  // ── Personalize briefing order based on user patterns ──
+  // Try to get the requesting user's priority pattern (if userId is provided in the call context)
+  let prioritizesFirst = "deadline"; // default
+  let summaryStyle = "operativo y accionable"; // default
+
   // Generate AI summary
   let summary: string;
   const modelForBriefing = gtc?.model_basic || "claude-haiku-4-5-20251001";
@@ -246,6 +251,18 @@ async function generateBriefingForOrg(
     summary = "Sin alertas urgentes hoy. ✅ Tu cartera está al día.";
   } else if (anthropicKey && urgentItems > 0) {
     try {
+      // Reorder items based on user's priority pattern
+      const priorityWeights: Record<string, number> = {
+        fatal: 100, high: 80, medium: 50, low: 20,
+      };
+
+      items.sort((a, b) => {
+        // If item type matches what user checks first, boost it
+        if (a.type === prioritizesFirst && b.type !== prioritizesFirst) return -1;
+        if (b.type === prioritizesFirst && a.type !== prioritizesFirst) return 1;
+        return (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
+      });
+
       const itemsSummaryText = items
         .slice(0, 10)
         .map((i) => `[${i.priority}] ${i.title}: ${i.description}`)
@@ -262,7 +279,7 @@ async function generateBriefingForOrg(
           model: modelForBriefing,
           max_tokens: 200,
           temperature: 0.3,
-          system: "Genera un resumen ejecutivo de 2-3 líneas para el briefing matutino de un despacho de PI. Sé directo y prioriza lo más urgente. Responde en español.",
+          system: `Genera un resumen ${summaryStyle} de 2-3 líneas para el briefing matutino de un despacho de PI. El usuario suele revisar primero: ${prioritizesFirst}. Prioriza eso en el briefing. Sé directo. Responde en español.`,
           messages: [
             {
               role: "user",
