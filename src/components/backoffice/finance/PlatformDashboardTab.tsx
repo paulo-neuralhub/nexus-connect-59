@@ -83,7 +83,7 @@ export function PlatformDashboardTab() {
           <Badge variant="outline">{period === 'year' ? 'Últimos 12 meses' : period}</Badge>
         </div>
         <Button
-          onClick={() => capture.mutate()}
+          onClick={() => capture.mutate(undefined)}
           disabled={capture.isPending}
           className="gap-2"
         >
