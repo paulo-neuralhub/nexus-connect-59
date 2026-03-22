@@ -42,7 +42,13 @@ function PriorityIcon({ type, priority }: { type: string; priority: string }) {
 }
 
 // ── Main Widget ─────────────────────────────────────────────
-export function CoPilotWidget() {
+interface CoPilotWidgetProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function CoPilotWidget({ isOpen, onClose }: CoPilotWidgetProps = {}) {
+  const controlled = isOpen !== undefined;
   const copilot = useCopilot();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -119,14 +125,68 @@ export function CoPilotWidget() {
 
   // Don't show on help pages
   if (copilot.currentPage.startsWith('/app/help')) return null;
-  if (panelState === 'hidden') return null;
+  if (!controlled && panelState === 'hidden') return null;
 
+  // ── Controlled mode: only render the expanded panel ──
+  if (controlled) {
+    const handleControlledClose = () => {
+      onClose?.();
+    };
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 100,
+          right: 24,
+          width: 380,
+          maxHeight: 560,
+          borderRadius: 16,
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.20)',
+          animation: 'copilotSlideUp 0.3s ease-out',
+          zIndex: 9999,
+          overflow: 'hidden',
+        }}
+      >
+        <CopilotExpanded
+          isPro={isPro}
+          name={name}
+          avatarUrl={avatarUrl}
+          mode={mode}
+          briefing={briefing}
+          hasBriefing={hasBriefing}
+          messages={messages}
+          inputValue={inputValue}
+          isThinking={isThinking}
+          queriesRemaining={queriesRemaining}
+          queriesLimit={queriesLimit}
+          features={features}
+          inputRef={inputRef}
+          scrollRef={scrollRef}
+          inputPlaceholder={inputPlaceholder}
+          memoryExplanation={memoryExplanation}
+          isLoadingMemory={isLoadingMemory}
+          onFetchMemory={fetchMemoryExplanation}
+          onInputChange={setInputValue}
+          onSend={handleSend}
+          onCollapse={handleControlledClose}
+          onMarkBriefingRead={markBriefingRead}
+          onDismissBriefing={dismissBriefing}
+          onNavigate={(url) => {
+            navigate(url);
+            handleControlledClose();
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ── Uncontrolled (legacy) mode ──
   return (
     <div className="fixed bottom-6 right-6 z-40">
       <AnimatePresence mode="wait">
         {panelState === 'bubble' && (
           <div key="bubble-wrapper">
-            {/* Suggestion tooltip */}
             {activeSuggestion && !showGreeting && (
               <SuggestionTooltip
                 isPro={isPro}
