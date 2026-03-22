@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import VerifactuInvoiceSection from '@/components/finance/VerifactuInvoiceSection';
 
 function StatusBadge({ status }: { status: keyof typeof INVOICE_STATUSES }) {
   const cfg = INVOICE_STATUSES[status];
