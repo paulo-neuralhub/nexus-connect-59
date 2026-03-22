@@ -722,8 +722,8 @@ export function CoPilotWidget() {
             {suggestion && suggestion.actionLabel && (
               <button
                 onClick={() => {
-                  if (suggestion.actionType === 'navigate' && suggestion.actionPayload?.path) {
-                    window.location.href = suggestion.actionPayload.path as string
+                  if (suggestion.actionType && suggestion.actionPayload) {
+                    executeAction(suggestion.actionType, suggestion.actionPayload)
                   }
                   dismissSuggestion()
                   setPanel('closed')
