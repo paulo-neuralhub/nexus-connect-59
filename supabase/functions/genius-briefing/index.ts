@@ -24,7 +24,8 @@ async function generateBriefingForOrg(
   orgId: string,
   anthropicKey: string | undefined,
   force: boolean,
-  localDate: string // YYYY-MM-DD in org's timezone
+  localDate: string, // YYYY-MM-DD in org's timezone
+  requestingUserId?: string | null // for personalization
 ): Promise<{ briefing_id?: string; total_items: number; urgent_items: number; summary: string; was_cached: boolean }> {
   // Check existing briefing using the org's local date
   const { data: existing } = await db
