@@ -696,7 +696,7 @@ export function CoPilotWidget() {
         <div className="cp-ring" />
         <div
           ref={bubbleRef}
-          className={`cp-bubble${breathing ? ' breathing' : ''}`}
+          className={`cp-bubble state-${panel === 'open' ? 'speaking' : bubbleState}`}
           onClick={() => {
             if (moved.current) return
             if (panel === 'closed') setPanel('bubble')
