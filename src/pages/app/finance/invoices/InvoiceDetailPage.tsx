@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import VerifactuInvoiceSection from '@/components/finance/VerifactuInvoiceSection';
 
 function StatusBadge({ status }: { status: keyof typeof INVOICE_STATUSES }) {
   const cfg = INVOICE_STATUSES[status];
@@ -288,6 +289,14 @@ export default function InvoiceDetailPage() {
             ) : null}
           </CardContent>
         </Card>
+
+        {/* Verifactu Section */}
+        <VerifactuInvoiceSection
+          invoiceId={invoiceId}
+          verifactuStatus={(inv as any).verifactu_status}
+          verifactuHash={(inv as any).verifactu_hash}
+          verifactuQr={(inv as any).verifactu_qr}
+        />
       </div>
 
       {/* Email Dialog */}

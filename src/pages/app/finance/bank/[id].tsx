@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Lock, Link2, Upload, Check, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import BankImportWizard from '@/components/finance/bank/BankImportWizard';
+import FintocConnect from '@/components/finance/bank/FintocConnect';
 
 const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -28,6 +30,7 @@ export default function BankReconciliationPage() {
 
   const [selectedTxn, setSelectedTxn] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   // Fetch unmatched invoices
   const { data: unmatchedInvoices } = useQuery({
@@ -92,9 +95,17 @@ export default function BankReconciliationPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{account?.account_name || 'Cuenta bancaria'}</h1>
-        <p className="text-muted-foreground">{account?.bank_name} · {account?.iban ? `···${account.iban.slice(-4)}` : ''} · Saldo: {fmt(account?.current_balance || 0)} €</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{account?.account_name || 'Cuenta bancaria'}</h1>
+          <p className="text-muted-foreground">{account?.bank_name} · {account?.iban ? `···${account.iban.slice(-4)}` : ''} · Saldo: {fmt(account?.current_balance || 0)} €</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+            <Upload className="w-4 h-4 mr-2" />Importar extracto
+          </Button>
+          <FintocConnect bankAccountId={id} />
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -167,6 +178,8 @@ export default function BankReconciliationPage() {
           <TransactionsTable transactions={transactions} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
+
+      {id && <BankImportWizard open={showImport} onOpenChange={setShowImport} bankAccountId={id} />}
     </div>
   );
 }
