@@ -296,7 +296,7 @@ export default function PortalMatterDetail() {
                 <History className="w-5 h-5" />
                 Historial
               </CardTitle>
-              <CardDescription>Actividad del expediente ({matter.activities_count || 0} registros)</CardDescription>
+              <CardDescription>Actividad del expediente ({matter.documents_count || 0} registros)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
