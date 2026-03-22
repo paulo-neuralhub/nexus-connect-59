@@ -195,7 +195,6 @@ export function AppLayout() {
                     : 'standby'
                   }
                   onAvatarClick={() => {
-                    console.log('[TEST] onAvatarClick called, isChatOpen was:', isChatOpen)
                     setIsChatOpen(prev => !prev);
                     setShowGreeting(false);
                   }}
