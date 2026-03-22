@@ -181,7 +181,6 @@ export function CoPilotWidget() {
       el.style.animation = 'cpLand 1.2s cubic-bezier(0.22,1,0.36,1) forwards'
       el.addEventListener('animationend', () => {
         el.style.animation = ''
-        setBreathing(true)
       }, { once: true })
     }, 400)
 
