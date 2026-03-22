@@ -149,7 +149,7 @@ export function MessagePane({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 px-2 text-[11px] text-green-700 hover:text-green-800 hover:bg-green-100"
+                      className="h-6 px-2 text-[11px] text-primary hover:bg-primary/10"
                       onClick={() => {
                         indexMessage.mutate({ message_id: messageId, matter_id: matterId, decision: 'indexed' });
                         markRead.mutate(notif.id);
