@@ -211,6 +211,47 @@ export function CoPilotWidget() {
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
+  // ── Avatar movement toward relevant element ────────────
+  const lastMovePath = useRef('')
+  useEffect(() => {
+    if (location.pathname === lastMovePath.current) return
+    lastMovePath.current = location.pathname
+
+    const t = setTimeout(() => {
+      if (panel === 'open') return
+
+      let targetEl: Element | null = null
+
+      if (location.pathname.match(/\/matters\/[a-f0-9-]{36}|\/expedientes\/[a-f0-9-]{36}/)) {
+        targetEl = document.querySelector('[data-copilot="matter-deadlines"]')
+          || document.querySelector('[data-copilot="matter-header"]')
+      } else if (location.pathname.includes('/spider')
+              || location.pathname.includes('/alerts')) {
+        targetEl = document.querySelector('[data-copilot="alert-critical"]')
+          || document.querySelector('[data-copilot="spider-dashboard"]')
+      } else if (location.pathname.includes('/calendar')
+              || location.pathname.includes('/calendario')) {
+        targetEl = document.querySelector('[data-copilot="calendar-urgent"]')
+      }
+
+      if (!targetEl) return
+
+      const rect = targetEl.getBoundingClientRect()
+      const newRight = Math.max(16, window.innerWidth - rect.right - 80)
+      const newBottom = Math.max(16, window.innerHeight - rect.bottom - 20)
+
+      setPos({ right: newRight, bottom: newBottom })
+      localStorage.setItem('cp_pos_v3', JSON.stringify({ right: newRight, bottom: newBottom }))
+
+      targetEl.classList.add('cp-highlight')
+      setTimeout(() => {
+        targetEl?.classList.remove('cp-highlight')
+      }, 3000)
+    }, 800)
+
+    return () => clearTimeout(t)
+  }, [location.pathname, panel])
+
   // ── Drag ──────────────────────────────────────────────
   const onMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button, input, textarea, a')) return
