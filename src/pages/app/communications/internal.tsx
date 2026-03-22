@@ -1,5 +1,5 @@
-import { CommInternalChat } from "@/components/communications/unified";
+import { InternalChatLayout } from "@/components/communications/internal";
 
 export default function InternalChatPage() {
-  return <CommInternalChat />;
+  return <InternalChatLayout />;
 }
