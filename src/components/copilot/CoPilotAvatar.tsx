@@ -312,7 +312,6 @@ export function CoPilotAvatar({
           ref={avatarRef}
           onClick={e => {
             e.stopPropagation()
-            console.log('[TEST] Avatar clicked, didDrag:', didDrag.current)
             if (didDrag.current) return
             onAvatarClick()
           }}
