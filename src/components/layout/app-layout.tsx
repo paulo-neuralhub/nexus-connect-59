@@ -182,9 +182,39 @@ export function AppLayout() {
                     <Outlet />
                   </main>
                 </div>
-                {/* Timer stays floating on mobile; on desktop it's embedded in the sidebar */}
-                {/* NexusGuideButton removed — CoPilotGuide replaces it */}
-                <CoPilotWidget />
+                {/* COPILOT AVATAR — siempre visible, arrastrable */}
+                <CoPilotAvatar
+                  copilotMode={copilotMode}
+                  isChatOpen={isChatOpen}
+                  showGreeting={showGreeting}
+                  greetingMessage={greetingMessage}
+                  urgentCount={urgentCount}
+                  bubbleState={
+                    isChatOpen ? 'standby'
+                    : urgentCount > 0 ? 'attentive'
+                    : 'standby'
+                  }
+                  onAvatarClick={() => {
+                    setIsChatOpen(prev => !prev);
+                    setShowGreeting(false);
+                  }}
+                  onGreetingView={() => {
+                    setShowGreeting(false);
+                    setIsChatOpen(true);
+                  }}
+                  onGreetingLater={() => setShowGreeting(false)}
+                />
+
+                {/* COPILOT CHAT PANEL — separado del avatar */}
+                {isChatOpen && (
+                  <CoPilotWidget
+                    isOpen={isChatOpen}
+                    onClose={() => {
+                      setIsChatOpen(false);
+                      window.dispatchEvent(new Event('close-copilot-chat'));
+                    }}
+                  />
+                )}
                 <CoPilotGuide />
 
                 <IPSoftphone />
