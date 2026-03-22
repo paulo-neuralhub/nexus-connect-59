@@ -803,10 +803,14 @@ const App = () => (
               
               {/* PUBLIC SIGNATURE PAGE - No auth required */}
               <Route path="/sign/:token" element={<SignDocumentPage />} />
+
+              {/* PUBLIC CERTIFICATE VERIFICATION - No auth required */}
+              <Route path="/verify/:certificateNumber" element={<CertificateVerification />} />
               
 {/* CLIENT PORTAL - Public facing for external clients */}
               <Route path="/portal" element={<PortalIndex />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLogin /></PortalAuthProvider>} />
+              <Route path="/portal/:slug/accept" element={<PortalAcceptInvitation />} />
               <Route path="/portal/:slug/reset-password" element={<PortalResetPassword />} />
               <Route path="/portal/:slug/update-password" element={<PortalUpdatePassword />} />
               <Route path="/portal/:slug" element={<PortalAuthProvider><PortalLayout /></PortalAuthProvider>}>
