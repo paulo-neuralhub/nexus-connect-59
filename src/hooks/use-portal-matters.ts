@@ -1,16 +1,11 @@
 /**
- * Hook para expedientes del Portal Cliente
- * Usa las funciones RPC del servidor para seguridad
+ * Hook para expedientes del Portal Cliente — V2
+ * Uses portal_access + portal_visible filter
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { fromTable } from '@/lib/supabase';
 import { usePortalAuth } from './usePortalAuth';
-
-// =============================================
-// TYPES
-// =============================================
 
 export interface PortalMatter {
   id: string;
@@ -21,6 +16,12 @@ export interface PortalMatter {
   jurisdiction: string | null;
   created_at: string;
   deadline_count: number;
+  mark_name: string | null;
+  portal_status_label: string | null;
+  portal_certificate_generated: boolean;
+  portal_show_deadlines: boolean;
+  portal_show_costs: boolean;
+  portal_timeline_visible: boolean;
 }
 
 export interface PortalMatterDetail extends PortalMatter {
@@ -30,205 +31,149 @@ export interface PortalMatterDetail extends PortalMatter {
   filing_date?: string;
   registration_date?: string;
   expiry_date?: string;
-  mark_name?: string;
   owner_name?: string;
-  next_deadline?: {
-    date: string;
-    description: string;
-  };
   documents_count?: number;
-  activities_count?: number;
 }
 
-// =============================================
-// HOOKS
-// =============================================
+const STATUS_PROGRESS: Record<string, number> = {
+  pending: 15,
+  filed: 15,
+  examining: 50,
+  published: 70,
+  opposition_period: 85,
+  registered: 100,
+};
 
-/**
- * Hook para obtener los expedientes del cliente
- */
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'En tramitación',
+  filed: 'Presentada',
+  examining: 'En examen',
+  published: 'Publicada — período de oposición',
+  opposition_period: 'En oposición',
+  registered: '✓ Registrada',
+  granted: '✓ Concedida',
+  refused: 'Denegada',
+  expired: 'Expirada',
+  cancelled: 'Cancelada',
+};
+
+export { STATUS_PROGRESS, STATUS_LABELS };
+
 export function usePortalMatters() {
   const { user } = usePortalAuth();
 
   return useQuery({
-    queryKey: ['portal-matters', user?.id],
+    queryKey: ['portal-matters', user?.contactId],
     queryFn: async (): Promise<PortalMatter[]> => {
       if (!user?.contactId) return [];
 
-      // Usar la función RPC del servidor
-      const { data, error } = await (supabase as any).rpc('get_portal_user_matters', {
-        p_portal_user_id: user.id
-      });
+      const { data, error } = await fromTable('matters')
+        .select(`
+          id, reference, title, status, type, jurisdiction,
+          created_at, mark_name,
+          portal_status_label, portal_certificate_generated,
+          portal_show_deadlines, portal_show_costs, portal_timeline_visible
+        `)
+        .eq('client_id', user.contactId)
+        .eq('portal_visible', true)
+        .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching portal matters via RPC:', error);
-        
-        // Fallback: consulta directa con client_id usando fromTable helper
-        const { data: fallbackData, error: fallbackError } = await fromTable('matters')
-          .select(`
-            id,
-            reference,
-            title,
-            status,
-            type,
-            jurisdiction,
-            created_at
-          `)
-          .eq('client_id', user.contactId)
-          .order('created_at', { ascending: false });
+      if (error) throw error;
 
-        if (fallbackError) throw fallbackError;
-        
-        return (fallbackData || []).map((m: any) => ({
-          id: m.id,
-          reference: m.reference || '',
-          title: m.title || '',
-          status: m.status || '',
-          type: m.type || '',
-          jurisdiction: m.jurisdiction || null,
-          created_at: m.created_at || '',
-          deadline_count: 0
-        }));
-      }
-
-      // Mapear campos de RPC (que usa ip_type) a type
       return (data || []).map((m: any) => ({
         id: m.id,
         reference: m.reference || '',
         title: m.title || '',
         status: m.status || '',
-        type: m.ip_type || m.type || '',
+        type: m.type || '',
         jurisdiction: m.jurisdiction || null,
         created_at: m.created_at || '',
-        deadline_count: m.deadline_count || 0
+        deadline_count: 0,
+        mark_name: m.mark_name || null,
+        portal_status_label: m.portal_status_label || null,
+        portal_certificate_generated: m.portal_certificate_generated || false,
+        portal_show_deadlines: m.portal_show_deadlines ?? true,
+        portal_show_costs: m.portal_show_costs ?? false,
+        portal_timeline_visible: m.portal_timeline_visible ?? true,
       }));
     },
-    enabled: !!user?.id,
-    staleTime: 60000, // 1 minuto
+    enabled: !!user?.contactId,
+    staleTime: 60000,
   });
 }
 
-/**
- * Hook para obtener detalle de un expediente
- */
 export function usePortalMatterDetail(matterId: string | undefined) {
   const { user } = usePortalAuth();
 
   return useQuery({
     queryKey: ['portal-matter-detail', matterId],
     queryFn: async (): Promise<PortalMatterDetail | null> => {
-      if (!user?.id || !matterId) return null;
+      if (!user?.contactId || !matterId) return null;
 
-      // Verificar acceso
-      const { data: hasAccess } = await (supabase as any).rpc('portal_user_can_access_matter', {
-        p_portal_user_id: user.id,
-        p_matter_id: matterId
-      });
-
-      if (!hasAccess) {
-        throw new Error('No tienes acceso a este expediente');
-      }
-
-      // Obtener detalle usando fromTable para evitar errores de tipos
       const { data, error } = await fromTable('matters')
         .select(`
-          id,
-          reference,
-          title,
-          status,
-          type,
-          jurisdiction,
-          created_at,
-          notes,
-          application_number,
-          registration_number,
-          filing_date,
-          registration_date,
-          expiry_date,
-          mark_name,
-          owner_name
+          id, reference, title, status, type, jurisdiction,
+          created_at, mark_name, notes,
+          application_number, registration_number,
+          filing_date, registration_date, expiry_date,
+          owner_name,
+          portal_status_label, portal_certificate_generated,
+          portal_show_deadlines, portal_show_costs, portal_timeline_visible
         `)
         .eq('id', matterId)
+        .eq('client_id', user.contactId)
+        .eq('portal_visible', true)
         .single();
 
       if (error) throw error;
 
-      // Obtener próximo deadline
-      const { data: nextDeadline } = await fromTable('matter_events')
-        .select('event_date, title')
+      // Count documents
+      const { count: docsCount } = await fromTable('matter_documents')
+        .select('id', { count: 'exact', head: true })
         .eq('matter_id', matterId)
-        .eq('event_type', 'deadline')
-        .gt('event_date', new Date().toISOString())
-        .order('event_date', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      // Contar documentos
-      const { count: docsCount } = await supabase
-        .from('matter_documents')
-        .select('id', { count: 'exact', head: true })
-        .eq('matter_id', matterId);
-
-      // Contar actividades
-      const activitiesResult = await fromTable('activities')
-        .select('id', { count: 'exact', head: true })
-        .eq('matter_id', matterId);
-      const activitiesCount = activitiesResult.count || 0;
+        .eq('portal_visible', true);
 
       return {
-        id: data.id,
+        ...data,
         reference: data.reference || '',
         title: data.title || '',
         status: data.status || '',
         type: data.type || '',
         jurisdiction: data.jurisdiction || null,
         created_at: data.created_at || '',
-        notes: data.notes || undefined,
-        application_number: data.application_number || undefined,
-        registration_number: data.registration_number || undefined,
-        filing_date: data.filing_date || undefined,
-        registration_date: data.registration_date || undefined,
-        expiry_date: data.expiry_date || undefined,
-        mark_name: data.mark_name || undefined,
-        owner_name: data.owner_name || undefined,
         deadline_count: 0,
-        next_deadline: nextDeadline ? {
-          date: nextDeadline.event_date,
-          description: nextDeadline.title || ''
-        } : undefined,
+        mark_name: data.mark_name || null,
+        portal_status_label: data.portal_status_label || null,
+        portal_certificate_generated: data.portal_certificate_generated || false,
+        portal_show_deadlines: data.portal_show_deadlines ?? true,
+        portal_show_costs: data.portal_show_costs ?? false,
+        portal_timeline_visible: data.portal_timeline_visible ?? true,
         documents_count: docsCount || 0,
-        activities_count: activitiesCount || 0,
       };
     },
-    enabled: !!user?.id && !!matterId,
+    enabled: !!user?.contactId && !!matterId,
     staleTime: 60000,
   });
 }
 
-/**
- * Hook para verificar acceso a un expediente
- */
 export function useCanAccessMatter(matterId: string | undefined) {
   const { user } = usePortalAuth();
 
   return useQuery({
-    queryKey: ['portal-can-access-matter', user?.id, matterId],
+    queryKey: ['portal-can-access-matter', user?.contactId, matterId],
     queryFn: async (): Promise<boolean> => {
-      if (!user?.id || !matterId) return false;
+      if (!user?.contactId || !matterId) return false;
 
-      const { data, error } = await (supabase as any).rpc('portal_user_can_access_matter', {
-        p_portal_user_id: user.id,
-        p_matter_id: matterId
-      });
+      const { data } = await fromTable('matters')
+        .select('id')
+        .eq('id', matterId)
+        .eq('client_id', user.contactId)
+        .eq('portal_visible', true)
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error checking matter access:', error);
-        return false;
-      }
-
-      return data === true;
+      return !!data;
     },
-    enabled: !!user?.id && !!matterId,
-    staleTime: 300000, // 5 minutos
+    enabled: !!user?.contactId && !!matterId,
+    staleTime: 300000,
   });
 }
