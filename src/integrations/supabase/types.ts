@@ -11996,6 +11996,7 @@ export type Database = {
           plan_code: string | null
           preferred_language: string | null
           proactive_enabled: boolean | null
+          timezone: string | null
           updated_at: string | null
         }
         Insert: {
@@ -12031,6 +12032,7 @@ export type Database = {
           plan_code?: string | null
           preferred_language?: string | null
           proactive_enabled?: boolean | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -12066,6 +12068,7 @@ export type Database = {
           plan_code?: string | null
           preferred_language?: string | null
           proactive_enabled?: boolean | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -21056,6 +21059,7 @@ export type Database = {
           settings: Json | null
           slug: string | null
           status: string | null
+          timezone: string | null
           updated_at: string | null
         }
         Insert: {
@@ -21090,6 +21094,7 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           status?: string | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -21124,6 +21129,7 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           status?: string | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Relationships: []

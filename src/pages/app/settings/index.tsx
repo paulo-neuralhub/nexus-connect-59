@@ -25,6 +25,7 @@ import {
   FileStack,
   Zap,
   Hash,
+  Compass,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
@@ -54,7 +55,7 @@ import TenantTelephonySettingsPage from './telephony';
 import TemplatesSettingsSection from './sections/TemplatesSettingsSection';
 import { ServicesDashboard } from '@/components/services';
 import ModulesSettings from './sections/ModulesSettings';
-
+import CopilotSettings from './sections/CopilotSettings';
 // Tabs for organization settings
 const ORG_TABS = [
   { id: 'general', label: 'General', icon: Building2, permission: 'settings.view' },
@@ -76,6 +77,7 @@ const ORG_TABS = [
   { id: 'automations', label: 'Automatizaciones', icon: Zap, permission: 'settings.update' },
   { id: 'deadlines', label: 'Reglas de Plazos', icon: CalendarClock, permission: 'settings.update' },
   { id: 'internal-reference', label: 'Referencia Interna', icon: Hash, permission: 'settings.update' },
+  { id: 'copilot', label: 'CoPilot', icon: Compass, permission: 'settings.update' },
 ];
 
 // Tabs for user settings
@@ -310,6 +312,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
       {activeTab === 'internal-reference' && (
         <RequirePermission permission="settings.update">
           <InternalReferenceConfigPage />
+        </RequirePermission>
+      )}
+
+      {activeTab === 'copilot' && (
+        <RequirePermission permission="settings.update">
+          <CopilotSettings />
         </RequirePermission>
       )}
     </>
