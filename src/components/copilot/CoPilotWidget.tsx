@@ -827,18 +827,8 @@ function CopilotExpanded({
           </div>
 
           {/* Query counter (Basic) or upgrade footer */}
-          {!isPro && (
-            <div className="px-3 py-2 border-t bg-muted/20 flex-shrink-0">
-              {queriesLimit > 0 && (
-                <div className="mb-1.5">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>Consultas este mes</span>
-                    <span className={cn(
-                      'font-mono',
-                      queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-destructive font-medium' :
-                      queriesRemaining <= Math.ceil(queriesLimit * 0.2) ? 'text-amber-600' : ''
-          {(() => {
-            const pct = queriesLimit > 0 ? Math.round((queriesRemaining / queriesLimit) * 100) : 100;
+          {!isPro && queriesLimit > 0 && (() => {
+            const pct = Math.round((queriesRemaining / queriesLimit) * 100);
             const isLow = queriesRemaining < 10;
             const isEmpty = queriesRemaining === 0;
             return (
@@ -846,6 +836,7 @@ function CopilotExpanded({
                 padding: '8px 14px',
                 borderTop: '1px solid #F1F5F9',
                 background: isEmpty ? '#FEF2F2' : '#F8FAFC',
+                flexShrink: 0,
               }}>
                 {!isEmpty ? (
                   <>
