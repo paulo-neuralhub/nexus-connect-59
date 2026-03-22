@@ -30,6 +30,7 @@ export default function BankReconciliationPage() {
 
   const [selectedTxn, setSelectedTxn] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   // Fetch unmatched invoices
   const { data: unmatchedInvoices } = useQuery({
