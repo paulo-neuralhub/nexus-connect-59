@@ -321,11 +321,11 @@ function AgentWorkspace({
             { v: `${Math.floor(agent.tasks * 0.8)}h`, l: 'USO TOTAL', c: '#8B5CF6' },
           ].map(({ v, l, c: kc }) => (
             <div key={l} style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 8, padding: '8px 6px', textAlign: 'center',
             }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: kc }}>{v}</div>
-              <div style={{ fontSize: 7.5, color: '#3A5570', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{l}</div>
+              <div style={{ fontSize: 7.5, color: '#8EAFC6', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{l}</div>
             </div>
           ))}
         </div>
