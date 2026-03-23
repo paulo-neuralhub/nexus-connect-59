@@ -107,9 +107,16 @@ async function executeStep(
       { task, matter_id: matterId, org_id: orgId }, 25000);
   }
   if (agent === "document") {
-    return callSubAgent("genius-generate-document",
-      { matter_id: matterId, document_type: "report",
-        context: { ...context, goal: task } }, 40000);
+    const wfType = (context.workflow_type as string) ?? "report";
+    return callSubAgent("genius-sub-document", {
+      matter_id: matterId,
+      org_id: orgId,
+      document_type: wfType === "oa_response" ? "oa_response"
+        : wfType === "infringement_analysis" ? "cease_desist"
+        : "report",
+      context: { ...context, goal: task },
+      user_id: context.user_id ?? null,
+    }, 90000);
   }
   if (agent === "execute") {
     return callSubAgent("genius-execute-action",
@@ -292,7 +299,7 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
 
           // Execute group in parallel
           const settled = await Promise.allSettled(
-            group.map(s => executeStep(s, matter_id, orgId, { ...context, ...results }))
+            group.map(s => executeStep(s, matter_id, orgId, { ...context, ...results, workflow_type, user_id: user.id }))
           );
 
           settled.forEach((r, idx) => {
