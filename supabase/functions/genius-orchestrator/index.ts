@@ -266,7 +266,13 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
               current_step: Number(step.step),
               approval_payload: {
                 step: step.step, agent: step.agent, task: step.task,
-                description: `Aprobación requerida para: ${step.task}`,
+                description: step.agent === 'document' ? 'Draft va a generar un documento legal para este expediente. Esta acción puede generar contenido que necesitarás revisar antes de usar oficialmente.'
+                  : step.agent === 'execute' ? 'Nexus va a ejecutar una acción sobre este expediente. Esta acción puede generar contenido que necesitarás revisar antes de usar oficialmente.'
+                  : step.agent === 'communication' ? 'Iris va a redactar una comunicación para este expediente. Esta acción puede generar contenido que necesitarás revisar antes de usar oficialmente.'
+                  : `${step.agent} va a completar: ${step.task}. Esta acción puede generar contenido que necesitarás revisar antes de usar oficialmente.`,
+                matter_id: matter_id,
+                is_reversible: false,
+                requires_review: true,
               },
             }).eq("id", wfId);
             return; // Wait for user approval
