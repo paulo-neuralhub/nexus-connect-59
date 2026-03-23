@@ -140,6 +140,64 @@ export function CoPilotWidget() {
 
   const [panel, setPanel] = useState<PanelState>('closed')
   const [messages, setMessages] = useState<Message[]>([])
+  const {
+    activeWorkflow,
+    isStarting,
+    startWorkflow,
+    approveWorkflow,
+    cancelWorkflow,
+    clearWorkflow,
+    detectWorkflowIntent,
+    isActive: workflowIsActive,
+  } = useWorkflow()
+
+  // 'chat' | 'workflow' — nunca ambos visibles simultáneamente
+  const [panelMode, setPanelMode] = useState<'chat' | 'workflow'>('chat')
+
+  // Cuando workflow completa → insertar resumen en el chat
+  useEffect(() => {
+    if (!activeWorkflow) return
+    if (activeWorkflow.status === 'completed') {
+      const synthesis = activeWorkflow.results_json?.synthesis as
+        Record<string, unknown> | undefined
+      const summary = synthesis?.summary as string | undefined
+      if (summary) {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant' as const,
+            content: `✅ **Workflow completado**\n\n${summary}${
+              (synthesis?.next_actions as string[] | undefined)?.length
+                ? '\n\n**Próximos pasos:**\n' +
+                  (synthesis.next_actions as string[])
+                    .slice(0, 2).map(a => `→ ${a}`).join('\n')
+                : ''
+            }`,
+          },
+        ])
+      }
+      // Volver al chat después de 1.5s
+      setTimeout(() => {
+        setPanelMode('chat')
+        clearWorkflow()
+      }, 1500)
+    }
+    if (activeWorkflow.status === 'failed') {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant' as const,
+          content: `❌ El workflow no pudo completarse: ${
+            activeWorkflow.error_message ?? 'Error desconocido'
+          }. Puedes preguntarme directamente si quieres.`,
+        },
+      ])
+      setTimeout(() => {
+        setPanelMode('chat')
+        clearWorkflow()
+      }, 2000)
+    }
+  }, [activeWorkflow?.status])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [convId, setConvId] = useState<string | null>(null)
