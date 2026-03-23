@@ -48,6 +48,10 @@ interface Props {
   initialConversationId?: string;
   onConversationChange?: (id: string) => void;
   helpMode?: boolean;
+  /** Override agent display name & description */
+  brandName?: string;
+  brandDescription?: string;
+  brandCapabilities?: string[];
 }
 
 // Quick action definitions
@@ -64,9 +68,15 @@ export function GeniusChatEnhanced({
   initialConversationId,
   onConversationChange,
   helpMode = false,
+  brandName,
+  brandDescription,
+  brandCapabilities,
 }: Props) {
   const location = useLocation();
   const agent = AGENTS[agentType];
+  const displayName = brandName || agent.name;
+  const displayDescription = brandDescription || agent.description;
+  const displayCapabilities = brandCapabilities || agent.capabilities;
   const { toast } = useToast();
   const { currentOrganization } = useOrganization();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -194,8 +204,8 @@ export function GeniusChatEnhanced({
           <Sparkles className="w-5 h-5" style={{ color: agent.color }} />
         </div>
         <div className="flex-1">
-          <h2 className="font-semibold text-foreground">{agent.name}</h2>
-          <p className="text-xs text-muted-foreground">{agent.description}</p>
+          <h2 className="font-semibold text-foreground">{displayName}</h2>
+          <p className="text-xs text-muted-foreground">{displayDescription}</p>
         </div>
         
         {/* Matter selector */}
@@ -261,6 +271,8 @@ export function GeniusChatEnhanced({
               agent={agent} 
               quickActions={QUICK_ACTIONS}
               onSelectAction={handleQuickAction}
+              displayName={displayName}
+              displayCapabilities={displayCapabilities}
             />
           )}
           
@@ -372,11 +384,15 @@ export function GeniusChatEnhanced({
 function EmptyState({ 
   agent, 
   quickActions,
-  onSelectAction 
+  onSelectAction,
+  displayName,
+  displayCapabilities,
 }: { 
   agent: typeof AGENTS[AgentType];
   quickActions: typeof QUICK_ACTIONS;
   onSelectAction: (prompt: string) => void;
+  displayName: string;
+  displayCapabilities: string[];
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
@@ -387,7 +403,7 @@ function EmptyState({
         <Sparkles className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
       </div>
       <h3 className="text-2xl font-bold text-foreground mb-2">
-        ¡Hola! Soy {agent.name}
+        ¡Hola! Soy {displayName}
       </h3>
       <p className="text-muted-foreground mb-8 max-w-md">
         Tu asistente de IA para propiedad intelectual. Puedo buscar información, crear tareas, generar documentos y más.
@@ -413,7 +429,7 @@ function EmptyState({
       <div className="text-sm text-muted-foreground">
         <p className="mb-2">Puedo ayudarte con:</p>
         <ul className="space-y-1">
-          {agent.capabilities.map((cap, i) => (
+          {displayCapabilities.map((cap, i) => (
             <li key={i} className="flex items-center gap-2">
               <span className="text-primary">✓</span>
               {cap}
