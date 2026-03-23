@@ -593,7 +593,16 @@ export function AgentStudio() {
             />
           ))}
         </div>
-      </div>
+
+          {/* SVG Conexiones — must be inside labRef */}
+          <svg ref={svgRef} style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            pointerEvents: 'none', zIndex: 1,
+          }}>
+            <defs />
+          </svg>
+        </div>{/* end dark panel */}
+      </div>{/* end light wrapper */}
 
       {/* Modal */}
       {selectedAgent && (
