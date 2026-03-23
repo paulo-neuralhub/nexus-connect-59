@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Brain, MessageSquare, Scale, FileText, Languages, History, FileStack } from 'lucide-react';
+import { Brain, MessageSquare, Scale, FileText, Languages, History, FileStack, Cpu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePageTitle } from '@/contexts/page-context';
 import { useEffect, useCallback } from 'react';
@@ -19,6 +19,7 @@ const geniusNav = [
   { path: '/app/genius/translator', label: 'Traductor', icon: Languages },
   { path: '/app/genius/templates', label: 'Plantillas', icon: FileStack },
   { path: '/app/genius/documents', label: 'Historial', icon: History },
+  { path: '/app/genius/studio', label: 'El Estudio', icon: Cpu },
 ];
 
 export default function GeniusLayout() {

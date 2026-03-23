@@ -191,6 +191,7 @@ import GenerateDocumentPage from "./pages/app/genius/templates/generate";
 import TemplateEditorPage from "./pages/app/genius/templates/editor";
 import DocumentViewPage from "./pages/app/genius/templates/document-view";
 import GeniusAnalysisPage from "./pages/app/genius/analysis";
+import { AgentStudio } from "./pages/AgentStudio";
 import GeniusDocumentsGenPage from "./pages/app/genius/documents-gen";
 import GeniusPredictionsPage from "./pages/app/genius/predictions";
 import GeniusValuationPage from "./pages/app/genius/valuation";
@@ -540,6 +541,7 @@ const App = () => (
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
                   <Route path="chat" element={<GeniusChatPage />} />
+                  <Route path="studio" element={<AgentStudio />} />
                 </Route>
                 {/* Documents */}
                 <Route path="documentos" element={<DocumentsListPage />} />
