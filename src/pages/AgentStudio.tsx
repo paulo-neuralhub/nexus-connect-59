@@ -288,13 +288,13 @@ function AgentWorkspace({
   return (
     <div style={{
       display: 'flex', borderRadius: 18, overflow: 'hidden',
-      border: '1px solid #E2E8F0', animation: 'wsIn .3s ease-out',
+      border: '1px solid #0f4c75', animation: 'wsIn .3s ease-out',
       height: 480,
     }}>
       {/* LEFT — Agent profile */}
       <div style={{
-        width: '30%', background: '#0a2540', padding: 20,
-        borderRight: '1px solid #1A2E4A', display: 'flex', flexDirection: 'column',
+        width: '30%', background: 'linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%)', padding: 20,
+        borderRight: '1px solid #0f4c75', display: 'flex', flexDirection: 'column',
         alignItems: 'center', color: '#E2E8F0', position: 'relative', overflow: 'hidden',
         overflowY: 'auto',
       }}>
