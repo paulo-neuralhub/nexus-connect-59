@@ -1010,6 +1010,7 @@ export function AgentStudio() {
       <div style={{
         background: '#F8FAFC', minHeight: '100%', padding: '24px',
         fontFamily: "'Inter','SF Pro Display',sans-serif",
+        position: 'relative',
       }}>
         {/* Page header */}
         <div style={{ marginBottom: 20 }}>
