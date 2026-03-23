@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAgentBrain } from '@/hooks/use-agent-brain'
+import { useWorkflow } from '@/hooks/workflow/use-workflow'
+import type { WorkflowType } from '@/hooks/workflow/use-workflow'
+import { WorkflowPanel } from '@/components/copilot/WorkflowPanel'
 
 // ── Inyectar CSS en el <head> del documento ──────────────
 const CSS_ID = 'copilot-widget-styles'
@@ -137,6 +140,64 @@ export function CoPilotWidget() {
 
   const [panel, setPanel] = useState<PanelState>('closed')
   const [messages, setMessages] = useState<Message[]>([])
+  const {
+    activeWorkflow,
+    isStarting,
+    startWorkflow,
+    approveWorkflow,
+    cancelWorkflow,
+    clearWorkflow,
+    detectWorkflowIntent,
+    isActive: workflowIsActive,
+  } = useWorkflow()
+
+  // 'chat' | 'workflow' — nunca ambos visibles simultáneamente
+  const [panelMode, setPanelMode] = useState<'chat' | 'workflow'>('chat')
+
+  // Cuando workflow completa → insertar resumen en el chat
+  useEffect(() => {
+    if (!activeWorkflow) return
+    if (activeWorkflow.status === 'completed') {
+      const synthesis = activeWorkflow.results_json?.synthesis as
+        Record<string, unknown> | undefined
+      const summary = synthesis?.summary as string | undefined
+      if (summary) {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant' as const,
+            content: `✅ **Workflow completado**\n\n${summary}${
+              (synthesis?.next_actions as string[] | undefined)?.length
+                ? '\n\n**Próximos pasos:**\n' +
+                  (synthesis.next_actions as string[])
+                    .slice(0, 2).map(a => `→ ${a}`).join('\n')
+                : ''
+            }`,
+          },
+        ])
+      }
+      // Volver al chat después de 1.5s
+      setTimeout(() => {
+        setPanelMode('chat')
+        clearWorkflow()
+      }, 1500)
+    }
+    if (activeWorkflow.status === 'failed') {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant' as const,
+          content: `❌ El workflow no pudo completarse: ${
+            activeWorkflow.error_message ?? 'Error desconocido'
+          }. Puedes preguntarme directamente si quieres.`,
+        },
+      ])
+      setTimeout(() => {
+        setPanelMode('chat')
+        clearWorkflow()
+      }, 2000)
+    }
+  }, [activeWorkflow?.status])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [convId, setConvId] = useState<string | null>(null)
@@ -357,27 +418,48 @@ export function CoPilotWidget() {
 
   const send = async () => {
     const msg = input.trim()
-    if (!msg || loading) return
+    if (!msg || loading || isStarting) return
     setInput('')
-    setMessages(m => [...m, { role: 'user', content: msg }])
+
+    // Detectar si es un workflow ANTES de enviar al chat
+    const intent = detectWorkflowIntent(msg)
+    if (intent.isWorkflow && intent.confidence >= 0.75 && intent.workflow_type) {
+      // Añadir el mensaje del usuario al chat
+      setMessages(prev => [...prev, { role: 'user' as const, content: msg }])
+      // Cambiar a modo workflow
+      setPanelMode('workflow')
+      // Iniciar el workflow
+      await startWorkflow({
+        goal: msg,
+        workflow_type: intent.workflow_type as WorkflowType,
+      })
+      return
+    }
+
+    // Chat normal
+    setMessages(m => [...m, { role: 'user' as const, content: msg }])
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('genius-chat', {
-        body: {
-          message: msg,
-          conversation_id: convId,
-          context_page: location.pathname,
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'genius-chat',
+        {
+          body: {
+            message: msg,
+            conversation_id: convId,
+            context_page: location.pathname,
+          },
         }
-      })
-      if (error) throw error
+      )
+      if (fnError) throw fnError
       if (data?.conversation_id) setConvId(data.conversation_id)
-      const reply = data?.message ?? data?.response ?? 'Sin respuesta del asistente.'
-      setMessages(m => [...m, { role: 'assistant', content: reply }])
+      const reply = data?.message ?? data?.response ??
+        'No pude procesar tu mensaje.'
+      setMessages(m => [...m, { role: 'assistant' as const, content: reply }])
     } catch {
-      setMessages(m => [...m, {
-        role: 'assistant',
-        content: 'Error de conexión. Intenta de nuevo.'
-      }])
+      setMessages(m => [
+        ...m,
+        { role: 'assistant' as const, content: 'Error de conexión. Intenta de nuevo.' },
+      ])
     } finally {
       setLoading(false)
     }
@@ -477,74 +559,175 @@ export function CoPilotWidget() {
             </button>
           </div>
 
-          {/* Mensajes */}
-          <div
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              padding: 16,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              background: '#FAFBFC',
-            }}
-          >
-            {messages.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '28px 16px' }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: '#1F2937', marginBottom: 6 }}>
-                  Soy tu asistente de PI
-                </div>
-                <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5, marginBottom: 16 }}>
-                  Pregúntame sobre expedientes, plazos, alertas Spider o jurisdicciones
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {[
-                    '📊 Analizar mi cartera',
-                    '⏰ ¿Qué plazos tengo esta semana?',
-                    '🔍 Explicar una alerta Spider',
-                  ].map(q => (
-                    <button
-                      key={q}
-                      onClick={() => { setInput(q) }}
+          {/* Panel condicional: workflow O chat */}
+          {panelMode === 'workflow' && (activeWorkflow || isStarting) ? (
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                background: '#FAFBFC',
+              }}
+            >
+              {/* Mensajes previos del chat (si hay) */}
+              {messages.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+                  {messages.slice(-2).map((m, i) => (
+                    <div
+                      key={i}
                       style={{
-                        background: 'white',
-                        border: '1px solid #E5E7EB',
-                        borderRadius: 10,
-                        padding: '8px 14px',
-                        fontSize: 12,
-                        color: '#374151',
-                        cursor: 'pointer',
-                        textAlign: 'left' as const,
-                        transition: 'border-color 0.15s, background 0.15s',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = ACCENT
-                        e.currentTarget.style.background = '#F8FAFC'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = '#E5E7EB'
-                        e.currentTarget.style.background = 'white'
+                        display: 'flex',
+                        justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
                       }}
                     >
-                      {q}
-                    </button>
+                      <div
+                        style={{
+                          background: m.role === 'user' ? ACCENT : 'white',
+                          color: m.role === 'user' ? 'white' : '#1F2937',
+                          borderRadius: 12,
+                          padding: '8px 12px',
+                          fontSize: 12,
+                          maxWidth: '85%',
+                          opacity: 0.7,
+                        }}
+                      >
+                        {m.content}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  gap: 8,
-                  justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-                  alignItems: 'flex-start',
-                }}
-              >
-                {m.role === 'assistant' && (
+              {/* WorkflowPanel */}
+              {isStarting && !activeWorkflow ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  justifyContent: 'center', padding: 24,
+                }}>
+                  <span className="cp-dot" />
+                  <span className="cp-dot" />
+                  <span className="cp-dot" />
+                  <span style={{ fontSize: 12, color: '#6B7280', marginLeft: 4 }}>
+                    Iniciando...
+                  </span>
+                </div>
+              ) : activeWorkflow ? (
+                <WorkflowPanel
+                  workflow={activeWorkflow}
+                  onApprove={approveWorkflow}
+                  onCancel={cancelWorkflow}
+                  onClose={() => {
+                    setPanelMode('chat')
+                    clearWorkflow()
+                  }}
+                />
+              ) : null}
+            </div>
+          ) : (
+            // ── Chat normal ──────────────────────────────────
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                background: '#FAFBFC',
+              }}
+            >
+              {messages.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '28px 16px' }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#1F2937', marginBottom: 6 }}>
+                    Soy tu asistente de PI
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5, marginBottom: 16 }}>
+                    Pregúntame o pídeme que prepare algo
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {[
+                      '📋 Responder Office Action',
+                      '🔍 Analizar alerta Spider',
+                      '📊 Briefing del día',
+                    ].map(q => (
+                      <button
+                        key={q}
+                        onClick={() => setInput(q)}
+                        style={{
+                          background: 'white',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: 10, padding: '8px 14px',
+                          fontSize: 12, color: '#374151',
+                          cursor: 'pointer', textAlign: 'left' as const,
+                          transition: 'border-color 0.15s',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.borderColor = '#1E293B'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.borderColor = '#E5E7EB'
+                        }}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  {m.role === 'assistant' && (
+                    <div
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1.5px solid #E2E8F0',
+                      }}
+                    >
+                      <img
+                        src={AVATAR}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={e => { e.currentTarget.style.display = 'none' }}
+                      />
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      background: m.role === 'user' ? ACCENT : 'white',
+                      color: m.role === 'user' ? 'white' : '#1F2937',
+                      borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                      padding: '10px 14px',
+                      fontSize: 13,
+                      lineHeight: 1.55,
+                      maxWidth: '82%',
+                      boxShadow: m.role === 'assistant' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                      border: m.role === 'assistant' ? '1px solid #F1F5F9' : 'none',
+                    }}
+                  >
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <div
                     style={{
                       width: 26,
@@ -562,62 +745,25 @@ export function CoPilotWidget() {
                       onError={e => { e.currentTarget.style.display = 'none' }}
                     />
                   </div>
-                )}
-                <div
-                  style={{
-                    background: m.role === 'user' ? ACCENT : 'white',
-                    color: m.role === 'user' ? 'white' : '#1F2937',
-                    borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    padding: '10px 14px',
-                    fontSize: 13,
-                    lineHeight: 1.55,
-                    maxWidth: '82%',
-                    boxShadow: m.role === 'assistant' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
-                    border: m.role === 'assistant' ? '1px solid #F1F5F9' : 'none',
-                  }}
-                >
-                  {m.content}
+                  <div
+                    style={{
+                      background: 'white',
+                      borderRadius: 16,
+                      padding: '12px 18px',
+                      display: 'flex',
+                      gap: 5,
+                      border: '1px solid #F1F5F9',
+                    }}
+                  >
+                    <span className="cp-dot" />
+                    <span className="cp-dot" />
+                    <span className="cp-dot" />
+                  </div>
                 </div>
-              </div>
-            ))}
-
-            {loading && (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <div
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                    border: '1.5px solid #E2E8F0',
-                  }}
-                >
-                  <img
-                    src={AVATAR}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={e => { e.currentTarget.style.display = 'none' }}
-                  />
-                </div>
-                <div
-                  style={{
-                    background: 'white',
-                    borderRadius: 16,
-                    padding: '12px 18px',
-                    display: 'flex',
-                    gap: 5,
-                    border: '1px solid #F1F5F9',
-                  }}
-                >
-                  <span className="cp-dot" />
-                  <span className="cp-dot" />
-                  <span className="cp-dot" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
 
           {/* Input */}
           <div
