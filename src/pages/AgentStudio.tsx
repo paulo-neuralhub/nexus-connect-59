@@ -823,8 +823,9 @@ export function AgentStudio() {
         const idle = prev.filter(a => !a.active)
         if (!idle.length || Math.random() > 0.62) return prev
         const pick = idle[Math.floor(Math.random() * idle.length)]
+        if (pick.id === 'scout') return prev
         setTimeout(() => {
-          setAgents(p => p.map(a => a.id === pick.id ? { ...a, active: false } : a))
+          setAgents(p => p.map(a => (a.id === pick.id && a.id !== 'scout') ? { ...a, active: false } : a))
         }, 5500 + Math.random() * 4000)
         return prev.map(a => a.id === pick.id ? { ...a, active: true } : a)
       })
