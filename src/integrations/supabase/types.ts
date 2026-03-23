@@ -29274,6 +29274,22 @@ export type Database = {
         Args: { p_document_type?: string; p_jurisdiction_code: string }
         Returns: Json
       }
+      genius_hybrid_search: {
+        Args: {
+          p_limit?: number
+          p_matter_id?: string
+          p_org_id: string
+          p_query_text: string
+          p_user_id?: string
+        }
+        Returns: {
+          content: string
+          level: string
+          relevance: number
+          source: string
+          title: string
+        }[]
+      }
       genius_semantic_search: {
         Args: {
           p_doc_category?: string
