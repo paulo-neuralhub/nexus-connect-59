@@ -294,7 +294,7 @@ function AgentWorkspace({
       {/* LEFT — Agent profile */}
       <div style={{
         width: '30%', background: 'linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%)', padding: 20,
-        borderRight: '1px solid #1A2E4A', display: 'flex', flexDirection: 'column',
+        borderRight: '1px solid #0f4c75', display: 'flex', flexDirection: 'column',
         alignItems: 'center', color: '#E2E8F0', position: 'relative', overflow: 'hidden',
         overflowY: 'auto',
       }}>
