@@ -565,67 +565,149 @@ export function CoPilotWidget() {
               style={{
                 flex: 1,
                 minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                background: '#FAFBFC',
+              }}
+            >
+              {/* Scrollable area: messages + WorkflowPanel */}
+              <div style={{
+                flex: 1,
+                minHeight: 0,
                 overflowY: 'auto',
                 padding: 16,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 12,
-                background: '#FAFBFC',
-              }}
-            >
-              {/* Mensajes previos del chat (si hay) */}
-              {messages.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
-                  {messages.slice(-2).map((m, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-                      }}
-                    >
+              }}>
+                {/* Mensajes previos del chat (si hay) */}
+                {messages.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+                    {messages.slice(-2).map((m, i) => (
                       <div
+                        key={i}
                         style={{
-                          background: m.role === 'user' ? ACCENT : 'white',
-                          color: m.role === 'user' ? 'white' : '#1F2937',
-                          borderRadius: 12,
-                          padding: '8px 12px',
-                          fontSize: 12,
-                          maxWidth: '85%',
-                          opacity: 0.7,
+                          display: 'flex',
+                          justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
                         }}
                       >
-                        {m.content}
+                        <div
+                          style={{
+                            background: m.role === 'user' ? ACCENT : 'white',
+                            color: m.role === 'user' ? 'white' : '#1F2937',
+                            borderRadius: 12,
+                            padding: '8px 12px',
+                            fontSize: 12,
+                            maxWidth: '85%',
+                            opacity: 0.7,
+                          }}
+                        >
+                          {m.content}
+                        </div>
                       </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* WorkflowPanel */}
+                {isStarting && !activeWorkflow ? (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    justifyContent: 'center', padding: 24,
+                  }}>
+                    <span className="cp-dot" />
+                    <span className="cp-dot" />
+                    <span className="cp-dot" />
+                    <span style={{ fontSize: 12, color: '#6B7280', marginLeft: 4 }}>
+                      Iniciando...
+                    </span>
+                  </div>
+                ) : activeWorkflow ? (
+                  <WorkflowPanel
+                    workflow={activeWorkflow}
+                    onApprove={approveWorkflow}
+                    onCancel={cancelWorkflow}
+                    onClose={() => {
+                      setPanelMode('chat')
+                      clearWorkflow()
+                    }}
+                  />
+                ) : null}
+              </div>
+
+              {/* APPROVAL — fixed at bottom, outside scroll */}
+              {activeWorkflow?.status === 'approval_needed' &&
+               activeWorkflow?.approval_payload && (
+                <div style={{
+                  borderTop: '2px solid #E2E8F0',
+                  background: 'white',
+                  padding: '12px 16px',
+                  flexShrink: 0,
+                }}>
+                  <div style={{
+                    background: '#FFFBEB',
+                    border: '1px solid #FDE68A',
+                    borderRadius: 10,
+                    padding: '10px 12px',
+                    marginBottom: 10,
+                  }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: 700,
+                      color: '#92400E', marginBottom: 4,
+                      fontFamily: 'Inter, sans-serif',
+                    }}>
+                      ✋ Confirma antes de continuar
                     </div>
-                  ))}
+                    <div style={{
+                      fontSize: 12, color: '#78350F',
+                      fontFamily: 'Inter, sans-serif',
+                      lineHeight: 1.5, marginBottom: 6,
+                    }}>
+                      {(activeWorkflow.approval_payload as Record<string, string>).description}
+                    </div>
+                    <div style={{
+                      fontSize: 11, color: '#92400E',
+                      background: '#FEF3C7', borderRadius: 6,
+                      padding: '5px 8px',
+                      fontFamily: 'Inter, sans-serif',
+                    }}>
+                      ⚠️ El borrador NO se enviará automáticamente.
+                      Podrás revisarlo antes de cualquier envío.
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => approveWorkflow(activeWorkflow.id)}
+                      style={{
+                        flex: 1, background: '#1E293B', color: 'white',
+                        border: 'none', borderRadius: 10,
+                        padding: '10px', fontSize: 13, fontWeight: 700,
+                        cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      ✓ Aprobar y continuar
+                    </button>
+                    <button
+                      onClick={() => cancelWorkflow(activeWorkflow.id)}
+                      style={{
+                        background: 'transparent', color: '#64748B',
+                        border: '1px solid #E2E8F0', borderRadius: 10,
+                        padding: '10px 16px', fontSize: 13,
+                        cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                  <div style={{
+                    fontSize: 10, color: '#94A3B8', marginTop: 6,
+                    fontFamily: 'Inter, sans-serif', textAlign: 'center',
+                  }}>
+                    Responsabilidad legal del abogado que aprueba
+                  </div>
                 </div>
               )}
-
-              {/* WorkflowPanel */}
-              {isStarting && !activeWorkflow ? (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  justifyContent: 'center', padding: 24,
-                }}>
-                  <span className="cp-dot" />
-                  <span className="cp-dot" />
-                  <span className="cp-dot" />
-                  <span style={{ fontSize: 12, color: '#6B7280', marginLeft: 4 }}>
-                    Iniciando...
-                  </span>
-                </div>
-              ) : activeWorkflow ? (
-                <WorkflowPanel
-                  workflow={activeWorkflow}
-                  onApprove={approveWorkflow}
-                  onCancel={cancelWorkflow}
-                  onClose={() => {
-                    setPanelMode('chat')
-                    clearWorkflow()
-                  }}
-                />
-              ) : null}
             </div>
           ) : (
             // ── Chat normal ──────────────────────────────────

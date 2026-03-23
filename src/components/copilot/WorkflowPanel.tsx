@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import type { WorkflowRun, WorkflowStep } from '@/hooks/workflow/use-workflow'
 
-// ── Configuración visual por agente ──────────────────────
 const AGENT_CONFIG: Record<string, { name: string; emoji: string; color: string; bg: string }> = {
   orchestrator: { name: 'Nexus',   emoji: '⚡', color: '#1E293B', bg: '#F1F5F9' },
   jurisdiction: { name: 'Lex',     emoji: '⚖️', color: '#8B5CF6', bg: '#F5F3FF' },
@@ -36,16 +35,11 @@ export function WorkflowPanel({
 
   const isTerminal = ['completed', 'failed', 'cancelled'].includes(workflow.status)
   const isWorking = ['planning', 'running'].includes(workflow.status)
-  const needsApproval = workflow.status === 'approval_needed'
 
   const synthesis = workflow.results_json?.synthesis as Record<string, unknown> | undefined
   const keyOutputs = (synthesis?.key_outputs as string[]) ?? []
   const nextActions = (synthesis?.next_actions as string[]) ?? []
   const summary = synthesis?.summary as string | undefined
-
-  const handleApprove = useCallback(() => {
-    onApprove(workflow.id)
-  }, [onApprove, workflow.id])
 
   const handleCancel = useCallback(() => {
     onCancel(workflow.id)
@@ -58,18 +52,14 @@ export function WorkflowPanel({
       border: '1px solid #F1F5F9',
       animation: 'cpSlideUp 0.3s ease-out',
       width: '100%',
-      height: '100%',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
     }}>
 
-      {/* HEADER — fijo, nunca hace scroll */}
+      {/* HEADER — always neutral bg */}
       <div style={{
-        background: workflow.status === 'failed' ? '#FEF2F2'
-                  : workflow.status === 'completed' ? '#F0FDF4'
-                  : workflow.status === 'approval_needed' ? '#FFFBEB'
-                  : '#F8FAFC',
+        background: '#F8FAFC',
         padding: '10px 14px',
         borderBottom: '1px solid #F1F5F9',
         display: 'flex',
@@ -81,7 +71,7 @@ export function WorkflowPanel({
           <span style={{ fontSize: 15 }}>
             {workflow.status === 'completed' ? '✅'
            : workflow.status === 'failed' ? '❌'
-           : workflow.status === 'approval_needed' ? '✋'
+           : workflow.status === 'approval_needed' ? '⏸️'
            : '⚡'}
           </span>
           <div>
@@ -119,7 +109,7 @@ export function WorkflowPanel({
         </div>
       </div>
 
-      {/* PROGRESS BAR — fijo */}
+      {/* PROGRESS BAR */}
       {!isTerminal && (
         <div style={{ height: 3, background: '#F1F5F9', flexShrink: 0 }}>
           <div style={{
@@ -132,11 +122,8 @@ export function WorkflowPanel({
         </div>
       )}
 
-      {/* STEPS — scrollable, ocupa el espacio disponible */}
+      {/* STEPS */}
       <div style={{
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
         padding: '10px 14px',
         display: 'flex',
         flexDirection: 'column',
@@ -158,7 +145,6 @@ export function WorkflowPanel({
                   opacity: isPending ? 0.4 : 1,
                   transition: 'opacity 0.3s ease',
                 }}>
-                  {/* Indicador circular */}
                   <div style={{
                     width: 28, height: 28, borderRadius: '50%',
                     background: isDone ? '#F0FDF4'
@@ -188,8 +174,6 @@ export function WorkflowPanel({
                       </span>
                     )}
                   </div>
-
-                  {/* Info del step */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: 11, fontWeight: 700,
@@ -207,7 +191,6 @@ export function WorkflowPanel({
                         </span>
                       )}
                     </div>
-                    {/* Tarea completa — sin truncar */}
                     <div style={{
                       fontSize: 11, color: '#374151',
                       fontFamily: 'Inter, sans-serif',
@@ -235,7 +218,7 @@ export function WorkflowPanel({
             )
         }
 
-        {/* Resultado completado — dentro del scroll */}
+        {/* Completed result */}
         {workflow.status === 'completed' && synthesis && (
           <div style={{ marginTop: 4 }}>
             {summary && (
@@ -312,65 +295,8 @@ export function WorkflowPanel({
         )}
       </div>
 
-      {/* APPROVAL — fijo abajo, SIEMPRE visible cuando aplica */}
-      {needsApproval && workflow.approval_payload && (
-        <div style={{
-          borderTop: '2px solid #FDE68A',
-          background: '#FFFBEB',
-          padding: '12px 14px',
-          flexShrink: 0,
-        }}>
-          <div style={{
-            fontSize: 12, fontWeight: 700, color: '#92400E',
-            marginBottom: 4, fontFamily: 'Inter, sans-serif',
-          }}>
-            ✋ Confirma antes de continuar
-          </div>
-          <div style={{
-            fontSize: 12, color: '#78350F',
-            fontFamily: 'Inter, sans-serif',
-            lineHeight: 1.5, marginBottom: 4,
-          }}>
-            {(workflow.approval_payload as Record<string, string>).description}
-          </div>
-          <div style={{
-            fontSize: 11, color: '#92400E', marginBottom: 10,
-            fontFamily: 'Inter, sans-serif',
-            background: '#FEF3C7', borderRadius: 6,
-            padding: '6px 8px',
-          }}>
-            ⚠️ El borrador generado NO se enviará automáticamente.
-            Podrás revisarlo antes de cualquier envío oficial.
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={handleApprove} style={{
-              flex: 1, background: '#1E293B', color: 'white',
-              border: 'none', borderRadius: 8,
-              padding: '9px', fontSize: 12, fontWeight: 700,
-              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-            }}>
-              ✓ Aprobar y continuar
-            </button>
-            <button onClick={handleCancel} style={{
-              background: 'transparent', color: '#94A3B8',
-              border: '1px solid #E2E8F0', borderRadius: 8,
-              padding: '9px 14px', fontSize: 12,
-              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-            }}>
-              Cancelar
-            </button>
-          </div>
-          <div style={{
-            fontSize: 10, color: '#94A3B8', marginTop: 6,
-            fontFamily: 'Inter, sans-serif', textAlign: 'center',
-          }}>
-            La responsabilidad legal recae en el abogado que aprueba
-          </div>
-        </div>
-      )}
-
-      {/* CANCEL — fijo abajo mientras corre */}
-      {isWorking && !needsApproval && (
+      {/* CANCEL — while running */}
+      {isWorking && (
         <div style={{
           padding: '8px 14px',
           borderTop: '1px solid #F1F5F9',
