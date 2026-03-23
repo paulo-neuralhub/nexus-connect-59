@@ -68,6 +68,9 @@ export function GeniusChatEnhanced({
   initialConversationId,
   onConversationChange,
   helpMode = false,
+  brandName,
+  brandDescription,
+  brandCapabilities,
 }: Props) {
   const location = useLocation();
   const agent = AGENTS[agentType];
