@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Brain, MessageSquare, FileText, History, Cpu } from 'lucide-react';
+import { Brain, MessageSquare, FileText, History, Cpu, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { usePageTitle } from '@/contexts/page-context';
 import { useEffect, useCallback } from 'react';
 import { ModuleGate } from '@/components/common/ModuleGate';
@@ -40,7 +41,22 @@ export default function GeniusLayout() {
     <ModuleGate module="genius">
       {modal}
       {isStudio ? (
-        <Outlet />
+        <div className="h-full flex flex-col">
+          <div className="flex items-center gap-2 p-3 border-b bg-muted/30">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/app/genius')}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver a Genius
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <Outlet />
+          </div>
+        </div>
       ) : (
         <div className="space-y-6">
           {/* Header with navigation */}
