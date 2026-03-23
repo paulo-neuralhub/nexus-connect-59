@@ -271,6 +271,8 @@ export function GeniusChatEnhanced({
               agent={agent} 
               quickActions={QUICK_ACTIONS}
               onSelectAction={handleQuickAction}
+              displayName={displayName}
+              displayCapabilities={displayCapabilities}
             />
           )}
           
