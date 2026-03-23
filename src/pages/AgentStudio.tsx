@@ -359,7 +359,7 @@ function AgentWorkspace({
               {agent.active ? 'Procesando en tiempo real' : 'En espera de instrucción'}
             </span>
           </div>
-          <div style={{ fontSize: 9, color: '#3A5570', marginTop: 4, paddingLeft: 14 }}>
+          <div style={{ fontSize: 9, color: '#8EAFC6', marginTop: 4, paddingLeft: 14 }}>
             Última actividad: hace {Math.floor(Math.random() * 15) + 1} min
           </div>
         </div>
