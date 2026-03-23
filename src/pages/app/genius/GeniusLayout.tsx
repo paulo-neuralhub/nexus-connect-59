@@ -19,6 +19,7 @@ const geniusNav = [
   { path: '/app/genius/translator', label: 'Traductor', icon: Languages },
   { path: '/app/genius/templates', label: 'Plantillas', icon: FileStack },
   { path: '/app/genius/documents', label: 'Historial', icon: History },
+  { path: '/app/genius/studio', label: 'El Estudio', icon: Cpu },
 ];
 
 export default function GeniusLayout() {
