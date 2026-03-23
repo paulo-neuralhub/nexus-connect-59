@@ -384,11 +384,15 @@ export function GeniusChatEnhanced({
 function EmptyState({ 
   agent, 
   quickActions,
-  onSelectAction 
+  onSelectAction,
+  displayName,
+  displayCapabilities,
 }: { 
   agent: typeof AGENTS[AgentType];
   quickActions: typeof QUICK_ACTIONS;
   onSelectAction: (prompt: string) => void;
+  displayName: string;
+  displayCapabilities: string[];
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
@@ -399,7 +403,7 @@ function EmptyState({
         <Sparkles className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
       </div>
       <h3 className="text-2xl font-bold text-foreground mb-2">
-        ¡Hola! Soy {agent.name}
+        ¡Hola! Soy {displayName}
       </h3>
       <p className="text-muted-foreground mb-8 max-w-md">
         Tu asistente de IA para propiedad intelectual. Puedo buscar información, crear tareas, generar documentos y más.
