@@ -267,7 +267,7 @@ function AgentWorkspace({
   agent, messages, isLoading, onSend, onClose, userName,
 }: {
   agent: AgentData; messages: ChatMsg[]; isLoading: boolean;
-  onSend: (text: string) => void; onClose: () => void;
+  onSend: (text: string) => void; onClose: () => void; userName: string;
 }) {
   const [input, setInput] = useState('')
   const chatEndRef = useRef<HTMLDivElement>(null)
