@@ -373,7 +373,6 @@ export function DynamicSidebar({
             onClick={onNavigate}
             title={collapsed ? "Dashboard" : undefined}
             className={cn(
-              // SILK: Dashboard item with tongue connector
               "flex items-center gap-3 text-[13px] transition-colors relative",
               collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
               isDashboardActive
@@ -391,6 +390,35 @@ export function DynamicSidebar({
             />
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
+
+          {/* Operations Room - right below Dashboard */}
+          {(() => {
+            const isOpsActive = isPathActive("/app/genius/studio");
+            return (
+              <Link
+                to="/app/genius/studio"
+                onClick={onNavigate}
+                title={collapsed ? "Operations Room" : undefined}
+                className={cn(
+                  "flex items-center gap-3 text-[13px] transition-colors relative",
+                  collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
+                  isOpsActive
+                    ? "silk-menu-active text-[#0a2540] font-bold"
+                    : "text-white/[0.48] font-normal hover:text-white/70 rounded-xl mr-4 z-[1]"
+                )}
+              >
+                {isOpsActive && <TongueCurves />}
+                <Cpu 
+                  className="h-3 w-3 shrink-0" 
+                  style={isOpsActive ? { 
+                    color: '#F59E0B',
+                    filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.30))'
+                  } : { color: '#F59E0B', opacity: 0.5 }} 
+                />
+                {!collapsed && <span className="flex-1">Operations Room</span>}
+              </Link>
+            );
+          })()}
         </div>
       );
     }
