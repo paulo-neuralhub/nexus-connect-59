@@ -17,7 +17,7 @@ import {
   useProactiveSuggestions,
 } from '@/hooks/genius/useGeniusTenantConfig';
 import { GeniusDisclaimerModal } from '@/components/features/genius/genius-disclaimer-modal';
-import { GeniusChatTab } from '@/components/features/genius/genius-chat-tab';
+import { GeniusChatEnhanced } from '@/components/features/genius';
 import { GeniusDocumentsTab } from '@/components/features/genius/genius-documents-tab';
 import { GeniusActionsTab } from '@/components/features/genius/genius-actions-tab';
 import { GeniusHistoryTab } from '@/components/features/genius/genius-history-tab';
