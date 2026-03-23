@@ -371,6 +371,14 @@ export function AgentStudio() {
       const cx = cr.left + cr.width / 2 - lb.left
       const cy = cr.top - lb.top
       if (a.active) {
+        // Motion path for traveler dots
+        const motionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        motionPath.setAttribute('id', `path${i}`)
+        motionPath.setAttribute('d', `M ${nx} ${ny} L ${cx} ${cy}`)
+        motionPath.setAttribute('fill', 'none')
+        motionPath.setAttribute('stroke', 'none')
+        svg.appendChild(motionPath)
+
         const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         ln.setAttribute('x1', String(nx)); ln.setAttribute('y1', String(ny))
         ln.setAttribute('x2', String(cx)); ln.setAttribute('y2', String(cy))
@@ -397,6 +405,39 @@ export function AgentStudio() {
         anO.setAttribute('dur', '1.8s'); anO.setAttribute('repeatCount', 'indefinite')
         pg.appendChild(anR); pg.appendChild(anO)
         svg.appendChild(pg)
+
+        // Traveler dot 1
+        const traveler = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+        traveler.setAttribute('r', '4')
+        traveler.setAttribute('fill', a.c)
+        traveler.setAttribute('opacity', '0.9')
+        const am1 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+        am1.setAttribute('dur', '1.8s')
+        am1.setAttribute('repeatCount', 'indefinite')
+        am1.setAttribute('calcMode', 'linear')
+        const mp1 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+        mp1.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#path${i}`)
+        mp1.setAttribute('href', `#path${i}`)
+        am1.appendChild(mp1)
+        traveler.appendChild(am1)
+        svg.appendChild(traveler)
+
+        // Traveler dot 2 (delayed)
+        const traveler2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+        traveler2.setAttribute('r', '3')
+        traveler2.setAttribute('fill', a.c)
+        traveler2.setAttribute('opacity', '0.45')
+        const am2 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+        am2.setAttribute('dur', '1.8s')
+        am2.setAttribute('repeatCount', 'indefinite')
+        am2.setAttribute('calcMode', 'linear')
+        am2.setAttribute('begin', '-0.9s')
+        const mp2 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+        mp2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#path${i}`)
+        mp2.setAttribute('href', `#path${i}`)
+        am2.appendChild(mp2)
+        traveler2.appendChild(am2)
+        svg.appendChild(traveler2)
       } else {
         const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         ln.setAttribute('x1', String(nx)); ln.setAttribute('y1', String(ny))
@@ -450,33 +491,42 @@ export function AgentStudio() {
   return (
     <>
       <style>{CSS}</style>
-      <div ref={labRef} style={{
-        position: 'relative', minHeight: '100vh', background: '#030712',
-        fontFamily: "'Inter','SF Pro Display',sans-serif", color: '#E2E8F0',
-        padding: '24px 32px 48px',
+      <div style={{
+        background: '#F8FAFC', minHeight: '100%', padding: '24px',
+        fontFamily: "'Inter','SF Pro Display',sans-serif",
       }}>
-        {/* Fondo grid */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'linear-gradient(#3B82F6 1px,transparent 1px),linear-gradient(90deg,#3B82F6 1px,transparent 1px)',
-          backgroundSize: '48px 48px',
-        }} />
-        <div style={{
-          position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
-          width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%)',
-          pointerEvents: 'none',
-        }} />
+        {/* Page header — app standard style */}
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1E293B', marginBottom: 4, margin: 0 }}>Agent Ops</h1>
+          <p style={{ fontSize: 13, color: '#64748B', margin: '4px 0 0' }}>Operations Room · 7 agentes de IA especializados en propiedad intelectual</p>
+        </div>
 
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: 32, position: 'relative', zIndex: 1,
-          animation: 'sUp .5s ease-out backwards',
+        {/* Dark panel */}
+        <div ref={labRef} style={{
+          position: 'relative', background: '#060C18', borderRadius: 22,
+          padding: '22px 18px 18px', color: '#E2E8F0',
         }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>El Estudio</h1>
-            <p style={{ fontSize: 12, color: '#475569', margin: '2px 0 0' }}>Nexus coordina · 6 agentes especializados</p>
+          {/* Fondo grid */}
+          <div style={{
+            position: 'absolute', inset: 0, opacity: 0.04, borderRadius: 22, overflow: 'hidden',
+            backgroundImage: 'linear-gradient(#3B82F6 1px,transparent 1px),linear-gradient(90deg,#3B82F6 1px,transparent 1px)',
+            backgroundSize: '48px 48px',
+          }} />
+          <div style={{
+            position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+            width: 600, height: 600, borderRadius: '50%',
+            background: 'radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Stats bar */}
+          <div style={{
+            display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+            marginBottom: 16, position: 'relative', zIndex: 1,
+            animation: 'sUp .5s ease-out backwards',
+          }}>
+          <div style={{ display: 'none' }}>
+            <h1>Agent Ops</h1>
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <div style={{ textAlign: 'right' }}>
@@ -559,13 +609,6 @@ export function AgentStudio() {
           </div>
         </div>
 
-        {/* SVG Conexiones */}
-        <svg ref={svgRef} style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          pointerEvents: 'none', zIndex: 1,
-        }}>
-          <defs />
-        </svg>
 
         {/* Grid de 6 agentes */}
         <div ref={rowRef} style={{
@@ -584,7 +627,16 @@ export function AgentStudio() {
             />
           ))}
         </div>
-      </div>
+
+          {/* SVG Conexiones — must be inside labRef */}
+          <svg ref={svgRef} style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            pointerEvents: 'none', zIndex: 1,
+          }}>
+            <defs />
+          </svg>
+        </div>{/* end dark panel */}
+      </div>{/* end light wrapper */}
 
       {/* Modal */}
       {selectedAgent && (
