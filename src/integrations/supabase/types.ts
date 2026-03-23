@@ -12777,6 +12777,7 @@ export type Database = {
           tokens_by_agent: Json | null
           total_steps: number | null
           trace_id: string | null
+          updated_at: string | null
           user_id: string
           workflow_type: string
         }
@@ -12802,6 +12803,7 @@ export type Database = {
           tokens_by_agent?: Json | null
           total_steps?: number | null
           trace_id?: string | null
+          updated_at?: string | null
           user_id: string
           workflow_type: string
         }
@@ -12827,6 +12829,7 @@ export type Database = {
           tokens_by_agent?: Json | null
           total_steps?: number | null
           trace_id?: string | null
+          updated_at?: string | null
           user_id?: string
           workflow_type?: string
         }
@@ -29261,6 +29264,8 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_expired_memories: { Args: never; Returns: undefined }
+      delete_user_ai_data: { Args: { p_user_id: string }; Returns: undefined }
       generate_journal_entry_for_invoice: {
         Args: { p_invoice_id: string }
         Returns: string
