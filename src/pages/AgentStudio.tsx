@@ -331,7 +331,7 @@ function AgentWorkspace({
         </div>
 
         {/* SECTION C — Capabilities & Status */}
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESPECIALIDADES</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESPECIALIDADES</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12, width: '100%' }}>
           {agent.caps.map((cap, i) => (
             <div key={i} style={{
