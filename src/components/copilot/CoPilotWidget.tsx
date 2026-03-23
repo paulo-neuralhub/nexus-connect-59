@@ -425,22 +425,94 @@ export function CoPilotWidget() {
     if (!msg || loading || isStarting) return
     setInput('')
 
-    // Detectar si es un workflow ANTES de enviar al chat
-    const intent = detectWorkflowIntent(msg)
-    if (intent.isWorkflow && intent.confidence >= 0.75 && intent.workflow_type) {
-      // Añadir el mensaje del usuario al chat
+    // ── CASO 1: Hay workflow pendiente esperando expediente ──
+    if (pendingWorkflow) {
       setMessages(prev => [...prev, { role: 'user' as const, content: msg }])
-      // Cambiar a modo workflow
-      setPanelMode('workflow')
-      // Iniciar el workflow
-      await startWorkflow({
-        goal: msg,
-        workflow_type: intent.workflow_type as WorkflowType,
-      })
+
+      const { data: found } = await supabase
+        .from('matters')
+        .select('id, title, reference_number, type, status, jurisdiction')
+        .or(`title.ilike.%${msg}%,reference_number.ilike.%${msg}%`)
+        .limit(1)
+        .single()
+
+      if (found) {
+        setMessages(prev => [...prev, {
+          role: 'assistant' as const,
+          content: `Perfecto. Trabajando en **${found.title}**${
+            found.reference_number ? ` (${found.reference_number})` : ''
+          } — ${found.jurisdiction ?? found.type}.`,
+        }])
+        setPendingWorkflow(null)
+        setPanelMode('workflow')
+        await startWorkflow({
+          goal: `${pendingWorkflow.goal} — Expediente: ${found.title}`,
+          workflow_type: pendingWorkflow.type,
+          matter_id: found.id,
+        })
+      } else {
+        const { data: suggestions } = await supabase
+          .from('matters')
+          .select('title, reference_number')
+          .order('updated_at', { ascending: false })
+          .limit(3)
+
+        const list = suggestions?.map(m =>
+          `• ${m.title}${m.reference_number ? ` (${m.reference_number})` : ''}`
+        ).join('\n') ?? ''
+
+        setMessages(prev => [...prev, {
+          role: 'assistant' as const,
+          content: `No encontré ese expediente. ¿Puedes confirmar el nombre exacto?\n\n${
+            list ? `Expedientes recientes:\n${list}` : ''
+          }`,
+        }])
+      }
       return
     }
 
-    // Chat normal
+    // ── CASO 2: Detectar si es un workflow ──────────────────
+    const intent = detectWorkflowIntent(msg)
+
+    const needsMatter: WorkflowType[] = [
+      'oa_response', 'spider_analysis', 'renewal',
+      'infringement_analysis', 'full_matter_prep',
+      'due_diligence', 'competitor_analysis',
+    ]
+
+    if (intent.isWorkflow && intent.confidence >= 0.75 && intent.workflow_type) {
+      const wfType = intent.workflow_type as WorkflowType
+      setMessages(prev => [...prev, { role: 'user' as const, content: msg }])
+
+      if (needsMatter.includes(wfType)) {
+        setPendingWorkflow({ type: wfType, goal: msg })
+
+        const { data: recentMatters } = await supabase
+          .from('matters')
+          .select('id, title, reference_number, type, status')
+          .order('updated_at', { ascending: false })
+          .limit(4)
+
+        const list = recentMatters?.map(m =>
+          `• ${m.title}${m.reference_number ? ` (${m.reference_number})` : ''}`
+        ).join('\n') ?? ''
+
+        setMessages(prev => [...prev, {
+          role: 'assistant' as const,
+          content: `Para preparar esto necesito saber el expediente concreto.\n\n${
+            list ? `Expedientes recientes:\n${list}\n\n` : ''
+          }¿Sobre cuál trabajamos? Escribe el nombre o la referencia.`,
+        }])
+        return
+      }
+
+      // Workflows que NO necesitan expediente → lanzar directo
+      setPanelMode('workflow')
+      await startWorkflow({ goal: msg, workflow_type: wfType })
+      return
+    }
+
+    // ── CASO 3: Chat normal ─────────────────────────────────
     setMessages(m => [...m, { role: 'user' as const, content: msg }])
     setLoading(true)
     try {
@@ -462,7 +534,8 @@ export function CoPilotWidget() {
     } catch {
       setMessages(m => [
         ...m,
-        { role: 'assistant' as const, content: 'Error de conexión. Intenta de nuevo.' },
+        { role: 'assistant' as const,
+          content: 'Error de conexión. Intenta de nuevo.' },
       ])
     } finally {
       setLoading(false)
