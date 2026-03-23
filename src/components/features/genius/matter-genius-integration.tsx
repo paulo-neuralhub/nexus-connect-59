@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { GeniusChat } from '@/components/features/genius/chat';
+import { GeniusChatEnhanced } from '@/components/features/genius/genius-chat-enhanced';
 
 interface Props {
   matterId: string;
