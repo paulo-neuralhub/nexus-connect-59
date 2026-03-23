@@ -873,9 +873,9 @@ export function AgentStudio() {
 
         {/* Dark panel */}
         <div ref={labRef} style={{
-          position: 'relative', background: 'linear-gradient(180deg, #0D1829 0%, #0A1220 100%)',
+          position: 'relative', background: '#0F172A',
           borderRadius: 22, padding: '22px 18px 18px', color: '#E2E8F0',
-          border: '1px solid #1E3A5F',
+          border: '1px solid #1E293B',
         }}>
           {/* Fondo grid */}
           <div style={{
