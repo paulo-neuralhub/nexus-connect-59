@@ -1,5 +1,4 @@
-export { GeniusChat } from './chat';
-export { GeniusChatEnhanced } from './genius-chat-enhanced';
+export { GeniusChatEnhanced, GeniusChatEnhanced as GeniusChat } from './genius-chat-enhanced';
 export { ConversationSidebar } from './conversation-sidebar';
 export { AgentSelector } from './agent-selector';
 export { GeniusWidget } from './genius-widget';

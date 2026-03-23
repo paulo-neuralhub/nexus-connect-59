@@ -64,9 +64,9 @@ export function MatterGeniusTab({ matter }: Props) {
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' && (
-          <GeniusChat
+          <GeniusChatEnhanced
             agentType="legal"
-            matterId={matter.id}
+            initialMatterId={matter.id}
           />
         )}
         

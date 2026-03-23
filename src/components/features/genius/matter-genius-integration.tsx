@@ -89,7 +89,7 @@ export function MatterGeniusIntegration({ matterId, matterReference }: Props) {
           </Button>
         </div>
         <div className="h-[500px]">
-          <GeniusChat agentType="legal" matterId={matterId} />
+          <GeniusChatEnhanced agentType="legal" initialMatterId={matterId} />
         </div>
       </div>
     );
