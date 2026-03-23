@@ -450,33 +450,42 @@ export function AgentStudio() {
   return (
     <>
       <style>{CSS}</style>
-      <div ref={labRef} style={{
-        position: 'relative', minHeight: '100vh', background: '#030712',
-        fontFamily: "'Inter','SF Pro Display',sans-serif", color: '#E2E8F0',
-        padding: '24px 32px 48px',
+      <div style={{
+        background: '#F8FAFC', minHeight: '100%', padding: '24px',
+        fontFamily: "'Inter','SF Pro Display',sans-serif",
       }}>
-        {/* Fondo grid */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'linear-gradient(#3B82F6 1px,transparent 1px),linear-gradient(90deg,#3B82F6 1px,transparent 1px)',
-          backgroundSize: '48px 48px',
-        }} />
-        <div style={{
-          position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
-          width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%)',
-          pointerEvents: 'none',
-        }} />
+        {/* Page header — app standard style */}
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1E293B', marginBottom: 4, margin: 0 }}>Agent Ops</h1>
+          <p style={{ fontSize: 13, color: '#64748B', margin: '4px 0 0' }}>Operations Room · 7 agentes de IA especializados en propiedad intelectual</p>
+        </div>
 
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: 32, position: 'relative', zIndex: 1,
-          animation: 'sUp .5s ease-out backwards',
+        {/* Dark panel */}
+        <div ref={labRef} style={{
+          position: 'relative', background: '#060C18', borderRadius: 22,
+          padding: '22px 18px 18px', color: '#E2E8F0',
         }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>El Estudio</h1>
-            <p style={{ fontSize: 12, color: '#475569', margin: '2px 0 0' }}>Nexus coordina · 6 agentes especializados</p>
+          {/* Fondo grid */}
+          <div style={{
+            position: 'absolute', inset: 0, opacity: 0.04, borderRadius: 22, overflow: 'hidden',
+            backgroundImage: 'linear-gradient(#3B82F6 1px,transparent 1px),linear-gradient(90deg,#3B82F6 1px,transparent 1px)',
+            backgroundSize: '48px 48px',
+          }} />
+          <div style={{
+            position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+            width: 600, height: 600, borderRadius: '50%',
+            background: 'radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Stats bar */}
+          <div style={{
+            display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+            marginBottom: 16, position: 'relative', zIndex: 1,
+            animation: 'sUp .5s ease-out backwards',
+          }}>
+          <div style={{ display: 'none' }}>
+            <h1>Agent Ops</h1>
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <div style={{ textAlign: 'right' }}>
