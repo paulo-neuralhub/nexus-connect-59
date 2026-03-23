@@ -374,15 +374,44 @@ function AgentWorkspace({
           padding: '12px 16px', borderBottom: '1px solid #E2E8F0',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
+          {/* Left: connection indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%', background: agent.c,
               animation: 'pls 2s ease-in-out infinite',
             }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#1E293B' }}>
-              Conectado con {agent.name}
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#1E293B' }}>
+                Conectado con {agent.name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                <div style={{
+                  width: 5, height: 5, borderRadius: '50%', background: '#22C55E',
+                  animation: 'pls 2s ease-in-out infinite',
+                }} />
+                <span style={{ fontSize: 10, color: '#64748B' }}>
+                  {userName} · al mando de {agent.name}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Center: active session badge */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+            borderRadius: 20, padding: '4px 12px',
+          }}>
+            <div style={{
+              width: 5, height: 5, borderRadius: '50%', background: '#22C55E',
+              animation: 'pls 2s ease-in-out infinite',
+            }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: '#22C55E', letterSpacing: '0.05em' }}>
+              SESIÓN ACTIVA
             </span>
           </div>
+
+          {/* Right: close */}
           <button onClick={onClose} style={{
             width: 24, height: 24, borderRadius: '50%', border: '1px solid #E2E8F0',
             background: '#fff', cursor: 'pointer', fontSize: 11, color: '#94A3B8',
