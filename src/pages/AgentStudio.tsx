@@ -264,7 +264,7 @@ function useAgentChat() {
 
 // ─── AgentWorkspace ────────────────────────────────────────
 function AgentWorkspace({
-  agent, messages, isLoading, onSend, onClose,
+  agent, messages, isLoading, onSend, onClose, userName,
 }: {
   agent: AgentData; messages: ChatMsg[]; isLoading: boolean;
   onSend: (text: string) => void; onClose: () => void;
