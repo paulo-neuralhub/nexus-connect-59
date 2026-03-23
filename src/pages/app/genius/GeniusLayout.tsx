@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Brain, MessageSquare, Scale, FileText, Languages, History, FileStack, Cpu } from 'lucide-react';
+import { Brain, MessageSquare, FileText, History, Cpu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePageTitle } from '@/contexts/page-context';
 import { useEffect, useCallback } from 'react';
@@ -8,18 +8,10 @@ import { ModuleGate } from '@/components/common/ModuleGate';
 import { useLegalCheck } from '@/hooks/legal/useLegalCheck';
 
 const geniusNav = [
-  { path: '/app/genius', label: 'Dashboard', icon: Brain, exact: true },
-  { path: '/app/genius/chat', label: 'Chat', icon: MessageSquare },
-  { path: '/app/genius/analysis', label: 'Análisis', icon: Scale },
+  { path: '/app/genius', label: 'Chat', icon: MessageSquare, exact: true },
   { path: '/app/genius/documents-gen', label: 'Documentos', icon: FileText },
-  { path: '/app/genius/predictions', label: 'Predicciones', icon: Brain },
-  { path: '/app/genius/valuation', label: 'Valoración', icon: History },
-  { path: '/app/genius/comparator', label: 'Comparador', icon: Scale },
-  { path: '/app/genius/opposition', label: 'Oposición', icon: FileText },
-  { path: '/app/genius/translator', label: 'Traductor', icon: Languages },
-  { path: '/app/genius/templates', label: 'Plantillas', icon: FileStack },
-  { path: '/app/genius/documents', label: 'Historial', icon: History },
   { path: '/app/genius/studio', label: 'El Estudio', icon: Cpu },
+  { path: '/app/genius/documents', label: 'Historial', icon: History },
 ];
 
 export default function GeniusLayout() {
