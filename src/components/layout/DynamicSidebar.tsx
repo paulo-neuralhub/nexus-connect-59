@@ -391,14 +391,14 @@ export function DynamicSidebar({
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
 
-          {/* Operations Room — always visible right below Dashboard */}
+          {/* Agentes — always visible right below Dashboard */}
           {(() => {
             const isOpsActive = isPathActive("/app/genius/studio");
             return (
               <Link
                 to="/app/genius/studio"
                 onClick={onNavigate}
-                title={collapsed ? "Operations Room" : undefined}
+                title={collapsed ? "Agentes" : undefined}
                 className={cn(
                   "flex items-center gap-3 text-[13px] transition-colors relative",
                   collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
@@ -415,7 +415,7 @@ export function DynamicSidebar({
                     filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.30))'
                   } : { color: '#F59E0B', opacity: 0.5 }} 
                 />
-                {!collapsed && <span className="flex-1">Operations Room</span>}
+                {!collapsed && <span className="flex-1">Agentes</span>}
               </Link>
             );
           })()}
