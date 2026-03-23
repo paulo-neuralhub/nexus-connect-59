@@ -418,27 +418,48 @@ export function CoPilotWidget() {
 
   const send = async () => {
     const msg = input.trim()
-    if (!msg || loading) return
+    if (!msg || loading || isStarting) return
     setInput('')
-    setMessages(m => [...m, { role: 'user', content: msg }])
+
+    // Detectar si es un workflow ANTES de enviar al chat
+    const intent = detectWorkflowIntent(msg)
+    if (intent.isWorkflow && intent.confidence >= 0.75 && intent.workflow_type) {
+      // Añadir el mensaje del usuario al chat
+      setMessages(prev => [...prev, { role: 'user' as const, content: msg }])
+      // Cambiar a modo workflow
+      setPanelMode('workflow')
+      // Iniciar el workflow
+      await startWorkflow({
+        goal: msg,
+        workflow_type: intent.workflow_type as WorkflowType,
+      })
+      return
+    }
+
+    // Chat normal
+    setMessages(m => [...m, { role: 'user' as const, content: msg }])
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('genius-chat', {
-        body: {
-          message: msg,
-          conversation_id: convId,
-          context_page: location.pathname,
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'genius-chat',
+        {
+          body: {
+            message: msg,
+            conversation_id: convId,
+            context_page: location.pathname,
+          },
         }
-      })
-      if (error) throw error
+      )
+      if (fnError) throw fnError
       if (data?.conversation_id) setConvId(data.conversation_id)
-      const reply = data?.message ?? data?.response ?? 'Sin respuesta del asistente.'
-      setMessages(m => [...m, { role: 'assistant', content: reply }])
+      const reply = data?.message ?? data?.response ??
+        'No pude procesar tu mensaje.'
+      setMessages(m => [...m, { role: 'assistant' as const, content: reply }])
     } catch {
-      setMessages(m => [...m, {
-        role: 'assistant',
-        content: 'Error de conexión. Intenta de nuevo.'
-      }])
+      setMessages(m => [
+        ...m,
+        { role: 'assistant' as const, content: 'Error de conexión. Intenta de nuevo.' },
+      ])
     } finally {
       setLoading(false)
     }
