@@ -53,10 +53,10 @@ export function WorkflowPanel({
   }, [onCancel, workflow.id])
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-in slide-in-from-bottom-2 duration-300">
+    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-in slide-in-from-bottom-2 duration-300 flex flex-col" style={{ maxHeight: 420 }}>
 
       {/* ── Header ─────────────────────────────────────── */}
-      <div className="flex items-start justify-between px-4 py-3 bg-muted/50">
+      <div className="flex items-start justify-between px-4 py-3 bg-muted/50 shrink-0">
         <div className="flex items-start gap-3">
           <span className="text-xl mt-0.5">
             {workflow.status === 'completed' ? '✅'
@@ -90,7 +90,7 @@ export function WorkflowPanel({
 
       {/* ── Progress bar ───────────────────────────────── */}
       {!isTerminal && (
-        <div className="h-1 bg-muted">
+        <div className="h-1 bg-muted shrink-0">
           <div
             className="h-full bg-primary transition-all duration-500 ease-out"
             style={{ width: `${workflow.progress}%` }}
@@ -98,72 +98,70 @@ export function WorkflowPanel({
         </div>
       )}
 
-      {/* ── Steps list ─────────────────────────────────── */}
-      {workflow.plan_json.length > 0 && (
-        <div className="px-4 py-3 space-y-2">
-          {workflow.plan_json.map((step: WorkflowStep) => {
-            const cfg = AGENT_CONFIG[step.agent] ??
-              AGENT_CONFIG['orchestrator']
-            const isDone    = step.status === 'done'
-            const isFailed  = step.status === 'failed'
-            const isRunning = step.status === 'running' ||
-              (step.step === workflow.current_step && isWorking)
-            const isPending = step.status === 'pending' && !isRunning
+      {/* ── Scrollable area: steps + planning dots ─────── */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {workflow.plan_json.length > 0 && (
+          <div className="px-4 py-3 space-y-2">
+            {workflow.plan_json.map((step: WorkflowStep) => {
+              const cfg = AGENT_CONFIG[step.agent] ??
+                AGENT_CONFIG['orchestrator']
+              const isDone    = step.status === 'done'
+              const isFailed  = step.status === 'failed'
+              const isRunning = step.status === 'running' ||
+                (step.step === workflow.current_step && isWorking)
+              const isPending = step.status === 'pending' && !isRunning
 
-            return (
-              <div key={step.step} className={`flex items-start gap-3 py-1.5 ${isPending ? 'opacity-40' : ''}`}>
-                {/* Step indicator */}
-                <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
-                  style={{
-                    backgroundColor: isDone ? '#10B981' : isFailed ? '#EF4444' : isRunning ? cfg.color : '#E2E8F0',
-                    color: isDone || isFailed || isRunning ? '#FFF' : '#94A3B8',
-                  }}
-                >
-                  {isDone ? '✓'
-                 : isFailed ? '✗'
-                 : isRunning ? (
-                    <span className="animate-spin text-[10px]">◌</span>
-                  ) : <span>{step.step}</span>}
-                </div>
-
-                {/* Step info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold" style={{ color: cfg.color }}>
-                      {cfg.emoji} {cfg.name}
-                    </span>
-                    {step.step === workflow.current_step && isWorking && (
-                      <span className="text-[10px] text-muted-foreground animate-pulse">
-                        procesando...
-                      </span>
-                    )}
+              return (
+                <div key={step.step} className={`flex items-start gap-3 py-1.5 ${isPending ? 'opacity-40' : ''}`}>
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+                    style={{
+                      backgroundColor: isDone ? '#10B981' : isFailed ? '#EF4444' : isRunning ? cfg.color : '#E2E8F0',
+                      color: isDone || isFailed || isRunning ? '#FFF' : '#94A3B8',
+                    }}
+                  >
+                    {isDone ? '✓'
+                   : isFailed ? '✗'
+                   : isRunning ? (
+                      <span className="animate-spin text-[10px]">◌</span>
+                    ) : <span>{step.step}</span>}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                    {step.task}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold" style={{ color: cfg.color }}>
+                        {cfg.emoji} {cfg.name}
+                      </span>
+                      {step.step === workflow.current_step && isWorking && (
+                        <span className="text-[10px] text-muted-foreground animate-pulse">
+                          procesando...
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                      {step.task}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
 
-      {/* ── Planning state (no steps yet) ──────────────── */}
-      {workflow.plan_json.length === 0 && isWorking && (
-        <div className="px-4 py-6 flex items-center justify-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
-          <span className="text-xs text-muted-foreground ml-2">
-            Nexus está preparando el plan...
-          </span>
-        </div>
-      )}
+        {workflow.plan_json.length === 0 && isWorking && (
+          <div className="px-4 py-6 flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="text-xs text-muted-foreground ml-2">
+              Nexus está preparando el plan...
+            </span>
+          </div>
+        )}
+      </div>
 
-      {/* ── Approval needed ────────────────────────────── */}
+      {/* ── Approval — FIXED: always visible, outside scroll ── */}
       {needsApproval && workflow.approval_payload && (
-        <div className="px-4 py-3 border-t border-border">
+        <div className="px-4 py-3 border-t border-amber-200 bg-amber-50 shrink-0">
           <p className="text-sm font-semibold text-foreground mb-2">
             ✋ Antes de continuar:
           </p>
@@ -190,9 +188,9 @@ export function WorkflowPanel({
         </div>
       )}
 
-      {/* ── Completed result ───────────────────────────── */}
+      {/* ── Completed result — outside scroll ──────────── */}
       {workflow.status === 'completed' && (
-        <div className="px-4 py-3 border-t border-border space-y-3">
+        <div className="px-4 py-3 border-t border-border space-y-3 shrink-0">
           {summary && (
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-sm text-foreground leading-relaxed">
@@ -200,7 +198,6 @@ export function WorkflowPanel({
               </p>
             </div>
           )}
-
           {keyOutputs.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
@@ -214,7 +211,6 @@ export function WorkflowPanel({
               ))}
             </div>
           )}
-
           {nextActions.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
@@ -231,9 +227,9 @@ export function WorkflowPanel({
         </div>
       )}
 
-      {/* ── Failed state ───────────────────────────────── */}
+      {/* ── Failed state — outside scroll ──────────────── */}
       {workflow.status === 'failed' && (
-        <div className="px-4 py-3 border-t border-border">
+        <div className="px-4 py-3 border-t border-border shrink-0">
           <div className="rounded-lg bg-destructive/10 p-3">
             <p className="text-xs text-destructive">
               {workflow.error_message ?? 'Error desconocido. Intenta de nuevo.'}
@@ -242,9 +238,9 @@ export function WorkflowPanel({
         </div>
       )}
 
-      {/* ── Cancel button (while running) ──────────────── */}
-      {isWorking && (
-        <div className="px-4 py-2 border-t border-border">
+      {/* ── Cancel button (while running) — outside scroll */}
+      {isWorking && !needsApproval && (
+        <div className="px-4 py-2 border-t border-border shrink-0">
           <button
             onClick={handleCancel}
             className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1"

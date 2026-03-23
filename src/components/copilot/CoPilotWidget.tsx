@@ -564,6 +564,7 @@ export function CoPilotWidget() {
             <div
               style={{
                 flex: 1,
+                minHeight: 0,
                 overflowY: 'auto',
                 padding: 16,
                 display: 'flex',
