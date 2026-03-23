@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { 
   Send, 
-  Sparkles, 
+  Brain, 
   ThumbsUp, 
   ThumbsDown,
   Copy,
