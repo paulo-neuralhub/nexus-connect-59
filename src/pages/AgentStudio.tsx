@@ -260,7 +260,7 @@ export function AgentStudio() {
       transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
       animation: studioSlide 0.5s ease-out backwards;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
     .sa-card::before {
       content: '';
