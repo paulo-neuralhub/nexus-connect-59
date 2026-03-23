@@ -266,7 +266,9 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleOrder: 20,
         moduleCategory: "addon",
         moduleExpanded: false,
-        moduleMenuItems: [],
+        moduleMenuItems: [
+          { label: "El Estudio", path: "/app/genius/studio", icon: "Cpu" },
+        ],
         moduleRequires: [],
         modulePopular: true,
         moduleComingSoon: false,
