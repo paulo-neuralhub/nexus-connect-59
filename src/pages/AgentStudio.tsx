@@ -343,7 +343,7 @@ function AgentWorkspace({
         </div>
         <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 12 }} />
 
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESTADO ACTUAL</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESTADO ACTUAL</div>
         <div style={{
           width: '100%', background: agent.active ? 'rgba(34,197,94,0.07)' : 'rgba(100,116,139,0.07)',
           border: `1px solid ${agent.active ? 'rgba(34,197,94,0.15)' : 'rgba(100,116,139,0.15)'}`,
