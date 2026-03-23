@@ -400,7 +400,7 @@ function EmptyState({
         className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform hover:scale-105"
         style={{ background: `linear-gradient(135deg, ${agent.color}40, ${agent.color}10)` }}
       >
-        <Sparkles className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
+        <Brain className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
       </div>
       <h3 className="text-2xl font-bold text-foreground mb-2">
         ¡Hola! Soy {displayName}
