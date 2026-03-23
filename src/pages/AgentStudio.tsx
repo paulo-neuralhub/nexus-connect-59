@@ -288,7 +288,7 @@ function AgentWorkspace({
   return (
     <div style={{
       display: 'flex', borderRadius: 18, overflow: 'hidden',
-      border: '1px solid #E2E8F0', animation: 'wsIn .3s ease-out',
+      border: '1px solid #0f4c75', animation: 'wsIn .3s ease-out',
       height: 480,
     }}>
       {/* LEFT — Agent profile */}
