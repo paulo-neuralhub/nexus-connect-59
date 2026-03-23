@@ -206,7 +206,7 @@ export function GeniusChatEnhanced({
         >
           <SelectTrigger className="w-[220px] h-9">
             <Folder className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span className="text-muted-foreground mr-1">Expediente:</span>
+            <span className="mr-1" style={{ color: '#0EA5E9' }}>Expediente:</span>
             <SelectValue placeholder="Sin vincular" />
           </SelectTrigger>
           <SelectContent>
