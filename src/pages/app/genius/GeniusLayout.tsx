@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Brain, MessageSquare, FileText, History, Cpu, ArrowLeft, Zap } from 'lucide-react';
+import { Brain, Cpu, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { usePageTitle } from '@/contexts/page-context';
