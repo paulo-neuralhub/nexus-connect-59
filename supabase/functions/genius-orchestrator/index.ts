@@ -93,10 +93,12 @@ async function executeStep(
   step: Record<string, unknown>,
   matterId: string | null,
   orgId: string,
+  userId: string,
   context: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   const agent = step.agent as string;
   const task  = step.task  as string;
+  const wfType = (context.workflow_type as string) ?? "report";
 
   if (agent === "jurisdiction") {
     return callSubAgent("genius-sub-jurisdiction",
@@ -107,28 +109,45 @@ async function executeStep(
       { task, matter_id: matterId, org_id: orgId }, 25000);
   }
   if (agent === "document") {
-    const wfType = (context.workflow_type as string) ?? "report";
     return callSubAgent("genius-sub-document", {
       matter_id: matterId,
       org_id: orgId,
+      user_id: userId,
       document_type: wfType === "oa_response" ? "oa_response"
-        : wfType === "infringement_analysis" ? "cease_desist"
-        : "report",
+        : wfType === "opposition" ? "opposition"
+        : wfType === "infringement_analysis" ? "cease_desist_letter"
+        : "oa_response",
       context: { ...context, goal: task },
-      user_id: context.user_id ?? null,
     }, 90000);
   }
   if (agent === "execute") {
     return callSubAgent("genius-execute-action",
       { action_type: task, matter_id: matterId, org_id: orgId }, 20000);
   }
+  if (agent === "competitor") {
+    return callSubAgent("genius-sub-dossier", {
+      task: `Análisis competitivo: ${task}. Identifica marcas similares y riesgos.`,
+      matter_id: matterId,
+      org_id: orgId,
+    }, 25000);
+  }
+  if (agent === "portfolio") {
+    return callSubAgent("genius-sub-dossier", {
+      task: `Análisis de cartera PI: ${task}`,
+      matter_id: matterId,
+      org_id: orgId,
+    }, 25000);
+  }
   if (agent === "communication") {
     return callSubAgent("genius-sub-communication", {
       task,
       org_id: orgId,
       matter_id: matterId,
-      user_id: context.user_id ?? null,
-      comm_type: context.comm_type ?? "client_update",
+      user_id: userId,
+      comm_type: wfType === "communication" ? "client_update"
+        : wfType === "morning_briefing" ? "internal_note"
+        : wfType === "service_proposal" ? "client_proposal"
+        : "client_update",
     }, 40000);
   }
   // fallback → genius-chat
@@ -308,7 +327,7 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
 
           // Execute group in parallel
           const settled = await Promise.allSettled(
-            group.map(s => executeStep(s, matter_id, orgId, { ...context, ...results, workflow_type, user_id: user.id }))
+            group.map(s => executeStep(s, matter_id, orgId, user.id, { ...context, ...results, workflow_type }))
           );
 
           settled.forEach((r, idx) => {
