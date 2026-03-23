@@ -11559,6 +11559,123 @@ export type Database = {
           },
         ]
       }
+      genius_agent_performance: {
+        Row: {
+          agent_type: string
+          avg_latency_ms: number | null
+          calls_count: number | null
+          circuit_breaker_triggers: number | null
+          error_count: number | null
+          organization_id: string
+          p95_latency_ms: number | null
+          period_date: string
+          success_count: number | null
+          total_cost_eur: number | null
+          total_tokens: number | null
+        }
+        Insert: {
+          agent_type: string
+          avg_latency_ms?: number | null
+          calls_count?: number | null
+          circuit_breaker_triggers?: number | null
+          error_count?: number | null
+          organization_id: string
+          p95_latency_ms?: number | null
+          period_date?: string
+          success_count?: number | null
+          total_cost_eur?: number | null
+          total_tokens?: number | null
+        }
+        Update: {
+          agent_type?: string
+          avg_latency_ms?: number | null
+          calls_count?: number | null
+          circuit_breaker_triggers?: number | null
+          error_count?: number | null
+          organization_id?: string
+          p95_latency_ms?: number | null
+          period_date?: string
+          success_count?: number | null
+          total_cost_eur?: number | null
+          total_tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_agent_performance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_conversation_memory: {
+        Row: {
+          access_count: number | null
+          content: string
+          created_at: string | null
+          embedding: string | null
+          expires_at: string | null
+          id: string
+          last_accessed: string | null
+          matter_id: string | null
+          memory_type: string
+          organization_id: string
+          relevance_score: number | null
+          user_id: string
+        }
+        Insert: {
+          access_count?: number | null
+          content: string
+          created_at?: string | null
+          embedding?: string | null
+          expires_at?: string | null
+          id?: string
+          last_accessed?: string | null
+          matter_id?: string | null
+          memory_type: string
+          organization_id: string
+          relevance_score?: number | null
+          user_id: string
+        }
+        Update: {
+          access_count?: number | null
+          content?: string
+          created_at?: string | null
+          embedding?: string | null
+          expires_at?: string | null
+          id?: string
+          last_accessed?: string | null
+          matter_id?: string | null
+          memory_type?: string
+          organization_id?: string
+          relevance_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_conversation_memory_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_conversation_memory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_conversation_memory_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_conversations: {
         Row: {
           context_matter_id: string | null
@@ -12633,6 +12750,120 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genius_workflow_runs: {
+        Row: {
+          approval_payload: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          client_id: string | null
+          completed_at: string | null
+          cost_by_agent: Json | null
+          created_at: string | null
+          current_step: number | null
+          error_message: string | null
+          goal_text: string
+          id: string
+          matter_id: string | null
+          organization_id: string
+          plan_json: Json | null
+          quality_scores: Json | null
+          results_json: Json | null
+          started_at: string | null
+          status: string
+          tokens_by_agent: Json | null
+          total_steps: number | null
+          trace_id: string | null
+          user_id: string
+          workflow_type: string
+        }
+        Insert: {
+          approval_payload?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          cost_by_agent?: Json | null
+          created_at?: string | null
+          current_step?: number | null
+          error_message?: string | null
+          goal_text: string
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          plan_json?: Json | null
+          quality_scores?: Json | null
+          results_json?: Json | null
+          started_at?: string | null
+          status?: string
+          tokens_by_agent?: Json | null
+          total_steps?: number | null
+          trace_id?: string | null
+          user_id: string
+          workflow_type: string
+        }
+        Update: {
+          approval_payload?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          cost_by_agent?: Json | null
+          created_at?: string | null
+          current_step?: number | null
+          error_message?: string | null
+          goal_text?: string
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          plan_json?: Json | null
+          quality_scores?: Json | null
+          results_json?: Json | null
+          started_at?: string | null
+          status?: string
+          tokens_by_agent?: Json | null
+          total_steps?: number | null
+          trace_id?: string | null
+          user_id?: string
+          workflow_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_workflow_runs_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_workflow_runs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_workflow_runs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_workflow_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_workflow_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -29119,6 +29350,17 @@ export type Database = {
       sync_plan_to_genius_config: {
         Args: { p_plan_code: string }
         Returns: number
+      }
+      upsert_agent_metric: {
+        Args: {
+          p_agent_type: string
+          p_cost_eur: number
+          p_latency_ms: number
+          p_org_id: string
+          p_success: boolean
+          p_tokens: number
+        }
+        Returns: undefined
       }
       verify_spider_access: { Args: { p_org_id: string }; Returns: boolean }
     }
