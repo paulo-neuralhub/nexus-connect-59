@@ -204,8 +204,8 @@ export function GeniusChatEnhanced({
           <Sparkles className="w-5 h-5" style={{ color: agent.color }} />
         </div>
         <div className="flex-1">
-          <h2 className="font-semibold text-foreground">{agent.name}</h2>
-          <p className="text-xs text-muted-foreground">{agent.description}</p>
+          <h2 className="font-semibold text-foreground">{displayName}</h2>
+          <p className="text-xs text-muted-foreground">{displayDescription}</p>
         </div>
         
         {/* Matter selector */}
