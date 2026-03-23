@@ -104,7 +104,7 @@ export default function GeniusLayout() {
             
             <NavLink
               to="/app/genius/studio"
-              className="ml-8 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all bg-sidebar-primary text-sidebar-primary-foreground shadow-md hover:opacity-90"
+              className="ml-8 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all bg-sidebar text-sidebar-foreground shadow-md hover:opacity-90"
             >
               <Cpu className="h-4 w-4" />
               Agentes
