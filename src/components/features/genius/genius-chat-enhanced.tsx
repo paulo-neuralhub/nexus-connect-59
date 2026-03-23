@@ -201,7 +201,7 @@ export function GeniusChatEnhanced({
           className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105"
           style={{ background: `linear-gradient(135deg, ${agent.color}30, ${agent.color}10)` }}
         >
-          <Sparkles className="w-5 h-5" style={{ color: agent.color }} />
+          <Brain className="w-5 h-5" style={{ color: agent.color }} />
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-foreground">{displayName}</h2>
