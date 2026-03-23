@@ -16,7 +16,8 @@ import {
   Pin,
   PinOff,
   ChevronRight,
-  X
+  X,
+  HelpCircle
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
