@@ -201,24 +201,24 @@ export function GeniusChatEnhanced({
       <div className="px-4 py-3 border-b flex items-center gap-3 bg-gradient-to-r from-card to-muted/30">
         <div 
           className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105"
-          style={{ background: `linear-gradient(135deg, ${agent.color}30, ${agent.color}10)` }}
+          style={{ background: `linear-gradient(135deg, hsl(24 100% 50% / 0.3), hsl(24 100% 50% / 0.1))` }}
         >
-          <Brain className="w-5 h-5" style={{ color: agent.color }} />
+          <Brain className="w-5 h-5 text-orange-500" />
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-foreground">{displayName}</h2>
-          <p className="text-xs text-muted-foreground">{displayDescription}</p>
         </div>
         
-        {/* Matter selector */}
+        {/* Matter selector + help */}
         <div className="flex items-center gap-2">
           <Select
             value={selectedMatterId || 'none'}
             onValueChange={(v) => setSelectedMatterId(v === 'none' ? undefined : v)}
           >
-            <SelectTrigger className="w-[200px] h-9">
+            <SelectTrigger className="w-[220px] h-9">
               <Folder className="w-4 h-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Vincular expediente" />
+              <span className="text-muted-foreground mr-1">Expediente:</span>
+              <SelectValue placeholder="Sin vincular" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Sin vincular</SelectItem>
@@ -229,6 +229,19 @@ export function GeniusChatEnhanced({
               ))}
             </SelectContent>
           </Select>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <HelpCircle className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-sm">
+                Al seleccionar un expediente, el asistente IA recibe el contexto de ese caso (datos, plazos, documentos asociados), lo que le permite dar respuestas más precisas y relevantes. Sin vincular, el chat funciona en modo general.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
           {conversationId && (
             <Button
