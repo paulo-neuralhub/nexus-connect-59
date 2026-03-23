@@ -29,7 +29,7 @@ export default function GeniusLayout() {
   });
 
   useEffect(() => {
-    setTitle('IP-GENIUS PRO');
+    setTitle('IP-GENIUS');
   }, [setTitle]);
 
   if (isChecking) return null;
