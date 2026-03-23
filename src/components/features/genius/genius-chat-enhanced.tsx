@@ -429,7 +429,7 @@ function EmptyState({
       <div className="text-sm text-muted-foreground">
         <p className="mb-2">Puedo ayudarte con:</p>
         <ul className="space-y-1">
-          {agent.capabilities.map((cap, i) => (
+          {displayCapabilities.map((cap, i) => (
             <li key={i} className="flex items-center gap-2">
               <span className="text-primary">✓</span>
               {cap}
