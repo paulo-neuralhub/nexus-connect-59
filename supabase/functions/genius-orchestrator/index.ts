@@ -203,7 +203,26 @@ serve(async (req) => {
           `[${m.memory_type}] ${m.content}`).join("\n") ?? "";
 
         // Build plan with Haiku (fast + cheap)
+        // Si es resume, cargar el plan existente y saltar pasos completados
         let steps: Array<Record<string, unknown>> = defaultPlan(workflow_type);
+        let startFromStep = 0;
+
+        if (resume && existingWorkflowId) {
+          const { data: existingWf } = await db
+            .from("genius_workflow_runs")
+            .select("plan_json, current_step")
+            .eq("id", wfId).single();
+          if (existingWf?.plan_json && Array.isArray(existingWf.plan_json)) {
+            steps = existingWf.plan_json as Array<Record<string, unknown>>;
+            startFromStep = Number(existingWf.current_step ?? 0);
+            // Marcar pasos anteriores como done si no lo están
+            steps = steps.map(s =>
+              Number(s.step) <= startFromStep
+                ? { ...s, status: "done" }
+                : s
+            );
+          }
+        }
         try {
           const { text, tokens } = await callClaude(
             "claude-haiku-4-5-20251001",
