@@ -391,7 +391,7 @@ export function DynamicSidebar({
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
 
-          {/* Operations Room - right below Dashboard */}
+          {/* Operations Room — always visible right below Dashboard */}
           {(() => {
             const isOpsActive = isPathActive("/app/genius/studio");
             return (
