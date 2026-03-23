@@ -266,9 +266,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleOrder: 20,
         moduleCategory: "addon",
         moduleExpanded: false,
-        moduleMenuItems: [
-          { label: "Agent Ops", path: "/app/genius/studio", icon: "Cpu" },
-        ],
+        moduleMenuItems: [],
         moduleRequires: [],
         modulePopular: true,
         moduleComingSoon: false,
