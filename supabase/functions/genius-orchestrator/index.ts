@@ -122,7 +122,16 @@ async function executeStep(
     return callSubAgent("genius-execute-action",
       { action_type: task, matter_id: matterId, org_id: orgId }, 20000);
   }
-  // communication / fallback → genius-chat
+  if (agent === "communication") {
+    return callSubAgent("genius-sub-communication", {
+      task,
+      org_id: orgId,
+      matter_id: matterId,
+      user_id: context.user_id ?? null,
+      comm_type: context.comm_type ?? "client_update",
+    }, 40000);
+  }
+  // fallback → genius-chat
   return callSubAgent("genius-chat",
     { message: task, context_page: "workflow", matter_id: matterId }, 30000);
 }
