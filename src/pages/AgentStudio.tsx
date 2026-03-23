@@ -1161,15 +1161,23 @@ export function AgentStudio() {
 
         {/* Workspace panel — below dark panel */}
         {selectedAgent && selectedAgent.id !== 'nexus' && (
-          <div ref={workspaceRef} style={{ marginTop: 16 }}>
-            <AgentWorkspace
-              agent={selectedAgent}
-              messages={messages}
-              isLoading={isLoading}
-              onSend={(text) => sendMessage(text, selectedAgent.id)}
-              onClose={() => { setSelectedAgent(null); clearChat() }}
-            />
-          </div>
+          <>
+            {/* SVG connection: card → workspace */}
+            <svg ref={connSvgRef} style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              pointerEvents: 'none', zIndex: 50,
+            }} />
+            <div ref={workspaceRef} style={{ marginTop: 16 }}>
+              <AgentWorkspace
+                agent={selectedAgent}
+                messages={messages}
+                isLoading={isLoading}
+                onSend={(text) => sendMessage(text, selectedAgent.id)}
+                onClose={() => { setSelectedAgent(null); clearChat() }}
+                userName={userName}
+              />
+            </div>
+          </>
         )}
       </div>{/* end light wrapper */}
     </>
