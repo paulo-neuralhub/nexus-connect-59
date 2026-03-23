@@ -10,7 +10,7 @@ import { useLegalCheck } from '@/hooks/legal/useLegalCheck';
 const geniusNav = [
   { path: '/app/genius', label: 'Chat', icon: MessageSquare, exact: true },
   { path: '/app/genius/documents-gen', label: 'Documentos', icon: FileText },
-  { path: '/app/genius/studio', label: 'Agent Ops', icon: Cpu },
+  { path: '/app/genius/studio', label: 'Operations Room', icon: Cpu },
   { path: '/app/genius/documents', label: 'Historial', icon: History },
 ];
 
