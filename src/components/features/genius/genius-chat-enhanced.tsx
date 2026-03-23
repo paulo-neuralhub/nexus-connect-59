@@ -28,6 +28,7 @@ import { useGeniusChat, useGeniusFeedback } from '@/hooks/use-genius-chat';
 import { AGENTS, QUICK_PROMPTS } from '@/lib/constants/genius';
 import type { AgentType, AIMessage, AIActionTaken } from '@/types/genius';
 import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
