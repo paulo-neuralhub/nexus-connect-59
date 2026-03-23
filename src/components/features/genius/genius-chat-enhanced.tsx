@@ -48,6 +48,10 @@ interface Props {
   initialConversationId?: string;
   onConversationChange?: (id: string) => void;
   helpMode?: boolean;
+  /** Override agent display name & description */
+  brandName?: string;
+  brandDescription?: string;
+  brandCapabilities?: string[];
 }
 
 // Quick action definitions
