@@ -204,10 +204,7 @@ export function GeniusChatEnhanced({
           style={{ background: `linear-gradient(135deg, hsl(24 100% 50% / 0.3), hsl(24 100% 50% / 0.1))` }}
         >
           <Brain className="w-5 h-5 text-orange-500" />
-        </div>
-        <div className="flex-1">
-          <h2 className="font-semibold text-foreground">{displayName}</h2>
-        </div>
+        <div className="flex-1" />
         
         {/* Matter selector + help */}
         <div className="flex items-center gap-2">
