@@ -1020,7 +1020,7 @@ export function AgentStudio() {
 
         {/* Dark panel */}
         <div ref={labRef} style={{
-          position: 'relative', background: '#0a2540',
+          position: 'relative', background: 'linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%)',
           borderRadius: 22, padding: '22px 18px 18px', color: '#E2E8F0',
           border: '1px solid #1E293B',
         }}>
