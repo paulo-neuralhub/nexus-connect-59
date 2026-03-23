@@ -371,6 +371,14 @@ export function AgentStudio() {
       const cx = cr.left + cr.width / 2 - lb.left
       const cy = cr.top - lb.top
       if (a.active) {
+        // Motion path for traveler dots
+        const motionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        motionPath.setAttribute('id', `path${i}`)
+        motionPath.setAttribute('d', `M ${nx} ${ny} L ${cx} ${cy}`)
+        motionPath.setAttribute('fill', 'none')
+        motionPath.setAttribute('stroke', 'none')
+        svg.appendChild(motionPath)
+
         const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         ln.setAttribute('x1', String(nx)); ln.setAttribute('y1', String(ny))
         ln.setAttribute('x2', String(cx)); ln.setAttribute('y2', String(cy))
@@ -397,6 +405,39 @@ export function AgentStudio() {
         anO.setAttribute('dur', '1.8s'); anO.setAttribute('repeatCount', 'indefinite')
         pg.appendChild(anR); pg.appendChild(anO)
         svg.appendChild(pg)
+
+        // Traveler dot 1
+        const traveler = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+        traveler.setAttribute('r', '4')
+        traveler.setAttribute('fill', a.c)
+        traveler.setAttribute('opacity', '0.9')
+        const am1 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+        am1.setAttribute('dur', '1.8s')
+        am1.setAttribute('repeatCount', 'indefinite')
+        am1.setAttribute('calcMode', 'linear')
+        const mp1 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+        mp1.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#path${i}`)
+        mp1.setAttribute('href', `#path${i}`)
+        am1.appendChild(mp1)
+        traveler.appendChild(am1)
+        svg.appendChild(traveler)
+
+        // Traveler dot 2 (delayed)
+        const traveler2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+        traveler2.setAttribute('r', '3')
+        traveler2.setAttribute('fill', a.c)
+        traveler2.setAttribute('opacity', '0.45')
+        const am2 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+        am2.setAttribute('dur', '1.8s')
+        am2.setAttribute('repeatCount', 'indefinite')
+        am2.setAttribute('calcMode', 'linear')
+        am2.setAttribute('begin', '-0.9s')
+        const mp2 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+        mp2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#path${i}`)
+        mp2.setAttribute('href', `#path${i}`)
+        am2.appendChild(mp2)
+        traveler2.appendChild(am2)
+        svg.appendChild(traveler2)
       } else {
         const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         ln.setAttribute('x1', String(nx)); ln.setAttribute('y1', String(ny))
