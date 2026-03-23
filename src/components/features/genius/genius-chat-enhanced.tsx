@@ -198,61 +198,53 @@ export function GeniusChatEnhanced({
   return (
     <div className="flex flex-col h-full bg-background rounded-xl border shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b flex items-center gap-3 bg-gradient-to-r from-card to-muted/30">
-        <div 
-          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105"
-          style={{ background: `linear-gradient(135deg, hsl(24 100% 50% / 0.3), hsl(24 100% 50% / 0.1))` }}
+      <div className="px-4 py-3 border-b flex items-center gap-2 bg-gradient-to-r from-card to-muted/30">
+        {/* Matter selector + help */}
+        <Select
+          value={selectedMatterId || 'none'}
+          onValueChange={(v) => setSelectedMatterId(v === 'none' ? undefined : v)}
         >
-          <Brain className="w-5 h-5 text-orange-500" />
-        </div>
+          <SelectTrigger className="w-[220px] h-9">
+            <Folder className="w-4 h-4 mr-2 text-muted-foreground" />
+            <span className="text-muted-foreground mr-1">Expediente:</span>
+            <SelectValue placeholder="Sin vincular" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Sin vincular</SelectItem>
+            {matters.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.reference} - {m.title || m.mark_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <HelpCircle className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs text-sm">
+              Al seleccionar un expediente, el asistente IA recibe el contexto de ese caso (datos, plazos, documentos asociados), lo que le permite dar respuestas más precisas y relevantes. Sin vincular, el chat funciona en modo general.
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <div className="flex-1" />
         
-        {/* Matter selector + help */}
-        <div className="flex items-center gap-2">
-          <Select
-            value={selectedMatterId || 'none'}
-            onValueChange={(v) => setSelectedMatterId(v === 'none' ? undefined : v)}
+        {conversationId && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleNewChat}
+            className="text-muted-foreground"
           >
-            <SelectTrigger className="w-[220px] h-9">
-              <Folder className="w-4 h-4 mr-2 text-muted-foreground" />
-              <span className="text-muted-foreground mr-1">Expediente:</span>
-              <SelectValue placeholder="Sin vincular" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Sin vincular</SelectItem>
-              {matters.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.reference} - {m.title || m.mark_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                  <HelpCircle className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs text-sm">
-                Al seleccionar un expediente, el asistente IA recibe el contexto de ese caso (datos, plazos, documentos asociados), lo que le permite dar respuestas más precisas y relevantes. Sin vincular, el chat funciona en modo general.
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          {conversationId && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleNewChat}
-              className="text-muted-foreground"
-            >
-              <RotateCcw className="w-4 h-4 mr-1" />
-              Nueva
-            </Button>
-          )}
-        </div>
+            <RotateCcw className="w-4 h-4 mr-1" />
+            Nueva
+          </Button>
+        )}
       </div>
 
       {/* Context badge */}
