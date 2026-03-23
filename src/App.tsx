@@ -541,6 +541,7 @@ const App = () => (
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
                   <Route path="chat" element={<GeniusChatPage />} />
+                  <Route path="studio" element={<AgentStudio />} />
                 </Route>
                 {/* Documents */}
                 <Route path="documentos" element={<DocumentsListPage />} />
