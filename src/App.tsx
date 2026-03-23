@@ -540,7 +540,7 @@ const App = () => (
                   <Route path="templates/edit/:id" element={<TemplateEditorPage />} />
                   <Route path="templates/generate/:id" element={<GenerateDocumentPage />} />
                   <Route path="templates/view/:documentId" element={<DocumentViewPage />} />
-                  <Route path="chat" element={<GeniusChatPage />} />
+                  {/* chat route removed — consolidated into index */}
                   <Route path="studio" element={<AgentStudio />} />
                 </Route>
                 {/* Documents */}

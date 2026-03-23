@@ -29,7 +29,7 @@ export default function GeniusLayout() {
   });
 
   useEffect(() => {
-    setTitle('IP-GENIUS PRO');
+    setTitle('IP-GENIUS');
   }, [setTitle]);
 
   if (isChecking) return null;
@@ -97,7 +97,7 @@ export default function GeniusLayout() {
                 <Brain className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">IP-GENIUS PRO</h1>
+                <h1 className="text-xl font-bold">IP-GENIUS</h1>
                 <p className="text-sm text-muted-foreground">Asistentes IA especializados en PI</p>
               </div>
             </div>

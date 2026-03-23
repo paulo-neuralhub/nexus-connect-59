@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, FileText, MessageSquare, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { GeniusChat } from '@/components/features/genius/chat';
+import { GeniusChatEnhanced } from '@/components/features/genius/genius-chat-enhanced';
 import { DocumentGenerator } from '@/components/features/genius/document-generator';
 import { useConversations, useGeneratedDocuments } from '@/hooks/use-genius';
 import type { Matter } from '@/types/matters';
@@ -64,9 +64,9 @@ export function MatterGeniusTab({ matter }: Props) {
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' && (
-          <GeniusChat
+          <GeniusChatEnhanced
             agentType="legal"
-            matterId={matter.id}
+            initialMatterId={matter.id}
           />
         )}
         
