@@ -293,7 +293,7 @@ function AgentWorkspace({
     }}>
       {/* LEFT — Agent profile */}
       <div style={{
-        width: '30%', background: '#060C18', padding: 20,
+        width: '30%', background: '#0a2540', padding: 20,
         borderRight: '1px solid #1A2E4A', display: 'flex', flexDirection: 'column',
         alignItems: 'center', color: '#E2E8F0', position: 'relative', overflow: 'hidden',
         overflowY: 'auto',
@@ -1020,7 +1020,7 @@ export function AgentStudio() {
 
         {/* Dark panel */}
         <div ref={labRef} style={{
-          position: 'relative', background: '#1E293B',
+          position: 'relative', background: '#0a2540',
           borderRadius: 22, padding: '22px 18px 18px', color: '#E2E8F0',
           border: '1px solid #1E293B',
         }}>
