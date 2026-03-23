@@ -74,6 +74,9 @@ export function GeniusChatEnhanced({
 }: Props) {
   const location = useLocation();
   const agent = AGENTS[agentType];
+  const displayName = brandName || agent.name;
+  const displayDescription = brandDescription || agent.description;
+  const displayCapabilities = brandCapabilities || agent.capabilities;
   const { toast } = useToast();
   const { currentOrganization } = useOrganization();
   const messagesEndRef = useRef<HTMLDivElement>(null);
