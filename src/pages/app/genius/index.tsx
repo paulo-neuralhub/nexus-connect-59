@@ -89,6 +89,15 @@ export default function GeniusPage() {
               agentType="legal"
               initialConversationId={conversationId}
               onConversationChange={handleConversationChange}
+              brandName="IP-GENIUS"
+              brandDescription="Tu asistente IA integral de Propiedad Intelectual"
+              brandCapabilities={[
+                'Consultas legales y análisis de registrabilidad',
+                'Gestión de expedientes y plazos',
+                'Generación de documentos legales',
+                'Vigilancia de marcas y conflictos',
+                'Análisis y resumen de documentos',
+              ]}
             />
           </div>
         </div>
