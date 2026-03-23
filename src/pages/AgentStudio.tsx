@@ -310,7 +310,7 @@ function AgentWorkspace({
         <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
 
         {/* SECTION B — KPIs operativos */}
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>MÉTRICAS HOY</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>MÉTRICAS HOY</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, width: '100%', marginBottom: 14 }}>
           {[
             { v: agent.tasks, l: 'TAREAS', c: agent.c },
