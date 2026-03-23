@@ -90,7 +90,7 @@ export default function GeniusLayout() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Header with navigation */}
+          {/* Header with Agentes button only */}
           <div className="flex items-center gap-4 border-b pb-4">
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
@@ -102,36 +102,13 @@ export default function GeniusLayout() {
               </div>
             </div>
             
-            {/* Sub-navigation */}
-            <nav className="flex items-center gap-1 ml-8 border rounded-lg p-1 bg-muted/50">
-              {geniusNav.map((item) => {
-                const Icon = item.icon;
-                const isActive = item.exact 
-                  ? location.pathname === item.path
-                  : location.pathname.startsWith(item.path);
-                
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.exact}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all",
-                      item.highlight && isActive
-                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/25"
-                        : item.highlight && !isActive
-                        ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 text-amber-600 border border-amber-500/20 hover:from-amber-500/20 hover:to-orange-500/20"
-                        : isActive
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </NavLink>
-                );
-              })}
-            </nav>
+            <NavLink
+              to="/app/genius/studio"
+              className="ml-8 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all bg-sidebar-primary text-sidebar-primary-foreground shadow-md hover:opacity-90"
+            >
+              <Cpu className="h-4 w-4" />
+              Agentes
+            </NavLink>
           </div>
 
           {/* Content */}
