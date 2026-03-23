@@ -651,6 +651,123 @@ export function AgentStudio() {
 
   const { messages, isLoading, sendMessage, clearChat } = useAgentChat()
 
+  const connSvgRef = useRef<SVGSVGElement>(null)
+  const [userName, setUserName] = useState('Usuario')
+
+  // Fetch user name
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const name = data.user?.user_metadata?.full_name
+        || data.user?.email?.split('@')[0]
+        || 'Usuario'
+      setUserName(name)
+    })
+  }, [])
+
+  // Draw user→agent connection line
+  useEffect(() => {
+    const svg = connSvgRef.current
+    if (!svg) return
+    while (svg.firstChild) svg.removeChild(svg.firstChild)
+    if (!selectedAgent || selectedAgent.id === 'nexus') return
+
+    const row = rowRef.current
+    const ws = workspaceRef.current
+    if (!row || !ws) return
+
+    const svgRect = svg.getBoundingClientRect()
+    const agentIdx = agents.findIndex(a => a.id === selectedAgent.id)
+    if (agentIdx < 0) return
+    const cardEl = row.children[agentIdx] as HTMLElement
+    if (!cardEl) return
+
+    const cb = cardEl.getBoundingClientRect()
+    const wb = ws.getBoundingClientRect()
+
+    const ox = cb.left + cb.width / 2 - svgRect.left
+    const oy = cb.bottom - svgRect.top
+    const dx = wb.left + wb.width * 0.15 - svgRect.left
+    const dy = wb.top - svgRect.top
+
+    const ac = selectedAgent.c
+
+    // Defs
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient')
+    grad.id = 'userconn'
+    grad.setAttribute('gradientUnits', 'userSpaceOnUse')
+    grad.setAttribute('x1', String(ox)); grad.setAttribute('y1', String(oy))
+    grad.setAttribute('x2', String(dx)); grad.setAttribute('y2', String(dy))
+    const gs1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+    gs1.setAttribute('offset', '0%'); gs1.setAttribute('stop-color', '#FFFFFF'); gs1.setAttribute('stop-opacity', '0.9')
+    const gs2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+    gs2.setAttribute('offset', '100%'); gs2.setAttribute('stop-color', ac); gs2.setAttribute('stop-opacity', '0.9')
+    grad.appendChild(gs1); grad.appendChild(gs2); defs.appendChild(grad)
+    svg.appendChild(defs)
+
+    // Main line
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    ln.setAttribute('x1', String(ox)); ln.setAttribute('y1', String(oy))
+    ln.setAttribute('x2', String(dx)); ln.setAttribute('y2', String(dy))
+    ln.setAttribute('stroke', 'url(#userconn)'); ln.setAttribute('stroke-width', '2.5')
+    ln.setAttribute('stroke-dasharray', '10 6')
+    ln.style.animation = 'cf 1.8s linear infinite'
+    svg.appendChild(ln)
+
+    // Origin dot (white)
+    const od = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    od.setAttribute('cx', String(ox)); od.setAttribute('cy', String(oy))
+    od.setAttribute('r', '5'); od.setAttribute('fill', '#fff'); od.setAttribute('opacity', '0.85')
+    svg.appendChild(od)
+
+    // Destination dot (agent color) + ping
+    const dd = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    dd.setAttribute('cx', String(dx)); dd.setAttribute('cy', String(dy))
+    dd.setAttribute('r', '5'); dd.setAttribute('fill', ac); dd.setAttribute('opacity', '0.9')
+    svg.appendChild(dd)
+
+    const ping = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    ping.setAttribute('cx', String(dx)); ping.setAttribute('cy', String(dy))
+    ping.setAttribute('fill', 'none'); ping.setAttribute('stroke', ac); ping.setAttribute('stroke-width', '1.5')
+    const pAnR = document.createElementNS('http://www.w3.org/2000/svg', 'animate')
+    pAnR.setAttribute('attributeName', 'r'); pAnR.setAttribute('from', '5'); pAnR.setAttribute('to', '20')
+    pAnR.setAttribute('dur', '2s'); pAnR.setAttribute('repeatCount', 'indefinite')
+    const pAnO = document.createElementNS('http://www.w3.org/2000/svg', 'animate')
+    pAnO.setAttribute('attributeName', 'opacity'); pAnO.setAttribute('from', '.8'); pAnO.setAttribute('to', '0')
+    pAnO.setAttribute('dur', '2s'); pAnO.setAttribute('repeatCount', 'indefinite')
+    ping.appendChild(pAnR); ping.appendChild(pAnO)
+    svg.appendChild(ping)
+
+    // Reverse path (workspace → card = user commands agent)
+    const revPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    revPath.setAttribute('id', 'ucpath')
+    revPath.setAttribute('d', `M ${dx} ${dy} L ${ox} ${oy}`)
+    revPath.setAttribute('fill', 'none'); revPath.setAttribute('stroke', 'none')
+    svg.appendChild(revPath)
+
+    // Traveler 1 (up)
+    const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    t1.setAttribute('r', '3.5'); t1.setAttribute('fill', '#93C5FD'); t1.setAttribute('opacity', '0.9')
+    const tam1 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+    tam1.setAttribute('dur', '2s'); tam1.setAttribute('repeatCount', 'indefinite')
+    tam1.setAttribute('begin', '-1s')
+    const tmp1 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+    tmp1.setAttribute('href', '#ucpath')
+    tam1.appendChild(tmp1); t1.appendChild(tam1)
+    svg.appendChild(t1)
+
+    // Traveler 2 (up, delayed)
+    const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    t2.setAttribute('r', '2.5'); t2.setAttribute('fill', '#BFDBFE'); t2.setAttribute('opacity', '0.6')
+    const tam2 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+    tam2.setAttribute('dur', '2s'); tam2.setAttribute('repeatCount', 'indefinite')
+    tam2.setAttribute('begin', '0s')
+    const tmp2 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+    tmp2.setAttribute('href', '#ucpath')
+    tam2.appendChild(tmp2); t2.appendChild(tam2)
+    svg.appendChild(t2)
+  }, [selectedAgent, agents])
+
   // Cargar stats reales
   useEffect(() => {
     const load = async () => {
