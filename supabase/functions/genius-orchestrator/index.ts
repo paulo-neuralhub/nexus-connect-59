@@ -145,23 +145,47 @@ serve(async (req) => {
 
     const orgId = profile.organization_id as string;
     const body  = await req.json();
-    const { goal, workflow_type, matter_id = null,
-            client_id = null, context = {} } = body;
+    const {
+      goal, workflow_type,
+      matter_id = null, client_id = null,
+      context = {},
+      workflow_id: existingWorkflowId = null,
+      resume = false,
+    } = body;
 
     if (!goal || !workflow_type) return new Response(
       JSON.stringify({ error: "goal and workflow_type required" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    // Create workflow run
-    const { data: run, error: runErr } = await db
-      .from("genius_workflow_runs")
-      .insert({ organization_id: orgId, user_id: user.id,
-                workflow_type, goal_text: goal,
-                matter_id, client_id, status: "planning" })
-      .select("id, trace_id").single();
-    if (runErr || !run) throw new Error("Failed to create workflow run");
+    let wfId: string;
+    let traceId: string;
 
-    const wfId = run.id as string;
+    if (resume && existingWorkflowId) {
+      // Retomar workflow existente desde el paso siguiente
+      const { data: existing } = await db
+        .from("genius_workflow_runs")
+        .select("id, trace_id, plan_json, current_step")
+        .eq("id", existingWorkflowId)
+        .eq("organization_id", orgId)
+        .single();
+
+      if (!existing) throw new Error("Workflow not found for resume");
+      wfId = existing.id as string;
+      traceId = existing.trace_id as string;
+    } else {
+      // Crear nuevo workflow run
+      const { data: run, error: runErr } = await db
+        .from("genius_workflow_runs")
+        .insert({
+          organization_id: orgId, user_id: user.id,
+          workflow_type, goal_text: goal,
+          matter_id, client_id, status: "planning",
+        })
+        .select("id, trace_id").single();
+      if (runErr || !run) throw new Error("Failed to create workflow run");
+      wfId = run.id as string;
+      traceId = run.trace_id as string;
+    }
 
     // ── Return 202 immediately ────────────────────────────
     // Background execution via EdgeRuntime.waitUntil if available
