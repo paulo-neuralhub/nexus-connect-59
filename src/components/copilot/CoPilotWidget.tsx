@@ -640,7 +640,7 @@ export function CoPilotWidget() {
                 background: '#FAFBFC',
               }}
             >
-              {messages.length === 0 && (
+              {messages.length === 0 && !activeWorkflow && !isStarting && (
                 <div style={{ textAlign: 'center', padding: '28px 16px' }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: '#1F2937', marginBottom: 6 }}>
