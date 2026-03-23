@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAgentBrain } from '@/hooks/use-agent-brain'
+import { useWorkflow } from '@/hooks/workflow/use-workflow'
+import type { WorkflowType } from '@/hooks/workflow/use-workflow'
+import { WorkflowPanel } from '@/components/copilot/WorkflowPanel'
 
 // ── Inyectar CSS en el <head> del documento ──────────────
 const CSS_ID = 'copilot-widget-styles'
