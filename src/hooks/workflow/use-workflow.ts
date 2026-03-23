@@ -191,13 +191,38 @@ export function useWorkflow() {
   const approveWorkflow = useCallback(
     async (workflowId: string): Promise<void> => {
       try {
+        // 1. Marcar como aprobado en la BD
         await supabase
           .from('genius_workflow_runs')
           .update({
             status: 'running',
             approved_at: new Date().toISOString(),
+            approval_payload: null,
           })
           .eq('id', workflowId)
+
+        // 2. Obtener el workflow para retomar contexto
+        const { data: wf } = await supabase
+          .from('genius_workflow_runs')
+          .select('goal_text, workflow_type, matter_id, client_id, plan_json, current_step')
+          .eq('id', workflowId)
+          .single()
+
+        if (!wf) throw new Error('Workflow not found')
+
+        // 3. Retomar la ejecución desde el siguiente paso
+        await supabase.functions.invoke('genius-orchestrator', {
+          body: {
+            workflow_id: workflowId,
+            resume: true,
+            goal: wf.goal_text,
+            workflow_type: wf.workflow_type,
+            matter_id: wf.matter_id,
+            client_id: wf.client_id,
+          },
+        })
+
+        // 4. Reanudar polling
         startPolling(workflowId)
       } catch (e) {
         console.error('[useWorkflow] approve error:', e)
