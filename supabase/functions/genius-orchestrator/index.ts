@@ -255,7 +255,7 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
         // Execute steps
         const results: Record<string, unknown> = {};
 
-        let i = 0;
+        let i = startFromStep;
         while (i < steps.length) {
           const step = steps[i];
 
