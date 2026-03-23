@@ -27283,6 +27283,30 @@ export type Database = {
         }
         Relationships: []
       }
+      superadmins: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       surveillance_alerts: {
         Row: {
           action_notes: string | null
