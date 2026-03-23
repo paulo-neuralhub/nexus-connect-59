@@ -174,7 +174,20 @@ export default function GeniusDashboard() {
           </TabsList>
 
           <TabsContent value="chat" className="mt-4">
-            <GeniusChatTab />
+            <div className="h-[calc(100vh-22rem)] overflow-hidden">
+              <GeniusChatEnhanced
+                agentType="legal"
+                brandName="IP-GENIUS"
+                brandDescription="Tu asistente IA integral de Propiedad Intelectual"
+                brandCapabilities={[
+                  'Consultas legales y análisis de registrabilidad',
+                  'Gestión de expedientes y plazos',
+                  'Generación de documentos legales',
+                  'Vigilancia de marcas y conflictos',
+                  'Análisis y resumen de documentos',
+                ]}
+              />
+            </div>
           </TabsContent>
           <TabsContent value="documents" className="mt-4">
             <GeniusDocumentsTab />
