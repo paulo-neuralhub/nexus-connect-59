@@ -327,7 +327,7 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
 
           // Execute group in parallel
           const settled = await Promise.allSettled(
-            group.map(s => executeStep(s, matter_id, orgId, { ...context, ...results, workflow_type, user_id: user.id }))
+            group.map(s => executeStep(s, matter_id, orgId, user.id, { ...context, ...results, workflow_type }))
           );
 
           settled.forEach((r, idx) => {
