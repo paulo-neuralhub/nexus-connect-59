@@ -264,10 +264,10 @@ function useAgentChat() {
 
 // ─── AgentWorkspace ────────────────────────────────────────
 function AgentWorkspace({
-  agent, messages, isLoading, onSend, onClose,
+  agent, messages, isLoading, onSend, onClose, userName,
 }: {
   agent: AgentData; messages: ChatMsg[]; isLoading: boolean;
-  onSend: (text: string) => void; onClose: () => void;
+  onSend: (text: string) => void; onClose: () => void; userName: string;
 }) {
   const [input, setInput] = useState('')
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -374,15 +374,44 @@ function AgentWorkspace({
           padding: '12px 16px', borderBottom: '1px solid #E2E8F0',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
+          {/* Left: connection indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%', background: agent.c,
               animation: 'pls 2s ease-in-out infinite',
             }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#1E293B' }}>
-              Conectado con {agent.name}
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#1E293B' }}>
+                Conectado con {agent.name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                <div style={{
+                  width: 5, height: 5, borderRadius: '50%', background: '#22C55E',
+                  animation: 'pls 2s ease-in-out infinite',
+                }} />
+                <span style={{ fontSize: 10, color: '#64748B' }}>
+                  {userName} · al mando de {agent.name}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Center: active session badge */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+            borderRadius: 20, padding: '4px 12px',
+          }}>
+            <div style={{
+              width: 5, height: 5, borderRadius: '50%', background: '#22C55E',
+              animation: 'pls 2s ease-in-out infinite',
+            }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: '#22C55E', letterSpacing: '0.05em' }}>
+              SESIÓN ACTIVA
             </span>
           </div>
+
+          {/* Right: close */}
           <button onClick={onClose} style={{
             width: 24, height: 24, borderRadius: '50%', border: '1px solid #E2E8F0',
             background: '#fff', cursor: 'pointer', fontSize: 11, color: '#94A3B8',
@@ -651,6 +680,123 @@ export function AgentStudio() {
 
   const { messages, isLoading, sendMessage, clearChat } = useAgentChat()
 
+  const connSvgRef = useRef<SVGSVGElement>(null)
+  const [userName, setUserName] = useState('Usuario')
+
+  // Fetch user name
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const name = data.user?.user_metadata?.full_name
+        || data.user?.email?.split('@')[0]
+        || 'Usuario'
+      setUserName(name)
+    })
+  }, [])
+
+  // Draw user→agent connection line
+  useEffect(() => {
+    const svg = connSvgRef.current
+    if (!svg) return
+    while (svg.firstChild) svg.removeChild(svg.firstChild)
+    if (!selectedAgent || selectedAgent.id === 'nexus') return
+
+    const row = rowRef.current
+    const ws = workspaceRef.current
+    if (!row || !ws) return
+
+    const svgRect = svg.getBoundingClientRect()
+    const agentIdx = agents.findIndex(a => a.id === selectedAgent.id)
+    if (agentIdx < 0) return
+    const cardEl = row.children[agentIdx] as HTMLElement
+    if (!cardEl) return
+
+    const cb = cardEl.getBoundingClientRect()
+    const wb = ws.getBoundingClientRect()
+
+    const ox = cb.left + cb.width / 2 - svgRect.left
+    const oy = cb.bottom - svgRect.top
+    const dx = wb.left + wb.width * 0.15 - svgRect.left
+    const dy = wb.top - svgRect.top
+
+    const ac = selectedAgent.c
+
+    // Defs
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient')
+    grad.id = 'userconn'
+    grad.setAttribute('gradientUnits', 'userSpaceOnUse')
+    grad.setAttribute('x1', String(ox)); grad.setAttribute('y1', String(oy))
+    grad.setAttribute('x2', String(dx)); grad.setAttribute('y2', String(dy))
+    const gs1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+    gs1.setAttribute('offset', '0%'); gs1.setAttribute('stop-color', '#FFFFFF'); gs1.setAttribute('stop-opacity', '0.9')
+    const gs2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+    gs2.setAttribute('offset', '100%'); gs2.setAttribute('stop-color', ac); gs2.setAttribute('stop-opacity', '0.9')
+    grad.appendChild(gs1); grad.appendChild(gs2); defs.appendChild(grad)
+    svg.appendChild(defs)
+
+    // Main line
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    ln.setAttribute('x1', String(ox)); ln.setAttribute('y1', String(oy))
+    ln.setAttribute('x2', String(dx)); ln.setAttribute('y2', String(dy))
+    ln.setAttribute('stroke', 'url(#userconn)'); ln.setAttribute('stroke-width', '2.5')
+    ln.setAttribute('stroke-dasharray', '10 6')
+    ln.style.animation = 'cf 1.8s linear infinite'
+    svg.appendChild(ln)
+
+    // Origin dot (white)
+    const od = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    od.setAttribute('cx', String(ox)); od.setAttribute('cy', String(oy))
+    od.setAttribute('r', '5'); od.setAttribute('fill', '#fff'); od.setAttribute('opacity', '0.85')
+    svg.appendChild(od)
+
+    // Destination dot (agent color) + ping
+    const dd = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    dd.setAttribute('cx', String(dx)); dd.setAttribute('cy', String(dy))
+    dd.setAttribute('r', '5'); dd.setAttribute('fill', ac); dd.setAttribute('opacity', '0.9')
+    svg.appendChild(dd)
+
+    const ping = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    ping.setAttribute('cx', String(dx)); ping.setAttribute('cy', String(dy))
+    ping.setAttribute('fill', 'none'); ping.setAttribute('stroke', ac); ping.setAttribute('stroke-width', '1.5')
+    const pAnR = document.createElementNS('http://www.w3.org/2000/svg', 'animate')
+    pAnR.setAttribute('attributeName', 'r'); pAnR.setAttribute('from', '5'); pAnR.setAttribute('to', '20')
+    pAnR.setAttribute('dur', '2s'); pAnR.setAttribute('repeatCount', 'indefinite')
+    const pAnO = document.createElementNS('http://www.w3.org/2000/svg', 'animate')
+    pAnO.setAttribute('attributeName', 'opacity'); pAnO.setAttribute('from', '.8'); pAnO.setAttribute('to', '0')
+    pAnO.setAttribute('dur', '2s'); pAnO.setAttribute('repeatCount', 'indefinite')
+    ping.appendChild(pAnR); ping.appendChild(pAnO)
+    svg.appendChild(ping)
+
+    // Reverse path (workspace → card = user commands agent)
+    const revPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    revPath.setAttribute('id', 'ucpath')
+    revPath.setAttribute('d', `M ${dx} ${dy} L ${ox} ${oy}`)
+    revPath.setAttribute('fill', 'none'); revPath.setAttribute('stroke', 'none')
+    svg.appendChild(revPath)
+
+    // Traveler 1 (up)
+    const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    t1.setAttribute('r', '3.5'); t1.setAttribute('fill', '#93C5FD'); t1.setAttribute('opacity', '0.9')
+    const tam1 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+    tam1.setAttribute('dur', '2s'); tam1.setAttribute('repeatCount', 'indefinite')
+    tam1.setAttribute('begin', '-1s')
+    const tmp1 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+    tmp1.setAttribute('href', '#ucpath')
+    tam1.appendChild(tmp1); t1.appendChild(tam1)
+    svg.appendChild(t1)
+
+    // Traveler 2 (up, delayed)
+    const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    t2.setAttribute('r', '2.5'); t2.setAttribute('fill', '#BFDBFE'); t2.setAttribute('opacity', '0.6')
+    const tam2 = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')
+    tam2.setAttribute('dur', '2s'); tam2.setAttribute('repeatCount', 'indefinite')
+    tam2.setAttribute('begin', '0s')
+    const tmp2 = document.createElementNS('http://www.w3.org/2000/svg', 'mpath')
+    tmp2.setAttribute('href', '#ucpath')
+    tam2.appendChild(tmp2); t2.appendChild(tam2)
+    svg.appendChild(t2)
+  }, [selectedAgent, agents])
+
   // Cargar stats reales
   useEffect(() => {
     const load = async () => {
@@ -864,6 +1010,7 @@ export function AgentStudio() {
       <div style={{
         background: '#F8FAFC', minHeight: '100%', padding: '24px',
         fontFamily: "'Inter','SF Pro Display',sans-serif",
+        position: 'relative',
       }}>
         {/* Page header */}
         <div style={{ marginBottom: 20 }}>
@@ -873,9 +1020,9 @@ export function AgentStudio() {
 
         {/* Dark panel */}
         <div ref={labRef} style={{
-          position: 'relative', background: 'linear-gradient(180deg, #0D1829 0%, #0A1220 100%)',
+          position: 'relative', background: '#0F172A',
           borderRadius: 22, padding: '22px 18px 18px', color: '#E2E8F0',
-          border: '1px solid #1E3A5F',
+          border: '1px solid #1E293B',
         }}>
           {/* Fondo grid */}
           <div style={{
@@ -1015,15 +1162,23 @@ export function AgentStudio() {
 
         {/* Workspace panel — below dark panel */}
         {selectedAgent && selectedAgent.id !== 'nexus' && (
-          <div ref={workspaceRef} style={{ marginTop: 16 }}>
-            <AgentWorkspace
-              agent={selectedAgent}
-              messages={messages}
-              isLoading={isLoading}
-              onSend={(text) => sendMessage(text, selectedAgent.id)}
-              onClose={() => { setSelectedAgent(null); clearChat() }}
-            />
-          </div>
+          <>
+            {/* SVG connection: card → workspace */}
+            <svg ref={connSvgRef} style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              pointerEvents: 'none', zIndex: 50,
+            }} />
+            <div ref={workspaceRef} style={{ marginTop: 16 }}>
+              <AgentWorkspace
+                agent={selectedAgent}
+                messages={messages}
+                isLoading={isLoading}
+                onSend={(text) => sendMessage(text, selectedAgent.id)}
+                onClose={() => { setSelectedAgent(null); clearChat() }}
+                userName={userName}
+              />
+            </div>
+          </>
         )}
       </div>{/* end light wrapper */}
     </>
