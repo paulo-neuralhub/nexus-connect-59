@@ -288,13 +288,13 @@ function AgentWorkspace({
   return (
     <div style={{
       display: 'flex', borderRadius: 18, overflow: 'hidden',
-      border: '1px solid #0f4c75', animation: 'wsIn .3s ease-out',
+      border: '2px solid #0f4c75', animation: 'wsIn .3s ease-out',
       height: 480,
     }}>
       {/* LEFT — Agent profile */}
       <div style={{
         width: '30%', background: 'linear-gradient(180deg, #0a2540 0%, #0f4c75 50%, #145374 100%)', padding: 20,
-        borderRight: '1px solid #0f4c75', display: 'flex', flexDirection: 'column',
+        borderRight: '2px solid #0f4c75', display: 'flex', flexDirection: 'column',
         alignItems: 'center', color: '#E2E8F0', position: 'relative', overflow: 'hidden',
         overflowY: 'auto',
       }}>
@@ -310,7 +310,7 @@ function AgentWorkspace({
         <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
 
         {/* SECTION B — KPIs operativos */}
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>MÉTRICAS HOY</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>MÉTRICAS HOY</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, width: '100%', marginBottom: 14 }}>
           {[
             { v: agent.tasks, l: 'TAREAS', c: agent.c },
@@ -321,17 +321,17 @@ function AgentWorkspace({
             { v: `${Math.floor(agent.tasks * 0.8)}h`, l: 'USO TOTAL', c: '#8B5CF6' },
           ].map(({ v, l, c: kc }) => (
             <div key={l} style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 8, padding: '8px 6px', textAlign: 'center',
             }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: kc }}>{v}</div>
-              <div style={{ fontSize: 7.5, color: '#3A5570', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{l}</div>
+              <div style={{ fontSize: 7.5, color: '#8EAFC6', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{l}</div>
             </div>
           ))}
         </div>
 
         {/* SECTION C — Capabilities & Status */}
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESPECIALIDADES</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESPECIALIDADES</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12, width: '100%' }}>
           {agent.caps.map((cap, i) => (
             <div key={i} style={{
@@ -343,10 +343,10 @@ function AgentWorkspace({
         </div>
         <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 12 }} />
 
-        <div style={{ fontSize: 8, fontWeight: 700, color: '#3A5570', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESTADO ACTUAL</div>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#8EAFC6', letterSpacing: '0.08em', textTransform: 'uppercase' as const, alignSelf: 'flex-start', marginBottom: 8 }}>ESTADO ACTUAL</div>
         <div style={{
-          width: '100%', background: agent.active ? 'rgba(34,197,94,0.07)' : 'rgba(100,116,139,0.07)',
-          border: `1px solid ${agent.active ? 'rgba(34,197,94,0.15)' : 'rgba(100,116,139,0.15)'}`,
+          width: '100%', background: agent.active ? 'rgba(34,197,94,0.12)' : 'rgba(100,116,139,0.12)',
+          border: `1px solid ${agent.active ? 'rgba(34,197,94,0.25)' : 'rgba(100,116,139,0.2)'}`,
           borderRadius: 8, padding: '8px 10px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -359,7 +359,7 @@ function AgentWorkspace({
               {agent.active ? 'Procesando en tiempo real' : 'En espera de instrucción'}
             </span>
           </div>
-          <div style={{ fontSize: 9, color: '#3A5570', marginTop: 4, paddingLeft: 14 }}>
+          <div style={{ fontSize: 9, color: '#8EAFC6', marginTop: 4, paddingLeft: 14 }}>
             Última actividad: hace {Math.floor(Math.random() * 15) + 1} min
           </div>
         </div>
