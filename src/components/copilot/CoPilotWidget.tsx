@@ -153,6 +153,10 @@ export function CoPilotWidget() {
 
   // 'chat' | 'workflow' — nunca ambos visibles simultáneamente
   const [panelMode, setPanelMode] = useState<'chat' | 'workflow'>('chat')
+  const [pendingWorkflow, setPendingWorkflow] = useState<{
+    type: WorkflowType
+    goal: string
+  } | null>(null)
 
   // Cuando workflow completa → insertar resumen en el chat
   useEffect(() => {
