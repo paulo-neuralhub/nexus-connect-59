@@ -20,7 +20,7 @@ import {
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
   Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench,
-  Users2, KanbanSquare
+  Users2, KanbanSquare, Cpu
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
