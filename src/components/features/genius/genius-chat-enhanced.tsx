@@ -410,9 +410,9 @@ function EmptyState({
     <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
       <div 
         className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform hover:scale-105"
-        style={{ background: `linear-gradient(135deg, ${agent.color}40, ${agent.color}10)` }}
+        style={{ background: `linear-gradient(135deg, hsl(24 100% 50% / 0.4), hsl(24 100% 50% / 0.1))` }}
       >
-        <Brain className="w-10 h-10 animate-pulse" style={{ color: agent.color }} />
+        <Brain className="w-10 h-10 animate-pulse text-orange-500" />
       </div>
       <h3 className="text-2xl font-bold text-foreground mb-2">
         ¡Hola! Soy {displayName}
