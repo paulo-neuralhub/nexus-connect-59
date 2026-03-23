@@ -355,7 +355,7 @@ ${memCtx ? `\nMEMORIA:\n${memCtx}` : ""}`,
     }
 
     return new Response(
-      JSON.stringify({ workflow_id: wfId, trace_id: run.trace_id, status: "planning" }),
+      JSON.stringify({ workflow_id: wfId, trace_id: traceId, status: "planning" }),
       { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
