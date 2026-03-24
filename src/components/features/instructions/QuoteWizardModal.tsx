@@ -395,6 +395,11 @@ export function QuoteWizardModal({
       html = generateDefaultPreview();
     }
 
+    // Convert Markdown to HTML if template uses markdown syntax
+    if (html.includes('# ') || html.includes('**') || html.includes('| ')) {
+      html = marked(html, { async: false }) as string;
+    }
+
     return html;
   }, [templates, selectedTemplateId, lines, quoteNumber, quoteDate, validityDate, account, org, instruction, subtotal, discount, discountAmount, taxableBase, taxRate, taxAmount, irpfAmount, total, notes, includeVat, validityDays]);
 
@@ -859,17 +864,9 @@ export function QuoteWizardModal({
                 style={{ maxHeight: '65vh' }}
               >
                 <div
-                  className="bg-white rounded shadow-[0_4px_24px_rgba(0,0,0,0.10)] mx-auto"
-                  style={{
-                    fontFamily: 'Georgia, serif',
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    maxWidth: '700px',
-                    padding: '48px',
-                    borderRadius: '4px',
-                  }}
-                  dangerouslySetInnerHTML={{ __html: renderedHtml }}
-                />
+                   className="preview-document bg-white rounded shadow-[0_4px_24px_rgba(0,0,0,0.10)] mx-auto"
+                   dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                 />
               </div>
             )}
 
