@@ -116,20 +116,24 @@ export function NewInstructionModal({ open, onOpenChange }: Props) {
   };
 
   const handleCreate = async (asDraft = false) => {
-    const title = markName || inventionTitle || 'Nueva instrucción';
-    await createInstruction.mutateAsync({
-      title,
-      description,
-      instruction_type: serviceType || 'other',
-      crm_account_id: clientId || undefined,
-      source: channel,
-      is_urgent: urgency !== 'normal',
-      deadline_date: deadlineDate || undefined,
-      jurisdictions: selectedJurisdictions,
-      status: asDraft ? 'draft' : 'sent',
-    });
-    onOpenChange(false);
-    resetForm();
+    try {
+      const title = markName || inventionTitle || 'Nueva instrucción';
+      await createInstruction.mutateAsync({
+        title,
+        description,
+        instruction_type: serviceType || 'other',
+        crm_account_id: clientId || undefined,
+        source: channel,
+        is_urgent: urgency !== 'normal',
+        deadline_date: deadlineDate || undefined,
+        jurisdictions: selectedJurisdictions,
+        status: asDraft ? 'draft' : 'sent',
+      });
+      onOpenChange(false);
+      resetForm();
+    } catch (err: any) {
+      console.error('[NewInstruction] Create failed:', err?.message || err);
+    }
   };
 
   const resetForm = () => {
