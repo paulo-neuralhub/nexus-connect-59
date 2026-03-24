@@ -19,7 +19,7 @@ import {
 import {
   ArrowLeft, Edit, Star, MoreHorizontal, Mail, Phone,
   Archive, Trash2, Building2, Users, Briefcase, TrendingUp,
-  Clock, FileText, AlertTriangle, Globe
+  Clock, FileText, AlertTriangle, Globe, ClipboardList
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -35,6 +35,7 @@ import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
 import { AccountAgentTab } from "./tabs/AccountAgentTab";
 import { AccountPortalTab } from "./tabs/AccountPortalTab";
+import { AccountInstructionsTab } from "./tabs/AccountInstructionsTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
 import { openSoftphone } from "@/components/telephony/IPSoftphone";
@@ -199,6 +200,9 @@ export default function CRMV2AccountDetail() {
                       <Users className="w-3.5 h-3.5" /> Agente
                     </TabsTrigger>
                   )}
+                  <TabsTrigger value="instructions" className="gap-1.5">
+                    <ClipboardList className="w-3.5 h-3.5" /> Instrucciones
+                  </TabsTrigger>
                   <TabsTrigger value="portal" className="gap-1.5">
                     <Globe className="w-3.5 h-3.5" /> Portal
                   </TabsTrigger>
@@ -251,6 +255,10 @@ export default function CRMV2AccountDetail() {
                     />
                   </TabsContent>
                 )}
+
+                <TabsContent value="instructions">
+                  <AccountInstructionsTab accountId={id} accountName={account.name} />
+                </TabsContent>
 
                 <TabsContent value="portal">
                   <AccountPortalTab accountId={id} accountName={account.name} />
