@@ -85,7 +85,7 @@ export function ClientTimeline({ clientId, onClose }: ClientTimelineProps) {
           ),
           metadata
         `)
-        .eq('client_id', clientId)
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
         .order('created_at', { ascending: false })
         .limit(50);
 

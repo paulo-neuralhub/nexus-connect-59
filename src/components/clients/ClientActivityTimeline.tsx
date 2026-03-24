@@ -59,7 +59,7 @@ export function ClientActivityTimeline({ clientId }: ClientActivityTimelineProps
         const { data: comms } = await supabase
           .from('communications')
           .select('id, channel, direction, subject, body_preview, received_at, created_at')
-          .eq('client_id', clientId)
+          .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
           .eq('organization_id', currentOrganization.id)
           .order('received_at', { ascending: false })
           .range(pageParam, pageParam + PAGE_SIZE - 1);

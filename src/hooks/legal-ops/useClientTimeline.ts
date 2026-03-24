@@ -54,7 +54,7 @@ export function useClientTimeline(
           id, channel, direction, subject, body_preview, received_at,
           ai_category, is_read, attachments
         `)
-        .eq('client_id', clientId)
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
         .eq('organization_id', organizationId)
         .order('received_at', { ascending: false })
         .range(pageParam, pageParam + PAGE_SIZE - 1);

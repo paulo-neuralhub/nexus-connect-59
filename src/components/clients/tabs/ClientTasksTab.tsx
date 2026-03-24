@@ -59,7 +59,7 @@ export function ClientTasksTab({ clientId }: ClientTasksTabProps) {
       // Get matters for this client first
       const { data: matters } = await fromTable('matters')
         .select('id')
-        .eq('client_id', clientId);
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`);
 
       if (!matters?.length) return [];
 

@@ -60,13 +60,14 @@ export function useSoftphoneSearch(query: string) {
           let matterCounts: Record<string, number> = {};
           if (accountIds.length > 0) {
             const { data: matters } = await fromTable("matters")
-              .select("client_id")
-              .in("client_id", accountIds)
+              .select("client_id, crm_account_id")
+              .or(accountIds.map(id => `client_id.eq.${id},crm_account_id.eq.${id}`).join(','))
               .not("status", "in", "(closed,archived)");
             
             if (matters) {
               matters.forEach((m: any) => {
-                matterCounts[m.client_id] = (matterCounts[m.client_id] || 0) + 1;
+                const key = m.crm_account_id || m.client_id;
+                if (key) matterCounts[key] = (matterCounts[key] || 0) + 1;
               });
             }
           }
@@ -118,13 +119,14 @@ export function useSoftphoneSearch(query: string) {
             }
 
             const { data: matters } = await fromTable("matters")
-              .select("client_id")
-              .in("client_id", accountIds)
+              .select("client_id, crm_account_id")
+              .or(accountIds.map(id => `client_id.eq.${id},crm_account_id.eq.${id}`).join(','))
               .not("status", "in", "(closed,archived)");
             
             if (matters) {
               matters.forEach((m: any) => {
-                matterCounts[m.client_id] = (matterCounts[m.client_id] || 0) + 1;
+                const key = m.crm_account_id || m.client_id;
+                if (key) matterCounts[key] = (matterCounts[key] || 0) + 1;
               });
             }
           }

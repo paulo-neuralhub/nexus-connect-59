@@ -66,7 +66,7 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
     queryFn: async () => {
       const { data } = await (supabase.from('matters') as any)
         .select('id, title, reference, type, status, portal_visible, portal_show_deadlines, portal_show_costs, portal_certificate_generated')
-        .eq('client_id', accountId)
+        .or(`client_id.eq.${accountId},crm_account_id.eq.${accountId}`)
         .eq('organization_id', organizationId)
         .order('created_at', { ascending: false });
       return data || [];

@@ -51,7 +51,7 @@ export function ClientCommunicationsTab({ clientId }: ClientCommunicationsTabPro
           received_at, matter_id,
           matter:matter_id (reference, mark_name)
         `)
-        .eq('client_id', clientId)
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
         .order('received_at', { ascending: false })
         .limit(100);
 
@@ -61,10 +61,11 @@ export function ClientCommunicationsTab({ clientId }: ClientCommunicationsTabPro
           id, channel, direction, subject, body_preview,
           email_from, email_to, whatsapp_from, whatsapp_to, phone_from, phone_to,
           received_at, matter_id,
-          matter:matter_id!inner (reference, mark_name, client_id)
+          matter:matter_id!inner (reference, mark_name, client_id, crm_account_id)
         `)
-        .eq('matter.client_id', clientId)
+        .or(`matter.client_id.eq.${clientId},matter.crm_account_id.eq.${clientId}`)
         .is('client_id', null)
+        .is('crm_account_id', null)
         .order('received_at', { ascending: false })
         .limit(100);
 

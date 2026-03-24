@@ -140,7 +140,7 @@ export function useClientActivity(clientId: string, options?: { category?: strin
           *,
           creator:users!activity_log_created_by_fkey(id, full_name, avatar_url)
         `)
-        .eq('client_id', clientId)
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
         .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false });
 
