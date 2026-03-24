@@ -45,7 +45,7 @@ export function usePortalDocuments(categoryFilter?: string) {
       // Get matters for this client
       const { data: matterIds } = await fromTable('matters')
         .select('id')
-        .eq('client_id', user.contactId)
+        .or(`client_id.eq.${user.contactId},crm_account_id.eq.${user.contactId}`)
         .eq('portal_visible', true);
 
       if (!matterIds || matterIds.length === 0) return [];

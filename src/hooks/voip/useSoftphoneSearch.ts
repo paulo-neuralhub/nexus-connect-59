@@ -66,7 +66,8 @@ export function useSoftphoneSearch(query: string) {
             
             if (matters) {
               matters.forEach((m: any) => {
-                matterCounts[m.client_id] = (matterCounts[m.client_id] || 0) + 1;
+                const key = m.crm_account_id || m.client_id;
+                if (key) matterCounts[key] = (matterCounts[key] || 0) + 1;
               });
             }
           }

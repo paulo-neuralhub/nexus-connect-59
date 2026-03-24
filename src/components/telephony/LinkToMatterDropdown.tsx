@@ -50,7 +50,7 @@ export function LinkToMatterDropdown({
         .from('matters')
         .select('id, title, reference_number, status')
         .eq('organization_id', currentOrganization?.id ?? '')
-        .eq('client_id', accountId)
+        .or(`client_id.eq.${accountId},crm_account_id.eq.${accountId}`)
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;

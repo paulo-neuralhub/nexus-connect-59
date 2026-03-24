@@ -88,7 +88,7 @@ export function ClientWhatsAppTimeline({
         .from('whatsapp_messages')
         .select('*')
         .eq('organization_id', currentOrganization.id)
-        .eq('client_id', clientId)
+        .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`)
         .order('timestamp', { ascending: true })
         .limit(100);
 
