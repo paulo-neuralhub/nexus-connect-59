@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sparkles, ArrowLeft, ArrowRight, Check, Mail, MessageCircle, Globe, Phone, Video, FileText, Loader2 } from 'lucide-react';
 import { useCreateInstruction } from '@/hooks/use-instructions';
-import { useAccounts } from '@/hooks/crm/v2/useAccounts';
+import { useCRMAccounts } from '@/hooks/crm/v2/accounts';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -58,7 +58,7 @@ const JURISDICTION_GROUPS = {
 export function NewInstructionModal({ open, onOpenChange }: Props) {
   const [step, setStep] = useState(1);
   const createInstruction = useCreateInstruction();
-  const { data: accounts = [] } = useAccounts();
+  const { data: accounts = [] } = useCRMAccounts();
 
   // Form state
   const [clientId, setClientId] = useState('');
