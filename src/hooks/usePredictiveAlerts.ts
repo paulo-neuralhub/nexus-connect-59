@@ -258,17 +258,23 @@ export function useDashboardAlerts(limit = 5) {
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
 
-      const { data, error } = await supabase
-        .from('predictive_alerts')
-        .select('id, title, severity, alert_type, created_at')
-        .eq('organization_id', currentOrganization.id)
-        .eq('status', 'active')
-        .order('severity', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      try {
+        const { data, error } = await supabase
+          .from('predictive_alerts')
+          .select('id, title, priority, alert_type, created_at')
+          .eq('organization_id', currentOrganization.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) throw error;
-      return data;
+        if (error) {
+          console.warn('[useDashboardAlerts] Query failed:', error.message);
+          return [];
+        }
+        return data;
+      } catch {
+        return [];
+      }
     },
     enabled: !!currentOrganization?.id,
   });
