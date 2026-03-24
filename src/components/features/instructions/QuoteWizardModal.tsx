@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 import { fromTable } from '@/lib/supabase';
 import { getFeesForJurisdiction } from '@/hooks/use-instruction-actions';
 import { marked } from 'marked';
+
+marked.setOptions({ gfm: true, breaks: true });
+
 import type { Instruction } from '@/hooks/use-instructions';
 
 const JURISDICTION_FLAGS: Record<string, string> = {
@@ -395,10 +398,8 @@ export function QuoteWizardModal({
       html = generateDefaultPreview();
     }
 
-    // Convert Markdown to HTML if template uses markdown syntax
-    if (html.includes('# ') || html.includes('**') || html.includes('| ')) {
-      html = marked(html, { async: false }) as string;
-    }
+    // Always convert Markdown to HTML (GFM tables, bold, headings)
+    html = marked(html, { async: false }) as string;
 
     return html;
   }, [templates, selectedTemplateId, lines, quoteNumber, quoteDate, validityDate, account, org, instruction, subtotal, discount, discountAmount, taxableBase, taxRate, taxAmount, irpfAmount, total, notes, includeVat, validityDays]);
