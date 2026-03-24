@@ -82,10 +82,10 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           registration_number,
           mark_name,
           mark_type,
-          risk_score,
           created_at,
           updated_at,
-          client:contacts!matters_client_id_fkey(id, name)
+          client:contacts!matters_client_id_fkey(id, name),
+          crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)
         `)
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
