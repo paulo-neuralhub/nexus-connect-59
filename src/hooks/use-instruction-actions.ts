@@ -212,25 +212,20 @@ export function useSendQuote() {
         .eq('id', instruction.id);
       if (error) throw error;
 
-      // Save as generated_document
+      // Save as generated_document (client_id accepts account UUID)
       await fromTable('generated_documents').insert({
         organization_id: organizationId,
         client_id: instruction.crm_account_id,
         title: `Presupuesto — ${instruction.title}`,
-        name: `${quoteNumber}.pdf`,
+        name: `${quoteNumber}.html`,
         document_number: quoteNumber,
         category: 'quote',
         content: htmlContent,
-        content_html: htmlContent,
         status: 'sent',
         document_date: now,
         created_by: profile?.id,
         template_id: templateId,
-        total_amount: total,
-        discount_amount: total * (discount / 100) / (1 - discount / 100), // approximate
-        tax_amount: total * (taxRate / (100 + taxRate)), // approximate
-        subtotal: Math.round(total / (1 + taxRate / 100)),
-        variables_input: { lines, discount, taxRate, notes, quoteNumber },
+        variables_input: { lines, discount, taxRate, notes, quoteNumber, total },
       });
 
       // Log activity
