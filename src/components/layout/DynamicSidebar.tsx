@@ -348,10 +348,15 @@ export function DynamicSidebar({
         {!collapsed && (
           <>
             <span className="flex-1 truncate">{mod.moduleShortName || mod.moduleName}</span>
+            {badgeCounts[mod.moduleCode] > 0 && (
+              <span className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
+                {badgeCounts[mod.moduleCode]}
+              </span>
+            )}
             {mod.isTrial && (
               <span className="silk-badge-inactive text-[9px]">TRIAL</span>
             )}
-            {mod.modulePopular && !mod.isTrial && (
+            {mod.modulePopular && !mod.isTrial && !badgeCounts[mod.moduleCode] && (
               <span className="silk-badge-inactive text-[9px]">HOT</span>
             )}
           </>
