@@ -89,7 +89,7 @@ export function AppLayout() {
             ) : (
               <div 
                 className="h-screen flex overflow-hidden"
-                style={{ background: 'linear-gradient(180deg, #f1f4f9, #ebeef5)' }}
+                style={{ background: 'linear-gradient(180deg, #EEF2F7, #E5EAF1)' }}
               >
                 <DynamicSidebar
                   variant="desktop"
