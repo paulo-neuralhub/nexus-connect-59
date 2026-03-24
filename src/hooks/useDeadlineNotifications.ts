@@ -39,18 +39,22 @@ export function useDeadlineNotifications(limit: number = 50) {
     queryFn: async () => {
       if (!user?.id || !currentOrganization?.id) return [];
 
-      const { data, error } = await supabase
-        .from('deadline_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent', 'read'])
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      try {
+        const { data, error } = await supabase
+          .from('deadline_notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) throw error;
-      return data as DeadlineNotification[];
+        if (error) {
+          console.warn('[useDeadlineNotifications] Query failed:', error.message);
+          return [];
+        }
+        return (data || []) as DeadlineNotification[];
+      } catch {
+        return [];
+      }
     },
     enabled: !!user?.id && !!currentOrganization?.id,
   });
