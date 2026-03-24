@@ -1,11 +1,10 @@
 // @ts-nocheck
-import { useState } from 'react';
-import { ClipboardList, Plus, ChevronDown, ChevronUp, Mail, Phone, Globe, MessageCircle, Video, FileText, Send, Search as SearchIcon, DollarSign, Zap, CheckCircle2, Circle, Clock, Quote } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ClipboardList, Plus, ChevronDown, Mail, Phone, Globe, MessageCircle, Video, FileText, Send, Search as SearchIcon, DollarSign, Zap, CheckCircle2, Circle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { useInstructions, type InstructionFilter, type Instruction } from '@/hooks/use-instructions';
 import { NewInstructionModal } from '@/components/features/instructions/NewInstructionModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,18 +23,18 @@ const SOURCE_LABELS: Record<string, string> = {
   phone: 'Teléfono', meeting: 'Reunión', letter: 'Carta',
 };
 
-const TYPE_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-  trademark_registration: { label: 'Marca', bg: 'bg-[#EDE9FE]', text: 'text-[#6D28D9]' },
-  trademark_renewal:      { label: 'Renovación', bg: 'bg-[#CCFBF1]', text: 'text-[#0F766E]' },
-  renewal:                { label: 'Renovación', bg: 'bg-[#CCFBF1]', text: 'text-[#0F766E]' },
-  patent_application:     { label: 'Patente', bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]' },
-  patent_prosecution:     { label: 'Patente', bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]' },
-  patent_renewal:         { label: 'Anualidades', bg: 'bg-[#FEF3C7]', text: 'text-[#B45309]' },
-  opposition:             { label: 'Oposición', bg: 'bg-[#FEE2E2]', text: 'text-[#B91C1C]' },
-  surveillance:           { label: 'Vigilancia', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]' },
-  assignment:             { label: 'Cesión', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]' },
-  design:                 { label: 'Diseño', bg: 'bg-[#EDE9FE]', text: 'text-[#6D28D9]' },
-  other:                  { label: 'Otro', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]' },
+const TYPE_CONFIG: Record<string, { label: string; bg: string; text: string; gradient: string; actionBg: string; actionHover: string }> = {
+  trademark_registration: { label: 'Marca', bg: 'bg-[#EDE9FE]', text: 'text-[#6D28D9]', gradient: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', actionBg: 'bg-[#7C3AED]', actionHover: 'hover:bg-[#6D28D9]' },
+  trademark_renewal:      { label: 'Renovación', bg: 'bg-[#CCFBF1]', text: 'text-[#0F766E]', gradient: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', actionBg: 'bg-[#0D9488]', actionHover: 'hover:bg-[#0F766E]' },
+  renewal:                { label: 'Renovación', bg: 'bg-[#CCFBF1]', text: 'text-[#0F766E]', gradient: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', actionBg: 'bg-[#0D9488]', actionHover: 'hover:bg-[#0F766E]' },
+  patent_application:     { label: 'Patente', bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]', gradient: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', actionBg: 'bg-[#2563EB]', actionHover: 'hover:bg-[#1D4ED8]' },
+  patent_prosecution:     { label: 'Patente', bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]', gradient: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', actionBg: 'bg-[#2563EB]', actionHover: 'hover:bg-[#1D4ED8]' },
+  patent_renewal:         { label: 'Anualidades', bg: 'bg-[#FEF3C7]', text: 'text-[#B45309]', gradient: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', actionBg: 'bg-[#D97706]', actionHover: 'hover:bg-[#B45309]' },
+  opposition:             { label: 'Oposición', bg: 'bg-[#FEE2E2]', text: 'text-[#B91C1C]', gradient: 'linear-gradient(135deg, #FEF2F2, #FEE2E2)', actionBg: 'bg-[#DC2626]', actionHover: 'hover:bg-[#B91C1C]' },
+  surveillance:           { label: 'Vigilancia', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]', gradient: 'linear-gradient(135deg, #F8FAFC, #F1F5F9)', actionBg: 'bg-[#475569]', actionHover: 'hover:bg-[#334155]' },
+  assignment:             { label: 'Cesión', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]', gradient: 'linear-gradient(135deg, #F8FAFC, #F1F5F9)', actionBg: 'bg-[#475569]', actionHover: 'hover:bg-[#334155]' },
+  design:                 { label: 'Diseño', bg: 'bg-[#EDE9FE]', text: 'text-[#6D28D9]', gradient: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', actionBg: 'bg-[#7C3AED]', actionHover: 'hover:bg-[#6D28D9]' },
+  other:                  { label: 'Otro', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]', gradient: 'linear-gradient(135deg, #F8FAFC, #F1F5F9)', actionBg: 'bg-[#475569]', actionHover: 'hover:bg-[#334155]' },
 };
 
 const JURISDICTION_FLAGS: Record<string, string> = {
@@ -53,27 +52,47 @@ const ITEM_STATUS_STYLE: Record<string, { bg: string; text: string; label: strin
 
 /* ── Helpers ── */
 
-function getUrgencyBorder(instruction: Instruction) {
+function getUrgencyInfo(instruction: Instruction) {
   const isDeadlineCritical = instruction.deadline_date &&
     new Date(instruction.deadline_date).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000;
   if (instruction.is_urgent && isDeadlineCritical)
-    return { borderClass: 'border-l-[4px] border-l-[#EF4444]', badge: '🔴 CRÍTICO', badgeBg: 'bg-[#FEF2F2]', badgeText: 'text-[#DC2626]' };
+    return { borderTop: true, badge: '● CRÍTICO', badgeBg: 'bg-[#FEF2F2]', badgeText: 'text-[#DC2626]', badgeBorder: 'border border-[#FECACA]' };
   if (instruction.is_urgent)
-    return { borderClass: 'border-l-[4px] border-l-[#F59E0B]', badge: '🟡 URGENTE', badgeBg: 'bg-[#FEF3C7]', badgeText: 'text-[#B45309]' };
-  return { borderClass: 'border-l-[4px] border-l-[#E2E8F0]', badge: null, badgeBg: '', badgeText: '' };
+    return { borderTop: true, badge: '● URGENTE', badgeBg: 'bg-[#FEF2F2]', badgeText: 'text-[#DC2626]', badgeBorder: 'border border-[#FECACA]' };
+  return { borderTop: false, badge: null, badgeBg: '', badgeText: '', badgeBorder: '' };
 }
 
 function getProgressColor(pct: number) {
-  if (pct < 33) return 'bg-[#EF4444]';
-  if (pct < 66) return 'bg-[#F59E0B]';
-  return 'bg-[#22C55E]';
+  if (pct < 33) return '#EF4444';
+  if (pct < 66) return '#F59E0B';
+  return '#22C55E';
+}
+
+/* ── Expandable wrapper ── */
+
+function ExpandableSection({ expanded, children }: { expanded: boolean; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (ref.current) setHeight(ref.current.scrollHeight);
+  }, [expanded, children]);
+
+  return (
+    <div
+      className="overflow-hidden transition-[max-height,opacity] duration-[250ms] ease-in-out"
+      style={{ maxHeight: expanded ? height : 0, opacity: expanded ? 1 : 0 }}
+    >
+      <div ref={ref}>{children}</div>
+    </div>
+  );
 }
 
 /* ── InstructionCard ── */
 
 function InstructionCard({ instruction }: { instruction: Instruction }) {
   const [expanded, setExpanded] = useState(false);
-  const urgency = getUrgencyBorder(instruction);
+  const urgency = getUrgencyInfo(instruction);
   const executedCount = instruction.executed_count || 0;
   const totalTargets = instruction.total_targets || instruction.items?.length || 0;
   const SourceIcon = SOURCE_ICONS[instruction.source || ''] || Mail;
@@ -97,233 +116,269 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
   if (!instruction.quote_sent_at && instruction.conflict_checked) warnings.push({ label: '💶 Sin presupuesto', bg: 'bg-[#FFF7ED]', text: 'text-[#C2410C]' });
 
   const clientInitials = (instruction.account?.name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const ageDays = instruction.created_at ? Math.max(1, Math.round((Date.now() - new Date(instruction.created_at).getTime()) / 86400000)) : null;
 
   return (
     <div
       className={cn(
-        'rounded-[16px] border border-[#E2E8F0] bg-white overflow-hidden transition-shadow duration-200',
-        'shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]',
-        urgency.borderClass,
+        'rounded-2xl border border-[#E2E8F0] bg-white overflow-hidden transition-all duration-200',
+        'shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.04)]',
+        'hover:shadow-[0_4px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-px',
       )}
     >
-      {/* ── Header (clickable) ── */}
+      {/* ── ZONA 1: Header con gradiente ── */}
       <button
         className="w-full text-left focus:outline-none"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="px-6 pt-5 pb-4">
+        <div
+          className="relative px-5 pt-5 pb-4"
+          style={{ background: typeConf.gradient }}
+        >
+          {/* Border-top rojo si urgente */}
+          {urgency.borderTop && (
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#EF4444]" />
+          )}
+
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              {/* Badge row */}
-              <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                {urgency.badge && (
-                  <span className={cn('inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold', urgency.badgeBg, urgency.badgeText)}>
-                    {urgency.badge}
-                  </span>
-                )}
+              {/* Badges */}
+              <div className="flex items-center gap-2 flex-wrap mb-2">
                 <span className={cn(
-                  'inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em]',
+                  'inline-flex items-center rounded-md px-2.5 py-[3px] text-[11px] font-bold uppercase tracking-[0.06em]',
                   typeConf.bg, typeConf.text,
                 )}>
                   {typeConf.label}
                 </span>
+                {urgency.badge && (
+                  <span className={cn('inline-flex items-center rounded-md px-2.5 py-[3px] text-[11px] font-bold', urgency.badgeBg, urgency.badgeText, urgency.badgeBorder)}>
+                    {urgency.badge}
+                  </span>
+                )}
               </div>
 
               {/* Title */}
-              <h3 className="text-[16px] font-bold text-[#0F172A] leading-snug truncate">
+              <h3 className="text-[18px] font-bold text-[#0F172A] leading-snug mb-2">
                 {instruction.title}
               </h3>
 
               {/* Meta row */}
-              <div className="flex items-center gap-2 mt-1.5 text-[13px] text-[#64748B]">
+              <div className="flex items-center gap-2 text-[13px] text-[#64748B]">
                 <span
-                  className="inline-flex items-center justify-center h-6 w-6 rounded-md text-[10px] font-bold text-white shrink-0"
+                  className="inline-flex items-center justify-center h-6 w-6 rounded-full text-[10px] font-bold text-white shrink-0"
                   style={{ backgroundColor: '#6366F1' }}
                 >
                   {clientInitials}
                 </span>
                 <span className="font-medium truncate">{instruction.account?.name || 'Sin cliente'}</span>
                 <span className="text-[#CBD5E1]">·</span>
-                <span>{instruction.created_at ? formatDistanceToNow(new Date(instruction.created_at), { addSuffix: true, locale: es }) : ''}</span>
-                <span className="text-[#CBD5E1]">·</span>
                 <span className="inline-flex items-center gap-1">
                   <SourceIcon className="h-3.5 w-3.5" />
                   {SOURCE_LABELS[instruction.source || ''] || instruction.source}
                 </span>
+                <span className="text-[#CBD5E1]">·</span>
+                <span>{instruction.created_at ? formatDistanceToNow(new Date(instruction.created_at), { addSuffix: true, locale: es }) : ''}</span>
               </div>
             </div>
 
-            <div className="pt-2">
-              {expanded
-                ? <ChevronUp className="h-4 w-4 text-[#94A3B8]" />
-                : <ChevronDown className="h-4 w-4 text-[#94A3B8]" />
-              }
+            <div className="pt-1">
+              <ChevronDown className={cn('h-5 w-5 text-[#94A3B8] transition-transform duration-200', expanded && 'rotate-180')} />
             </div>
-          </div>
-        </div>
-
-        {/* ── Metrics row (always visible) ── */}
-        <div className="mx-6 mb-4 flex items-center rounded-lg bg-[#F8FAFC] border border-[#F1F5F9] divide-x divide-[#E2E8F0]">
-          <div className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] text-[#475569]">
-            <span>🌍</span>
-            <span className="font-semibold text-[#0F172A]">{totalTargets}</span>
-            <span>jur.</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] text-[#475569]">
-            <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" />
-            <span className="font-semibold text-[#0F172A]">{executedCount}/{totalTargets}</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] text-[#475569]">
-            <DollarSign className="h-3.5 w-3.5" />
-            <span className="font-semibold text-[#0F172A]">{instruction.estimated_total ? `${instruction.estimated_total.toLocaleString()} €` : '—'}</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[13px] text-[#475569]">
-            <Clock className="h-3.5 w-3.5" />
-            <span className="font-semibold text-[#0F172A]">
-              {instruction.created_at
-                ? `${Math.max(1, Math.round((Date.now() - new Date(instruction.created_at).getTime()) / 86400000))} días`
-                : '—'
-              }
-            </span>
           </div>
         </div>
       </button>
 
-      {/* ── Warning pills ── */}
-      {warnings.length > 0 && (
-        <div className="flex gap-2 px-6 pb-4 flex-wrap">
-          {warnings.map((w, i) => (
-            <span key={i} className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium', w.bg, w.text)}>
-              {w.label}
+      {/* ── ZONA 2: KPI grid ── */}
+      <div className="border-t border-b border-[#F1F5F9] bg-[#FAFAFA]">
+        <div className="grid grid-cols-4 divide-x divide-[#F1F5F9]">
+          <div className="flex flex-col items-center justify-center py-3 px-2">
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
+              {totalTargets}
             </span>
-          ))}
+            <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Jurisd.</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2">
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
+              {executedCount}<span className="text-[14px] font-normal text-[#94A3B8]"> / {totalTargets}</span>
+            </span>
+            <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Ejecutadas</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2">
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
+              {instruction.estimated_total ? `${instruction.estimated_total.toLocaleString()}€` : '—'}
+            </span>
+            <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Presup.</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2">
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
+              {ageDays ? `${ageDays}d` : '—'}
+            </span>
+            <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Antigüedad</span>
+          </div>
         </div>
-      )}
 
-      {/* ── Expanded section ── */}
-      {expanded && (
-        <div className="border-t border-[#F1F5F9]">
-          <div className="px-6 py-5 space-y-5">
+        {/* Warning pills */}
+        {warnings.length > 0 && (
+          <div className="flex gap-2 px-5 pb-3 pt-1 flex-wrap">
+            {warnings.map((w, i) => (
+              <span key={i} className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium', w.bg, w.text)}>
+                {w.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
-            {/* Original description */}
-            {instruction.description && (
-              <div>
-                <h4 className="text-[12px] font-semibold text-[#94A3B8] uppercase tracking-[0.08em] mb-2">
-                  Descripción original
-                </h4>
-                <div className="bg-[#F8FAFC] border-l-[3px] border-l-[#CBD5E1] rounded-r-lg px-4 py-3 relative">
-                  <Quote className="absolute top-2 left-3 h-6 w-6 text-[#CBD5E1] opacity-40" />
-                  <p className="italic text-[13px] text-[#475569] leading-relaxed pl-5">
-                    {instruction.description}
-                  </p>
-                </div>
+      {/* ── ZONA 3: Expandible ── */}
+      <ExpandableSection expanded={expanded}>
+        <div className="px-5 py-5 space-y-5">
+
+          {/* Descripción original */}
+          {instruction.description && (
+            <div>
+              <h4 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] mb-2">
+                Descripción original
+              </h4>
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-[14px] relative">
+                <span className="text-[48px] leading-[0] text-[#CBD5E1] font-serif absolute top-5 left-3 select-none" aria-hidden>
+                  ❝
+                </span>
+                <p className="italic text-[13px] text-[#475569] leading-relaxed pl-8 pr-2">
+                  {instruction.description}
+                </p>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Jurisdiction items */}
-            {instruction.items && instruction.items.length > 0 && (
-              <div>
-                <h4 className="text-[12px] font-semibold text-[#94A3B8] uppercase tracking-[0.08em] mb-2">
-                  Jurisdicciones
-                </h4>
-                <div className="rounded-lg border border-[#E2E8F0] overflow-hidden divide-y divide-[#F1F5F9]">
-                  {instruction.items.map((item) => {
-                    const code = (item.jurisdiction_code || '').toUpperCase();
-                    const flag = JURISDICTION_FLAGS[code] || '🏳️';
-                    const st = ITEM_STATUS_STYLE[item.status || 'pending'] || ITEM_STATUS_STYLE.pending;
-                    return (
-                      <div key={item.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-[#F8FAFC] transition-colors">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="text-[18px] leading-none shrink-0">{flag}</span>
-                          <span className="text-[13px] font-bold text-[#0F172A] shrink-0">{code}</span>
-                          <span className="text-[13px] text-[#475569] truncate">
-                            {item.specific_instruction || 'Pendiente de detalle'}
-                          </span>
-                        </div>
-                        <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0', st.bg, st.text)}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'currentColor' }} />
-                          {st.label}
+          {/* Jurisdicciones */}
+          {instruction.items && instruction.items.length > 0 && (
+            <div>
+              <h4 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] mb-2">
+                Jurisdicciones
+              </h4>
+              <div className="space-y-1.5">
+                {instruction.items.map((item) => {
+                  const code = (item.jurisdiction_code || '').toUpperCase();
+                  const flag = JURISDICTION_FLAGS[code] || '🏳️';
+                  const st = ITEM_STATUS_STYLE[item.status || 'pending'] || ITEM_STATUS_STYLE.pending;
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between bg-white hover:bg-[#F8FAFC] rounded-lg px-3 py-2.5 border border-[#F1F5F9] transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-[20px] leading-none shrink-0">{flag}</span>
+                        <span className="text-[13px] font-bold text-[#0F172A] shrink-0">{code}</span>
+                        <span className="text-[13px] text-[#475569] truncate">
+                          {item.specific_instruction || 'Pendiente de detalle'}
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Process progress */}
-            <div>
-              <h4 className="text-[12px] font-semibold text-[#94A3B8] uppercase tracking-[0.08em] mb-3">
-                Proceso
-              </h4>
-              {/* Progress bar */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[12px] text-[#64748B]">{completedSteps} de {processChecklist.length} completados</span>
-                  <span className="text-[12px] font-semibold text-[#0F172A]">{progressPct}%</span>
-                </div>
-                <div className="h-1 rounded-full bg-[#E2E8F0] overflow-hidden">
-                  <div
-                    className={cn('h-full rounded-full transition-all duration-500', getProgressColor(progressPct))}
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
-              </div>
-              {/* Steps */}
-              <div className="space-y-2">
-                {processChecklist.map((step, i) => (
-                  <div key={i} className="flex items-center gap-2.5">
-                    {step.done ? (
-                      <CheckCircle2 className="h-[18px] w-[18px] text-[#22C55E] shrink-0" />
-                    ) : (
-                      <Circle className="h-[18px] w-[18px] text-[#CBD5E1] shrink-0" />
-                    )}
-                    <span className={cn('text-[13px]', step.done ? 'text-[#15803D] font-medium' : 'text-[#94A3B8]')}>
-                      {step.label}
-                    </span>
-                    {step.done && step.date && (
-                      <span className="text-[11px] text-[#94A3B8] ml-auto shrink-0">
-                        {formatDistanceToNow(new Date(step.date), { addSuffix: true, locale: es })}
+                      <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium shrink-0', st.bg, st.text)}>
+                        {item.status === 'executed' && <CheckCircle2 className="h-3 w-3" />}
+                        {item.status !== 'executed' && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                        {st.label}
                       </span>
-                    )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Proceso — Timeline */}
+          <div>
+            <h4 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] mb-3">
+              Proceso
+            </h4>
+            {/* Progress bar */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[12px] text-[#64748B]">{completedSteps} de {processChecklist.length} pasos completados</span>
+                <span className="text-[12px] font-bold text-[#0F172A]">{progressPct}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[#E2E8F0] overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${progressPct}%`, backgroundColor: getProgressColor(progressPct) }}
+                />
+              </div>
+            </div>
+            {/* Timeline */}
+            <div className="relative pl-5">
+              {/* Vertical connector line */}
+              <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-[#E2E8F0]" />
+              <div className="space-y-3">
+                {processChecklist.map((step, i) => (
+                  <div key={i} className="relative flex items-start gap-3">
+                    {/* Dot */}
+                    <div className="absolute -left-5 top-0.5">
+                      {step.done ? (
+                        <div className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-[#CBD5E1] bg-white" />
+                      )}
+                    </div>
+                    {/* Text */}
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <span className={cn('text-[13px]', step.done ? 'text-[#15803D] font-medium' : 'text-[#94A3B8]')}>
+                        {step.label}
+                      </span>
+                      {step.done && step.date && (
+                        <span className="text-[11px] text-[#94A3B8] shrink-0 ml-2">
+                          {formatDistanceToNow(new Date(step.date), { addSuffix: true, locale: es })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Actions */}
-            {allDone ? (
-              <div className="flex items-center gap-2 pt-1">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-4 py-2 text-[13px] font-semibold text-[#15803D]">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Instrucción completada
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
-                {/* Secondary */}
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="text-[12px] gap-1.5 h-8 rounded-lg border-[#E2E8F0] text-[#475569] hover:bg-[#F8FAFC]">
-                    <Send className="h-3.5 w-3.5" /> Enviar Acuse
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-[12px] gap-1.5 h-8 rounded-lg border-[#E2E8F0] text-[#475569] hover:bg-[#F8FAFC]">
-                    <SearchIcon className="h-3.5 w-3.5" /> Verificar Conflictos
-                  </Button>
-                </div>
-                {/* Primary */}
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="text-[12px] gap-1.5 h-8 rounded-lg border-[#3B82F6] text-[#2563EB] hover:bg-[#EFF6FF]">
-                    <DollarSign className="h-3.5 w-3.5" /> Presupuesto
-                  </Button>
-                  <Button size="sm" className="text-[12px] gap-1.5 h-8 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
-                    <Zap className="h-3.5 w-3.5" /> Ejecutar
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      )}
+      </ExpandableSection>
+
+      {/* ── ZONA 4: Footer acciones ── */}
+      <ExpandableSection expanded={expanded}>
+        <div className="bg-[#F8FAFC] border-t border-[#F1F5F9] px-5 py-3">
+          {allDone ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-4 py-2 text-[13px] font-semibold text-[#15803D]">
+                <CheckCircle2 className="h-4 w-4" />
+                Instrucción completada
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              {/* Secondary */}
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" className="text-[12px] gap-1.5 h-8 rounded-lg text-[#475569]">
+                  <Send className="h-3.5 w-3.5" /> Acuse
+                </Button>
+                <Button size="sm" variant="ghost" className="text-[12px] gap-1.5 h-8 rounded-lg text-[#475569]">
+                  <SearchIcon className="h-3.5 w-3.5" /> Conflictos
+                </Button>
+              </div>
+              {/* Primary */}
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="text-[12px] gap-1.5 h-8 rounded-lg border-[#3B82F6] text-[#2563EB] hover:bg-[#EFF6FF]">
+                  <DollarSign className="h-3.5 w-3.5" /> Presupuesto
+                </Button>
+                <Button
+                  size="sm"
+                  className={cn(
+                    'text-[12px] gap-1.5 h-8 rounded-lg text-white shadow-none',
+                    instruction.is_urgent ? 'bg-[#DC2626] hover:bg-[#B91C1C]' : cn(typeConf.actionBg, typeConf.actionHover),
+                  )}
+                >
+                  <Zap className="h-3.5 w-3.5" /> Ejecutar
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </ExpandableSection>
     </div>
   );
 }
@@ -349,75 +404,96 @@ export default function InstructionsPage() {
     : instructions;
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ClipboardList className="h-6 w-6" />
-            Instrucciones
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Encargos de clientes y mandatos activos
-          </p>
-        </div>
-        <Button onClick={() => setShowNewModal(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Instrucción
-        </Button>
-      </div>
-
-      {/* Tabs + Search */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as InstructionFilter)}>
-          <TabsList>
-            <TabsTrigger value="pending" className="gap-1.5">
-              Pendientes de acción
-              {pendingCount > 0 && (
-                <Badge variant="destructive" className="h-5 min-w-[20px] text-[10px] px-1.5">
-                  {pendingCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="in_progress">En curso</TabsTrigger>
-            <TabsTrigger value="completed">Completadas</TabsTrigger>
-            <TabsTrigger value="all">Todas</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="flex-1" />
-        <Input
-          placeholder="Buscar instrucciones..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-      </div>
-
-      {/* List */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-28 rounded-[16px] bg-muted animate-pulse" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <ClipboardList className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-muted-foreground">No hay instrucciones</h3>
-          <p className="text-sm text-muted-foreground/70 mt-1">
-            Crea tu primera instrucción para gestionar encargos de clientes
-          </p>
-          <Button onClick={() => setShowNewModal(true)} className="mt-4 gap-2">
-            <Plus className="h-4 w-4" /> Nueva Instrucción
+    <div className="min-h-screen bg-[#F1F5F9]">
+      {/* ── Page header ── */}
+      <div className="bg-white border-b border-[#F1F5F9] px-8 py-6">
+        <div className="max-w-[860px] mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-[28px] font-bold text-[#0F172A] flex items-center gap-2.5">
+              <ClipboardList className="h-7 w-7 text-[#3B82F6]" />
+              Instrucciones
+            </h1>
+            <p className="text-[14px] text-[#64748B] mt-1">Encargos de clientes y mandatos</p>
+          </div>
+          <Button
+            onClick={() => setShowNewModal(true)}
+            className="gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-[10px] font-semibold shadow-none h-10 px-5"
+          >
+            <Plus className="h-4 w-4" />
+            Nueva Instrucción
           </Button>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(instruction => (
-            <InstructionCard key={instruction.id} instruction={instruction} />
-          ))}
+      </div>
+
+      {/* ── Content ── */}
+      <div className="max-w-[860px] mx-auto px-8 py-6">
+
+        {/* Tabs + search */}
+        <div className="flex items-center gap-4 flex-wrap mb-6">
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { value: 'pending' as const, label: 'Pendientes', count: pendingCount },
+              { value: 'in_progress' as const, label: 'En curso', count: 0 },
+              { value: 'completed' as const, label: 'Completadas', count: 0 },
+              { value: 'all' as const, label: 'Todas', count: 0 },
+            ].map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => setFilter(tab.value)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors',
+                  filter === tab.value
+                    ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
+                    : 'text-[#64748B] hover:bg-[#F8FAFC] border border-transparent',
+                )}
+              >
+                {tab.label}
+                {tab.value === 'pending' && pendingCount > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-[#EF4444] text-white text-[10px] font-bold px-1.5">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1" />
+          <Input
+            placeholder="Buscar instrucciones..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-xs rounded-lg"
+          />
         </div>
-      )}
+
+        {/* List */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-40 rounded-2xl bg-white/60 animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border border-[#E2E8F0]">
+            <ClipboardList className="h-12 w-12 text-[#CBD5E1] mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-[#475569]">No hay instrucciones</h3>
+            <p className="text-[14px] text-[#94A3B8] mt-1">
+              Crea tu primera instrucción para gestionar encargos
+            </p>
+            <Button
+              onClick={() => setShowNewModal(true)}
+              className="mt-5 gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-[10px] shadow-none"
+            >
+              <Plus className="h-4 w-4" /> Nueva Instrucción
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filtered.map(instruction => (
+              <InstructionCard key={instruction.id} instruction={instruction} />
+            ))}
+          </div>
+        )}
+      </div>
 
       <NewInstructionModal open={showNewModal} onOpenChange={setShowNewModal} />
     </div>
