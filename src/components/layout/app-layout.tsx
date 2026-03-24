@@ -107,7 +107,7 @@ export function AppLayout() {
                   <Header />
                   <main 
                     className="flex-1 overflow-y-auto overflow-x-hidden"
-                    style={{ padding: '24px', background: '#f1f4f9' }}
+                    style={{ padding: '24px', background: '#EEF2F7' }}
                   >
                     <Outlet />
                   </main>

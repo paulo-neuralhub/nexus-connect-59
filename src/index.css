@@ -223,22 +223,25 @@
     @apply backdrop-blur-xl bg-white/80 border border-white/20;
   }
 
-  /* SILK: Cards sin sombra, solo borde */
+  /* SILK: Cards con sombra sutil sobre fondo oscuro */
   .card-shadow {
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .card-shadow-lg {
-    box-shadow: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  /* SILK Card: border only */
+  /* SILK Card */
   .silk-card {
-    box-shadow: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 14px;
+  }
+  .silk-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
 
   /* Market Terminal Theme */

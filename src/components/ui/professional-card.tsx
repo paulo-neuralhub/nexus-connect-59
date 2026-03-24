@@ -24,10 +24,10 @@ export function ProfessionalCard({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-background-card",
-        "shadow-sm",
+        "rounded-xl border border-border bg-white",
+        "shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
         paddingClasses[padding],
-        hover && "transition-shadow hover:shadow-md",
+        hover && "transition-shadow duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]",
         className,
       )}
     >
