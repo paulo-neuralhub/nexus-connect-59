@@ -213,7 +213,7 @@ export default function DashboardGod() {
           .order('received_at', { ascending: false })
           .limit(5),
         supabase.from('matters')
-          .select('id, reference, title, updated_at, current_phase')
+          .select('id, reference, title, updated_at')
           .eq('organization_id', orgId)
           .order('updated_at', { ascending: false })
           .limit(5)
