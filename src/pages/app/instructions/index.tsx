@@ -7,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInstructions, type InstructionFilter, type Instruction } from '@/hooks/use-instructions';
+import { useAcknowledge, useConflictCheck, useSendQuote, useApproveQuote, useExecuteInstruction } from '@/hooks/use-instruction-actions';
+import { ConflictResultsModal, QuoteModal, ExecuteConfirmModal } from '@/components/features/instructions/InstructionModals';
 import { NewInstructionModal } from '@/components/features/instructions/NewInstructionModal';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 /* ── Constants ── */
 
