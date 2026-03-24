@@ -10,9 +10,6 @@ import { Loader2, Plus, X, ArrowRight, ArrowLeft, Send, Sparkles, Check } from '
 import { cn } from '@/lib/utils';
 import { fromTable } from '@/lib/supabase';
 import { getFeesForJurisdiction } from '@/hooks/use-instruction-actions';
-import { marked } from 'marked';
-
-marked.setOptions({ gfm: true, breaks: true });
 
 import type { Instruction } from '@/hooks/use-instructions';
 
@@ -397,9 +394,6 @@ export function QuoteWizardModal({
     if (!html || html.trim().length < 50) {
       html = generateDefaultPreview();
     }
-
-    // Always convert Markdown to HTML (GFM tables, bold, headings)
-    html = marked(html, { async: false }) as string;
 
     return html;
   }, [templates, selectedTemplateId, lines, quoteNumber, quoteDate, validityDate, account, org, instruction, subtotal, discount, discountAmount, taxableBase, taxRate, taxAmount, irpfAmount, total, notes, includeVat, validityDays]);
