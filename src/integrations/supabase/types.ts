@@ -270,6 +270,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "activities_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "activities_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -379,6 +386,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -4298,6 +4312,13 @@ export type Database = {
             referencedRelation: "matters"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "analytics_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       analytics_matter_metrics: {
@@ -4388,6 +4409,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: true
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_matter_metrics_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -5259,6 +5287,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bulk_instruction_items_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bulk_instruction_items_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -5432,6 +5467,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -5721,6 +5763,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -6351,6 +6400,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "comm_internal_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "comm_internal_messages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -6870,6 +6926,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "comm_threads_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "comm_threads_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -7024,6 +7087,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "communication_threads_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "communication_threads_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -7054,6 +7124,7 @@ export type Database = {
           client_id: string | null
           contact_id: string | null
           created_at: string
+          crm_account_id: string | null
           direction: string
           email_bcc: string[] | null
           email_cc: string[] | null
@@ -7110,6 +7181,7 @@ export type Database = {
           client_id?: string | null
           contact_id?: string | null
           created_at?: string
+          crm_account_id?: string | null
           direction?: string
           email_bcc?: string[] | null
           email_cc?: string[] | null
@@ -7166,6 +7238,7 @@ export type Database = {
           client_id?: string | null
           contact_id?: string | null
           created_at?: string
+          crm_account_id?: string | null
           direction?: string
           email_bcc?: string[] | null
           email_cc?: string[] | null
@@ -7217,10 +7290,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "communications_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "communications_matter_id_fkey"
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -7611,6 +7698,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "copilot_context_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "copilot_context_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -7701,6 +7795,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_decision_log_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -7888,6 +7989,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_suggestions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -8578,6 +8686,13 @@ export type Database = {
             columns: ["related_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_ai_suggestions_related_matter_id_fkey"
+            columns: ["related_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -9774,6 +9889,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "deals_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "deals_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -10307,6 +10429,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -11109,6 +11238,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "finance_costs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "finance_costs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -11661,6 +11797,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "genius_conversation_memory_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "genius_conversation_memory_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -11728,6 +11871,13 @@ export type Database = {
             columns: ["context_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_conversations_context_matter_id_fkey"
+            columns: ["context_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -11922,6 +12072,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_generated_docs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -12853,6 +13010,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_workflow_runs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -14204,6 +14368,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "internal_channels_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "internal_channels_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -14358,6 +14529,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "internal_messages_ai_suggested_matter_id_fkey"
+            columns: ["ai_suggested_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "internal_messages_channel_id_fkey"
             columns: ["channel_id"]
             isOneToOne: false
@@ -14379,6 +14557,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "internal_messages_indexed_to_matter_id_fkey"
+            columns: ["indexed_to_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "internal_messages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -14390,6 +14575,13 @@ export type Database = {
             columns: ["referenced_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_referenced_matter_id_fkey"
+            columns: ["referenced_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -14590,6 +14782,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -14998,6 +15197,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "invoices_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "invoices_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -15068,6 +15274,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_chain_records_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -15182,6 +15395,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_filing_submissions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -15536,6 +15756,13 @@ export type Database = {
             columns: ["related_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_trademark_searches_related_matter_id_fkey"
+            columns: ["related_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
         ]
@@ -16079,6 +16306,13 @@ export type Database = {
             columns: ["matched_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ipo_incoming_documents_matched_matter_id_fkey"
+            columns: ["matched_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -18369,6 +18603,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "legalops_ai_interactions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "legalops_ai_interactions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -19935,6 +20176,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matter_activity_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matter_activity_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -19983,6 +20231,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_comments_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -20083,6 +20338,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_costs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -20197,6 +20459,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matter_deadlines_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matter_deadlines_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -20290,6 +20559,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_documents_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -20433,6 +20709,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matter_field_change_proposals_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matter_field_change_proposals_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -20512,6 +20795,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_field_permissions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -20613,6 +20903,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matter_parties_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matter_parties_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -20676,6 +20973,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_tasks_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -20765,6 +21069,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matter_timeline_events_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matter_timeline_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -20784,6 +21095,7 @@ export type Database = {
           cost_center: string | null
           created_at: string
           created_by: string | null
+          crm_account_id: string | null
           currency: string | null
           estimated_value: number | null
           expiry_date: string | null
@@ -20854,6 +21166,7 @@ export type Database = {
           cost_center?: string | null
           created_at?: string
           created_by?: string | null
+          crm_account_id?: string | null
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
@@ -20924,6 +21237,7 @@ export type Database = {
           cost_center?: string | null
           created_at?: string
           created_by?: string | null
+          crm_account_id?: string | null
           currency?: string | null
           estimated_value?: number | null
           expiry_date?: string | null
@@ -21000,6 +21314,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matters_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matters_family_id_fkey"
             columns: ["family_id"]
             isOneToOne: false
@@ -21032,6 +21353,13 @@ export type Database = {
             columns: ["parent_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_parent_matter_id_fkey"
+            columns: ["parent_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -23283,6 +23611,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portal_certificates_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: true
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portal_certificates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -23375,6 +23710,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_chat_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -23533,6 +23875,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portal_client_instructions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portal_client_instructions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -23686,6 +24035,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_intake_forms_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -23931,6 +24287,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_nps_responses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -24543,6 +24906,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -26373,10 +26743,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "spider_alerts_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "spider_alerts_opposition_matter_id_fkey"
             columns: ["opposition_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_alerts_opposition_matter_id_fkey"
+            columns: ["opposition_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -26941,6 +27325,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "spider_watches_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "spider_watches_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -27209,6 +27600,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "storefront_orders_converted_to_matter_id_fkey"
+            columns: ["converted_to_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "storefront_orders_converted_to_service_request_id_fkey"
             columns: ["converted_to_service_request_id"]
             isOneToOne: false
@@ -27463,6 +27861,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "surveillance_configs_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "surveillance_configs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -27653,6 +28058,13 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveillance_subscriptions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -28557,6 +28969,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "time_entries_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "time_entries_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -28722,6 +29141,13 @@ export type Database = {
             columns: ["current_matter_id"]
             isOneToOne: false
             referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_presence_current_matter_id_fkey"
+            columns: ["current_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
             referencedColumns: ["id"]
           },
           {
@@ -29076,6 +29502,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "watchlists_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "watchlists_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -29247,6 +29680,154 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matters_view: {
+        Row: {
+          account_country: string | null
+          account_name: string | null
+          agent_matter_reference: string | null
+          application_number: string | null
+          assigned_to: string | null
+          auto_renewal: boolean | null
+          billing_account_id: string | null
+          client_id: string | null
+          cost_center: string | null
+          created_at: string | null
+          created_by: string | null
+          crm_account_id: string | null
+          currency: string | null
+          estimated_value: number | null
+          expiry_date: string | null
+          family_id: string | null
+          family_role: string | null
+          filing_date: string | null
+          filing_number: string | null
+          goods_services: string | null
+          id: string | null
+          images: string[] | null
+          intermediate_agent_id: string | null
+          internal_notes: string | null
+          ip_type: string | null
+          is_archived: boolean | null
+          jurisdiction: string | null
+          jurisdiction_code: string | null
+          mark_image_url: string | null
+          mark_name: string | null
+          mark_type: string | null
+          next_renewal_date: string | null
+          nice_classes: number[] | null
+          notes: string | null
+          notify_billing_account: boolean | null
+          notify_owner_account: boolean | null
+          official_fees: number | null
+          organization_id: string | null
+          owner_account_id: string | null
+          owner_name: string | null
+          owner_portal_visible: boolean | null
+          parent_matter_id: string | null
+          portal_certificate_generated: boolean | null
+          portal_certificate_url: string | null
+          portal_client_notes: string | null
+          portal_intake_completed: boolean | null
+          portal_intake_completed_at: string | null
+          portal_show_costs: boolean | null
+          portal_show_deadlines: boolean | null
+          portal_show_reference_numbers: boolean | null
+          portal_status_label: string | null
+          portal_timeline_visible: boolean | null
+          portal_visible: boolean | null
+          portal_visible_confirmed_at: string | null
+          portal_visible_confirmed_by: string | null
+          priority_country: string | null
+          priority_date: string | null
+          priority_number: string | null
+          professional_fees: number | null
+          reference: string | null
+          registration_date: string | null
+          registration_number: string | null
+          renewal_instructions: string | null
+          resolved_account_id: string | null
+          status: string | null
+          status_code: string | null
+          status_date: string | null
+          tags: string[] | null
+          title: string | null
+          total_cost: number | null
+          type: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matters_billing_account_id_fkey"
+            columns: ["billing_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "matter_families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_intermediate_agent_id_fkey"
+            columns: ["intermediate_agent_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_owner_account_id_fkey"
+            columns: ["owner_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_parent_matter_id_fkey"
+            columns: ["parent_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_parent_matter_id_fkey"
+            columns: ["parent_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matters_portal_visible_confirmed_by_fkey"
+            columns: ["portal_visible_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
