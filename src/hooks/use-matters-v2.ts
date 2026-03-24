@@ -186,7 +186,7 @@ export function useMattersV2(filters?: MatterV2Filters) {
       // Map legacy fields to V2 interface
       let query = supabase
         .from('matters')
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile)')
+        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
       
