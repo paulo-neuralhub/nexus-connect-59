@@ -24,6 +24,7 @@ import type { CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import { DealTasksSection } from "./DealTasksSection";
 import { QuickActivityDialog } from "./QuickActivityDialog";
 import { StageBadge } from "./StageBadge";
+import { DealLinkedMatter } from "./DealLinkedMatter";
 import { PipelineProgressBar } from "@/components/features/crm/shared/PipelineProgressBar";
 
 type Deal = {
