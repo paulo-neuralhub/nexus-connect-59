@@ -66,7 +66,7 @@ export function usePipeline(id: string) {
         .from('crm_pipelines')
         .select(`
           *,
-          stages:pipeline_stages(*)
+          stages:crm_pipeline_stages(*)
         `)
         .eq('id', id)
         .single();
