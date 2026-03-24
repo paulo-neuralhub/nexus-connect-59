@@ -103,7 +103,6 @@ export function useCreatePipeline() {
         .insert({
           name: data.name,
           organization_id: currentOrganization.id,
-          owner_type: 'tenant',
           is_default: isFirst,
           position: maxPosition + 1,
         })
