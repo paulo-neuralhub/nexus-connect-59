@@ -46,7 +46,7 @@ export function usePipelines() {
         .from('crm_pipelines')
         .select(`
           *,
-          stages:pipeline_stages(*)
+          stages:crm_pipeline_stages(*)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('position');
