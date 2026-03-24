@@ -530,7 +530,7 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
             </div>
           )}
         </div>
-      </ExpandableSection>
+        </div>
 
       {/* ── Modals ── */}
       <ConflictResultsModal
