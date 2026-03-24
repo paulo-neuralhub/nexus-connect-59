@@ -25,7 +25,7 @@ export function useCRMDeals(filters?: DealFilters) {
           lost_reason, matter_id, account_name_cache, assigned_to,
           created_at, updated_at,
           account:crm_accounts!account_id(id, name),
-          contact:crm_contacts!contact_id(id, full_name),
+          contact:contacts!contact_id(id, full_name),
           pipeline_stage:crm_pipeline_stages!pipeline_stage_id(id, name, color, probability, is_won_stage, is_lost_stage)
         `)
         .eq("organization_id", organizationId)

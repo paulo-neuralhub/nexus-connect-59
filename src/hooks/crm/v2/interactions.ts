@@ -24,8 +24,7 @@ export function useCRMInteractions(filters?: { account_id?: string; contact_id?:
           created_by, created_at,
           account:crm_accounts!account_id(id, name),
           contact:crm_contacts!contact_id(id, full_name),
-          deal:crm_deals!deal_id(id, name),
-          creator:profiles!created_by(id, first_name, last_name)
+          deal:crm_deals!deal_id(id, name)
         `)
         .eq("organization_id", organizationId)
         .order("activity_date", { ascending: false });
@@ -39,15 +38,13 @@ export function useCRMInteractions(filters?: { account_id?: string; contact_id?:
 
       // Map to compat format expected by existing UI
       return (data ?? []).map((row: Record<string, unknown>) => {
-        const creator = row.creator as { first_name?: string; last_name?: string } | null;
         return {
           ...row,
-          // Compat fields: map activity_type -> channel for old UI
           channel: row.activity_type,
           content: row.description,
           created_at: row.activity_date,
           duration_seconds: row.duration_minutes ? (row.duration_minutes as number) * 60 : null,
-          created_by_name: creator ? [creator.first_name, creator.last_name].filter(Boolean).join(' ') : null,
+          created_by_name: null,
         };
       });
     },

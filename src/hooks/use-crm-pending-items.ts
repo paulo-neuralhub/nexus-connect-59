@@ -138,8 +138,7 @@ export function useCRMRecentActivity() {
       try {
         const { data, error } = await fromTable('crm_activities')
           .select(`
-            id, activity_type, subject, activity_date,
-            creator:profiles!created_by(id, first_name, last_name)
+            id, activity_type, subject, activity_date, created_by
           `)
           .eq('organization_id', organizationId)
           .order('activity_date', { ascending: false })
@@ -156,8 +155,7 @@ export function useCRMRecentActivity() {
           if (actType === 'email') type = 'email';
           else if (actType === 'call') type = 'call';
 
-          const creator = i.creator as { first_name?: string; last_name?: string } | null;
-          const userName = creator ? [creator.first_name, creator.last_name].filter(Boolean).join(' ') : 'Sistema';
+          const userName = 'Sistema';
 
           return {
             id: i.id as string,
