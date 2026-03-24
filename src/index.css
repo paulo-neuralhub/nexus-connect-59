@@ -59,8 +59,8 @@
     --secondary-foreground: 0 0% 100%;
 
     /* Background Colors - SILK */
-    --background: 216 33% 97%;         /* #f1f4f9 - Fondo principal */
-    --background-card: 216 33% 97%;    /* #f1f4f9 - Cards sin sombra */
+    --background: 214 32% 91%;         /* #EEF2F7 - Fondo principal más oscuro */
+    --background-card: 0 0% 100%;      /* #FFFFFF - Cards blancas que destacan */
     --background-warm: 35 100% 98%;
     --background-sidebar: 210 75% 15%; /* #0a2540 - Navy */
     --foreground: 210 75% 15%;         /* #0a2540 - Navy para headings */
