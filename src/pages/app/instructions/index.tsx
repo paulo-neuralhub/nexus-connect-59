@@ -408,8 +408,7 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
         </div>
       </ExpandableSection>
 
-      {/* ── ZONA 4: Footer acciones ── */}
-      <ExpandableSection expanded={expanded}>
+      {/* ── ZONA 4: Footer acciones (always visible) ── */}
         <div className="bg-[#F8FAFC] border-t border-[#F1F5F9] px-5 py-3">
           {allDone ? (
             <div className="flex items-center gap-2">
@@ -531,7 +530,6 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
             </div>
           )}
         </div>
-      </ExpandableSection>
 
       {/* ── Modals ── */}
       <ConflictResultsModal
