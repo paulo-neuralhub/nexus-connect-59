@@ -529,9 +529,7 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
               </div>
             </div>
           )}
-          </div>
-        )}
-      </div>
+        </div>
 
       {/* ── Modals ── */}
       <ConflictResultsModal
