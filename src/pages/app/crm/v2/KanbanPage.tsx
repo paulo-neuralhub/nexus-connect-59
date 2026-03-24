@@ -29,6 +29,28 @@ import { DealDetailPanel } from "@/components/features/crm/v2/deal-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Link } from "react-router-dom";
 
+/** Pipeline color by type or id */
+const PIPELINE_COLORS: Record<string, string> = {
+  // By known IDs
+  "b0100001-0000-0000-0000-000000000001": "#3B82F6", // Captación
+  "b0100002-0000-0000-0000-000000000002": "#8B5CF6", // Marca
+  "b0100003-0000-0000-0000-000000000003": "#0EA5E9", // Patente
+  "b0100004-0000-0000-0000-000000000004": "#EF4444", // Contencioso
+  "b0100005-0000-0000-0000-000000000005": "#14B8A6", // Renovaciones
+  // By pipeline_type fallback
+  sales: "#3B82F6",
+  trademark: "#8B5CF6",
+  patent: "#0EA5E9",
+  litigation: "#EF4444",
+  renewal: "#14B8A6",
+  renewals: "#14B8A6",
+  ip_services: "#6366F1",
+};
+
+function getPipelineColor(p: { id: string; pipeline_type?: string | null }) {
+  return PIPELINE_COLORS[p.id] ?? PIPELINE_COLORS[p.pipeline_type ?? ""] ?? "#64748B";
+}
+
 function formatCurrency(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M €`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k €`;
@@ -120,16 +142,28 @@ export default function CRMKanbanPageV2() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Select value={activePipelineId ?? ""} onValueChange={(v) => setPipelineId(v)}>
-            <SelectTrigger className="w-[240px] font-semibold">
-              <SelectValue placeholder="Seleccionar pipeline..." />
+            <SelectTrigger className="w-[280px] h-10 font-semibold text-[15px] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-border">
+              <div className="flex items-center gap-2.5">
+                {selectedPipeline && (
+                  <span
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: getPipelineColor(selectedPipeline) }}
+                  />
+                )}
+                <SelectValue placeholder="Seleccionar pipeline..." />
+              </div>
             </SelectTrigger>
-            <SelectContent className="bg-background border shadow-lg z-50">
+            <SelectContent className="bg-white border shadow-lg z-50">
               {pipelines.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: getPipelineColor(p) }}
+                    />
                     <span>{p.name}</span>
                     {p.is_default && (
-                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1">
                         Default
                       </span>
                     )}
