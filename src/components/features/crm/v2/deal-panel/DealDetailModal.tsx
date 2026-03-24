@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,7 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Edit2, Trash2, Phone, Mail, Trophy, Check, Plus,
-  ExternalLink, ChevronRight, AlertTriangle, Circle,
+  ChevronRight, AlertTriangle, Circle, MessageSquare,
+  RotateCcw, Calendar,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -93,6 +93,36 @@ const ACTIVITY_ICONS: Record<string, string> = {
   whatsapp: "💬",
 };
 
+const DEAL_TYPE_LABELS: Record<string, string> = {
+  trademark_registration: "Registro de Marca",
+  trademark_opposition: "Oposición de Marca",
+  trademark_renewal: "Renovación de Marca",
+  patent_filing: "Solicitud de Patente",
+  patent_prosecution: "Prosecution de Patente",
+  design_registration: "Registro de Diseño",
+  copyright_registration: "Registro de Copyright",
+  ip_litigation: "Litigio PI",
+  ip_portfolio: "Portfolio PI",
+  consulting: "Consultoría",
+  licensing: "Licenciamiento",
+};
+
+/** Generate stable color from string hash */
+function hashColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 55%, 45%)`;
+}
+
+function probColor(p: number): string {
+  if (p < 30) return "#EF4444";
+  if (p <= 70) return "#F59E0B";
+  return "#22C55E";
+}
+
 /* ── Stage Stepper ── */
 function StageStepper({
   stages,
@@ -106,12 +136,9 @@ function StageStepper({
   const sorted = useMemo(() => [...stages].sort((a, b) => a.position - b.position), [stages]);
   const currentIdx = sorted.findIndex((s) => s.id === currentStageId);
 
-  // Show max 6 stages, collapse middle if more
   const maxVisible = 6;
   let visible = sorted;
-  let collapsed = false;
   if (sorted.length > maxVisible) {
-    // Show first 2, current ±1, last 2
     const indices = new Set<number>();
     indices.add(0);
     indices.add(1);
@@ -122,11 +149,10 @@ function StageStepper({
     indices.add(sorted.length - 1);
     const sortedIndices = [...indices].sort((a, b) => a - b);
     visible = sortedIndices.map((i) => sorted[i]);
-    collapsed = true;
   }
 
   return (
-    <div className="flex items-center gap-0 overflow-x-auto py-1">
+    <div className="flex items-center gap-0 overflow-x-auto py-2 px-1">
       {visible.map((stage, i) => {
         const realIdx = sorted.findIndex((s) => s.id === stage.id);
         const isPast = realIdx < currentIdx;
@@ -138,35 +164,55 @@ function StageStepper({
           <div key={stage.id} className="flex items-center">
             {i > 0 && (
               <div
-                className="h-0.5 w-4 sm:w-6"
-                style={{ backgroundColor: isPast || isActive ? pipelineColor : "hsl(var(--border))" }}
+                className="h-[2px] w-5 sm:w-7 transition-colors"
+                style={{
+                  backgroundColor: isPast || isActive
+                    ? `${pipelineColor}99`
+                    : "#E2E8F0",
+                }}
               />
             )}
-            <div className="flex flex-col items-center gap-0.5">
+            <div className="flex flex-col items-center gap-1">
               <div
                 className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] border-2 transition-all",
-                  isPast && "border-transparent text-white",
-                  isActive && !isWon && !isLost && "border-transparent text-white scale-110",
-                  isWon && "border-transparent bg-emerald-500 text-white scale-110",
-                  isLost && "border-transparent bg-destructive text-white scale-110",
-                  !isPast && !isActive && "border-border bg-background text-muted-foreground"
+                  "w-6 h-6 rounded-full flex items-center justify-center transition-all",
+                  isPast && "text-white",
+                  isActive && !isWon && !isLost && "text-white",
+                  isWon && "bg-emerald-500 text-white",
+                  isLost && "bg-destructive text-white",
+                  !isPast && !isActive && "bg-white border-2"
                 )}
-                style={
-                  isPast
-                    ? { backgroundColor: pipelineColor }
-                    : isActive && !isWon && !isLost
-                    ? { backgroundColor: pipelineColor }
-                    : undefined
-                }
+                style={{
+                  ...(isPast ? { backgroundColor: pipelineColor } : {}),
+                  ...(isActive && !isWon && !isLost
+                    ? {
+                        backgroundColor: pipelineColor,
+                        boxShadow: `0 0 0 3px ${pipelineColor}4D`,
+                      }
+                    : {}),
+                  ...(!isPast && !isActive ? { borderColor: "#CBD5E1" } : {}),
+                }}
               >
-                {isPast ? <Check className="w-3 h-3" /> : isWon ? <Trophy className="w-3 h-3" /> : isActive ? <Circle className="w-2.5 h-2.5 fill-current" /> : null}
+                {isPast ? (
+                  <Check className="w-3 h-3" />
+                ) : isWon ? (
+                  <Trophy className="w-3 h-3" />
+                ) : isActive ? (
+                  <Circle className="w-2.5 h-2.5 fill-current" />
+                ) : null}
               </div>
               <span
                 className={cn(
-                  "text-[9px] leading-tight text-center max-w-[56px] truncate",
-                  isActive ? "font-semibold text-foreground" : "text-muted-foreground"
+                  "text-[10px] leading-tight text-center max-w-[60px] truncate",
+                  isActive ? "font-bold" : isPast ? "font-medium" : "font-normal"
                 )}
+                style={{
+                  color: isActive
+                    ? pipelineColor
+                    : isPast
+                    ? `${pipelineColor}CC`
+                    : "#94A3B8",
+                }}
               >
                 {stage.name}
               </span>
@@ -218,6 +264,7 @@ export function DealDetailModal({
   const accountName = deal?.account?.name ?? deal?.account_name_cache ?? "Sin cuenta";
   const contactName = deal?.contact?.name ?? deal?.contact?.full_name ?? null;
   const initials = (accountName ?? "??").split(" ").map((w) => w[0]).join("").substring(0, 2).toUpperCase();
+  const avatarColor = hashColor(accountName);
 
   const sortedTasks = useMemo(
     () => [...tasks].sort((a: any, b: any) => {
@@ -228,13 +275,11 @@ export function DealDetailModal({
     [tasks]
   );
 
-  // Pending deadlines from matter
   const pendingDeadlines = useMemo(
     () => deadlines.filter((d) => !d.is_completed).slice(0, 3),
     [deadlines]
   );
 
-  // Merge tasks + deadlines for "Próximas acciones"
   const actionItems = useMemo(() => {
     const items: { id: string; type: "task" | "deadline"; title: string; daysLeft: number | null; isUrgent: boolean; isWarning: boolean }[] = [];
     pendingDeadlines.forEach((d) => {
@@ -275,6 +320,17 @@ export function DealDetailModal({
   const isLost = stage?.is_lost_stage ?? false;
   const recentActivities = interactions.slice(0, 3);
 
+  // Close date urgency
+  const closeDaysLeft = deal.expected_close_date
+    ? differenceInDays(new Date(deal.expected_close_date), new Date())
+    : null;
+  const closeIsPast = closeDaysLeft !== null && closeDaysLeft < 0;
+  const closeIsNear = closeDaysLeft !== null && closeDaysLeft >= 0 && closeDaysLeft < 30;
+
+  // Deal type label
+  const dealTypeRaw = deal.deal_type ?? deal.opportunity_type ?? null;
+  const dealTypeLabel = dealTypeRaw ? (DEAL_TYPE_LABELS[dealTypeRaw] ?? dealTypeRaw.replace(/_/g, " ")) : "—";
+
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -287,24 +343,33 @@ export function DealDetailModal({
             <DialogDescription>Ficha comercial del deal</DialogDescription>
           </DialogHeader>
 
-          {/* Scrollable content */}
           <ScrollArea className="flex-1 min-h-0">
-            <div className="p-6 space-y-0">
+            <div className="space-y-0">
 
-              {/* ═══ HEADER ═══ */}
-              <div className="space-y-3 pb-5">
+              {/* ═══ HEADER with pipeline color tint ═══ */}
+              <div
+                className="p-6 pb-4 space-y-3"
+                style={{
+                  background: `${pipelineColor}0F`,
+                  borderBottom: `2px solid ${pipelineColor}33`,
+                }}
+              >
                 <Badge
-                  className="text-[10px] uppercase tracking-wider font-semibold"
+                  className="text-[11px] uppercase tracking-[0.08em] font-semibold border-0"
                   style={{
-                    backgroundColor: `${pipelineColor}18`,
+                    backgroundColor: `${pipelineColor}1F`,
                     color: pipelineColor,
-                    border: `1px solid ${pipelineColor}30`,
+                    padding: "3px 8px",
+                    borderRadius: 6,
                   }}
                 >
                   {pipelineName ?? "Pipeline"}
                 </Badge>
 
-                <h2 className="text-[22px] font-bold text-foreground leading-tight line-clamp-2">
+                <h2
+                  className="text-[22px] font-bold leading-tight line-clamp-2"
+                  style={{ color: "#0F172A" }}
+                >
                   {deal.name}
                   {deal.jurisdiction_code && (
                     <span className="text-muted-foreground font-normal text-base ml-2">
@@ -316,10 +381,15 @@ export function DealDetailModal({
                 {stage && (
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-2 h-2 rounded-full"
+                      className="w-2.5 h-2.5 rounded-full"
                       style={{ backgroundColor: stage.color ?? pipelineColor }}
                     />
-                    <span className="text-sm text-muted-foreground">{stage.name}</span>
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: stage.color ?? pipelineColor }}
+                    >
+                      {stage.name}
+                    </span>
                   </div>
                 )}
 
@@ -333,51 +403,77 @@ export function DealDetailModal({
                 )}
               </div>
 
-              <Separator />
+              <Separator className="opacity-0" />
 
               {/* ═══ INFORMACIÓN COMERCIAL ═══ */}
-              <div className="py-5 space-y-3">
+              <div className="px-6 py-5 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Información comercial
                 </p>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-0.5">Valor</p>
-                    <p className="text-base font-bold">{formatEUR(deal.amount_eur ?? deal.amount)}</p>
+
+                {/* Primary metrics — large cards */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
+                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Valor</p>
+                    <p className="text-2xl font-extrabold" style={{ color: "#0F172A" }}>
+                      {formatEUR(deal.amount_eur ?? deal.amount)}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-0.5">Probabilidad</p>
-                    <p className="text-base font-bold">{probability != null ? `${probability}%` : "—"}</p>
+                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
+                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Probabilidad</p>
+                    <p className="text-2xl font-extrabold" style={{ color: "#0F172A" }}>
+                      {probability != null ? `${probability}%` : "—"}
+                    </p>
+                    {probability != null && (
+                      <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(probability, 100)}%`,
+                            backgroundColor: probColor(probability),
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-0.5">Cierre</p>
-                    <p className="text-sm font-medium">
+                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
+                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Cierre</p>
+                    <p
+                      className={cn(
+                        "text-sm font-bold",
+                        closeIsPast && "text-destructive",
+                        closeIsNear && !closeIsPast && "text-amber-600"
+                      )}
+                      style={!closeIsPast && !closeIsNear ? { color: "#0F172A" } : undefined}
+                    >
                       {deal.expected_close_date
                         ? format(new Date(deal.expected_close_date), "d MMM yyyy", { locale: es })
                         : "—"}
+                      {closeIsPast && <span className="text-xs ml-1">(vencido)</span>}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-0.5">Tipo</p>
-                    <p className="text-sm capitalize">{deal.deal_type ?? deal.opportunity_type ?? "—"}</p>
-                  </div>
+                </div>
+
+                {/* Secondary fields */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {dealTypeRaw && (
+                    <Badge variant="secondary" className="text-xs capitalize">
+                      {dealTypeLabel}
+                    </Badge>
+                  )}
                   {deal.jurisdiction_code && (
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-0.5">Jurisdicción</p>
-                      <p className="text-sm uppercase">{deal.jurisdiction_code}</p>
-                    </div>
+                    <Badge variant="outline" className="text-xs uppercase font-semibold tracking-wide">
+                      {deal.jurisdiction_code}
+                    </Badge>
                   )}
                   {deal.owner?.full_name && (
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-0.5">Responsable</p>
-                      <div className="flex items-center gap-1.5">
-                        <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                            {deal.owner.full_name.split(" ").map((w) => w[0]).join("").substring(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm truncate">{deal.owner.full_name}</span>
-                      </div>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                          {deal.owner.full_name.split(" ").map((w) => w[0]).join("").substring(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">{deal.owner.full_name}</span>
                     </div>
                   )}
                 </div>
@@ -386,49 +482,66 @@ export function DealDetailModal({
               <Separator />
 
               {/* ═══ CLIENTE ═══ */}
-              <div className="py-5">
+              <div className="px-6 py-5">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                   Cliente
                 </p>
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 shrink-0" style={{ backgroundColor: `${pipelineColor}20` }}>
+                  <Avatar
+                    className="h-11 w-11 shrink-0 rounded-[10px]"
+                    style={{
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                    }}
+                  >
                     <AvatarFallback
-                      className="text-sm font-semibold"
-                      style={{ color: pipelineColor }}
+                      className="text-sm font-bold text-white rounded-[10px]"
+                      style={{ backgroundColor: avatarColor }}
                     >
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-sm truncate">{accountName}</p>
+                    <p className="font-bold text-[15px] truncate" style={{ color: "#0F172A" }}>
+                      {accountName}
+                    </p>
                     {contactName && (
-                      <p className="text-xs text-muted-foreground truncate">{contactName}</p>
+                      <p className="text-[13px] text-muted-foreground truncate">{contactName}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {deal.contact?.phone && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
-                        <a href={`tel:${deal.contact.phone}`} title={deal.contact.phone}>
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                        </a>
-                      </Button>
+                      <a
+                        href={`tel:${deal.contact.phone}`}
+                        title={deal.contact.phone}
+                        className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+                      >
+                        <Phone className="h-[18px] w-[18px] text-muted-foreground" />
+                      </a>
                     )}
                     {deal.contact?.email && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
-                        <a href={`mailto:${deal.contact.email}`} title={deal.contact.email}>
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        </a>
-                      </Button>
-                    )}
-                    {deal.account?.id && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={() => { navigate(`/app/crm/v2/accounts/${deal.account!.id}`); onClose(); }}
+                      <a
+                        href={`mailto:${deal.contact.email}`}
+                        title={deal.contact.email}
+                        className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
                       >
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </Button>
+                        <Mail className="h-[18px] w-[18px] text-muted-foreground" />
+                      </a>
+                    )}
+                    <button
+                      onClick={() => setActivityType("note")}
+                      className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+                      title="Nota"
+                    >
+                      <MessageSquare className="h-[18px] w-[18px] text-muted-foreground" />
+                    </button>
+                    {deal.account?.id && (
+                      <button
+                        onClick={() => { navigate(`/app/crm/v2/accounts/${deal.account!.id}`); onClose(); }}
+                        className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+                        title="Ver perfil"
+                      >
+                        <ChevronRight className="h-[18px] w-[18px] text-muted-foreground" />
+                      </button>
                     )}
                   </div>
                 </div>
@@ -437,43 +550,74 @@ export function DealDetailModal({
               <Separator />
 
               {/* ═══ PRÓXIMAS ACCIONES ═══ */}
-              <div className="py-5 space-y-3">
+              <div className="px-6 py-5 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Próximas acciones
                 </p>
 
                 {actionItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Sin acciones pendientes.</p>
+                  <div className="flex flex-col items-center gap-3 py-4 text-center">
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Sin acciones pendientes</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("email")}>
+                        <Mail className="h-3 w-3 mr-1" /> Email
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("call")}>
+                        <Phone className="h-3 w-3 mr-1" /> Llamada
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("note")}>
+                        <MessageSquare className="h-3 w-3 mr-1" /> Nota
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {actionItems.slice(0, 5).map((item) => (
                       <div
                         key={item.id}
                         className={cn(
-                          "flex items-start gap-2.5 rounded-lg px-3 py-2 text-sm",
-                          item.isUrgent && "bg-destructive/5",
-                          item.isWarning && "bg-amber-50 dark:bg-amber-950/20",
+                          "flex items-start gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                          item.isUrgent && "bg-red-50 dark:bg-red-950/20 border-l-[3px] border-l-red-500",
+                          item.isWarning && "bg-amber-50 dark:bg-amber-950/20 border-l-[3px] border-l-amber-500",
                           !item.isUrgent && !item.isWarning && "bg-muted/40"
                         )}
                       >
                         {item.type === "deadline" ? (
-                          <AlertTriangle className={cn("w-4 h-4 mt-0.5 shrink-0", item.isUrgent ? "text-destructive" : "text-amber-500")} />
+                          <AlertTriangle
+                            className={cn(
+                              "w-4 h-4 mt-0.5 shrink-0",
+                              item.isUrgent ? "text-red-500" : "text-amber-500"
+                            )}
+                          />
                         ) : (
                           <button
                             onClick={() => item.type === "task" && completeTask.mutate(item.id)}
-                            className="mt-0.5 shrink-0 w-4 h-4 rounded border border-border hover:border-primary flex items-center justify-center"
+                            className={cn(
+                              "mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                              item.isUrgent
+                                ? "border-red-300 hover:border-red-500"
+                                : "border-border hover:border-primary"
+                            )}
                           >
                             <Check className="w-2.5 h-2.5 opacity-0 hover:opacity-40" />
                           </button>
                         )}
-                        <span className="flex-1 min-w-0 truncate">{item.title}</span>
+                        <span className={cn(
+                          "flex-1 min-w-0 truncate",
+                          item.isUrgent && "font-semibold"
+                        )}>
+                          {item.title}
+                        </span>
                         {item.daysLeft !== null && (
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-[10px] shrink-0",
-                              item.isUrgent && "border-destructive/30 text-destructive bg-destructive/10",
-                              item.isWarning && "border-amber-400/30 text-amber-600 bg-amber-50"
+                              "text-[10px] shrink-0 font-medium",
+                              item.isUrgent && "border-red-300 text-red-600 bg-red-50",
+                              item.isWarning && "border-amber-300 text-amber-600 bg-amber-50"
                             )}
                           >
                             {item.daysLeft < 0 ? `hace ${Math.abs(item.daysLeft)}d` : `${item.daysLeft}d`}
@@ -507,7 +651,7 @@ export function DealDetailModal({
               <Separator />
 
               {/* ═══ ACTIVIDAD RECIENTE ═══ */}
-              <div className="py-5 space-y-3">
+              <div className="px-6 py-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Actividad reciente
@@ -520,7 +664,23 @@ export function DealDetailModal({
                 </div>
 
                 {recentActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Sin actividad registrada.</p>
+                  <div className="flex flex-col items-center gap-3 py-4 text-center">
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Sin actividad registrada</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("email")}>
+                        <Mail className="h-3 w-3 mr-1" /> Email
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("call")}>
+                        <Phone className="h-3 w-3 mr-1" /> Llamada
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("note")}>
+                        <MessageSquare className="h-3 w-3 mr-1" /> Nota
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {recentActivities.map((a: any) => {
@@ -552,7 +712,7 @@ export function DealDetailModal({
               <Separator />
 
               {/* ═══ EXPEDIENTE VINCULADO ═══ */}
-              <div className="py-5">
+              <div className="px-6 py-5">
                 <DealLinkedMatter
                   matterId={deal.matter_id}
                   dealName={deal.name ?? undefined}
@@ -566,15 +726,13 @@ export function DealDetailModal({
           <div className="border-t bg-background px-6 py-3 flex items-center justify-between shrink-0">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs"
+                <button
+                  className="text-[13px] text-destructive/70 hover:text-destructive flex items-center gap-1 transition-colors"
                   disabled={deleteDeal.isPending}
                 >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  <Trash2 className="h-3.5 w-3.5" />
                   Eliminar
-                </Button>
+                </button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -608,10 +766,11 @@ export function DealDetailModal({
                 Editar
               </Button>
 
-              {!isWon && !isLost && (
+              {!isWon && !isLost ? (
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="text-white font-semibold px-5"
+                  style={{ backgroundColor: "#22C55E" }}
                   onClick={async () => {
                     const wonStage = stages.find((s) => s.is_won_stage);
                     if (wonStage) {
@@ -626,7 +785,25 @@ export function DealDetailModal({
                   <Trophy className="h-3.5 w-3.5 mr-1.5" />
                   Marcar ganado
                 </Button>
-              )}
+              ) : isWon ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const firstStage = [...stages].sort((a, b) => a.position - b.position)[0];
+                    if (firstStage) {
+                      await updateDeal.mutateAsync({
+                        id: deal.id,
+                        data: { stage_id: firstStage.id } as any,
+                      });
+                    }
+                  }}
+                  disabled={updateDeal.isPending}
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                  Reabrir deal
+                </Button>
+              ) : null}
             </div>
           </div>
         </DialogContent>
