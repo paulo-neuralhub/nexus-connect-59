@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { CRMDeal } from "@/hooks/crm/v2/types";
 import { useSearchParams } from "react-router-dom";
 import { usePageTitle } from "@/contexts/page-context";
 import { useCRMDeals } from "@/hooks/crm/v2/deals";
@@ -145,14 +146,7 @@ export default function CRMV2DealsList() {
             ) : (
               <DealsKanbanBoard
                 pipeline={selectedPipeline}
-                deals={rows.map((r) => ({
-                  id: r.id,
-                  name: r.name ?? r.id,
-                  amount: r.amount,
-                  stage_id: r.pipeline_stage_id ?? r.stage_id ?? null,
-                  stage_entered_at: r.stage_entered_at ?? null,
-                  account: r.account ?? null,
-                }))}
+                deals={rows as unknown as CRMDeal[]}
                 onDealClick={handleDealClick}
                 onAddDeal={(stageId) => {
                   setPrefillStageId(stageId);

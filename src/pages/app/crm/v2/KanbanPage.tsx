@@ -1,13 +1,13 @@
 /**
- * CRM Kanban Page V2 — Real data from crm_* tables
- * Replaces old CRMPipelinePage at /app/crm/kanban
+ * CRM Kanban Page V2 — Redesigned with Pipedrive-style UI
  */
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePageTitle } from "@/contexts/page-context";
 import { useCRMPipelines, useDefaultCRMPipeline } from "@/hooks/crm/v2/pipelines";
-import { useCRMDeals, useMoveDealStage } from "@/hooks/crm/v2/deals";
+import { useCRMDeals } from "@/hooks/crm/v2/deals";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -16,23 +16,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, TrendingUp, Kanban } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, Settings, Search, Filter, RefreshCw, Kanban, TrendingUp } from "lucide-react";
 import { DealsKanbanBoard } from "@/components/features/crm/v2/kanban";
 import { DealFormModal } from "@/components/features/crm/v2/DealFormModal";
 import { DealDetailPanel } from "@/components/features/crm/v2/deal-panel";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Link } from "react-router-dom";
 
-function formatEUR(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
+function formatCurrency(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M €`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k €`;
+  return `${value.toLocaleString("es-ES")} €`;
 }
 
 export default function CRMKanbanPageV2() {
   usePageTitle("Pipeline");
   const navigate = useNavigate();
 
-  const { data: pipelines = [], isLoading: loadingPipelines } = useCRMPipelines();
+  const { data: pipelines = [], isLoading: loadingPipelines, refetch } = useCRMPipelines();
   const { data: defaultPipeline } = useDefaultCRMPipeline();
   const [pipelineId, setPipelineId] = useState<string | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string | null>(null);
 
   const activePipelineId = pipelineId || defaultPipeline?.id;
   const selectedPipeline = pipelines.find((p) => p.id === activePipelineId) ?? defaultPipeline;
@@ -50,6 +61,24 @@ export default function CRMKanbanPageV2() {
     () => (selectedDealId ? deals.find((d) => d.id === selectedDealId) : undefined),
     [deals, selectedDealId]
   );
+
+  // Filter deals by search + type
+  const filteredDeals = useMemo(() => {
+    let result = deals;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          (d.account_name_cache ?? "").toLowerCase().includes(q) ||
+          (d.account?.name ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (filterType) {
+      result = result.filter((d) => d.deal_type === filterType || d.opportunity_type === filterType);
+    }
+    return result;
+  }, [deals, searchQuery, filterType]);
 
   // KPIs
   const openDeals = deals.filter((d) => !d.pipeline_stage?.is_won_stage && !d.pipeline_stage?.is_lost_stage);
@@ -86,71 +115,104 @@ export default function CRMKanbanPageV2() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-full md:w-[280px]">
-            <Select value={activePipelineId ?? ""} onValueChange={(v) => setPipelineId(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pipeline" />
-              </SelectTrigger>
-              <SelectContent>
-                {pipelines.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
+    <div className="space-y-4">
+      {/* Row 1: Pipeline selector + KPIs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* SILK NeoBadge KPIs */}
-          <div className="hidden md:flex items-center gap-3">
-            <div
-              className="px-3 py-1.5 rounded-lg text-xs"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)",
-                border: "1px solid hsl(var(--border))",
-              }}
-            >
-              <span className="text-muted-foreground">Deals: </span>
-              <span className="font-bold text-foreground">{openDeals.length}</span>
-            </div>
-            <div
-              className="px-3 py-1.5 rounded-lg text-xs"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)",
-                border: "1px solid hsl(var(--border))",
-              }}
-            >
-              <span className="text-muted-foreground">Pipeline: </span>
-              <span className="font-bold text-foreground">{formatEUR(totalValue)}</span>
-            </div>
-            <div
-              className="px-3 py-1.5 rounded-lg text-xs"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)",
-                border: "1px solid hsl(var(--border))",
-              }}
-            >
-              <span className="text-muted-foreground">Win rate: </span>
-              <span className="font-bold text-foreground">{winRate}%</span>
-            </div>
-          </div>
+          <Select value={activePipelineId ?? ""} onValueChange={(v) => setPipelineId(v)}>
+            <SelectTrigger className="w-[240px] font-semibold">
+              <SelectValue placeholder="Seleccionar pipeline..." />
+            </SelectTrigger>
+            <SelectContent className="bg-background border shadow-lg z-50">
+              {pipelines.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  <div className="flex items-center gap-2">
+                    <span>{p.name}</span>
+                    {p.is_default && (
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                        Default
+                      </span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <Button
-            onClick={() => {
-              setPrefillStageId(undefined);
-              setShowDealForm(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Deal
-          </Button>
+          <Link to="/app/settings" state={{ section: "crm" }}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Configurar pipelines">
+              <Settings className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
+
+        {/* KPI chips */}
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Deals:</span>
+            <span className="font-bold">{deals.length}</span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Pipeline:</span>
+            <span className="font-bold text-primary">{formatCurrency(totalValue)}</span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Win rate:</span>
+            <span className="font-bold text-green-600">{winRate}%</span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Activos:</span>
+            <span className="font-bold">{openDeals.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Search + filters + actions */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar deals..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9"
+          />
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={filterType ? "secondary" : "outline"} size="sm" className="h-9">
+              <Filter className="w-3.5 h-3.5 mr-1.5" />
+              {filterType ? `🏷️ ${filterType}` : "Tipo"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="bg-background">
+            <DropdownMenuItem onClick={() => setFilterType(null)}>Todos</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterType("trademark")}>⚖️ Trademark</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterType("patent")}>🔬 Patent</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterType("design")}>🎨 Design</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => refetch()}>
+          <RefreshCw className="w-3.5 h-3.5" />
+        </Button>
+
+        <div className="flex-1" />
+
+        <Button
+          onClick={() => {
+            setPrefillStageId(undefined);
+            setShowDealForm(true);
+          }}
+          className="h-9"
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          Nuevo Deal
+        </Button>
       </div>
 
       {/* Kanban Board */}
@@ -162,25 +224,18 @@ export default function CRMKanbanPageV2() {
           actionLabel="Configurar etapas"
           onAction={() => navigate("/app/crm/settings")}
         />
-      ) : deals.length === 0 ? (
+      ) : filteredDeals.length === 0 && deals.length === 0 ? (
         <EmptyState
           icon={<TrendingUp className="w-8 h-8" />}
           title="Sin deals en este pipeline"
-          description="Crea tu primer deal para comenzar a hacer seguimiento de oportunidades."
+          description="Crea tu primer deal para comenzar a hacer seguimiento."
           actionLabel="Crear deal"
           onAction={() => setShowDealForm(true)}
         />
       ) : (
         <DealsKanbanBoard
           pipeline={selectedPipeline}
-          deals={deals.map((d) => ({
-            id: d.id,
-            name: d.name,
-            amount: d.amount_eur ?? d.amount,
-            stage_id: d.pipeline_stage_id ?? null,
-            stage_entered_at: d.stage_entered_at ?? null,
-            account: d.account ?? null,
-          }))}
+          deals={filteredDeals}
           onDealClick={(dealId) => {
             setSelectedDealId(dealId);
             setShowPanel(true);

@@ -50,12 +50,40 @@ export function DealMiniListWithPanel({ deals, emptyLabel = "Sin deals" }: Props
           {deals.map((d) => (
             <DealKanbanCard
               key={d.id}
-              title={d.name ?? d.id}
-              subtitle={d.account?.name ?? "—"}
-              amount={d.amount}
-              probability={d.probability ?? undefined}
-              expectedCloseDate={d.expected_close_date}
-              ownerName={d.owner?.full_name ?? null}
+              deal={{
+                id: d.id,
+                name: d.name ?? d.id,
+                organization_id: "",
+                account_id: null,
+                contact_id: null,
+                owner_id: null,
+                assigned_to: null,
+                stage: d.stage ?? null,
+                pipeline_id: d.pipeline_id ?? null,
+                pipeline_stage_id: d.stage_id ?? null,
+                deal_type: null,
+                opportunity_type: null,
+                jurisdiction_code: null,
+                nice_classes: null,
+                amount: d.amount ?? null,
+                amount_eur: null,
+                weighted_amount: null,
+                official_fees_eur: null,
+                professional_fees_eur: null,
+                probability_pct: d.probability ?? null,
+                expected_close_date: d.expected_close_date ?? null,
+                actual_close_date: null,
+                stage_entered_at: null,
+                stage_history: [],
+                close_reason: null,
+                lost_reason: null,
+                lost_to_competitor: null,
+                matter_id: null,
+                account_name_cache: d.account?.name ?? null,
+                created_at: d.created_at ?? "",
+                updated_at: d.updated_at ?? "",
+                account: d.account ? { id: d.account.id, name: d.account.name ?? "" } : null,
+              }}
               onClick={() => {
                 setSelectedDealId(d.id);
                 setOpen(true);
