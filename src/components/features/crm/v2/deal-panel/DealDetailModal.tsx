@@ -221,15 +221,26 @@ function StageStepper({
                   <Circle className="w-2 h-2 fill-white text-white" />
                 ) : null}
               </div>
-              <span
-                className="text-[10px] leading-tight text-center max-w-[60px] truncate"
-                style={{
-                  color: isActive ? "white" : isPast ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.3)",
-                  fontWeight: isActive ? 700 : isPast ? 500 : 400,
-                }}
-              >
-                {stage.name}
-              </span>
+              <div className="flex flex-col items-center gap-0.5">
+                <span
+                  className="text-[10px] leading-tight text-center max-w-[60px] truncate"
+                  style={{
+                    color: isActive ? "white" : isPast ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.3)",
+                    fontWeight: isActive ? 700 : isPast ? 500 : 400,
+                  }}
+                >
+                  {stage.name}
+                </span>
+                {stage.lock_type === "matter_driven" && (
+                  <Lock className="w-2.5 h-2.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                )}
+                {stage.lock_type === "confirm" && (
+                  <AlertTriangle className="w-2.5 h-2.5" style={{ color: "rgba(255,200,50,0.6)" }} />
+                )}
+                {stage.lock_type === "admin_only" && (
+                  <UserCheck className="w-2.5 h-2.5" style={{ color: "rgba(255,255,255,0.3)" }} />
+                )}
+              </div>
             </div>
           </div>
         );
