@@ -31,7 +31,7 @@ export function usePredictiveAlerts(filters?: {
         .limit(limit);
 
       if (status !== 'all') query = query.eq('status', status);
-      if (severity !== 'all') query = query.eq('severity', severity);
+      if (severity !== 'all') query = query.eq('priority', severity);
       if (type !== 'all') query = query.eq('alert_type', type);
 
       const { data, error } = await query;
