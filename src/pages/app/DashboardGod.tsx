@@ -232,7 +232,7 @@ export default function DashboardGod() {
           type: 'matter' as const,
           icon: Briefcase,
           title: e.reference || e.title,
-          subtitle: `Fase ${e.current_phase || 'N/A'}`,
+          subtitle: `Expediente actualizado`,
           time: e.updated_at,
           color: 'text-blue-500'
         }))
