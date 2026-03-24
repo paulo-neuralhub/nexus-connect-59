@@ -5304,8 +5304,11 @@ export type Database = {
       }
       bulk_instructions: {
         Row: {
+          acknowledgement_sent_at: string | null
           completed_at: string | null
+          conflict_checked: boolean | null
           created_at: string | null
+          crm_account_id: string | null
           deadline_date: string | null
           description: string
           executed_count: number | null
@@ -5314,8 +5317,11 @@ export type Database = {
           instruction_type: string
           is_urgent: boolean | null
           organization_id: string
+          quote_approved_at: string | null
+          quote_sent_at: string | null
           sent_at: string | null
           sent_by: string
+          source: string | null
           status: string | null
           target_family_id: string | null
           target_ids: string[]
@@ -5325,8 +5331,11 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          acknowledgement_sent_at?: string | null
           completed_at?: string | null
+          conflict_checked?: boolean | null
           created_at?: string | null
+          crm_account_id?: string | null
           deadline_date?: string | null
           description: string
           executed_count?: number | null
@@ -5335,8 +5344,11 @@ export type Database = {
           instruction_type: string
           is_urgent?: boolean | null
           organization_id: string
+          quote_approved_at?: string | null
+          quote_sent_at?: string | null
           sent_at?: string | null
           sent_by: string
+          source?: string | null
           status?: string | null
           target_family_id?: string | null
           target_ids?: string[]
@@ -5346,8 +5358,11 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          acknowledgement_sent_at?: string | null
           completed_at?: string | null
+          conflict_checked?: boolean | null
           created_at?: string | null
+          crm_account_id?: string | null
           deadline_date?: string | null
           description?: string
           executed_count?: number | null
@@ -5356,8 +5371,11 @@ export type Database = {
           instruction_type?: string
           is_urgent?: boolean | null
           organization_id?: string
+          quote_approved_at?: string | null
+          quote_sent_at?: string | null
           sent_at?: string | null
           sent_by?: string
+          source?: string | null
           status?: string | null
           target_family_id?: string | null
           target_ids?: string[]
@@ -5367,6 +5385,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bulk_instructions_crm_account_id_fkey"
+            columns: ["crm_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bulk_instructions_organization_id_fkey"
             columns: ["organization_id"]
