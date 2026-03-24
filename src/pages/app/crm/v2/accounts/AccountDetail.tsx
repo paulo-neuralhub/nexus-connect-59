@@ -19,7 +19,7 @@ import {
 import {
   ArrowLeft, Edit, Star, MoreHorizontal, Mail, Phone,
   Archive, Trash2, Building2, Users, Briefcase, TrendingUp,
-  Clock, FileText, AlertTriangle, Globe
+  Clock, FileText, AlertTriangle, Globe, ClipboardList
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -35,6 +35,7 @@ import { AccountActivitiesTab } from "./tabs/AccountActivitiesTab";
 import { AccountDocumentsTab } from "./tabs/AccountDocumentsTab";
 import { AccountAgentTab } from "./tabs/AccountAgentTab";
 import { AccountPortalTab } from "./tabs/AccountPortalTab";
+import { AccountInstructionsTab } from "./tabs/AccountInstructionsTab";
 import { InteractionFormModal } from "@/components/features/crm/v2/InteractionFormModal";
 import { IPCoPilotPanel } from "@/components/features/crm/v2/IPCoPilotPanel";
 import { openSoftphone } from "@/components/telephony/IPSoftphone";
