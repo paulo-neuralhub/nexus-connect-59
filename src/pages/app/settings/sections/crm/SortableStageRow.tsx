@@ -38,6 +38,19 @@ const LOCK_OPTIONS = [
   { value: 'admin_only', label: '👤 Admin', icon: UserCheck },
 ];
 
+const MATTER_STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'examining', label: 'Examinación' },
+  { value: 'office_action', label: 'Acción oficial' },
+  { value: 'published', label: 'Publicado' },
+  { value: 'registered', label: 'Registrado' },
+  { value: 'refused', label: 'Rechazado' },
+  { value: 'granted', label: 'Concedido' },
+  { value: 'renewed', label: 'Renovado' },
+  { value: 'lapsed', label: 'Caducado' },
+  { value: 'opposed', label: 'En oposición' },
+];
+
 export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRowProps>(function SortableStageRow(
   { id, stage, onUpdate, onDelete, pipelineId },
   ref
