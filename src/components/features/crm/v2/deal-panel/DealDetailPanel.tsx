@@ -317,6 +317,17 @@ export function DealDetailPanel({
 
         <Separator />
 
+        {/* EXPEDIENTE VINCULADO */}
+        <div className="p-5">
+          <DealLinkedMatter
+            matterId={(deal as any).matter_id}
+            dealName={deal.name ?? undefined}
+            accountId={deal.account?.id}
+          />
+        </div>
+
+        <Separator />
+
         {/* ARCHIVOS (placeholder) */}
         <div className="p-5 space-y-2">
           <p className="text-sm font-medium text-foreground">Archivos</p>
