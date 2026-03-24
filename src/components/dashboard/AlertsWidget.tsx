@@ -25,8 +25,8 @@ const SEVERITY_BG: Record<AlertSeverity, string> = {
 export function AlertsWidget() {
   const { data: alerts, isLoading } = useDashboardAlerts(5);
   
-  const criticalCount = alerts?.filter(a => a.severity === 'critical').length || 0;
-  const highCount = alerts?.filter(a => a.severity === 'high').length || 0;
+  const criticalCount = alerts?.filter(a => a.priority === 'critical').length || 0;
+  const highCount = alerts?.filter(a => a.priority === 'high').length || 0;
   const urgentCount = criticalCount + highCount;
 
   return (
