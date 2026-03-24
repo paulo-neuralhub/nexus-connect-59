@@ -29,11 +29,12 @@ import {
 import {
   Edit2, Trash2, Phone, Mail, Trophy, Check, Plus,
   ChevronRight, AlertTriangle, Circle, MessageSquare,
-  RotateCcw, Calendar,
+  RotateCcw, Calendar, Lock, UserCheck,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCountUp } from "@/hooks/use-count-up";
 
 import { useUpdateCRMDeal, useDeleteCRMDeal } from "@/hooks/crm/v2/deals";
