@@ -64,7 +64,7 @@ export function AlertsWidget() {
                   to="/app/alerts"
                   className={cn(
                     "block p-3 rounded-lg border transition-colors hover:bg-muted",
-                    SEVERITY_BG[alert.severity as AlertSeverity]
+                    SEVERITY_BG[(alert.priority || 'low') as AlertSeverity]
                   )}
                 >
                   <div className="flex items-start gap-2">
