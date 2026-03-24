@@ -176,6 +176,8 @@ export interface ActivityFilters {
 }
 
 // ── crm_pipelines / crm_pipeline_stages ──
+export type StageLockType = 'free' | 'confirm' | 'matter_driven' | 'admin_only';
+
 export interface CRMPipelineStage {
   id: UUID;
   pipeline_id: UUID;
@@ -185,6 +187,9 @@ export interface CRMPipelineStage {
   position: number;
   is_won_stage: boolean;
   is_lost_stage: boolean;
+  lock_type: StageLockType | null;
+  lock_message: string | null;
+  matter_status_trigger: string | null;
   created_at: string;
 }
 

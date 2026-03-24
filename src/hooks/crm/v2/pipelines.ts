@@ -8,7 +8,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import type { CRMPipeline, CRMPipelineStage } from "./types";
 
 // Re-export types so consumers importing from pipelines.ts still work
-export type { CRMPipeline, CRMPipelineStage } from "./types";
+export type { CRMPipeline, CRMPipelineStage, StageLockType } from "./types";
 
 export function useCRMPipelines() {
   const { organizationId } = useOrganization();
@@ -22,7 +22,7 @@ export function useCRMPipelines() {
         .select(`
           id, organization_id, name, description, pipeline_type,
           is_default, is_active, position, created_at, updated_at,
-          stages:crm_pipeline_stages(id, pipeline_id, name, color, probability, position, is_won_stage, is_lost_stage, created_at)
+          stages:crm_pipeline_stages(id, pipeline_id, name, color, probability, position, is_won_stage, is_lost_stage, lock_type, lock_message, matter_status_trigger, created_at)
         `)
         .eq("organization_id", organizationId)
         .eq("is_active", true)
