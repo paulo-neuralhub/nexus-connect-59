@@ -720,7 +720,7 @@ export function DealDetailModal({
                 />
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
           {/* ═══ FIXED FOOTER ═══ */}
           <div className="border-t bg-background px-6 py-3 flex items-center justify-between shrink-0">
