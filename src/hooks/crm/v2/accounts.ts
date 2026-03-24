@@ -79,7 +79,7 @@ export function useCRMAccountDetail(id: string | undefined) {
     queryFn: async () => {
       if (!organizationId || !id) return null;
 
-      const [accountRes, contactsRes, dealsRes, activitiesRes, mattersRes] = await Promise.all([
+      const [accountRes, contactsRes, dealsRes, mattersRes] = await Promise.all([
         fromTable("crm_accounts")
           .select(`*, assigned_user:profiles!assigned_to(id, first_name, last_name, avatar_url)`)
           .eq("id", id)
@@ -96,19 +96,25 @@ export function useCRMAccountDetail(id: string | undefined) {
           .eq("account_id", id)
           .eq("organization_id", organizationId)
           .order("created_at", { ascending: false }),
-        fromTable("crm_activities")
-          .select(`id, activity_type, subject, description, activity_date,
-                   contact:crm_contacts!contact_id(id, full_name),
-                   creator:profiles!created_by(id, first_name, last_name)`)
-          .eq("account_id", id)
-          .eq("organization_id", organizationId)
-          .order("activity_date", { ascending: false })
-          .limit(10),
         fromTable("matters")
           .select("id", { count: "exact", head: true })
           .or(`client_id.eq.${id},crm_account_id.eq.${id}`)
           .eq("organization_id", organizationId),
       ]);
+
+      // Get activities from `activities` table via crm_contacts → contact_id
+      const contactIds = (contactsRes.data ?? []).map((c: any) => c.id);
+      let activitiesData: any[] = [];
+      if (contactIds.length > 0) {
+        const { data: actData } = await supabase
+          .from("activities")
+          .select("id, type, subject, content, created_at")
+          .in("contact_id", contactIds)
+          .eq("organization_id", organizationId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        activitiesData = actData ?? [];
+      }
 
       if (accountRes.error) throw accountRes.error;
       if (!accountRes.data) return null;
@@ -117,7 +123,7 @@ export function useCRMAccountDetail(id: string | undefined) {
         account: accountRes.data as CRMAccount,
         contacts: contactsRes.data ?? [],
         deals: dealsRes.data ?? [],
-        activities: activitiesRes.data ?? [],
+        activities: activitiesData,
         mattersCount: mattersRes.count ?? 0,
       };
     },

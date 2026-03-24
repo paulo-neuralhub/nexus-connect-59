@@ -1,10 +1,11 @@
 /**
  * CRM Account Detail — Tab: Actividades / Timeline
- * Paginated (20 per page) with "load more"
+ * Queries the `activities` table via contact_ids linked to this account
  */
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { fromTable } from "@/lib/supabase";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,12 +21,11 @@ const PAGE_SIZE = 20;
 
 interface Activity {
   id: string;
-  activity_type: string;
+  type: string;
   subject?: string | null;
-  description?: string | null;
-  activity_date: string;
-  contact?: { id: string; full_name: string } | null;
-  creator?: { id: string; first_name: string | null; last_name: string | null } | null;
+  content?: string | null;
+  created_at: string;
+  contact?: { id: string; name: string } | null;
 }
 
 interface Props {
@@ -40,25 +40,37 @@ const TYPE_ICON: Record<string, { icon: React.ElementType; color: string }> = {
   meeting: { icon: Calendar, color: "text-violet-500 bg-violet-500/10" },
   note: { icon: StickyNote, color: "text-amber-500 bg-amber-500/10" },
   document: { icon: FileText, color: "text-cyan-500 bg-cyan-500/10" },
+  task: { icon: Clock, color: "text-orange-500 bg-orange-500/10" },
 };
 
 function useAccountActivities(accountId: string, page: number) {
   const { organizationId } = useOrganization();
 
   return useQuery({
-    queryKey: ["crm-account-activities", organizationId, accountId, page],
+    queryKey: ["crm-account-activities-v2", organizationId, accountId, page],
     queryFn: async () => {
       if (!organizationId) return { data: [] as Activity[], hasMore: false };
-      const { data, error } = await fromTable("crm_activities")
-        .select(
-          `id, activity_type, subject, description, activity_date,
-           contact:crm_contacts!contact_id(id, full_name),
-           creator:profiles!created_by(id, first_name, last_name)`
-        )
+
+      // 1. Get contact IDs from crm_contacts for this account
+      const { data: contacts } = await fromTable("crm_contacts")
+        .select("id")
         .eq("account_id", accountId)
+        .eq("organization_id", organizationId);
+
+      const contactIds = (contacts ?? []).map((c: any) => c.id);
+      if (contactIds.length === 0) return { data: [] as Activity[], hasMore: false };
+
+      // 2. Query activities table by those contact_ids
+      const { data, error } = await (supabase.from("activities") as any)
+        .select(`
+          id, type, subject, content, created_at,
+          contact:contacts!activities_contact_id_fkey(id, name)
+        `)
+        .in("contact_id", contactIds)
         .eq("organization_id", organizationId)
-        .order("activity_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .range(0, (page + 1) * PAGE_SIZE - 1);
+
       if (error) throw error;
       const rows = (data ?? []) as Activity[];
       return { data: rows, hasMore: rows.length === (page + 1) * PAGE_SIZE };
@@ -106,7 +118,7 @@ export function AccountActivitiesTab({ accountId, onAddActivity }: Props) {
         <div className="absolute left-[11px] top-3 bottom-3 w-px bg-border" />
 
         {activities.map(a => {
-          const t = TYPE_ICON[a.activity_type] ?? TYPE_ICON.note;
+          const t = TYPE_ICON[a.type] ?? TYPE_ICON.note;
           const Icon = t.icon;
           return (
             <div key={a.id} className="relative flex gap-3 py-2">
@@ -115,18 +127,17 @@ export function AccountActivitiesTab({ accountId, onAddActivity }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm truncate">{a.subject || a.activity_type}</p>
+                  <p className="font-medium text-sm truncate">{a.subject || a.type}</p>
                   <span className="text-[10px] text-muted-foreground shrink-0">
-                    {format(new Date(a.activity_date), "dd MMM yyyy, HH:mm", { locale: es })}
+                    {format(new Date(a.created_at), "dd MMM yyyy, HH:mm", { locale: es })}
                   </span>
                 </div>
-                {a.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{a.description}</p>
+                {a.content && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{a.content}</p>
                 )}
-                {(a.contact || a.creator) && (
+                {a.contact && (
                   <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                    {a.contact && <Badge variant="secondary" className="text-[10px] h-4">{a.contact.full_name}</Badge>}
-                    {a.creator && <span>por {[a.creator.first_name, a.creator.last_name].filter(Boolean).join(" ")}</span>}
+                    <Badge variant="secondary" className="text-[10px] h-4">{a.contact.name}</Badge>
                   </div>
                 )}
               </div>
