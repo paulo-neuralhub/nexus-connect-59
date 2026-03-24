@@ -251,7 +251,7 @@ export function useMattersV2(filters?: MatterV2Filters) {
         tags: m.tags || [],
         custom_fields: m.custom_fields || {},
         // Phase tracking
-        current_phase: m.current_phase || 'F0',
+        current_phase: m.current_phase ?? 'F0',
         phase_entered_at: m.phase_entered_at || m.phase_started_at,
         phase_history: m.phase_history || [],
         previous_phase: m.previous_phase,
