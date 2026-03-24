@@ -15,12 +15,7 @@ interface ContextualHelpProviderProps {
  * based on the rules engine. Include this at the app layout level.
  */
 export function ContextualHelpProvider({ children }: ContextualHelpProviderProps) {
-  return (
-    <>
-      {children}
-      <ContextualHelpPopup />
-    </>
-  );
+  return <>{children}</>;
 }
 
 export default ContextualHelpProvider;
