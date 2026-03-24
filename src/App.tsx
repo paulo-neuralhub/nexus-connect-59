@@ -477,6 +477,7 @@ const App = () => (
                   <Route path="interactions" element={<Navigate to="/app/crm/activities" replace />} />
                   <Route path="tasks" element={<CRMV2TasksList />} />
                 </Route>
+                <Route path="instructions" element={<InstructionsPage />} />
                 <Route path="marketing" element={<MarketingLayout />}>
                   <Route index element={<MarketingDashboard />} />
                   <Route path="templates" element={<TemplateList />} />
