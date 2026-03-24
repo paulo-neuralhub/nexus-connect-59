@@ -88,7 +88,7 @@ export default function DealDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Contacto</p>
-              <p className="text-base mt-1">{deal.contact?.full_name ?? "—"}</p>
+              <p className="text-base mt-1">{deal.contact?.name ?? deal.contact?.full_name ?? "—"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Responsable</p>

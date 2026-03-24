@@ -37,7 +37,7 @@ type Deal = {
   created_at?: string | null;
   updated_at?: string | null;
   account?: { id: string; name?: string | null } | null;
-  contact?: { id: string; full_name?: string | null; email?: string | null; phone?: string | null } | null;
+  contact?: { id: string; name?: string | null; full_name?: string | null; email?: string | null; phone?: string | null } | null;
   owner?: { id: string; full_name?: string | null } | null;
 };
 
@@ -245,7 +245,7 @@ export function DealDetailPanel({
                   <p className="font-medium text-foreground">{deal.account?.name ?? "Sin cuenta"}</p>
                 )}
                 <p className="text-sm text-muted-foreground mt-1">
-                  {deal.contact?.full_name ?? "Sin contacto principal"}
+                  {deal.contact?.name ?? deal.contact?.full_name ?? "Sin contacto principal"}
                 </p>
               </div>
 

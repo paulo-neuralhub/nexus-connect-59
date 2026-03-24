@@ -41,7 +41,7 @@ export type CRMDealDetail = {
   updated_at: string;
   // Relations
   account?: { id: string; name?: string | null; tier?: string | null; email?: string | null } | null;
-  contact?: { id: string; full_name?: string | null; email?: string | null; phone?: string | null } | null;
+  contact?: { id: string; name?: string | null; full_name?: string | null; email?: string | null; phone?: string | null } | null;
   owner?: { id: string; full_name?: string | null; avatar_url?: string | null } | null;
   assigned_user?: { id: string; full_name?: string | null; avatar_url?: string | null } | null;
   pipeline?: { id: string; name: string; entity_type?: string | null } | null;
@@ -65,7 +65,7 @@ export function useCRMDeal(dealId: string | undefined) {
           stage_entered_at, stage_history, tags, account_id, contact_id, owner_id,
           assigned_to, created_at, updated_at,
           account:crm_accounts!account_id(id, name, tier, email),
-          contact:contacts!contact_id(id, full_name, email, phone),
+          contact:contacts!contact_id(id, name, email, phone),
           pipeline:pipelines!pipeline_id(id, name, entity_type),
           stage_info:pipeline_stages!stage_id(id, name, color, probability, is_won_stage, is_lost_stage)
         `)

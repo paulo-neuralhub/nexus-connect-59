@@ -126,7 +126,7 @@ export interface CRMDeal {
   updated_at: string;
   // Joined
   account?: { id: string; name: string } | null;
-  contact?: { id: string; full_name: string } | null;
+  contact?: { id: string; name?: string | null; full_name?: string | null } | null;
   owner?: { id: string; full_name?: string | null } | null;
   pipeline_stage?: { id: string; name: string; color: string; probability: number; is_won_stage: boolean; is_lost_stage: boolean } | null;
 }
