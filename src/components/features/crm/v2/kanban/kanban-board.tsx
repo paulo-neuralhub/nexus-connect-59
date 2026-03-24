@@ -1,3 +1,6 @@
+/**
+ * DealsKanbanBoard — DnD board using redesigned cards and columns
+ */
 import { useMemo, useState } from "react";
 import {
   DndContext,
@@ -10,27 +13,17 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import type { CRMPipeline, CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
-import { useUpdateDealStage } from "@/hooks/crm/v2/deals";
-import { useExecuteAutomations } from "@/hooks/crm/v2/automations";
+import type { CRMDeal } from "@/hooks/crm/v2/types";
+import { useMoveDealStage } from "@/hooks/crm/v2/deals";
 import { KanbanColumn } from "./kanban-column";
 import { DealKanbanCard } from "./deal-kanban-card";
-
 import type React from "react";
 
-type DealRow = {
-  id: string;
-  name: string;
-  amount?: number | null;
-  stage_id?: string | null;
-  stage_entered_at?: string | null;
-  account?: { id: string; name?: string | null } | null;
-};
-
-function SortableDeal({ deal, onClick }: { deal: DealRow; onClick: () => void }) {
+function SortableDeal({ deal, stageColor, onClick }: { deal: CRMDeal; stageColor?: string; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deal.id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -39,50 +32,21 @@ function SortableDeal({ deal, onClick }: { deal: DealRow; onClick: () => void })
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <DealKanbanCard
-        title={deal.name}
-        subtitle={deal.account?.name ?? undefined}
-        amount={deal.amount}
-        probability={undefined}
-        expectedCloseDate={null}
-        ownerName={null}
-        daysInStage={
-          deal.stage_entered_at
-            ? Math.floor((Date.now() - new Date(deal.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24))
-            : undefined
-        }
-        staleLevel={
-          deal.stage_entered_at
-            ? (() => {
-                const days = Math.floor((Date.now() - new Date(deal.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24));
-                if (days > 14) return "danger" as const;
-                if (days > 7) return "warn" as const;
-                return "none" as const;
-              })()
-            : "none"
-        }
-        isHot={false}
-        emailCount={0}
-        callCount={0}
-        attachmentCount={0}
-        isDragging={isDragging}
-        onClick={onClick}
-      />
+      <DealKanbanCard deal={deal} stageColor={stageColor} isDragging={isDragging} onClick={onClick} />
     </div>
   );
 }
 
 type Props = {
   pipeline: CRMPipeline;
-  deals: DealRow[];
+  deals: CRMDeal[];
   onDealClick: (dealId: string) => void;
   onAddDeal: (stageId: string) => void;
 };
 
 export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const updateStage = useUpdateDealStage();
-  const executeAutomations = useExecuteAutomations();
+  const moveDeal = useMoveDealStage();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -95,19 +59,15 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
   );
 
   const dealsByStage = useMemo(() => {
-    const map: Record<string, DealRow[]> = {};
+    const map: Record<string, CRMDeal[]> = {};
     for (const s of stages) map[s.id] = [];
-    const orphans: DealRow[] = [];
     for (const d of deals) {
-      const sid = d.stage_id ?? "";
-      if (!sid || !map[sid]) {
-        orphans.push(d);
-        continue;
+      const sid = d.pipeline_stage_id ?? "";
+      if (sid && map[sid]) {
+        map[sid].push(d);
+      } else if (stages.length > 0) {
+        map[stages[0].id].push(d);
       }
-      map[sid].push(d);
-    }
-    if (orphans.length > 0 && stages.length > 0) {
-      map[stages[0].id] = [...orphans, ...map[stages[0].id]];
     }
     return map;
   }, [deals, stages]);
@@ -125,38 +85,16 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
 
     const dealId = active.id as string;
     const newStageId = over.id as string;
-    const isValidStage = stages.some((s) => s.id === newStageId);
-    if (!isValidStage) return;
+    if (!stages.some((s) => s.id === newStageId)) return;
 
     const deal = deals.find((d) => d.id === dealId);
-    if (!deal || deal.stage_id === newStageId) return;
+    if (!deal || deal.pipeline_stage_id === newStageId) return;
 
     const newStage = stages.find((s) => s.id === newStageId);
 
     try {
-      await updateStage.mutateAsync({ dealId, newStageId });
-      const stageName = newStage?.name ?? "";
-      toast.success(`Deal movido a "${stageName}"`);
-
-      // Determine trigger type based on stage properties
-      let triggerType = "stage_entered";
-      if (newStage?.is_won_stage) triggerType = "deal_won";
-      else if (newStage?.is_lost_stage) triggerType = "deal_lost";
-
-      // Execute automations asynchronously — don't block UI
-      executeAutomations.mutate({
-        dealId,
-        accountId: deal.account?.id ?? null,
-        dealName: deal.name,
-        accountName: deal.account?.name ?? undefined,
-        stageId: newStageId,
-        triggerType,
-        triggerData: {
-          from_stage_id: deal.stage_id,
-          to_stage_id: newStageId,
-          to_stage_name: stageName,
-        },
-      });
+      await moveDeal.mutateAsync({ dealId, newStageId });
+      toast.success(`Deal movido a "${newStage?.name ?? ""}"`);
     } catch {
       toast.error("No se pudo mover el deal");
     }
@@ -169,44 +107,32 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[520px]">
-        {stages.map((stage) => (
-          <KanbanColumn
-            key={stage.id}
-            stage={stage as CRMPipelineStage}
-            deals={(dealsByStage[stage.id] ?? []).map((d) => ({
-              id: d.id,
-              name: d.name,
-              amount: d.amount,
-              account_name: d.account?.name ?? null,
-            }))}
-            onDealClick={onDealClick}
-            onAddDeal={onAddDeal}
-            renderDeal={(lite) => {
-              const full = deals.find((d) => d.id === lite.id);
-              if (!full) return null;
-              return <SortableDeal deal={full} onClick={() => onDealClick(full.id)} />;
-            }}
-          />
-        ))}
+      <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 520 }}>
+        {stages.map((stage) => {
+          const stageDeals = dealsByStage[stage.id] ?? [];
+          return (
+            <KanbanColumn
+              key={stage.id}
+              stage={stage as CRMPipelineStage}
+              deals={stageDeals.map((d) => ({ id: d.id, amount: d.amount_eur ?? d.amount }))}
+              onAddDeal={onAddDeal}
+            >
+              {stageDeals.map((deal) => (
+                <SortableDeal
+                  key={deal.id}
+                  deal={deal}
+                  stageColor={stage.color}
+                  onClick={() => onDealClick(deal.id)}
+                />
+              ))}
+            </KanbanColumn>
+          );
+        })}
       </div>
 
       <DragOverlay>
         {activeDeal ? (
-          <DealKanbanCard
-            title={activeDeal.name}
-            subtitle={activeDeal.account?.name ?? undefined}
-            amount={activeDeal.amount}
-            probability={undefined}
-            expectedCloseDate={null}
-            ownerName={null}
-            staleLevel="none"
-            isHot={false}
-            emailCount={0}
-            callCount={0}
-            attachmentCount={0}
-            isDragging
-          />
+          <DealKanbanCard deal={activeDeal} isDragging />
         ) : null}
       </DragOverlay>
     </DndContext>
