@@ -78,14 +78,25 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     setActiveId(event.active.id as string);
   }
 
+  /** Resolve the target stage from a drag-over id (could be a stage id OR a deal id) */
+  function resolveStageId(overId: string): string | null {
+    // Direct match on a stage
+    if (stages.some((s) => s.id === overId)) return overId;
+    // Otherwise it's a deal id — find which stage contains it
+    for (const [stageId, stageDeals] of Object.entries(dealsByStage)) {
+      if (stageDeals.some((d) => d.id === overId)) return stageId;
+    }
+    return null;
+  }
+
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
     if (!over) return;
 
     const dealId = active.id as string;
-    const newStageId = over.id as string;
-    if (!stages.some((s) => s.id === newStageId)) return;
+    const newStageId = resolveStageId(over.id as string);
+    if (!newStageId) return;
 
     const deal = deals.find((d) => d.id === dealId);
     if (!deal || deal.pipeline_stage_id === newStageId) return;
