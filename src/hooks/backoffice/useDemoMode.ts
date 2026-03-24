@@ -70,14 +70,21 @@ export function useDemoConfig(organizationId?: string) {
     queryFn: async () => {
       if (!organizationId) return null;
       
-      const { data, error } = await supabase
-        .from("demo_config")
-        .select("*")
-        .eq("organization_id", organizationId)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data as DemoConfig | null;
+      try {
+        const { data, error } = await supabase
+          .from("demo_config")
+          .select("*")
+          .eq("organization_id", organizationId)
+          .maybeSingle();
+        
+        if (error) {
+          console.warn('[useDemoConfig] query failed:', error.message);
+          return null;
+        }
+        return data as DemoConfig | null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!organizationId,
   });

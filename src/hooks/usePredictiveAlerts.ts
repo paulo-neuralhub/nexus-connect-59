@@ -31,7 +31,7 @@ export function usePredictiveAlerts(filters?: {
         .limit(limit);
 
       if (status !== 'all') query = query.eq('status', status);
-      if (severity !== 'all') query = query.eq('severity', severity);
+      if (severity !== 'all') query = query.eq('priority', severity);
       if (type !== 'all') query = query.eq('alert_type', type);
 
       const { data, error } = await query;
@@ -60,18 +60,21 @@ export function useAlertStats() {
 
       const { data, error } = await supabase
         .from('predictive_alerts')
-        .select('severity')
+        .select('priority')
         .eq('organization_id', currentOrganization.id)
         .eq('status', 'active');
 
-      if (error) throw error;
+      if (error) {
+        console.warn('[useAlertStats] Query failed:', error.message);
+        return { total: 0, critical: 0, high: 0, medium: 0, low: 0 };
+      }
 
       return {
         total: data?.length || 0,
-        critical: data?.filter(a => a.severity === 'critical').length || 0,
-        high: data?.filter(a => a.severity === 'high').length || 0,
-        medium: data?.filter(a => a.severity === 'medium').length || 0,
-        low: data?.filter(a => a.severity === 'low').length || 0,
+        critical: data?.filter(a => a.priority === 'critical').length || 0,
+        high: data?.filter(a => a.priority === 'high').length || 0,
+        medium: data?.filter(a => a.priority === 'medium').length || 0,
+        low: data?.filter(a => a.priority === 'low').length || 0,
       };
     },
     enabled: !!currentOrganization?.id,
@@ -255,17 +258,23 @@ export function useDashboardAlerts(limit = 5) {
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
 
-      const { data, error } = await supabase
-        .from('predictive_alerts')
-        .select('id, title, severity, alert_type, created_at')
-        .eq('organization_id', currentOrganization.id)
-        .eq('status', 'active')
-        .order('severity', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      try {
+        const { data, error } = await supabase
+          .from('predictive_alerts')
+          .select('id, title, priority, alert_type, created_at')
+          .eq('organization_id', currentOrganization.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) throw error;
-      return data;
+        if (error) {
+          console.warn('[useDashboardAlerts] Query failed:', error.message);
+          return [];
+        }
+        return data;
+      } catch {
+        return [];
+      }
     },
     enabled: !!currentOrganization?.id,
   });

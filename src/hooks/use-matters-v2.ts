@@ -186,7 +186,7 @@ export function useMattersV2(filters?: MatterV2Filters) {
       // Map legacy fields to V2 interface
       let query = supabase
         .from('matters')
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile)')
+        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
       
@@ -322,7 +322,7 @@ export function useMatterV2(id: string) {
       // Include client data via join
       const { data: m, error } = await supabase
         .from('matters')
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile)')
+        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
         .eq('id', id)
         .eq('organization_id', currentOrganization!.id)
         .maybeSingle();
@@ -341,7 +341,7 @@ export function useMatterV2(id: string) {
         status: m.status || 'active',
         status_date: m.updated_at,
         client_id: m.client_id,
-        client_name: (m as any).client?.name || null,
+        client_name: (m as any).crm_account?.name || (m as any).client?.name || null,
         client_email: (m as any).client?.email || null,
         client_phone: (m as any).client?.phone || (m as any).client?.mobile || null,
         jurisdiction_primary: m.jurisdiction || m.jurisdiction_code || null,
@@ -360,7 +360,7 @@ export function useMatterV2(id: string) {
         estimated_official_fees: m.official_fees,
         estimated_professional_fees: m.professional_fees,
         currency: m.currency || 'EUR',
-        is_urgent: (m.risk_score && m.risk_score >= 80) || false,
+        is_urgent: false,
         is_confidential: false,
         is_archived: m.is_archived || false,
         internal_notes: m.notes || m.internal_notes,
@@ -633,7 +633,7 @@ export function useCreateMatterV2() {
       const { data: matter, error } = await supabase
         .from('matters')
         .insert(insertData as any)
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile)')
+        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
         .single();
       
       if (error) {

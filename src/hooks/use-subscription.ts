@@ -30,15 +30,22 @@ export function useSubscriptionPlans() {
   return useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      if (error) throw error;
-      return (data ?? []).map(mapSubscriptionPlanRow);
+      try {
+        const { data, error } = await supabase
+          .from('subscription_plans')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        if (error) {
+          console.warn('[useSubscriptionPlans] query failed:', error.message);
+          return [];
+        }
+        return (data ?? []).map(mapSubscriptionPlanRow);
+      } catch {
+        return [];
+      }
     },
-    staleTime: 1000 * 60 * 60, // 1 hora
+    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -49,17 +56,21 @@ export function useCurrentSubscription() {
   return useQuery({
     queryKey: ['subscription', currentOrganization?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
-        .eq('organization_id', currentOrganization!.id)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      return mapSubscriptionRow(data);
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('organization_id', currentOrganization!.id)
+          .maybeSingle();
+        if (error) {
+          console.warn('[useCurrentSubscription] query failed:', error.message);
+          return null;
+        }
+        if (!data) return null;
+        return mapSubscriptionRow(data);
+      } catch {
+        return null;
+      }
     },
     enabled: !!currentOrganization?.id,
   });

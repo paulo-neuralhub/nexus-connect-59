@@ -82,10 +82,10 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           registration_number,
           mark_name,
           mark_type,
-          risk_score,
           created_at,
           updated_at,
-          client:contacts!matters_client_id_fkey(id, name)
+          client:contacts!matters_client_id_fkey(id, name),
+          crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)
         `)
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
@@ -178,13 +178,13 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           status: m.status || 'active',
           current_phase: m.current_phase || 'F0',
           client_id: m.client_id,
-          client_name: m.client?.name || null,
+          client_name: m.crm_account?.name || m.client?.name || null,
           jurisdiction_code: m.jurisdiction_code || m.jurisdiction || null,
           application_number: m.application_number,
           registration_number: m.registration_number,
           mark_name: m.mark_name,
           mark_type: m.mark_type,
-          is_urgent: (m.risk_score && m.risk_score >= 80) || urgencyLevel === 'overdue' || urgencyLevel === 'today',
+          is_urgent: urgencyLevel === 'overdue' || urgencyLevel === 'today',
           is_starred: false,
           created_at: m.created_at,
           updated_at: m.updated_at,

@@ -159,18 +159,26 @@ export function useActiveTimer() {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const { data, error } = await supabase
-        .from('time_entries')
-        .select(`
-          *,
-          matter:matters(id, reference, title)
-        `)
-        .eq('user_id', user.id)
-        .eq('timer_running', true)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('time_entries')
+          .select(`
+            *,
+            matter:matters(id, reference, title)
+          `)
+          .eq('user_id', user.id)
+          .not('start_time', 'is', null)
+          .is('end_time', null)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data as TimeEntry | null;
+        if (error) {
+          console.warn('[useActiveTimer] Query failed:', error.message);
+          return null;
+        }
+        return data as TimeEntry | null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!user?.id,
     refetchInterval: 60000, // Refetch every minute
@@ -255,7 +263,8 @@ export function useStartTimer() {
         .from('time_entries')
         .select('id')
         .eq('user_id', user.id)
-        .eq('timer_running', true)
+        .not('start_time', 'is', null)
+        .is('end_time', null)
         .maybeSingle();
 
       if (existing) {
@@ -281,8 +290,7 @@ export function useStartTimer() {
           activity_type: data.activity_type || null,
           is_billable: data.is_billable ?? true,
           billing_rate: rate || null,
-          timer_started_at: new Date().toISOString(),
-          timer_running: true,
+          start_time: new Date().toISOString(),
         })
         .select()
         .single();
@@ -313,8 +321,7 @@ export function useStopTimer() {
         .from('time_entries')
         .update({
           duration_minutes: durationMinutes,
-          timer_running: false,
-          timer_started_at: null,
+          end_time: new Date().toISOString(),
           description: data.description || 'Trabajo realizado',
         })
         .eq('id', data.entryId);

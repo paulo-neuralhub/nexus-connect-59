@@ -25,8 +25,8 @@ const SEVERITY_BG: Record<AlertSeverity, string> = {
 export function AlertsWidget() {
   const { data: alerts, isLoading } = useDashboardAlerts(5);
   
-  const criticalCount = alerts?.filter(a => a.severity === 'critical').length || 0;
-  const highCount = alerts?.filter(a => a.severity === 'high').length || 0;
+  const criticalCount = alerts?.filter(a => a.priority === 'critical').length || 0;
+  const highCount = alerts?.filter(a => a.priority === 'high').length || 0;
   const urgentCount = criticalCount + highCount;
 
   return (
@@ -64,14 +64,14 @@ export function AlertsWidget() {
                   to="/app/alerts"
                   className={cn(
                     "block p-3 rounded-lg border transition-colors hover:bg-muted",
-                    SEVERITY_BG[alert.severity as AlertSeverity]
+                    SEVERITY_BG[(alert.priority || 'low') as AlertSeverity]
                   )}
                 >
                   <div className="flex items-start gap-2">
                     <AlertTriangle 
                       className={cn(
                         "h-4 w-4 mt-0.5 shrink-0",
-                        SEVERITY_ICON_COLORS[alert.severity as AlertSeverity]
+                        SEVERITY_ICON_COLORS[(alert.priority || 'low') as AlertSeverity]
                       )} 
                     />
                     <div className="min-w-0 flex-1">

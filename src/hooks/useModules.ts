@@ -85,14 +85,21 @@ export function useModules() {
   } = useQuery({
     queryKey: ['platform-modules'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('platform_modules')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
+      try {
+        const { data, error } = await supabase
+          .from('platform_modules')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
 
-      if (error) throw error;
-      return (data || []) as DBPlatformModule[];
+        if (error) {
+          console.warn('[useModules] platform_modules query failed:', error.message);
+          return [];
+        }
+        return (data || []) as DBPlatformModule[];
+      } catch {
+        return [];
+      }
     },
     staleTime: 1000 * 60 * 10,
   });
@@ -201,14 +208,21 @@ export function useModules() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from('organization_module_licenses')
-        .select('*, module:platform_modules(*)')
-        .eq('organization_id', tenantId)
-        .eq('status', 'active');
+      try {
+        const { data, error } = await supabase
+          .from('organization_module_licenses')
+          .select('*, module:platform_modules(*)')
+          .eq('organization_id', tenantId)
+          .eq('status', 'active');
 
-      if (error) throw error;
-      return (data || []) as DBModuleLicense[];
+        if (error) {
+          console.warn('[useModules] organization_module_licenses query failed:', error.message);
+          return [];
+        }
+        return (data || []) as DBModuleLicense[];
+      } catch {
+        return [];
+      }
     },
     enabled: !!tenantId,
   });

@@ -39,18 +39,22 @@ export function useDeadlineNotifications(limit: number = 50) {
     queryFn: async () => {
       if (!user?.id || !currentOrganization?.id) return [];
 
-      const { data, error } = await supabase
-        .from('deadline_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent', 'read'])
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      try {
+        const { data, error } = await supabase
+          .from('deadline_notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) throw error;
-      return data as DeadlineNotification[];
+        if (error) {
+          console.warn('[useDeadlineNotifications] Query failed:', error.message);
+          return [];
+        }
+        return (data || []) as DeadlineNotification[];
+      } catch {
+        return [];
+      }
     },
     enabled: !!user?.id && !!currentOrganization?.id,
   });
@@ -66,19 +70,24 @@ export function useUnreadNotificationCount() {
     queryFn: async () => {
       if (!user?.id || !currentOrganization?.id) return 0;
 
-      const { count, error } = await supabase
-        .from('deadline_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent']);
+      try {
+        const { count, error } = await supabase
+          .from('deadline_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .is('read_at', null);
 
-      if (error) throw error;
-      return count || 0;
+        if (error) {
+          console.warn('[useUnreadNotificationCount] Query failed:', error.message);
+          return 0;
+        }
+        return count || 0;
+      } catch {
+        return 0;
+      }
     },
     enabled: !!user?.id && !!currentOrganization?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   });
 }
 
@@ -118,15 +127,12 @@ export function useMarkAllNotificationsRead() {
       const { error } = await supabase
         .from('deadline_notifications')
         .update({
-          status: 'read',
           read_at: new Date().toISOString(),
         })
         .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent']);
+        .is('read_at', null);
 
-      if (error) throw error;
+      if (error) console.warn('[useMarkAllNotificationsRead]', error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadline-notifications'] });
