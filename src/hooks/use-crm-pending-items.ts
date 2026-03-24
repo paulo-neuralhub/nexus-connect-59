@@ -138,8 +138,7 @@ export function useCRMRecentActivity() {
       try {
         const { data, error } = await fromTable('crm_activities')
           .select(`
-            id, activity_type, subject, activity_date,
-            creator:profiles!created_by(id, first_name, last_name)
+            id, activity_type, subject, activity_date, created_by
           `)
           .eq('organization_id', organizationId)
           .order('activity_date', { ascending: false })

@@ -24,8 +24,7 @@ export function useCRMInteractions(filters?: { account_id?: string; contact_id?:
           created_by, created_at,
           account:crm_accounts!account_id(id, name),
           contact:crm_contacts!contact_id(id, full_name),
-          deal:crm_deals!deal_id(id, name),
-          creator:profiles!created_by(id, first_name, last_name)
+          deal:crm_deals!deal_id(id, name)
         `)
         .eq("organization_id", organizationId)
         .order("activity_date", { ascending: false });

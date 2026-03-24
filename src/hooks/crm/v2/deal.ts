@@ -65,9 +65,7 @@ export function useCRMDeal(dealId: string | undefined) {
           stage_entered_at, stage_history, tags, account_id, contact_id, owner_id,
           assigned_to, created_at, updated_at,
           account:crm_accounts!account_id(id, name, tier, email),
-          contact:crm_contacts!contact_id(id, full_name, email, phone),
-          owner:users!owner_id(id, full_name, avatar_url),
-          assigned_user:users!assigned_to(id, full_name, avatar_url),
+          contact:contacts!contact_id(id, full_name, email, phone),
           pipeline:pipelines!pipeline_id(id, name, entity_type),
           stage_info:pipeline_stages!stage_id(id, name, color, probability, is_won_stage, is_lost_stage)
         `)
