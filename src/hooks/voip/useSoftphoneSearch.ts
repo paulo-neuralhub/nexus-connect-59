@@ -60,8 +60,8 @@ export function useSoftphoneSearch(query: string) {
           let matterCounts: Record<string, number> = {};
           if (accountIds.length > 0) {
             const { data: matters } = await fromTable("matters")
-              .select("client_id")
-              .in("client_id", accountIds)
+              .select("client_id, crm_account_id")
+              .or(accountIds.map(id => `client_id.eq.${id},crm_account_id.eq.${id}`).join(','))
               .not("status", "in", "(closed,archived)");
             
             if (matters) {
