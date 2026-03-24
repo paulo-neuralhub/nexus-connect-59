@@ -16,7 +16,7 @@ export interface MatterWithDeadline {
   title: string;
   matter_type: string;
   status: string;
-  current_phase: string | null;
+  current_phase?: string | null;
   client_id: string | null;
   client_name: string | null;
   jurisdiction_code: string | null;
@@ -75,7 +75,6 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           title,
           type,
           status,
-          current_phase,
           client_id,
           jurisdiction,
           jurisdiction_code,
@@ -110,11 +109,6 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
       // Apply jurisdiction filter
       if (filters?.jurisdiction && filters.jurisdiction !== 'all') {
         query = query.or(`jurisdiction.eq.${filters.jurisdiction},jurisdiction_code.eq.${filters.jurisdiction}`);
-      }
-      
-      // Apply phase filter
-      if (filters?.phase && filters.phase !== 'all') {
-        query = query.eq('current_phase', filters.phase);
       }
       
       const { data: matters, error: mattersError } = await query;
