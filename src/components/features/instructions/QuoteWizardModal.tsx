@@ -10,6 +10,7 @@ import { Loader2, Plus, X, ArrowRight, ArrowLeft, Send, Sparkles, Check } from '
 import { cn } from '@/lib/utils';
 import { fromTable } from '@/lib/supabase';
 import { getFeesForJurisdiction } from '@/hooks/use-instruction-actions';
+import { marked } from 'marked';
 import type { Instruction } from '@/hooks/use-instructions';
 
 const JURISDICTION_FLAGS: Record<string, string> = {
@@ -392,6 +393,11 @@ export function QuoteWizardModal({
     // If template is empty, generate default
     if (!html || html.trim().length < 50) {
       html = generateDefaultPreview();
+    }
+
+    // Convert Markdown to HTML if template uses markdown syntax
+    if (html.includes('# ') || html.includes('**') || html.includes('| ')) {
+      html = marked(html, { async: false }) as string;
     }
 
     return html;
@@ -858,17 +864,9 @@ export function QuoteWizardModal({
                 style={{ maxHeight: '65vh' }}
               >
                 <div
-                  className="bg-white rounded shadow-[0_4px_24px_rgba(0,0,0,0.10)] mx-auto"
-                  style={{
-                    fontFamily: 'Georgia, serif',
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    maxWidth: '700px',
-                    padding: '48px',
-                    borderRadius: '4px',
-                  }}
-                  dangerouslySetInnerHTML={{ __html: renderedHtml }}
-                />
+                   className="preview-document bg-white rounded shadow-[0_4px_24px_rgba(0,0,0,0.10)] mx-auto"
+                   dangerouslySetInnerHTML={{ __html: renderedHtml }}
+                 />
               </div>
             )}
 
