@@ -159,18 +159,26 @@ export function useActiveTimer() {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const { data, error } = await supabase
-        .from('time_entries')
-        .select(`
-          *,
-          matter:matters(id, reference, title)
-        `)
-        .eq('user_id', user.id)
-        .eq('timer_running', true)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('time_entries')
+          .select(`
+            *,
+            matter:matters(id, reference, title)
+          `)
+          .eq('user_id', user.id)
+          .not('start_time', 'is', null)
+          .is('end_time', null)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data as TimeEntry | null;
+        if (error) {
+          console.warn('[useActiveTimer] Query failed:', error.message);
+          return null;
+        }
+        return data as TimeEntry | null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!user?.id,
     refetchInterval: 60000, // Refetch every minute
