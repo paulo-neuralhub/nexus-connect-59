@@ -128,7 +128,7 @@ export function useCreateInstruction() {
           ...rest,
           organization_id: organizationId,
           sent_by: profile?.id,
-          target_ids: targetIds,
+          target_ids: [],
           target_type: 'jurisdiction',
           total_targets: targetIds.length,
           status: data.status || 'draft',
