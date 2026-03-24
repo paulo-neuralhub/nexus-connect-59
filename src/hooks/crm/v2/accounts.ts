@@ -123,7 +123,7 @@ export function useCRMAccountDetail(id: string | undefined) {
         account: accountRes.data as CRMAccount,
         contacts: contactsRes.data ?? [],
         deals: dealsRes.data ?? [],
-        activities: activitiesRes.data ?? [],
+        activities: activitiesData,
         mattersCount: mattersRes.count ?? 0,
       };
     },
