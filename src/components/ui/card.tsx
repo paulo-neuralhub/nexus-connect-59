@@ -11,8 +11,8 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        // SILK: Sin sombra, solo borde sutil
-        "rounded-[14px] border border-black/[0.06] bg-background text-card-foreground",
+        // SILK: Sombra sutil sobre fondo oscuro
+        "rounded-[14px] border border-black/[0.06] bg-white text-card-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-shadow duration-200",
         className
       )}
       {...props}

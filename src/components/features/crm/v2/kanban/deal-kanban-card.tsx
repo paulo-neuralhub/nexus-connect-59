@@ -82,8 +82,8 @@ export function DealKanbanCard({ deal, stageColor, isDragging, onClick }: Props)
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       className={cn(
-        "relative bg-background rounded-xl border cursor-pointer transition-all duration-200 group",
-        "hover:shadow-md hover:-translate-y-0.5",
+        "relative bg-white rounded-xl border cursor-pointer transition-all duration-200 group",
+        "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:-translate-y-0.5",
         isDragging && "opacity-60 shadow-xl rotate-1 scale-105"
       )}
       style={{ borderLeftWidth: 3, borderLeftColor: stageColor ?? "hsl(var(--border))" }}

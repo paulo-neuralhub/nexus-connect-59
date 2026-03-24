@@ -433,8 +433,9 @@ export function DynamicSidebar({
                 type="button"
                 className={cn(
                   // SILK: Section header
-                  "w-full flex items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider",
-                  "text-white/[0.28] hover:text-white/40 transition-colors"
+                  "w-full flex items-center gap-2 px-3 py-2 mt-4 pb-1.5 text-[10px] font-semibold uppercase",
+                  "text-white/[0.40] hover:text-white/50 transition-colors border-t border-white/[0.06]",
+                  "tracking-[0.1em]"
                 )}
               >
                 <Icon className="h-3 w-3" />
