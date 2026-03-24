@@ -1,7 +1,7 @@
 /**
- * DealsKanbanBoard — DnD board using redesigned cards and columns
+ * DealsKanbanBoard — DnD board with lock_type enforcement
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -16,6 +16,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { CRMPipeline, CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import type { CRMDeal } from "@/hooks/crm/v2/types";
 import { useMoveDealStage } from "@/hooks/crm/v2/deals";
@@ -23,6 +24,8 @@ import { fromTable } from "@/lib/supabase";
 import { KanbanColumn } from "./kanban-column";
 import { DealKanbanCard } from "./deal-kanban-card";
 import { WonDealMatterModal } from "./WonDealMatterModal";
+import { StageConfirmModal } from "./StageConfirmModal";
+import { Lock } from "lucide-react";
 import type React from "react";
 
 function SortableDeal({ deal, stageColor, onClick }: { deal: CRMDeal; stageColor?: string; onClick: () => void }) {
@@ -46,10 +49,19 @@ type Props = {
   onAddDeal: (stageId: string) => void;
 };
 
+type PendingConfirm = {
+  dealId: string;
+  deal: CRMDeal;
+  stage: CRMPipelineStage;
+};
+
 export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [wonDeal, setWonDeal] = useState<CRMDeal | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const [shakeCardId, setShakeCardId] = useState<string | null>(null);
   const moveDeal = useMoveDealStage();
+  const navigate = useNavigate();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -81,44 +93,26 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     setActiveId(event.active.id as string);
   }
 
-  /** Resolve the target stage from a drag-over id (could be a stage id OR a deal id) */
   function resolveStageId(overId: string): string | null {
-    // Direct match on a stage
     if (stages.some((s) => s.id === overId)) return overId;
-    // Otherwise it's a deal id — find which stage contains it
     for (const [stageId, stageDeals] of Object.entries(dealsByStage)) {
       if (stageDeals.some((d) => d.id === overId)) return stageId;
     }
     return null;
   }
 
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    setActiveId(null);
-    if (!over) return;
-
-    const dealId = active.id as string;
-    const newStageId = resolveStageId(over.id as string);
-    if (!newStageId) return;
-
-    const deal = deals.find((d) => d.id === dealId);
-    if (!deal || deal.pipeline_stage_id === newStageId) return;
-
-    const newStage = stages.find((s) => s.id === newStageId);
-
+  const executeDealMove = useCallback(async (dealId: string, deal: CRMDeal, newStage: CRMPipelineStage) => {
     try {
-      await moveDeal.mutateAsync({ dealId, newStageId });
-      toast.success(`Deal movido a "${newStage?.name ?? ""}"`);
+      await moveDeal.mutateAsync({ dealId, newStageId: newStage.id });
+      toast.success(`Deal movido a "${newStage.name}"`);
 
-      // If won stage and no matter linked, show modal
-      if (newStage?.is_won_stage && !deal.matter_id) {
+      if (newStage.is_won_stage && !deal.matter_id) {
         setWonDeal(deal);
-      } else if (newStage?.is_won_stage && deal.matter_id) {
+      } else if (newStage.is_won_stage && deal.matter_id) {
         toast.success("Deal cerrado ✅ Expediente vinculado actualizado");
       }
 
-      // Log activity for won/lost
-      if (newStage?.is_won_stage || newStage?.is_lost_stage) {
+      if (newStage.is_won_stage || newStage.is_lost_stage) {
         try {
           await fromTable("activities").insert({
             organization_id: deal.organization_id,
@@ -136,10 +130,89 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     } catch {
       toast.error("No se pudo mover el deal");
     }
+  }, [moveDeal]);
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over) return;
+
+    const dealId = active.id as string;
+    const newStageId = resolveStageId(over.id as string);
+    if (!newStageId) return;
+
+    const deal = deals.find((d) => d.id === dealId);
+    if (!deal || deal.pipeline_stage_id === newStageId) return;
+
+    const newStage = stages.find((s) => s.id === newStageId);
+    if (!newStage) return;
+
+    const lockType = newStage.lock_type ?? "free";
+
+    switch (lockType) {
+      case "free":
+        await executeDealMove(dealId, deal, newStage);
+        break;
+
+      case "confirm":
+        setPendingConfirm({ dealId, deal, stage: newStage });
+        break;
+
+      case "matter_driven":
+        // Shake animation
+        setShakeCardId(dealId);
+        setTimeout(() => setShakeCardId(null), 400);
+        toast.error("Etapa controlada por el expediente", {
+          description: newStage.lock_message ?? "Esta etapa se actualiza automáticamente según el estado del expediente vinculado.",
+          icon: <Lock className="w-4 h-4" />,
+          duration: 6000,
+          action: deal.matter_id ? {
+            label: "Ver expediente →",
+            onClick: () => navigate(`/app/matters/${deal.matter_id}`),
+          } : undefined,
+        });
+        break;
+
+      case "admin_only":
+        toast.error("Solo administradores pueden mover deals a esta etapa");
+        break;
+    }
+  }
+
+  async function handleConfirmMove(note: string) {
+    if (!pendingConfirm) return;
+    const { dealId, deal, stage } = pendingConfirm;
+    setPendingConfirm(null);
+
+    await executeDealMove(dealId, deal, stage);
+
+    // Log confirmation activity
+    try {
+      await fromTable("activities").insert({
+        organization_id: deal.organization_id,
+        contact_id: (deal as any).contact?.id ?? null,
+        deal_id: deal.id,
+        type: "note",
+        subject: "Cambio de etapa confirmado",
+        content: note,
+      });
+    } catch {
+      // Don't block
+    }
   }
 
   return (
     <>
+      {/* Shake animation CSS */}
+      <style>{`
+        @keyframes card-shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(8px); }
+          75% { transform: translateX(-8px); }
+        }
+        .shake-card { animation: card-shake 300ms ease-in-out; }
+      `}</style>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -157,12 +230,13 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
                 onAddDeal={onAddDeal}
               >
                 {stageDeals.map((deal) => (
-                  <SortableDeal
-                    key={deal.id}
-                    deal={deal}
-                    stageColor={stage.color}
-                    onClick={() => onDealClick(deal.id)}
-                  />
+                  <div key={deal.id} className={shakeCardId === deal.id ? "shake-card" : ""}>
+                    <SortableDeal
+                      deal={deal}
+                      stageColor={stage.color}
+                      onClick={() => onDealClick(deal.id)}
+                    />
+                  </div>
                 ))}
               </KanbanColumn>
             );
@@ -186,6 +260,15 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
           dealType={wonDeal.deal_type ?? wonDeal.opportunity_type}
         />
       )}
+
+      <StageConfirmModal
+        open={!!pendingConfirm}
+        onClose={() => setPendingConfirm(null)}
+        onConfirm={handleConfirmMove}
+        stageName={pendingConfirm?.stage.name ?? ""}
+        lockMessage={pendingConfirm?.stage.lock_message ?? null}
+        isPending={moveDeal.isPending}
+      />
     </>
   );
 }

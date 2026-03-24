@@ -9315,6 +9315,9 @@ export type Database = {
           id: string
           is_lost_stage: boolean | null
           is_won_stage: boolean | null
+          lock_message: string | null
+          lock_type: string | null
+          matter_status_trigger: string | null
           name: string
           pipeline_id: string
           position: number | null
@@ -9326,6 +9329,9 @@ export type Database = {
           id?: string
           is_lost_stage?: boolean | null
           is_won_stage?: boolean | null
+          lock_message?: string | null
+          lock_type?: string | null
+          matter_status_trigger?: string | null
           name: string
           pipeline_id: string
           position?: number | null
@@ -9337,6 +9343,9 @@ export type Database = {
           id?: string
           is_lost_stage?: boolean | null
           is_won_stage?: boolean | null
+          lock_message?: string | null
+          lock_type?: string | null
+          matter_status_trigger?: string | null
           name?: string
           pipeline_id?: string
           position?: number | null

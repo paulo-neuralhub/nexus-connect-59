@@ -1,10 +1,11 @@
 /**
- * KanbanColumn — Pipedrive-style column with colored header, sticky, metrics
+ * KanbanColumn — Pipedrive-style column with colored header, sticky, metrics, lock icons
  */
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, AlertTriangle, Lock, UserCheck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import type React from "react";
 
@@ -67,6 +68,27 @@ export function KanbanColumn({ stage, deals, onAddDeal, children }: Props) {
           >
             {stage.name}
           </span>
+          {/* Lock type icon */}
+          {stage.lock_type && stage.lock_type !== "free" && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="shrink-0">
+                    {stage.lock_type === "confirm" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+                    {stage.lock_type === "matter_driven" && <Lock className="w-3 h-3 text-muted-foreground" />}
+                    {stage.lock_type === "admin_only" && <UserCheck className="w-3 h-3 text-muted-foreground" />}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[240px] text-xs">
+                  {(stage.lock_message ?? "").substring(0, 80) || (
+                    stage.lock_type === "confirm" ? "Requiere confirmación"
+                    : stage.lock_type === "matter_driven" ? "Controlada por expediente"
+                    : "Solo administradores"
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <span
             className="text-[11px] font-semibold px-2 py-0.5 rounded-full text-white min-w-[22px] text-center"
             style={{ backgroundColor: stageColor }}

@@ -271,6 +271,7 @@ export default function CrmSettings() {
                         key={stage.id}
                         id={stage.id}
                         stage={stage}
+                        pipelineId={selectedPipeline?.id}
                         onUpdate={async (updates) => {
                           try {
                             await updateStage.mutateAsync({ id: stage.id, ...updates });
