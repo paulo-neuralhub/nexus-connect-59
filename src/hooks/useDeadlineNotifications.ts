@@ -70,19 +70,24 @@ export function useUnreadNotificationCount() {
     queryFn: async () => {
       if (!user?.id || !currentOrganization?.id) return 0;
 
-      const { count, error } = await supabase
-        .from('deadline_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent']);
+      try {
+        const { count, error } = await supabase
+          .from('deadline_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .is('read_at', null);
 
-      if (error) throw error;
-      return count || 0;
+        if (error) {
+          console.warn('[useUnreadNotificationCount] Query failed:', error.message);
+          return 0;
+        }
+        return count || 0;
+      } catch {
+        return 0;
+      }
     },
     enabled: !!user?.id && !!currentOrganization?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   });
 }
 
