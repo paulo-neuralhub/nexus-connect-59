@@ -43,7 +43,7 @@ export function usePipelines() {
       if (!currentOrganization?.id) return [];
 
       const { data, error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .select(`
           *,
           stages:pipeline_stages(*)
@@ -64,7 +64,7 @@ export function usePipeline(id: string) {
     queryKey: ['pipeline', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .select(`
           *,
           stages:pipeline_stages(*)
@@ -89,7 +89,7 @@ export function useCreatePipeline() {
 
       // Get current max position
       const { data: existing } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .select('position')
         .eq('organization_id', currentOrganization.id)
         .order('position', { ascending: false })
@@ -100,7 +100,7 @@ export function useCreatePipeline() {
 
       // Create pipeline
       const { data: pipeline, error: pipelineError } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .insert({
           name: data.name,
           organization_id: currentOrganization.id,
@@ -120,7 +120,7 @@ export function useCreatePipeline() {
       }));
 
       const { error: stagesError } = await supabase
-        .from('pipeline_stages')
+        .from('crm_pipeline_stages')
         .insert(stagesWithPipelineId);
 
       if (stagesError) throw stagesError;
@@ -146,14 +146,14 @@ export function useUpdatePipeline() {
       // If setting as default, unset other defaults first
       if (updates.is_default && currentOrganization?.id) {
         await supabase
-          .from('pipelines')
+          .from('crm_pipelines')
           .update({ is_default: false })
           .eq('organization_id', currentOrganization.id)
           .eq('owner_type', 'tenant');
       }
 
       const { data, error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .update(updates)
         .eq('id', id)
         .select()
@@ -178,7 +178,7 @@ export function useDeletePipeline() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .delete()
         .eq('id', id);
 
@@ -201,7 +201,7 @@ export function useCreateStage() {
   return useMutation({
     mutationFn: async (data: Stage & { pipeline_id: string }) => {
       const { data: stage, error } = await supabase
-        .from('pipeline_stages')
+        .from('crm_pipeline_stages')
         .insert(data)
         .select()
         .single();
@@ -222,7 +222,7 @@ export function useUpdateStage() {
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<Stage>) => {
       const { data, error } = await supabase
-        .from('pipeline_stages')
+        .from('crm_pipeline_stages')
         .update(updates)
         .eq('id', id)
         .select()
@@ -243,7 +243,7 @@ export function useDeleteStage() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('pipeline_stages')
+        .from('crm_pipeline_stages')
         .delete()
         .eq('id', id);
 
@@ -263,7 +263,7 @@ export function useReorderStages() {
       // Update each stage position
       for (const stage of stages) {
         await supabase
-          .from('pipeline_stages')
+          .from('crm_pipeline_stages')
           .update({ position: stage.position })
           .eq('id', stage.id);
       }
