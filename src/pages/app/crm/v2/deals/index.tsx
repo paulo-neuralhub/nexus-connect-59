@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { CRMDeal } from "@/hooks/crm/v2/types";
 import { useSearchParams } from "react-router-dom";
 import { usePageTitle } from "@/contexts/page-context";
 import { useCRMDeals } from "@/hooks/crm/v2/deals";
