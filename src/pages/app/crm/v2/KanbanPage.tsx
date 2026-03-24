@@ -288,11 +288,12 @@ export default function CRMKanbanPageV2() {
         defaultStageId={prefillStageId}
       />
 
-      <DealDetailPanel
+      <DealDetailModal
         deal={selectedDeal ?? null}
         open={showPanel}
         onClose={() => setShowPanel(false)}
         stages={selectedPipeline?.stages ?? []}
+        pipelineName={selectedPipeline?.name}
         onEdit={() => {
           setShowPanel(false);
           setShowDealForm(true);
