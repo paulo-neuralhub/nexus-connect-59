@@ -10,6 +10,7 @@ import { Loader2, Plus, X, ArrowRight, ArrowLeft, Send, Sparkles, Check } from '
 import { cn } from '@/lib/utils';
 import { fromTable } from '@/lib/supabase';
 import { getFeesForJurisdiction } from '@/hooks/use-instruction-actions';
+import { marked } from 'marked';
 import type { Instruction } from '@/hooks/use-instructions';
 
 const JURISDICTION_FLAGS: Record<string, string> = {
