@@ -11,6 +11,7 @@ import { useOrganization } from "@/contexts/organization-context";
 import { useSidebarMenu, type SidebarModule, type SidebarSection } from "@/hooks/use-sidebar-menu";
 import { usePendingSignaturesCount } from "@/hooks/signatures";
 import { useAlertStats } from "@/hooks/usePredictiveAlerts";
+import { useInstructionsPendingCount } from "@/hooks/use-instructions";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
@@ -125,6 +126,7 @@ export function DynamicSidebar({
   const { data: sections, isLoading } = useSidebarMenu();
   const { data: pendingSignaturesCount = 0 } = usePendingSignaturesCount();
   const { data: alertStats } = useAlertStats();
+  const { data: instructionsPendingCount = 0 } = useInstructionsPendingCount();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
@@ -161,8 +163,9 @@ export function DynamicSidebar({
   const badgeCounts: Record<string, number> = {
     signatures: pendingSignaturesCount,
     alerts: (alertStats?.critical || 0) + (alertStats?.high || 0),
-    deadlines: 0, // Se puede conectar a un hook de deadlines próximos
+    deadlines: 0,
     tasks: 0,
+    instructions: instructionsPendingCount,
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
