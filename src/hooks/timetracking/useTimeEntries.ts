@@ -290,8 +290,7 @@ export function useStartTimer() {
           activity_type: data.activity_type || null,
           is_billable: data.is_billable ?? true,
           billing_rate: rate || null,
-          timer_started_at: new Date().toISOString(),
-          timer_running: true,
+          start_time: new Date().toISOString(),
         })
         .select()
         .single();
