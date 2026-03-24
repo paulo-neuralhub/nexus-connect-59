@@ -33,6 +33,7 @@ type DealRow = {
   stage?: string | null;
   stage_id?: string | null;
   pipeline_id?: string | null;
+  pipeline_stage_id?: string | null;
   amount?: number | null;
   expected_close_date?: string | null;
   stage_entered_at?: string | null;
