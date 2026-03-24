@@ -25,7 +25,7 @@ import {
 import { Plus, Settings, Search, Filter, RefreshCw, Kanban, TrendingUp } from "lucide-react";
 import { DealsKanbanBoard } from "@/components/features/crm/v2/kanban";
 import { DealFormModal } from "@/components/features/crm/v2/DealFormModal";
-import { DealDetailPanel } from "@/components/features/crm/v2/deal-panel";
+import { DealDetailModal } from "@/components/features/crm/v2/deal-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Link } from "react-router-dom";
 
@@ -288,11 +288,12 @@ export default function CRMKanbanPageV2() {
         defaultStageId={prefillStageId}
       />
 
-      <DealDetailPanel
+      <DealDetailModal
         deal={selectedDeal ?? null}
         open={showPanel}
         onClose={() => setShowPanel(false)}
         stages={selectedPipeline?.stages ?? []}
+        pipelineName={selectedPipeline?.name}
         onEdit={() => {
           setShowPanel(false);
           setShowDealForm(true);
