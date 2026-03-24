@@ -59,7 +59,7 @@ export default function DashboardGod() {
       
       const { data } = await supabase
         .from('matters')
-        .select('id, reference, title, next_deadline, current_phase, client:client_id(name)')
+        .select('id, reference, title, next_deadline, client:client_id(name)')
         .eq('organization_id', orgId)
         .lte('next_deadline', in7Days.toISOString())
         .gte('next_deadline', today.toISOString())
