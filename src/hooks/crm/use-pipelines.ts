@@ -49,7 +49,6 @@ export function usePipelines() {
           stages:pipeline_stages(*)
         `)
         .eq('organization_id', currentOrganization.id)
-        .eq('owner_type', 'tenant')
         .order('position');
 
       if (error) throw error;
