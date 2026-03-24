@@ -37,7 +37,7 @@ type Deal = {
   created_at?: string | null;
   updated_at?: string | null;
   account?: { id: string; name?: string | null } | null;
-  contact?: { id: string; full_name?: string | null; email?: string | null; phone?: string | null } | null;
+  contact?: { id: string; name?: string | null; full_name?: string | null; email?: string | null; phone?: string | null } | null;
   owner?: { id: string; full_name?: string | null } | null;
 };
 
