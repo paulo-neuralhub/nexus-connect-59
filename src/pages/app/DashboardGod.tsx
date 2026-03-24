@@ -118,7 +118,7 @@ export default function DashboardGod() {
       if (!orgId) return null;
       
       const [matters, contacts, activities, invoices] = await Promise.all([
-        supabase.from('matters').select('id, current_phase, status').eq('organization_id', orgId),
+        supabase.from('matters').select('id, status').eq('organization_id', orgId),
         supabase.from('contacts').select('id').eq('organization_id', orgId).eq('type', 'client'),
         supabase.from('activities').select('id, is_completed, type').eq('organization_id', orgId).eq('type', 'task'),
         supabase.from('invoices')
