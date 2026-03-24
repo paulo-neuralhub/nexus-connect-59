@@ -143,11 +143,16 @@ interface RequireRoleProps {
 }
 
 export function RequireRole({ roles, children, redirectTo }: RequireRoleProps) {
-  const { userRole, isLoading } = usePermissions();
+  const { userRole, isOwner, isAdmin, isLoading } = usePermissions();
   const location = useLocation();
   
   if (isLoading) {
     return <LoadingPage />;
+  }
+  
+  // Superadmins, owners, and admins always have access
+  if (isOwner || isAdmin) {
+    return <>{children}</>;
   }
   
   const effectiveRole = userRole?.roleCode || userRole?.legacyRole;
