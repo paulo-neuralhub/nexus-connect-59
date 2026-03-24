@@ -85,14 +85,21 @@ export function useModules() {
   } = useQuery({
     queryKey: ['platform-modules'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('platform_modules')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
+      try {
+        const { data, error } = await supabase
+          .from('platform_modules')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
 
-      if (error) throw error;
-      return (data || []) as DBPlatformModule[];
+        if (error) {
+          console.warn('[useModules] platform_modules query failed:', error.message);
+          return [];
+        }
+        return (data || []) as DBPlatformModule[];
+      } catch {
+        return [];
+      }
     },
     staleTime: 1000 * 60 * 10,
   });
