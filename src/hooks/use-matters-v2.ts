@@ -360,7 +360,7 @@ export function useMatterV2(id: string) {
         estimated_official_fees: m.official_fees,
         estimated_professional_fees: m.professional_fees,
         currency: m.currency || 'EUR',
-        is_urgent: (m.risk_score && m.risk_score >= 80) || false,
+        is_urgent: false,
         is_confidential: false,
         is_archived: m.is_archived || false,
         internal_notes: m.notes || m.internal_notes,
