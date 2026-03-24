@@ -24,6 +24,7 @@ import type { CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import { DealTasksSection } from "./DealTasksSection";
 import { QuickActivityDialog } from "./QuickActivityDialog";
 import { StageBadge } from "./StageBadge";
+import { DealLinkedMatter } from "./DealLinkedMatter";
 import { PipelineProgressBar } from "@/components/features/crm/shared/PipelineProgressBar";
 
 type Deal = {
@@ -32,10 +33,12 @@ type Deal = {
   stage?: string | null;
   stage_id?: string | null;
   amount?: number | null;
+  amount_eur?: number | null;
   probability?: number | null;
   expected_close_date?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  matter_id?: string | null;
   account?: { id: string; name?: string | null } | null;
   contact?: { id: string; name?: string | null; full_name?: string | null; email?: string | null; phone?: string | null } | null;
   owner?: { id: string; full_name?: string | null } | null;
@@ -312,6 +315,17 @@ export function DealDetailPanel({
         {/* TAREAS */}
         <div className="p-5">
           <DealTasksSection dealId={deal.id} />
+        </div>
+
+        <Separator />
+
+        {/* EXPEDIENTE VINCULADO */}
+        <div className="p-5">
+          <DealLinkedMatter
+            matterId={deal.matter_id}
+            dealName={deal.name ?? undefined}
+            accountId={deal.account?.id}
+          />
         </div>
 
         <Separator />

@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom';
+import { DealOriginCard } from './DealOriginCard';
 import { format, formatDistanceToNow, differenceInDays, isPast } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -204,6 +205,11 @@ export function MatterDetailSidebar({
         onWhatsAppClick={onWhatsAppClick}
         onCallClick={onCallClick}
       />
+
+      {/* ======================================= */}
+      {/* DEAL ORIGEN */}
+      {/* ======================================= */}
+      <DealOriginCard matterId={matter.id} />
 
       {/* ======================================= */}
       {/* KEY DATES - SILK Card */}

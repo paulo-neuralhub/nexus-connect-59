@@ -19,8 +19,10 @@ import { toast } from "sonner";
 import type { CRMPipeline, CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import type { CRMDeal } from "@/hooks/crm/v2/types";
 import { useMoveDealStage } from "@/hooks/crm/v2/deals";
+import { fromTable } from "@/lib/supabase";
 import { KanbanColumn } from "./kanban-column";
 import { DealKanbanCard } from "./deal-kanban-card";
+import { WonDealMatterModal } from "./WonDealMatterModal";
 import type React from "react";
 
 function SortableDeal({ deal, stageColor, onClick }: { deal: CRMDeal; stageColor?: string; onClick: () => void }) {
@@ -46,6 +48,7 @@ type Props = {
 
 export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [wonDeal, setWonDeal] = useState<CRMDeal | null>(null);
   const moveDeal = useMoveDealStage();
 
   const sensors = useSensors(
@@ -106,46 +109,83 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     try {
       await moveDeal.mutateAsync({ dealId, newStageId });
       toast.success(`Deal movido a "${newStage?.name ?? ""}"`);
+
+      // If won stage and no matter linked, show modal
+      if (newStage?.is_won_stage && !deal.matter_id) {
+        setWonDeal(deal);
+      } else if (newStage?.is_won_stage && deal.matter_id) {
+        toast.success("Deal cerrado ✅ Expediente vinculado actualizado");
+      }
+
+      // Log activity for won/lost
+      if (newStage?.is_won_stage || newStage?.is_lost_stage) {
+        try {
+          await fromTable("activities").insert({
+            organization_id: deal.organization_id,
+            contact_id: (deal as any).contact?.id ?? null,
+            deal_id: deal.id,
+            type: "note",
+            subject: newStage.is_won_stage
+              ? `Deal cerrado — ${newStage.name}`
+              : `Deal perdido — ${newStage.name}`,
+          });
+        } catch {
+          // Don't block on activity logging
+        }
+      }
     } catch {
       toast.error("No se pudo mover el deal");
     }
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 520 }}>
-        {stages.map((stage) => {
-          const stageDeals = dealsByStage[stage.id] ?? [];
-          return (
-            <KanbanColumn
-              key={stage.id}
-              stage={stage as CRMPipelineStage}
-              deals={stageDeals.map((d) => ({ id: d.id, amount: d.amount_eur ?? d.amount }))}
-              onAddDeal={onAddDeal}
-            >
-              {stageDeals.map((deal) => (
-                <SortableDeal
-                  key={deal.id}
-                  deal={deal}
-                  stageColor={stage.color}
-                  onClick={() => onDealClick(deal.id)}
-                />
-              ))}
-            </KanbanColumn>
-          );
-        })}
-      </div>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 520 }}>
+          {stages.map((stage) => {
+            const stageDeals = dealsByStage[stage.id] ?? [];
+            return (
+              <KanbanColumn
+                key={stage.id}
+                stage={stage as CRMPipelineStage}
+                deals={stageDeals.map((d) => ({ id: d.id, amount: d.amount_eur ?? d.amount }))}
+                onAddDeal={onAddDeal}
+              >
+                {stageDeals.map((deal) => (
+                  <SortableDeal
+                    key={deal.id}
+                    deal={deal}
+                    stageColor={stage.color}
+                    onClick={() => onDealClick(deal.id)}
+                  />
+                ))}
+              </KanbanColumn>
+            );
+          })}
+        </div>
 
-      <DragOverlay>
-        {activeDeal ? (
-          <DealKanbanCard deal={activeDeal} isDragging />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeDeal ? (
+            <DealKanbanCard deal={activeDeal} isDragging />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {wonDeal && (
+        <WonDealMatterModal
+          open={!!wonDeal}
+          onClose={() => setWonDeal(null)}
+          dealId={wonDeal.id}
+          dealName={wonDeal.name}
+          accountId={wonDeal.account_id}
+          dealType={wonDeal.deal_type ?? wonDeal.opportunity_type}
+        />
+      )}
+    </>
   );
 }
