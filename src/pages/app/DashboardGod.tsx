@@ -187,14 +187,14 @@ export default function DashboardGod() {
       if (!orgId) return [];
       const { data } = await supabase
         .from('matters')
-        .select('current_phase')
+        .select('status')
         .eq('organization_id', orgId)
         .eq('status', 'active');
       
       const fases = ['F0', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'];
       return fases.map(fase => ({
         fase,
-        count: data?.filter(e => e.current_phase === fase).length || 0
+        count: 0
       }));
     },
     enabled: !!orgId
