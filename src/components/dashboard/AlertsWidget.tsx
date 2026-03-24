@@ -71,7 +71,7 @@ export function AlertsWidget() {
                     <AlertTriangle 
                       className={cn(
                         "h-4 w-4 mt-0.5 shrink-0",
-                        SEVERITY_ICON_COLORS[alert.severity as AlertSeverity]
+                        SEVERITY_ICON_COLORS[(alert.priority || 'low') as AlertSeverity]
                       )} 
                     />
                     <div className="min-w-0 flex-1">
