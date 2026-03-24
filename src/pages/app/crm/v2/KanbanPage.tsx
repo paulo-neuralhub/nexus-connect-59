@@ -29,6 +29,28 @@ import { DealDetailPanel } from "@/components/features/crm/v2/deal-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Link } from "react-router-dom";
 
+/** Pipeline color by type or id */
+const PIPELINE_COLORS: Record<string, string> = {
+  // By known IDs
+  "b0100001-0000-0000-0000-000000000001": "#3B82F6", // Captación
+  "b0100002-0000-0000-0000-000000000002": "#8B5CF6", // Marca
+  "b0100003-0000-0000-0000-000000000003": "#0EA5E9", // Patente
+  "b0100004-0000-0000-0000-000000000004": "#EF4444", // Contencioso
+  "b0100005-0000-0000-0000-000000000005": "#14B8A6", // Renovaciones
+  // By pipeline_type fallback
+  sales: "#3B82F6",
+  trademark: "#8B5CF6",
+  patent: "#0EA5E9",
+  litigation: "#EF4444",
+  renewal: "#14B8A6",
+  renewals: "#14B8A6",
+  ip_services: "#6366F1",
+};
+
+function getPipelineColor(p: { id: string; pipeline_type?: string | null }) {
+  return PIPELINE_COLORS[p.id] ?? PIPELINE_COLORS[p.pipeline_type ?? ""] ?? "#64748B";
+}
+
 function formatCurrency(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M €`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k €`;
