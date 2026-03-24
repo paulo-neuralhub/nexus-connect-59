@@ -528,8 +528,8 @@ export function CoPilotWidget() {
       )
       if (fnError) throw fnError
       if (data?.conversation_id) setConvId(data.conversation_id)
-      const reply = data?.message ?? data?.response ??
-        'No pude procesar tu mensaje.'
+      const raw = data?.message ?? data?.response ?? 'No pude procesar tu mensaje.'
+      const reply = typeof raw === 'object' && raw !== null ? (raw.content ?? JSON.stringify(raw)) : String(raw)
       setMessages(m => [...m, { role: 'assistant' as const, content: reply }])
     } catch {
       setMessages(m => [
