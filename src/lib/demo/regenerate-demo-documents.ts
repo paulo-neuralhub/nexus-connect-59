@@ -327,7 +327,7 @@ export async function regenerateAllDemoDocuments(
   // Fetch all demo documents
   const { data: docs, error } = await supabase
     .from('matter_documents')
-    .select('id, title, description, document_type, category, file_name, matter_id, created_at, matters(reference, title, current_phase)')
+    .select('id, title, description, document_type, category, file_name, matter_id, created_at, matters(reference, title)')
     .eq('organization_id', ORG_ID);
 
   if (error) {

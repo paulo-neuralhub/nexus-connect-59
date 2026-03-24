@@ -405,7 +405,7 @@ export default function DashboardGod() {
                             <Badge variant={esHoy ? "destructive" : esManana ? "default" : "secondary"} className="text-xs">
                               {esHoy ? 'HOY' : esManana ? 'MAÑANA' : `${diasRestantes} días`}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">{plazo.current_phase}</span>
+                            <span className="text-xs text-muted-foreground"></span>
                           </div>
                         </div>
                       );

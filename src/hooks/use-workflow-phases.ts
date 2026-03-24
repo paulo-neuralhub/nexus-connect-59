@@ -129,15 +129,15 @@ export function usePhaseStats() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matters')
-        .select('current_phase')
+        .select('status')
         .eq('organization_id', currentOrganization?.id);
 
       if (error) throw error;
 
-      // Contar expedientes por fase
+      // Phase stats not available without current_phase column
       const stats: Record<string, number> = {};
       data?.forEach((m) => {
-        const phase = m.current_phase || 'F0';
+        const phase = 'F0';
         stats[phase] = (stats[phase] || 0) + 1;
       });
 
