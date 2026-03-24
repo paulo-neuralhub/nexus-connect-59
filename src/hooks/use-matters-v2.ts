@@ -341,7 +341,7 @@ export function useMatterV2(id: string) {
         status: m.status || 'active',
         status_date: m.updated_at,
         client_id: m.client_id,
-        client_name: (m as any).client?.name || null,
+        client_name: (m as any).crm_account?.name || (m as any).client?.name || null,
         client_email: (m as any).client?.email || null,
         client_phone: (m as any).client?.phone || (m as any).client?.mobile || null,
         jurisdiction_primary: m.jurisdiction || m.jurisdiction_code || null,
