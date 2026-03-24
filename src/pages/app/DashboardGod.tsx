@@ -59,7 +59,7 @@ export default function DashboardGod() {
       
       const { data } = await supabase
         .from('matters')
-        .select('id, reference, title, next_deadline, current_phase, client:client_id(name)')
+        .select('id, reference, title, next_deadline, client:client_id(name)')
         .eq('organization_id', orgId)
         .lte('next_deadline', in7Days.toISOString())
         .gte('next_deadline', today.toISOString())
@@ -79,7 +79,7 @@ export default function DashboardGod() {
       if (!orgId) return [];
       const { data } = await supabase
         .from('matters')
-        .select('id, reference, title, next_deadline, current_phase')
+        .select('id, reference, title, next_deadline')
         .eq('organization_id', orgId)
         .lt('next_deadline', today.toISOString())
         .eq('status', 'active')
@@ -118,7 +118,7 @@ export default function DashboardGod() {
       if (!orgId) return null;
       
       const [matters, contacts, activities, invoices] = await Promise.all([
-        supabase.from('matters').select('id, current_phase, status').eq('organization_id', orgId),
+        supabase.from('matters').select('id, status').eq('organization_id', orgId),
         supabase.from('contacts').select('id').eq('organization_id', orgId).eq('type', 'client'),
         supabase.from('activities').select('id, is_completed, type').eq('organization_id', orgId).eq('type', 'task'),
         supabase.from('invoices')
@@ -187,14 +187,14 @@ export default function DashboardGod() {
       if (!orgId) return [];
       const { data } = await supabase
         .from('matters')
-        .select('current_phase')
+        .select('status')
         .eq('organization_id', orgId)
         .eq('status', 'active');
       
       const fases = ['F0', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'];
       return fases.map(fase => ({
         fase,
-        count: data?.filter(e => e.current_phase === fase).length || 0
+        count: 0
       }));
     },
     enabled: !!orgId
@@ -213,7 +213,7 @@ export default function DashboardGod() {
           .order('received_at', { ascending: false })
           .limit(5),
         supabase.from('matters')
-          .select('id, reference, title, updated_at, current_phase')
+          .select('id, reference, title, updated_at')
           .eq('organization_id', orgId)
           .order('updated_at', { ascending: false })
           .limit(5)
@@ -232,7 +232,7 @@ export default function DashboardGod() {
           type: 'matter' as const,
           icon: Briefcase,
           title: e.reference || e.title,
-          subtitle: `Fase ${e.current_phase || 'N/A'}`,
+          subtitle: `Expediente actualizado`,
           time: e.updated_at,
           color: 'text-blue-500'
         }))
@@ -405,7 +405,7 @@ export default function DashboardGod() {
                             <Badge variant={esHoy ? "destructive" : esManana ? "default" : "secondary"} className="text-xs">
                               {esHoy ? 'HOY' : esManana ? 'MAÑANA' : `${diasRestantes} días`}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">{plazo.current_phase}</span>
+                            <span className="text-xs text-muted-foreground"></span>
                           </div>
                         </div>
                       );
