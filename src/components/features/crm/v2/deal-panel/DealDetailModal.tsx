@@ -1,8 +1,8 @@
 /**
- * DealDetailModal — Single-column commercial card modal (560px)
- * Sections: Header+Stepper → Info → Client → Actions → Activity → Matter → Footer
+ * DealDetailModal — "Luxury Legal Tech" single-column commercial card (560px)
+ * Dark gradient header + premium body with elevated cards + micro-animations
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -14,9 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +34,7 @@ import {
 import { format, formatDistanceToNow, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useCountUp } from "@/hooks/use-count-up";
 
 import { useUpdateCRMDeal, useDeleteCRMDeal } from "@/hooks/crm/v2/deals";
 import { useCreateCRMInteraction, useCRMInteractions } from "@/hooks/crm/v2/interactions";
@@ -45,6 +44,7 @@ import type { CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import { QuickActivityDialog } from "./QuickActivityDialog";
 import { DealLinkedMatter } from "./DealLinkedMatter";
 
+/* ── Types ── */
 type Deal = {
   id: string;
   name?: string | null;
@@ -72,6 +72,7 @@ type Deal = {
   pipeline_stage?: { id: string; name: string; color: string; probability: number; is_won_stage: boolean; is_lost_stage: boolean } | null;
 };
 
+/* ── Constants ── */
 function formatEUR(amount?: number | null) {
   if (amount == null) return "—";
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
@@ -85,12 +86,17 @@ const PIPELINE_COLORS: Record<string, string> = {
   "b0100005-0000-0000-0000-000000000005": "#14B8A6",
 };
 
+/** Dark gradient backgrounds per pipeline */
+const PIPELINE_GRADIENTS: Record<string, string> = {
+  "#3B82F6": "linear-gradient(135deg, #0F172A 0%, #1E3A5F 60%, #1E40AF 100%)",
+  "#8B5CF6": "linear-gradient(135deg, #0F172A 0%, #2D1B69 60%, #4C1D95 100%)",
+  "#0EA5E9": "linear-gradient(135deg, #0F172A 0%, #0C4A6E 60%, #0369A1 100%)",
+  "#EF4444": "linear-gradient(135deg, #0F172A 0%, #450A0A 60%, #991B1B 100%)",
+  "#14B8A6": "linear-gradient(135deg, #0F172A 0%, #042F2E 60%, #0F766E 100%)",
+};
+
 const ACTIVITY_ICONS: Record<string, string> = {
-  email: "✉️",
-  call: "📞",
-  meeting: "📅",
-  note: "💬",
-  whatsapp: "💬",
+  email: "✉️", call: "📞", meeting: "📅", note: "💬", whatsapp: "💬",
 };
 
 const DEAL_TYPE_LABELS: Record<string, string> = {
@@ -107,31 +113,42 @@ const DEAL_TYPE_LABELS: Record<string, string> = {
   licensing: "Licenciamiento",
 };
 
-/** Generate stable color from string hash */
 function hashColor(str: string): string {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash % 360);
-  return `hsl(${hue}, 55%, 45%)`;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return `hsl(${Math.abs(hash % 360)}, 55%, 45%)`;
 }
 
 function probColor(p: number): string {
-  if (p < 30) return "#EF4444";
-  if (p <= 70) return "#F59E0B";
-  return "#22C55E";
+  if (p >= 100) return "#16A34A";
+  if (p > 70) return "#22C55E";
+  if (p > 30) return "#F59E0B";
+  return "#EF4444";
 }
 
-/* ── Stage Stepper ── */
+/* ── Gradient separator ── */
+function GradientDivider() {
+  return (
+    <div
+      className="h-px mx-6"
+      style={{
+        background: "linear-gradient(90deg, transparent, #E2E8F0 20%, #E2E8F0 80%, transparent)",
+      }}
+    />
+  );
+}
+
+/* ── Stage Stepper (dark theme) ── */
 function StageStepper({
   stages,
   currentStageId,
   pipelineColor,
+  animated,
 }: {
   stages: CRMPipelineStage[];
   currentStageId: string;
   pipelineColor: string;
+  animated: boolean;
 }) {
   const sorted = useMemo(() => [...stages].sort((a, b) => a.position - b.position), [stages]);
   const currentIdx = sorted.findIndex((s) => s.id === currentStageId);
@@ -147,12 +164,11 @@ function StageStepper({
     if (currentIdx < sorted.length - 1) indices.add(currentIdx + 1);
     indices.add(sorted.length - 2);
     indices.add(sorted.length - 1);
-    const sortedIndices = [...indices].sort((a, b) => a - b);
-    visible = sortedIndices.map((i) => sorted[i]);
+    visible = [...indices].sort((a, b) => a - b).map((i) => sorted[i]);
   }
 
   return (
-    <div className="flex items-center gap-0 overflow-x-auto py-2 px-1">
+    <div className="flex items-center gap-0 overflow-x-auto py-3 px-1">
       {visible.map((stage, i) => {
         const realIdx = sorted.findIndex((s) => s.id === stage.id);
         const isPast = realIdx < currentIdx;
@@ -164,33 +180,36 @@ function StageStepper({
           <div key={stage.id} className="flex items-center">
             {i > 0 && (
               <div
-                className="h-[2px] w-5 sm:w-7 transition-colors"
+                className="h-[2px] w-5 sm:w-7 origin-left"
                 style={{
-                  backgroundColor: isPast || isActive
-                    ? `${pipelineColor}99`
-                    : "#E2E8F0",
+                  backgroundColor: isPast || isActive ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.12)",
+                  ...(animated ? {
+                    animation: `stepper-draw 400ms ease-in-out ${200 + i * 80}ms both`,
+                  } : {}),
                 }}
               />
             )}
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1.5">
               <div
                 className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center transition-all",
-                  isPast && "text-white",
-                  isActive && !isWon && !isLost && "text-white",
                   isWon && "bg-emerald-500 text-white",
-                  isLost && "bg-destructive text-white",
-                  !isPast && !isActive && "bg-white border-2"
+                  isLost && "bg-red-500 text-white",
                 )}
                 style={{
-                  ...(isPast ? { backgroundColor: pipelineColor } : {}),
-                  ...(isActive && !isWon && !isLost
-                    ? {
-                        backgroundColor: pipelineColor,
-                        boxShadow: `0 0 0 3px ${pipelineColor}4D`,
-                      }
-                    : {}),
-                  ...(!isPast && !isActive ? { borderColor: "#CBD5E1" } : {}),
+                  ...(isPast ? {
+                    backgroundColor: "white",
+                    color: pipelineColor,
+                  } : {}),
+                  ...(isActive && !isWon && !isLost ? {
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    border: "2px solid white",
+                    boxShadow: "0 0 0 4px rgba(255,255,255,0.2)",
+                  } : {}),
+                  ...(!isPast && !isActive ? {
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    backgroundColor: "transparent",
+                  } : {}),
                 }}
               >
                 {isPast ? (
@@ -198,20 +217,14 @@ function StageStepper({
                 ) : isWon ? (
                   <Trophy className="w-3 h-3" />
                 ) : isActive ? (
-                  <Circle className="w-2.5 h-2.5 fill-current" />
+                  <Circle className="w-2 h-2 fill-white text-white" />
                 ) : null}
               </div>
               <span
-                className={cn(
-                  "text-[10px] leading-tight text-center max-w-[60px] truncate",
-                  isActive ? "font-bold" : isPast ? "font-medium" : "font-normal"
-                )}
+                className="text-[10px] leading-tight text-center max-w-[60px] truncate"
                 style={{
-                  color: isActive
-                    ? pipelineColor
-                    : isPast
-                    ? `${pipelineColor}CC`
-                    : "#94A3B8",
+                  color: isActive ? "white" : isPast ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.3)",
+                  fontWeight: isActive ? 700 : isPast ? 500 : 400,
                 }}
               >
                 {stage.name}
@@ -224,6 +237,31 @@ function StageStepper({
   );
 }
 
+/* ── Animated metric number ── */
+function AnimatedMetric({ value, prefix = "", suffix = "", color, large }: {
+  value: number; prefix?: string; suffix?: string; color?: string; large?: boolean;
+}) {
+  const animated = useCountUp(value, 700, true);
+  return (
+    <span
+      className={cn(
+        "font-black tracking-tight",
+        large ? "text-[32px] leading-none" : "text-2xl"
+      )}
+      style={{
+        color: color ?? "#0F172A",
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.03em",
+      }}
+    >
+      {prefix}{animated.toLocaleString("es-ES")}{suffix}
+    </span>
+  );
+}
+
+/* ══════════════════════════════════════ */
+/*            MAIN COMPONENT             */
+/* ══════════════════════════════════════ */
 export function DealDetailModal({
   deal,
   open,
@@ -246,6 +284,16 @@ export function DealDetailModal({
 
   const [activityType, setActivityType] = useState<"email" | "call" | "meeting" | "note" | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAnimated, setIsAnimated] = useState(false);
+
+  // trigger entrance animations on open
+  useEffect(() => {
+    if (open) {
+      setIsAnimated(false);
+      const t = setTimeout(() => setIsAnimated(true), 50);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
 
   const stage = useMemo(
     () => stages.find((s) => s.id === (deal?.pipeline_stage_id ?? deal?.stage_id)) ?? deal?.pipeline_stage ?? null,
@@ -260,6 +308,7 @@ export function DealDetailModal({
 
   const probability = deal?.probability_pct ?? deal?.probability ?? stage?.probability ?? null;
   const pipelineColor = deal?.pipeline_id ? PIPELINE_COLORS[deal.pipeline_id] ?? "#64748B" : "#64748B";
+  const headerGradient = PIPELINE_GRADIENTS[pipelineColor] ?? "linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #334155 100%)";
 
   const accountName = deal?.account?.name ?? deal?.account_name_cache ?? "Sin cuenta";
   const contactName = deal?.contact?.name ?? deal?.contact?.full_name ?? null;
@@ -284,25 +333,11 @@ export function DealDetailModal({
     const items: { id: string; type: "task" | "deadline"; title: string; daysLeft: number | null; isUrgent: boolean; isWarning: boolean }[] = [];
     pendingDeadlines.forEach((d) => {
       const days = differenceInDays(new Date(d.due_date), new Date());
-      items.push({
-        id: d.id,
-        type: "deadline",
-        title: d.title,
-        daysLeft: days,
-        isUrgent: days < 7,
-        isWarning: days >= 7 && days <= 30,
-      });
+      items.push({ id: d.id, type: "deadline", title: d.title, daysLeft: days, isUrgent: days < 7, isWarning: days >= 7 && days <= 30 });
     });
     sortedTasks.slice(0, 5).forEach((t: any) => {
       const days = t.due_date ? differenceInDays(new Date(t.due_date), new Date()) : null;
-      items.push({
-        id: t.id,
-        type: "task",
-        title: t.title,
-        daysLeft: days,
-        isUrgent: days !== null && days < 7,
-        isWarning: days !== null && days >= 7 && days <= 30,
-      });
+      items.push({ id: t.id, type: "task", title: t.title, daysLeft: days, isUrgent: days !== null && days < 7, isWarning: days !== null && days >= 7 && days <= 30 });
     });
     return items.sort((a, b) => (a.daysLeft ?? 999) - (b.daysLeft ?? 999));
   }, [pendingDeadlines, sortedTasks]);
@@ -319,183 +354,264 @@ export function DealDetailModal({
   const isWon = stage?.is_won_stage ?? false;
   const isLost = stage?.is_lost_stage ?? false;
   const recentActivities = interactions.slice(0, 3);
-
-  // Close date urgency
-  const closeDaysLeft = deal.expected_close_date
-    ? differenceInDays(new Date(deal.expected_close_date), new Date())
-    : null;
+  const closeDaysLeft = deal.expected_close_date ? differenceInDays(new Date(deal.expected_close_date), new Date()) : null;
   const closeIsPast = closeDaysLeft !== null && closeDaysLeft < 0;
   const closeIsNear = closeDaysLeft !== null && closeDaysLeft >= 0 && closeDaysLeft < 30;
-
-  // Deal type label
   const dealTypeRaw = deal.deal_type ?? deal.opportunity_type ?? null;
   const dealTypeLabel = dealTypeRaw ? (DEAL_TYPE_LABELS[dealTypeRaw] ?? dealTypeRaw.replace(/_/g, " ")) : "—";
+  const amountRaw = deal.amount_eur ?? deal.amount ?? 0;
 
   return (
     <>
+      {/* Inline keyframes for stepper line drawing */}
+      <style>{`
+        @keyframes stepper-draw {
+          from { transform: scaleX(0); }
+          to { transform: scaleX(1); }
+        }
+      `}</style>
+
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
         <DialogContent
-          className="max-w-[560px] w-[95vw] max-h-[85vh] p-0 gap-0 rounded-2xl overflow-hidden flex flex-col"
-          style={{ boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}
+          className="max-w-[560px] w-[95vw] max-h-[85vh] p-0 gap-0 overflow-hidden flex flex-col border-0"
+          style={{
+            borderRadius: 16,
+            boxShadow: "0 0 0 1px rgba(0,0,0,0.05), 0 8px 16px rgba(0,0,0,0.08), 0 32px 64px rgba(0,0,0,0.18), 0 64px 128px rgba(0,0,0,0.12)",
+          }}
         >
           <DialogHeader className="sr-only">
             <DialogTitle>{deal.name ?? "Deal"}</DialogTitle>
             <DialogDescription>Ficha comercial del deal</DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="space-y-0">
+          <div className="flex-1 min-h-0 overflow-y-auto" style={{ scrollBehavior: "smooth" }}>
 
-              {/* ═══ HEADER with pipeline color tint ═══ */}
+            {/* ═══ DARK GRADIENT HEADER ═══ */}
+            <div
+              className="relative px-6 pt-6 pb-4 space-y-3"
+              style={{
+                background: headerGradient,
+                transition: "opacity 200ms ease-out",
+                opacity: isAnimated ? 1 : 0,
+              }}
+            >
+              {/* Subtle dot texture overlay */}
               <div
-                className="p-6 pb-4 space-y-3"
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: `${pipelineColor}0F`,
-                  borderBottom: `2px solid ${pipelineColor}33`,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='1' cy='1' r='1' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "repeat",
+                }}
+              />
+
+              {/* Pipeline badge */}
+              <Badge
+                className="relative text-[11px] uppercase tracking-[0.08em] font-semibold border-0"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  color: "white",
+                  padding: "3px 10px",
+                  borderRadius: 6,
                 }}
               >
-                <Badge
-                  className="text-[11px] uppercase tracking-[0.08em] font-semibold border-0"
+                {pipelineName ?? "Pipeline"}
+              </Badge>
+
+              {/* Deal title */}
+              <h2
+                className="relative text-[24px] leading-tight line-clamp-2"
+                style={{
+                  color: "white",
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {deal.name}
+                {deal.jurisdiction_code && (
+                  <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 400, fontSize: 16, marginLeft: 8 }}>
+                    — {deal.jurisdiction_code.toUpperCase()}
+                  </span>
+                )}
+              </h2>
+
+              {/* Current stage indicator */}
+              {stage && (
+                <div className="relative flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: stage.color ?? pipelineColor }}
+                  />
+                  <span style={{ color: "rgba(255,255,255,0.8)", fontWeight: 600, fontSize: 14 }}>
+                    {stage.name}
+                  </span>
+                </div>
+              )}
+
+              {/* Urgent deadline banner */}
+              {closeDaysLeft !== null && closeDaysLeft < 7 && (
+                <div
+                  className="relative rounded-lg px-3 py-2 flex items-center gap-2 text-white text-xs font-medium"
                   style={{
-                    backgroundColor: `${pipelineColor}1F`,
-                    color: pipelineColor,
-                    padding: "3px 8px",
-                    borderRadius: 6,
+                    backgroundColor: "rgba(239,68,68,0.25)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(239,68,68,0.3)",
                   }}
                 >
-                  {pipelineName ?? "Pipeline"}
-                </Badge>
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {closeIsPast ? "Cierre vencido" : `Cierre en ${closeDaysLeft} días`}
+                </div>
+              )}
 
-                <h2
-                  className="text-[22px] font-bold leading-tight line-clamp-2"
-                  style={{ color: "#0F172A" }}
-                >
-                  {deal.name}
-                  {deal.jurisdiction_code && (
-                    <span className="text-muted-foreground font-normal text-base ml-2">
-                      — {deal.jurisdiction_code.toUpperCase()}
-                    </span>
-                  )}
-                </h2>
+              {/* Stepper on dark background */}
+              {stages.length > 0 && (deal.pipeline_stage_id ?? deal.stage_id) && (
+                <StageStepper
+                  stages={stages}
+                  currentStageId={(deal.pipeline_stage_id ?? deal.stage_id)!}
+                  pipelineColor={pipelineColor}
+                  animated={isAnimated}
+                />
+              )}
+            </div>
 
-                {stage && (
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: stage.color ?? pipelineColor }}
-                    />
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: stage.color ?? pipelineColor }}
-                    >
-                      {stage.name}
-                    </span>
-                  </div>
-                )}
+            {/* ═══ BODY — White with elevated cards ═══ */}
+            <div className="bg-background">
 
-                {/* Stepper */}
-                {stages.length > 0 && (deal.pipeline_stage_id ?? deal.stage_id) && (
-                  <StageStepper
-                    stages={stages}
-                    currentStageId={(deal.pipeline_stage_id ?? deal.stage_id)!}
-                    pipelineColor={pipelineColor}
-                  />
-                )}
-              </div>
-
-              <Separator className="opacity-0" />
-
-              {/* ═══ INFORMACIÓN COMERCIAL ═══ */}
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {/* ── INFORMACIÓN COMERCIAL ── */}
+              <div
+                className="px-6 py-5 space-y-3"
+                style={{
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 200ms ease-out 300ms, transform 200ms ease-out 300ms",
+                }}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Información comercial
                 </p>
 
-                {/* Primary metrics — large cards */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
-                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Valor</p>
-                    <p className="text-2xl font-extrabold" style={{ color: "#0F172A" }}>
-                      {formatEUR(deal.amount_eur ?? deal.amount)}
-                    </p>
+                {/* Primary metrics card */}
+                <div
+                  className="rounded-[14px] p-4"
+                  style={{
+                    background: "#FAFAFA",
+                    border: "1px solid #F1F5F9",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)",
+                  }}
+                >
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Valor */}
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Valor</p>
+                      {amountRaw > 0 ? (
+                        <AnimatedMetric value={amountRaw} suffix=" €" large />
+                      ) : (
+                        <span className="text-[32px] font-black text-muted-foreground/40 leading-none">—</span>
+                      )}
+                    </div>
+
+                    {/* Probabilidad */}
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Probabilidad</p>
+                      {probability != null ? (
+                        <>
+                          <AnimatedMetric value={probability} suffix="%" color={probColor(probability)} large />
+                          <div
+                            className="h-[3px] w-full rounded-full overflow-hidden mt-1"
+                            style={{ backgroundColor: `${probColor(probability)}33` }}
+                          >
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: isAnimated ? `${Math.min(probability, 100)}%` : "0%",
+                                backgroundColor: probColor(probability),
+                                transition: "width 600ms ease-out 400ms",
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-[32px] font-black text-muted-foreground/40 leading-none">—</span>
+                      )}
+                    </div>
+
+                    {/* Cierre */}
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest font-medium">Cierre</p>
+                      <p
+                        className="text-sm font-bold mt-2"
+                        style={{
+                          color: closeIsPast ? "#EF4444" : closeIsNear ? "#F59E0B" : "#0F172A",
+                        }}
+                      >
+                        {deal.expected_close_date
+                          ? format(new Date(deal.expected_close_date), "d MMM yyyy", { locale: es })
+                          : "—"}
+                        {closeIsPast && <span className="text-xs ml-1 opacity-80">(vencido)</span>}
+                      </p>
+                    </div>
                   </div>
-                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
-                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Probabilidad</p>
-                    <p className="text-2xl font-extrabold" style={{ color: "#0F172A" }}>
-                      {probability != null ? `${probability}%` : "—"}
-                    </p>
-                    {probability != null && (
-                      <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${Math.min(probability, 100)}%`,
-                            backgroundColor: probColor(probability),
-                          }}
-                        />
+
+                  {/* Type + Jurisdiction badges */}
+                  <div className="flex items-center gap-2 flex-wrap mt-4 pt-3 border-t border-border/40">
+                    {dealTypeRaw && (
+                      <span
+                        className="text-xs font-semibold px-2.5 py-1 rounded-md"
+                        style={{
+                          backgroundColor: `${pipelineColor}15`,
+                          color: pipelineColor,
+                        }}
+                      >
+                        {dealTypeLabel}
+                      </span>
+                    )}
+                    {deal.jurisdiction_code && (
+                      <span
+                        className="text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md"
+                        style={{
+                          backgroundColor: "#F1F5F9",
+                          color: "#475569",
+                        }}
+                      >
+                        {deal.jurisdiction_code}
+                      </span>
+                    )}
+                    {deal.owner?.full_name && (
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <Avatar className="h-5 w-5">
+                          <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                            {deal.owner.full_name.split(" ").map((w) => w[0]).join("").substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-muted-foreground">{deal.owner.full_name}</span>
                       </div>
                     )}
                   </div>
-                  <div className="rounded-[10px] border bg-white p-3 space-y-1" style={{ borderColor: "#E2E8F0" }}>
-                    <p className="text-[11px] uppercase text-muted-foreground tracking-wide">Cierre</p>
-                    <p
-                      className={cn(
-                        "text-sm font-bold",
-                        closeIsPast && "text-destructive",
-                        closeIsNear && !closeIsPast && "text-amber-600"
-                      )}
-                      style={!closeIsPast && !closeIsNear ? { color: "#0F172A" } : undefined}
-                    >
-                      {deal.expected_close_date
-                        ? format(new Date(deal.expected_close_date), "d MMM yyyy", { locale: es })
-                        : "—"}
-                      {closeIsPast && <span className="text-xs ml-1">(vencido)</span>}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Secondary fields */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {dealTypeRaw && (
-                    <Badge variant="secondary" className="text-xs capitalize">
-                      {dealTypeLabel}
-                    </Badge>
-                  )}
-                  {deal.jurisdiction_code && (
-                    <Badge variant="outline" className="text-xs uppercase font-semibold tracking-wide">
-                      {deal.jurisdiction_code}
-                    </Badge>
-                  )}
-                  {deal.owner?.full_name && (
-                    <div className="flex items-center gap-1.5 ml-auto">
-                      <Avatar className="h-5 w-5">
-                        <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                          {deal.owner.full_name.split(" ").map((w) => w[0]).join("").substring(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-muted-foreground">{deal.owner.full_name}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              <Separator />
+              <GradientDivider />
 
-              {/* ═══ CLIENTE ═══ */}
-              <div className="px-6 py-5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              {/* ── CLIENTE ── */}
+              <div
+                className="px-6 py-5 group/client transition-colors"
+                style={{
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 200ms ease-out 380ms, transform 200ms ease-out 380ms, background-color 150ms",
+                }}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                   Cliente
                 </p>
                 <div className="flex items-center gap-3">
-                  <Avatar
-                    className="h-11 w-11 shrink-0 rounded-[10px]"
-                    style={{
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                    }}
-                  >
+                  <Avatar className="h-11 w-11 shrink-0" style={{ borderRadius: 12 }}>
                     <AvatarFallback
-                      className="text-sm font-bold text-white rounded-[10px]"
-                      style={{ backgroundColor: avatarColor }}
+                      className="text-[15px] font-bold text-white"
+                      style={{
+                        backgroundColor: avatarColor,
+                        borderRadius: 12,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                      }}
                     >
                       {initials}
                     </AvatarFallback>
@@ -508,7 +624,7 @@ export function DealDetailModal({
                       <p className="text-[13px] text-muted-foreground truncate">{contactName}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {deal.contact?.phone && (
                       <a
                         href={`tel:${deal.contact.phone}`}
@@ -547,30 +663,38 @@ export function DealDetailModal({
                 </div>
               </div>
 
-              <Separator />
+              <GradientDivider />
 
-              {/* ═══ PRÓXIMAS ACCIONES ═══ */}
-              <div className="px-6 py-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {/* ── PRÓXIMAS ACCIONES ── */}
+              <div
+                className="px-6 py-5 space-y-3"
+                style={{
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 200ms ease-out 460ms, transform 200ms ease-out 460ms",
+                }}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Próximas acciones
                 </p>
 
                 {actionItems.length === 0 ? (
-                  <div className="flex flex-col items-center gap-3 py-4 text-center">
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex flex-col items-center gap-3 py-6 text-center">
+                    <div className="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-muted-foreground/50" />
                     </div>
                     <p className="text-sm text-muted-foreground">Sin acciones pendientes</p>
+                    <p className="text-xs text-muted-foreground/60">Sé el primero en registrar una acción</p>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("email")}>
-                        <Mail className="h-3 w-3 mr-1" /> Email
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("call")}>
-                        <Phone className="h-3 w-3 mr-1" /> Llamada
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("note")}>
-                        <MessageSquare className="h-3 w-3 mr-1" /> Nota
-                      </Button>
+                      {(["email", "call", "note"] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setActivityType(type)}
+                          className="text-xs px-3 py-1.5 rounded-full border border-border bg-background hover:bg-muted transition-colors font-medium text-muted-foreground"
+                        >
+                          {type === "email" ? "📧 Email" : type === "call" ? "📞 Llamada" : "📝 Nota"}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ) : (
@@ -580,35 +704,28 @@ export function DealDetailModal({
                         key={item.id}
                         className={cn(
                           "flex items-start gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors",
-                          item.isUrgent && "bg-red-50 dark:bg-red-950/20 border-l-[3px] border-l-red-500",
-                          item.isWarning && "bg-amber-50 dark:bg-amber-950/20 border-l-[3px] border-l-amber-500",
-                          !item.isUrgent && !item.isWarning && "bg-muted/40"
+                          item.isUrgent && "border-l-[3px] border-l-red-500",
+                          item.isWarning && "border-l-[3px] border-l-amber-500",
+                          !item.isUrgent && !item.isWarning && "bg-muted/30"
                         )}
+                        style={{
+                          backgroundColor: item.isUrgent ? "#FEF2F2" : item.isWarning ? "#FFFBEB" : undefined,
+                        }}
                       >
                         {item.type === "deadline" ? (
-                          <AlertTriangle
-                            className={cn(
-                              "w-4 h-4 mt-0.5 shrink-0",
-                              item.isUrgent ? "text-red-500" : "text-amber-500"
-                            )}
-                          />
+                          <AlertTriangle className={cn("w-4 h-4 mt-0.5 shrink-0", item.isUrgent ? "text-red-500" : "text-amber-500")} />
                         ) : (
                           <button
-                            onClick={() => item.type === "task" && completeTask.mutate(item.id)}
+                            onClick={() => completeTask.mutate(item.id)}
                             className={cn(
                               "mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                              item.isUrgent
-                                ? "border-red-300 hover:border-red-500"
-                                : "border-border hover:border-primary"
+                              item.isUrgent ? "border-red-300 hover:border-red-500" : "border-border hover:border-primary"
                             )}
                           >
                             <Check className="w-2.5 h-2.5 opacity-0 hover:opacity-40" />
                           </button>
                         )}
-                        <span className={cn(
-                          "flex-1 min-w-0 truncate",
-                          item.isUrgent && "font-semibold"
-                        )}>
+                        <span className={cn("flex-1 min-w-0 truncate", item.isUrgent && "font-semibold")}>
                           {item.title}
                         </span>
                         {item.daysLeft !== null && (
@@ -636,24 +753,25 @@ export function DealDetailModal({
                     className="h-8 text-sm"
                     onKeyDown={(e) => { if (e.key === "Enter") handleAddTask(); }}
                   />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={handleAddTask}
-                    disabled={!newTaskTitle.trim() || createTask.isPending}
-                  >
+                  <Button variant="ghost" size="sm" className="h-8 px-2" onClick={handleAddTask} disabled={!newTaskTitle.trim() || createTask.isPending}>
                     <Plus className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
-              <Separator />
+              <GradientDivider />
 
-              {/* ═══ ACTIVIDAD RECIENTE ═══ */}
-              <div className="px-6 py-5 space-y-3">
+              {/* ── ACTIVIDAD RECIENTE ── */}
+              <div
+                className="px-6 py-5 space-y-3"
+                style={{
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 200ms ease-out 540ms, transform 200ms ease-out 540ms",
+                }}
+              >
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Actividad reciente
                   </p>
                   <div className="flex gap-1">
@@ -664,21 +782,21 @@ export function DealDetailModal({
                 </div>
 
                 {recentActivities.length === 0 ? (
-                  <div className="flex flex-col items-center gap-3 py-4 text-center">
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                      <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex flex-col items-center gap-3 py-6 text-center">
+                    <div className="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center">
+                      <MessageSquare className="h-6 w-6 text-muted-foreground/40" />
                     </div>
-                    <p className="text-sm text-muted-foreground">Sin actividad registrada</p>
+                    <p className="text-sm text-muted-foreground">Sé el primero en registrar actividad</p>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("email")}>
-                        <Mail className="h-3 w-3 mr-1" /> Email
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("call")}>
-                        <Phone className="h-3 w-3 mr-1" /> Llamada
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setActivityType("note")}>
-                        <MessageSquare className="h-3 w-3 mr-1" /> Nota
-                      </Button>
+                      {(["email", "call", "note"] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setActivityType(type)}
+                          className="text-xs px-3 py-1.5 rounded-full border border-border bg-background hover:bg-muted transition-colors font-medium text-muted-foreground"
+                        >
+                          {type === "email" ? "📧 Email" : type === "call" ? "📞 Llamada" : "📝 Nota"}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ) : (
@@ -689,9 +807,7 @@ export function DealDetailModal({
                         <div key={a.id} className="flex items-center gap-2.5 text-sm">
                           <span className="text-base shrink-0">{icon}</span>
                           <span className="text-muted-foreground text-xs shrink-0">
-                            {a.created_at
-                              ? formatDistanceToNow(new Date(a.created_at), { addSuffix: false, locale: es })
-                              : ""}
+                            {a.created_at ? formatDistanceToNow(new Date(a.created_at), { addSuffix: false, locale: es }) : ""}
                           </span>
                           <span className="flex-1 min-w-0 truncate">
                             {a.subject ?? a.content ?? "Interacción"}
@@ -703,16 +819,21 @@ export function DealDetailModal({
                 )}
 
                 {interactions.length > 3 && (
-                  <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                    Ver todo →
-                  </Button>
+                  <Button variant="link" size="sm" className="h-auto p-0 text-xs">Ver todo →</Button>
                 )}
               </div>
 
-              <Separator />
+              <GradientDivider />
 
-              {/* ═══ EXPEDIENTE VINCULADO ═══ */}
-              <div className="px-6 py-5">
+              {/* ── EXPEDIENTE VINCULADO ── */}
+              <div
+                className="px-6 py-5"
+                style={{
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 200ms ease-out 620ms, transform 200ms ease-out 620ms",
+                }}
+              >
                 <DealLinkedMatter
                   matterId={deal.matter_id}
                   dealName={deal.name ?? undefined}
@@ -727,7 +848,7 @@ export function DealDetailModal({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <button
-                  className="text-[13px] text-destructive/70 hover:text-destructive flex items-center gap-1 transition-colors"
+                  className="text-[13px] text-destructive/60 hover:text-destructive flex items-center gap-1 transition-colors"
                   disabled={deleteDeal.isPending}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -767,24 +888,29 @@ export function DealDetailModal({
               </Button>
 
               {!isWon && !isLost ? (
-                <Button
-                  size="sm"
-                  className="text-white font-semibold px-5"
-                  style={{ backgroundColor: "#22C55E" }}
+                <button
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-white px-5 py-2 rounded-lg transition-all hover:-translate-y-px active:translate-y-0 disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, #16A34A, #22C55E)",
+                    boxShadow: "0 4px 14px rgba(34,197,94,0.4)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(34,197,94,0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 14px rgba(34,197,94,0.4)";
+                  }}
                   onClick={async () => {
                     const wonStage = stages.find((s) => s.is_won_stage);
                     if (wonStage) {
-                      await updateDeal.mutateAsync({
-                        id: deal.id,
-                        data: { stage_id: wonStage.id } as any,
-                      });
+                      await updateDeal.mutateAsync({ id: deal.id, data: { stage_id: wonStage.id } as any });
                     }
                   }}
                   disabled={updateDeal.isPending}
                 >
-                  <Trophy className="h-3.5 w-3.5 mr-1.5" />
+                  <Trophy className="h-3.5 w-3.5" />
                   Marcar ganado
-                </Button>
+                </button>
               ) : isWon ? (
                 <Button
                   variant="outline"
@@ -792,10 +918,7 @@ export function DealDetailModal({
                   onClick={async () => {
                     const firstStage = [...stages].sort((a, b) => a.position - b.position)[0];
                     if (firstStage) {
-                      await updateDeal.mutateAsync({
-                        id: deal.id,
-                        data: { stage_id: firstStage.id } as any,
-                      });
+                      await updateDeal.mutateAsync({ id: deal.id, data: { stage_id: firstStage.id } as any });
                     }
                   }}
                   disabled={updateDeal.isPending}
