@@ -41,7 +41,7 @@ export type CRMDealDetail = {
   updated_at: string;
   // Relations
   account?: { id: string; name?: string | null; tier?: string | null; email?: string | null } | null;
-  contact?: { id: string; full_name?: string | null; email?: string | null; phone?: string | null } | null;
+  contact?: { id: string; name?: string | null; full_name?: string | null; email?: string | null; phone?: string | null } | null;
   owner?: { id: string; full_name?: string | null; avatar_url?: string | null } | null;
   assigned_user?: { id: string; full_name?: string | null; avatar_url?: string | null } | null;
   pipeline?: { id: string; name: string; entity_type?: string | null } | null;
