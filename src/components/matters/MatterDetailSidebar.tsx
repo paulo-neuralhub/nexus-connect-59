@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom';
+import { DealOriginCard } from './DealOriginCard';
 import { format, formatDistanceToNow, differenceInDays, isPast } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
