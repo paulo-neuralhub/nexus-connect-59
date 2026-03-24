@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInstructions, type InstructionFilter, type Instruction } from '@/hooks/use-instructions';
 import { useAcknowledge, useConflictCheck, useSendQuote, useApproveQuote, useExecuteInstruction } from '@/hooks/use-instruction-actions';
-import { ConflictResultsModal, QuoteModal, ExecuteConfirmModal } from '@/components/features/instructions/InstructionModals';
+import { ConflictResultsModal, ExecuteConfirmModal } from '@/components/features/instructions/InstructionModals';
+import { QuoteWizardModal } from '@/components/features/instructions/QuoteWizardModal';
 import { NewInstructionModal } from '@/components/features/instructions/NewInstructionModal';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -160,8 +161,11 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
     setQuoteModal(true);
   };
 
-  const handleQuoteConfirm = () => {
-    sendQuote.mutate(instruction, {
+  const handleQuoteConfirm = (data: any) => {
+    sendQuote.mutate({
+      instruction,
+      ...data,
+    }, {
       onSuccess: () => setQuoteModal(false),
     });
   };
@@ -536,11 +540,11 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
         matters={conflictModal.matters}
         alerts={conflictModal.alerts}
       />
-      <QuoteModal
+      <QuoteWizardModal
         open={quoteModal}
         onOpenChange={setQuoteModal}
         instruction={instruction}
-        onConfirm={handleQuoteConfirm}
+        onSend={handleQuoteConfirm}
         isLoading={sendQuote.isPending}
       />
       <ExecuteConfirmModal
