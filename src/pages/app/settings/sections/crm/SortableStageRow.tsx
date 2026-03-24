@@ -174,7 +174,11 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
             ) : (
               <Select
                 value={lockType}
-                onValueChange={(val) => onUpdate({ lock_type: val })}
+                onValueChange={(val) => {
+                  const updates: Record<string, any> = { lock_type: val };
+                  if (val !== 'matter_driven') updates.matter_status_trigger = null;
+                  onUpdate(updates);
+                }}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
@@ -189,6 +193,46 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
               </Select>
             )}
           </div>
+
+          {/* Matter status trigger — shown when lock_type is matter_driven */}
+          {lockType === 'matter_driven' && (
+            <div className="col-span-4 md:col-span-2 min-w-0">
+              {isMatterDrivenProtected ? (
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-muted/50 opacity-60 cursor-not-allowed text-xs text-muted-foreground truncate">
+                        <Lock className="w-3 h-3 shrink-0" />
+                        {MATTER_STATUS_OPTIONS.find(o => o.value === stage.matter_status_trigger)?.label || 'Protegido'}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[200px] text-xs">
+                      Protegido en pipelines IP por defecto
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <Select
+                  value={stage.matter_status_trigger || ''}
+                  onValueChange={(val) => onUpdate({ matter_status_trigger: val })}
+                >
+                  <SelectTrigger className={cn("h-8 text-xs", !stage.matter_status_trigger && "border-destructive")}>
+                    <SelectValue placeholder="Estado *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MATTER_STATUS_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {!isMatterDrivenProtected && !stage.matter_status_trigger && (
+                <p className="text-[10px] text-destructive mt-0.5">Obligatorio</p>
+              )}
+            </div>
+          )}
 
           {/* Message edit button */}
           <div className="col-span-12 md:col-span-1">
