@@ -14,6 +14,10 @@ import { useCRMAccounts } from '@/hooks/crm/v2/accounts';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+const SOURCE_LABELS: Record<string, string> = {
+  email: 'Email', whatsapp: 'WhatsApp', portal: 'Portal',
+  phone: 'Teléfono', meeting: 'Reunión', letter: 'Carta',
+};
 
 interface Props {
   open: boolean;
