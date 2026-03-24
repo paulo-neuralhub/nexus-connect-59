@@ -200,6 +200,9 @@ export default function CRMV2AccountDetail() {
                       <Users className="w-3.5 h-3.5" /> Agente
                     </TabsTrigger>
                   )}
+                  <TabsTrigger value="instructions" className="gap-1.5">
+                    <ClipboardList className="w-3.5 h-3.5" /> Instrucciones
+                  </TabsTrigger>
                   <TabsTrigger value="portal" className="gap-1.5">
                     <Globe className="w-3.5 h-3.5" /> Portal
                   </TabsTrigger>
