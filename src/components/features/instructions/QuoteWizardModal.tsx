@@ -335,6 +335,39 @@ export function QuoteWizardModal({
     const tpl = templates.find((t) => t.id === selectedTemplateId);
     let html = tpl?.content || '';
 
+    // ── Build items_rows HTML ──
+    const itemsRowsHtml = lines.map((l) => {
+      const lineTotal = l.officialFees + l.professionalFees;
+      return `<tr>
+        <td><strong>${JURISDICTION_FLAGS[l.jurisdiction] || ''} ${l.jurisdiction}</strong></td>
+        <td>${instruction.title || ''} — ${l.jurisdiction}</td>
+        <td style="text-align:right">${fmt(l.officialFees)}</td>
+        <td style="text-align:right">${fmt(l.professionalFees)}</td>
+        <td style="text-align:right"><strong>${fmt(lineTotal)}</strong></td>
+      </tr>`;
+    }).join('\n');
+
+    // ── Build discount_row HTML ──
+    const discountRowHtml = discount > 0
+      ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#15803D;">
+           <span>Descuento ${discount}%</span>
+           <span>-${fmt(discountAmount)}</span>
+         </div>`
+      : '';
+
+    // ── Build withholding_row HTML ──
+    const withholdingRowHtml = irpfAmount > 0
+      ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#B91C1C;">
+           <span>Retención IRPF 15%</span>
+           <span>-${fmt(irpfAmount)}</span>
+         </div>`
+      : '';
+
+    // ── Build notes_block HTML ──
+    const notesBlockHtml = notes?.trim()
+      ? `<div style="margin-top:24px;padding:16px;background:#F8FAFC;border-radius:8px;font-size:12px;color:#64748B;line-height:1.5;"><strong>Condiciones:</strong><br/>${notes}</div>`
+      : '';
+
     const vars: Record<string, string> = {
       firm_name: org?.name || 'MERIDIAN IP CONSULTING S.L.',
       firm_address: org?.address || '',
@@ -347,7 +380,13 @@ export function QuoteWizardModal({
       quote_date: new Date(quoteDate).toLocaleDateString('es-ES'),
       validity_date: validityDate,
       validity_days: String(validityDays),
-      instruction_title: instruction.title,
+      instruction_title: instruction.title || '',
+      // ── HTML block variables ──
+      items_rows: itemsRowsHtml,
+      discount_row: discountRowHtml,
+      withholding_row: withholdingRowHtml,
+      notes_block: notesBlockHtml,
+      // ── Totals ──
       subtotal: fmt(subtotal),
       discount_pct: discount > 0 ? `${discount}` : '',
       discount_amount: fmt(discountAmount),
@@ -357,15 +396,17 @@ export function QuoteWizardModal({
       tax_amount: fmt(taxAmount),
       irpf_amount: fmt(irpfAmount),
       total: fmt(total),
-      notes,
+      notes: notes || '',
       company_name: org?.name || 'MERIDIAN IP CONSULTING S.L.',
     };
 
+    // Replace all {{variable}} placeholders
     for (const [key, val] of Object.entries(vars)) {
-      html = html.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), val);
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(new RegExp(`\\{\\{${escaped}\\}\\}`, 'g'), val ?? '');
     }
 
-    // Handle {{#items}}...{{/items}}
+    // Handle {{#items}}...{{/items}} block syntax (alternative template format)
     const itemsMatch = html.match(/\{\{#items\}\}([\s\S]*?)\{\{\/items\}\}/);
     if (itemsMatch) {
       const rowTpl = itemsMatch[1];
@@ -383,7 +424,7 @@ export function QuoteWizardModal({
       html = html.replace(/\{\{#items\}\}[\s\S]*?\{\{\/items\}\}/, rowsHtml);
     }
 
-    // Handle {{#discount_pct}}...{{/discount_pct}}
+    // Handle {{#discount_pct}}...{{/discount_pct}} conditional blocks
     if (discount > 0) {
       html = html.replace(/\{\{#discount_pct\}\}/g, '').replace(/\{\{\/discount_pct\}\}/g, '');
     } else {
@@ -395,8 +436,10 @@ export function QuoteWizardModal({
       html = generateDefaultPreview();
     }
 
+    console.log('QUOTE VARS:', { instruction_title: vars.instruction_title, items_rows_length: itemsRowsHtml.length, discount_row_length: discountRowHtml.length });
+
     return html;
-  }, [templates, selectedTemplateId, lines, quoteNumber, quoteDate, validityDate, account, org, instruction, subtotal, discount, discountAmount, taxableBase, taxRate, taxAmount, irpfAmount, total, notes, includeVat, validityDays]);
+  }, [templates, selectedTemplateId, lines, quoteNumber, quoteDate, validityDate, account, org, instruction, subtotal, discount, discountAmount, taxableBase, taxRate, taxAmount, irpfAmount, total, notes, includeVat, includeIrpf, validityDays]);
 
   function generateDefaultPreview() {
     const linesHtml = lines
