@@ -56,17 +56,21 @@ export function useCurrentSubscription() {
   return useQuery({
     queryKey: ['subscription', currentOrganization?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select(`
-          *,
-          plan:subscription_plans(*)
-        `)
-        .eq('organization_id', currentOrganization!.id)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      return mapSubscriptionRow(data);
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('organization_id', currentOrganization!.id)
+          .maybeSingle();
+        if (error) {
+          console.warn('[useCurrentSubscription] query failed:', error.message);
+          return null;
+        }
+        if (!data) return null;
+        return mapSubscriptionRow(data);
+      } catch {
+        return null;
+      }
     },
     enabled: !!currentOrganization?.id,
   });

@@ -127,15 +127,12 @@ export function useMarkAllNotificationsRead() {
       const { error } = await supabase
         .from('deadline_notifications')
         .update({
-          status: 'read',
           read_at: new Date().toISOString(),
         })
         .eq('user_id', user.id)
-        .eq('organization_id', currentOrganization.id)
-        .eq('channel', 'in_app')
-        .in('status', ['pending', 'sent']);
+        .is('read_at', null);
 
-      if (error) throw error;
+      if (error) console.warn('[useMarkAllNotificationsRead]', error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadline-notifications'] });

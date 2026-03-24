@@ -321,8 +321,7 @@ export function useStopTimer() {
         .from('time_entries')
         .update({
           duration_minutes: durationMinutes,
-          timer_running: false,
-          timer_started_at: null,
+          end_time: new Date().toISOString(),
           description: data.description || 'Trabajo realizado',
         })
         .eq('id', data.entryId);

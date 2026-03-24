@@ -45,14 +45,21 @@ export function useBranding() {
     queryFn: async () => {
       if (!currentOrganization?.id) return null;
       
-      const { data, error } = await supabase
-        .from('organization_branding')
-        .select('*')
-        .eq('organization_id', currentOrganization.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data as OrganizationBranding | null;
+      try {
+        const { data, error } = await supabase
+          .from('organization_branding')
+          .select('*')
+          .eq('organization_id', currentOrganization.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.warn('[useBranding] query failed:', error.message);
+          return null;
+        }
+        return data as OrganizationBranding | null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!currentOrganization?.id,
     staleTime: 1000 * 60 * 5, // 5 minutos cache

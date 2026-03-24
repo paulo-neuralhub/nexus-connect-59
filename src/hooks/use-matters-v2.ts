@@ -633,7 +633,7 @@ export function useCreateMatterV2() {
       const { data: matter, error } = await supabase
         .from('matters')
         .insert(insertData as any)
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile)')
+        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
         .single();
       
       if (error) {

@@ -70,17 +70,18 @@ export function usePresence() {
     const matterId = matterMatch ? matterMatch[1] : null;
 
     const updatePresence = async () => {
-      await supabase.from('user_presence').upsert({
-        user_id: user.id,
-        organization_id: currentOrganization.id,
-        current_page: location.pathname,
-        current_matter_id: matterId,
-        last_seen_at: new Date().toISOString(),
-        status: 'online',
-        device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-      }, {
-        onConflict: 'user_id',
-      });
+      try {
+        await supabase.from('user_presence').upsert({
+          user_id: user.id,
+          organization_id: currentOrganization.id,
+          last_seen_at: new Date().toISOString(),
+          status: 'online',
+        }, {
+          onConflict: 'user_id',
+        });
+      } catch {
+        // user_presence table may not have all columns yet
+      }
     };
 
     updatePresence();
