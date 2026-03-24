@@ -1,15 +1,19 @@
 // @ts-nocheck
 import { useState, useRef, useEffect } from 'react';
-import { ClipboardList, Plus, ChevronDown, Mail, Phone, Globe, MessageCircle, Video, FileText, Send, Search as SearchIcon, DollarSign, Zap, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ClipboardList, Plus, ChevronDown, Mail, Phone, Globe, MessageCircle, Video, FileText, Send, Search as SearchIcon, DollarSign, Zap, CheckCircle2, Circle, Clock, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInstructions, type InstructionFilter, type Instruction } from '@/hooks/use-instructions';
+import { useAcknowledge, useConflictCheck, useSendQuote, useApproveQuote, useExecuteInstruction } from '@/hooks/use-instruction-actions';
+import { ConflictResultsModal, QuoteModal, ExecuteConfirmModal } from '@/components/features/instructions/InstructionModals';
 import { NewInstructionModal } from '@/components/features/instructions/NewInstructionModal';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 /* ── Constants ── */
 
@@ -92,6 +96,20 @@ function ExpandableSection({ expanded, children }: { expanded: boolean; children
 
 function InstructionCard({ instruction }: { instruction: Instruction }) {
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
+
+  // Action hooks
+  const acknowledge = useAcknowledge();
+  const conflictCheck = useConflictCheck();
+  const sendQuote = useSendQuote();
+  const approveQuote = useApproveQuote();
+  const executeInstruction = useExecuteInstruction();
+
+  // Modal state
+  const [conflictModal, setConflictModal] = useState<{ open: boolean; matters: any[]; alerts: any[] }>({ open: false, matters: [], alerts: [] });
+  const [quoteModal, setQuoteModal] = useState(false);
+  const [executeModal, setExecuteModal] = useState(false);
+
   const urgency = getUrgencyInfo(instruction);
   const executedCount = instruction.executed_count || 0;
   const totalTargets = instruction.total_targets || instruction.items?.length || 0;
@@ -118,6 +136,75 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
   const clientInitials = (instruction.account?.name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const ageDays = instruction.created_at ? Math.max(1, Math.round((Date.now() - new Date(instruction.created_at).getTime()) / 86400000)) : null;
 
+  /* ── Action handlers ── */
+  const handleAcknowledge = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    acknowledge.mutate(instruction);
+  };
+
+  const handleConflictCheck = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    conflictCheck.mutate(instruction, {
+      onSuccess: (result) => {
+        setConflictModal({ open: true, matters: result.matters, alerts: result.alerts });
+      },
+    });
+  };
+
+  const handleQuoteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!instruction.conflict_checked) {
+      toast.warning('⚠️ Verifica conflictos primero antes de enviar presupuesto');
+      return;
+    }
+    setQuoteModal(true);
+  };
+
+  const handleQuoteConfirm = () => {
+    sendQuote.mutate(instruction, {
+      onSuccess: () => setQuoteModal(false),
+    });
+  };
+
+  const handleApproveQuote = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    approveQuote.mutate(instruction.id);
+  };
+
+  const handleExecuteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExecuteModal(true);
+  };
+
+  const handleExecuteConfirm = () => {
+    executeInstruction.mutate(instruction, {
+      onSuccess: (result) => {
+        setExecuteModal(false);
+        toast.success(
+          <div className="space-y-2">
+            <p className="font-semibold">✅ Instrucción ejecutada</p>
+            <p className="text-sm">Se han creado {result.executedCount} expedientes y {result.executedCount} deals.</p>
+            <div className="flex gap-2 mt-1">
+              <button
+                className="text-xs font-medium text-blue-600 hover:underline"
+                onClick={() => navigate('/app/matters')}
+              >
+                Ver expedientes →
+              </button>
+              <button
+                className="text-xs font-medium text-blue-600 hover:underline"
+                onClick={() => navigate('/app/crm')}
+              >
+                Ver Kanban →
+              </button>
+            </div>
+          </div>,
+          { duration: 8000 }
+        );
+      },
+    });
+  };
+
   return (
     <div
       className={cn(
@@ -135,14 +222,11 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
           className="relative px-5 pt-5 pb-4"
           style={{ background: typeConf.gradient }}
         >
-          {/* Border-top rojo si urgente */}
           {urgency.borderTop && (
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#EF4444]" />
           )}
-
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              {/* Badges */}
               <div className="flex items-center gap-2 flex-wrap mb-2">
                 <span className={cn(
                   'inline-flex items-center rounded-md px-2.5 py-[3px] text-[11px] font-bold uppercase tracking-[0.06em]',
@@ -156,13 +240,9 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
                   </span>
                 )}
               </div>
-
-              {/* Title */}
               <h3 className="text-[18px] font-bold text-[#0F172A] leading-snug mb-2">
                 {instruction.title}
               </h3>
-
-              {/* Meta row */}
               <div className="flex items-center gap-2 text-[13px] text-[#64748B]">
                 <span
                   className="inline-flex items-center justify-center h-6 w-6 rounded-full text-[10px] font-bold text-white shrink-0"
@@ -180,7 +260,6 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
                 <span>{instruction.created_at ? formatDistanceToNow(new Date(instruction.created_at), { addSuffix: true, locale: es }) : ''}</span>
               </div>
             </div>
-
             <div className="pt-1">
               <ChevronDown className={cn('h-5 w-5 text-[#94A3B8] transition-transform duration-200', expanded && 'rotate-180')} />
             </div>
@@ -192,9 +271,7 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
       <div className="border-t border-b border-[#F1F5F9] bg-[#FAFAFA]">
         <div className="grid grid-cols-4 divide-x divide-[#F1F5F9]">
           <div className="flex flex-col items-center justify-center py-3 px-2">
-            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
-              {totalTargets}
-            </span>
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">{totalTargets}</span>
             <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Jurisd.</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 px-2">
@@ -204,20 +281,14 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
             <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Ejecutadas</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 px-2">
-            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
-              {instruction.estimated_total ? `${instruction.estimated_total.toLocaleString()}€` : '—'}
-            </span>
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">—</span>
             <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Presup.</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 px-2">
-            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">
-              {ageDays ? `${ageDays}d` : '—'}
-            </span>
+            <span className="text-[20px] font-extrabold text-[#0F172A] tabular-nums">{ageDays ? `${ageDays}d` : '—'}</span>
             <span className="text-[11px] text-[#94A3B8] uppercase tracking-[0.04em] mt-0.5">Antigüedad</span>
           </div>
         </div>
-
-        {/* Warning pills */}
         {warnings.length > 0 && (
           <div className="flex gap-2 px-5 pb-3 pt-1 flex-wrap">
             {warnings.map((w, i) => (
@@ -232,7 +303,6 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
       {/* ── ZONA 3: Expandible ── */}
       <ExpandableSection expanded={expanded}>
         <div className="px-5 py-5 space-y-5">
-
           {/* Descripción original */}
           {instruction.description && (
             <div>
@@ -290,7 +360,6 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
             <h4 className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.08em] mb-3">
               Proceso
             </h4>
-            {/* Progress bar */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[12px] text-[#64748B]">{completedSteps} de {processChecklist.length} pasos completados</span>
@@ -303,14 +372,11 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
                 />
               </div>
             </div>
-            {/* Timeline */}
             <div className="relative pl-5">
-              {/* Vertical connector line */}
               <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-[#E2E8F0]" />
               <div className="space-y-3">
                 {processChecklist.map((step, i) => (
                   <div key={i} className="relative flex items-start gap-3">
-                    {/* Dot */}
                     <div className="absolute -left-5 top-0.5">
                       {step.done ? (
                         <div className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center">
@@ -320,7 +386,6 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
                         <div className="w-4 h-4 rounded-full border-2 border-[#CBD5E1] bg-white" />
                       )}
                     </div>
-                    {/* Text */}
                     <div className="flex items-center justify-between flex-1 min-w-0">
                       <span className={cn('text-[13px]', step.done ? 'text-[#15803D] font-medium' : 'text-[#94A3B8]')}>
                         {step.label}
@@ -351,34 +416,140 @@ function InstructionCard({ instruction }: { instruction: Instruction }) {
             </div>
           ) : (
             <div className="flex items-center justify-between flex-wrap gap-2">
-              {/* Secondary */}
+              {/* Secondary actions */}
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="text-[12px] gap-1.5 h-8 rounded-lg text-[#475569]">
-                  <Send className="h-3.5 w-3.5" /> Acuse
+                {/* Acuse button */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={cn(
+                    'text-[12px] gap-1.5 h-8 rounded-lg',
+                    instruction.acknowledgement_sent_at
+                      ? 'text-[#15803D]'
+                      : 'text-[#475569]',
+                  )}
+                  onClick={handleAcknowledge}
+                  disabled={acknowledge.isPending}
+                >
+                  {acknowledge.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : instruction.acknowledgement_sent_at ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Send className="h-3.5 w-3.5" />
+                  )}
+                  {instruction.acknowledgement_sent_at ? '✓ Acuse enviado' : 'Acuse'}
                 </Button>
-                <Button size="sm" variant="ghost" className="text-[12px] gap-1.5 h-8 rounded-lg text-[#475569]">
-                  <SearchIcon className="h-3.5 w-3.5" /> Conflictos
+
+                {/* Conflictos button */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={cn(
+                    'text-[12px] gap-1.5 h-8 rounded-lg',
+                    instruction.conflict_checked
+                      ? 'text-[#15803D]'
+                      : 'text-[#475569]',
+                  )}
+                  onClick={handleConflictCheck}
+                  disabled={conflictCheck.isPending}
+                >
+                  {conflictCheck.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : instruction.conflict_checked ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <SearchIcon className="h-3.5 w-3.5" />
+                  )}
+                  {instruction.conflict_checked ? '✓ Verificado' : 'Conflictos'}
                 </Button>
               </div>
-              {/* Primary */}
+
+              {/* Primary actions */}
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="text-[12px] gap-1.5 h-8 rounded-lg border-[#3B82F6] text-[#2563EB] hover:bg-[#EFF6FF]">
-                  <DollarSign className="h-3.5 w-3.5" /> Presupuesto
+                {/* Presupuesto button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={cn(
+                    'text-[12px] gap-1.5 h-8 rounded-lg',
+                    instruction.quote_sent_at
+                      ? 'border-[#15803D] text-[#15803D]'
+                      : 'border-[#3B82F6] text-[#2563EB] hover:bg-[#EFF6FF]',
+                  )}
+                  onClick={handleQuoteClick}
+                  disabled={sendQuote.isPending}
+                >
+                  {instruction.quote_sent_at ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <DollarSign className="h-3.5 w-3.5" />
+                  )}
+                  {instruction.quote_sent_at ? '✓ Presupuesto enviado' : 'Presupuesto'}
                 </Button>
+
+                {/* Aprobar presupuesto (only if sent but not approved) */}
+                {instruction.quote_sent_at && !instruction.quote_approved_at && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[12px] gap-1.5 h-8 rounded-lg border-[#0D9488] text-[#0D9488] hover:bg-[#F0FDF4]"
+                    onClick={handleApproveQuote}
+                    disabled={approveQuote.isPending}
+                  >
+                    {approveQuote.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
+                    Aprobar presupuesto
+                  </Button>
+                )}
+
+                {/* Ejecutar button */}
                 <Button
                   size="sm"
                   className={cn(
                     'text-[12px] gap-1.5 h-8 rounded-lg text-white shadow-none',
                     instruction.is_urgent ? 'bg-[#DC2626] hover:bg-[#B91C1C]' : cn(typeConf.actionBg, typeConf.actionHover),
                   )}
+                  onClick={handleExecuteClick}
+                  disabled={executeInstruction.isPending || executedCount >= totalTargets}
                 >
-                  <Zap className="h-3.5 w-3.5" /> Ejecutar
+                  {executeInstruction.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Zap className="h-3.5 w-3.5" />
+                  )}
+                  {executedCount >= totalTargets ? '✓ Ejecutada' : 'Ejecutar'}
                 </Button>
               </div>
             </div>
           )}
         </div>
       </ExpandableSection>
+
+      {/* ── Modals ── */}
+      <ConflictResultsModal
+        open={conflictModal.open}
+        onOpenChange={(open) => setConflictModal(prev => ({ ...prev, open }))}
+        matters={conflictModal.matters}
+        alerts={conflictModal.alerts}
+      />
+      <QuoteModal
+        open={quoteModal}
+        onOpenChange={setQuoteModal}
+        instruction={instruction}
+        onConfirm={handleQuoteConfirm}
+        isLoading={sendQuote.isPending}
+      />
+      <ExecuteConfirmModal
+        open={executeModal}
+        onOpenChange={setExecuteModal}
+        instruction={instruction}
+        onConfirm={handleExecuteConfirm}
+        isLoading={executeInstruction.isPending}
+      />
     </div>
   );
 }
