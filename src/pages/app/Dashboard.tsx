@@ -169,13 +169,6 @@ const Dashboard = () => {
          }
        `}</style>
  
-        {currentGuide && shouldShowGuide(featureKey) ? (
-          <FeatureGuide
-            featureKey={featureKey}
-            title={currentGuide.title}
-            steps={currentGuide.steps}
-          />
-        ) : null}
 
          {/* CoPilot Briefing Card */}
          <BriefingCard />
