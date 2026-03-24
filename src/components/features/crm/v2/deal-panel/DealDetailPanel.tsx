@@ -322,7 +322,7 @@ export function DealDetailPanel({
         {/* EXPEDIENTE VINCULADO */}
         <div className="p-5">
           <DealLinkedMatter
-            matterId={(deal as any).matter_id}
+            matterId={deal.matter_id}
             dealName={deal.name ?? undefined}
             accountId={deal.account?.id}
           />
