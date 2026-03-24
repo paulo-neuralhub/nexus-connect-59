@@ -106,7 +106,7 @@ export function useCRMAccountDetail(id: string | undefined) {
           .limit(10),
         fromTable("matters")
           .select("id", { count: "exact", head: true })
-          .eq("client_id", id)
+          .or(`client_id.eq.${id},crm_account_id.eq.${id}`)
           .eq("organization_id", organizationId),
       ]);
 

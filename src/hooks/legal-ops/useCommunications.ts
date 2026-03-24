@@ -58,7 +58,7 @@ export function useCommunications(
       }
 
       if (filters.client_id) {
-        query = query.eq('client_id', filters.client_id);
+        query = query.or(`client_id.eq.${filters.client_id},crm_account_id.eq.${filters.client_id}`);
       }
 
       if (filters.matter_id) {

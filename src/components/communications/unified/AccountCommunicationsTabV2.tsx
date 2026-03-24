@@ -95,7 +95,7 @@ export function AccountCommunicationsTabV2({ accountId, accountName }: Props) {
       const { data } = await fromTable('matters')
         .select('id, reference_number, title')
         .eq('organization_id', organizationId)
-        .eq('client_id', accountId)
+        .or(`client_id.eq.${accountId},crm_account_id.eq.${accountId}`)
         .order('created_at', { ascending: false });
       return data || [];
     },

@@ -200,7 +200,7 @@ export function useMattersV2(filters?: MatterV2Filters) {
         query = query.eq('status', filters.status);
       }
       if (filters?.client_id) {
-        query = query.eq('client_id', filters.client_id);
+        query = query.or(`client_id.eq.${filters.client_id},crm_account_id.eq.${filters.client_id}`);
       }
       if (filters?.responsible_id) {
         query = query.eq('assigned_to', filters.responsible_id);

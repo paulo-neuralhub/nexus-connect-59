@@ -86,7 +86,7 @@ export function Client360Page({ clientId }: Client360PageProps) {
       const [mattersRes, holdersRes, contactsRes] = await Promise.all([
         fromTable('matters')
           .select('id, status')
-          .eq('client_id', clientId),
+          .or(`client_id.eq.${clientId},crm_account_id.eq.${clientId}`),
         fromTable('client_holders')
           .select('id')
           .eq('account_id', clientId)
