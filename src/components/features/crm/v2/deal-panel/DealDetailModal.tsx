@@ -343,7 +343,7 @@ export function DealDetailModal({
             <DialogDescription>Ficha comercial del deal</DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="space-y-0">
 
               {/* ═══ HEADER with pipeline color tint ═══ */}
