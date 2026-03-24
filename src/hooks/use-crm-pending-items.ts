@@ -155,8 +155,7 @@ export function useCRMRecentActivity() {
           if (actType === 'email') type = 'email';
           else if (actType === 'call') type = 'call';
 
-          const creator = i.creator as { first_name?: string; last_name?: string } | null;
-          const userName = creator ? [creator.first_name, creator.last_name].filter(Boolean).join(' ') : 'Sistema';
+          const userName = 'Sistema';
 
           return {
             id: i.id as string,
