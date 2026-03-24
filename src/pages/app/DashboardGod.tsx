@@ -79,7 +79,7 @@ export default function DashboardGod() {
       if (!orgId) return [];
       const { data } = await supabase
         .from('matters')
-        .select('id, reference, title, next_deadline, current_phase')
+        .select('id, reference, title, next_deadline')
         .eq('organization_id', orgId)
         .lt('next_deadline', today.toISOString())
         .eq('status', 'active')
