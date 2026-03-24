@@ -263,7 +263,8 @@ export function useStartTimer() {
         .from('time_entries')
         .select('id')
         .eq('user_id', user.id)
-        .eq('timer_running', true)
+        .not('start_time', 'is', null)
+        .is('end_time', null)
         .maybeSingle();
 
       if (existing) {
