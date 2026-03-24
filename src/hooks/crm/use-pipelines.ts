@@ -146,8 +146,7 @@ export function useUpdatePipeline() {
         await supabase
           .from('crm_pipelines')
           .update({ is_default: false })
-          .eq('organization_id', currentOrganization.id)
-          .eq('owner_type', 'tenant');
+          .eq('organization_id', currentOrganization.id);
       }
 
       const { data, error } = await supabase
