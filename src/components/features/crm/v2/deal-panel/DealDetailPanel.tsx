@@ -245,7 +245,7 @@ export function DealDetailPanel({
                   <p className="font-medium text-foreground">{deal.account?.name ?? "Sin cuenta"}</p>
                 )}
                 <p className="text-sm text-muted-foreground mt-1">
-                  {deal.contact?.full_name ?? "Sin contacto principal"}
+                  {deal.contact?.name ?? deal.contact?.full_name ?? "Sin contacto principal"}
                 </p>
               </div>
 
