@@ -49,7 +49,6 @@ export function usePipelines() {
           stages:pipeline_stages(*)
         `)
         .eq('organization_id', currentOrganization.id)
-        .eq('owner_type', 'tenant')
         .order('position');
 
       if (error) throw error;
@@ -104,7 +103,6 @@ export function useCreatePipeline() {
         .insert({
           name: data.name,
           organization_id: currentOrganization.id,
-          owner_type: 'tenant',
           is_default: isFirst,
           position: maxPosition + 1,
         })
@@ -148,8 +146,7 @@ export function useUpdatePipeline() {
         await supabase
           .from('crm_pipelines')
           .update({ is_default: false })
-          .eq('organization_id', currentOrganization.id)
-          .eq('owner_type', 'tenant');
+          .eq('organization_id', currentOrganization.id);
       }
 
       const { data, error } = await supabase
