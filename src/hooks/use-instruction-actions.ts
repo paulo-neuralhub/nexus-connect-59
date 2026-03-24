@@ -184,7 +184,7 @@ export function useConflictCheck() {
 }
 
 /* ══════════════════════════════════════════
-   HOOK: useSendQuote
+   HOOK: useSendQuote (enhanced with generated_documents)
    ══════════════════════════════════════════ */
 export function useSendQuote() {
   const qc = useQueryClient();
@@ -192,13 +192,48 @@ export function useSendQuote() {
   const { profile } = useAuth();
 
   return useMutation({
-    mutationFn: async (instruction: Instruction) => {
+    mutationFn: async (params: {
+      instruction: Instruction;
+      quoteNumber: string;
+      htmlContent: string;
+      templateId: string;
+      total: number;
+      lines: any[];
+      discount: number;
+      taxRate: number;
+      notes: string;
+    }) => {
+      const { instruction, quoteNumber, htmlContent, templateId, total, lines, discount, taxRate, notes } = params;
       const now = new Date().toISOString();
+
+      // Update instruction
       const { error } = await fromTable('bulk_instructions')
         .update({ quote_sent_at: now, updated_at: now })
         .eq('id', instruction.id);
       if (error) throw error;
 
+      // Save as generated_document
+      await fromTable('generated_documents').insert({
+        organization_id: organizationId,
+        client_id: instruction.crm_account_id,
+        title: `Presupuesto — ${instruction.title}`,
+        name: `${quoteNumber}.pdf`,
+        document_number: quoteNumber,
+        category: 'quote',
+        content: htmlContent,
+        content_html: htmlContent,
+        status: 'sent',
+        document_date: now,
+        created_by: profile?.id,
+        template_id: templateId,
+        total_amount: total,
+        discount_amount: total * (discount / 100) / (1 - discount / 100), // approximate
+        tax_amount: total * (taxRate / (100 + taxRate)), // approximate
+        subtotal: Math.round(total / (1 + taxRate / 100)),
+        variables_input: { lines, discount, taxRate, notes, quoteNumber },
+      });
+
+      // Log activity
       const contactId = instruction.crm_account_id
         ? await getPrimaryContact(instruction.crm_account_id)
         : null;
@@ -209,14 +244,14 @@ export function useSendQuote() {
         type: 'email',
         owner_type: 'organization',
         subject: `Presupuesto enviado — ${instruction.title}`,
-        content: 'Se ha enviado el presupuesto al cliente para su aprobación.',
+        content: `Presupuesto ${quoteNumber} enviado por importe total de €${total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`,
         created_by: profile?.id,
       });
 
-      return true;
+      return { quoteNumber, total };
     },
-    onSuccess: () => {
-      toast.success('✅ Presupuesto enviado');
+    onSuccess: (result) => {
+      toast.success(`✅ Presupuesto enviado — €${result.total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`);
       qc.invalidateQueries({ queryKey: ['instructions'] });
     },
     onError: () => toast.error('Error al enviar presupuesto'),
