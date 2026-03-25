@@ -3,11 +3,14 @@
  */
 
 import { useState } from 'react';
-import { Calendar, Clock, Plus, Check, AlertTriangle, Bell } from 'lucide-react';
+import { Calendar, Clock, Plus, Check, AlertTriangle, Bell, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMatterDeadlines, useCompleteMatterDeadline } from '@/hooks/use-matter-deadlines';
+import { useGenerateDeadlines } from '@/hooks/use-generate-deadlines';
+import { DeadlineDataModal } from '@/components/features/matters/DeadlineDataModal';
+import { useOrganization } from '@/contexts/organization-context';
 import { format, isPast, isWithinInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -29,9 +32,17 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [filter, setFilter] = useState<'pending' | 'overdue' | 'all'>('pending');
   const { toast } = useToast();
+  const { currentOrganization } = useOrganization();
   
   const { data: deadlines, isLoading } = useMatterDeadlines(matterId);
   const completeDeadline = useCompleteMatterDeadline();
+  const { generate, modalData, closeModal, onModalComplete } = useGenerateDeadlines();
+
+  const handleGenerateDeadlines = () => {
+    if (currentOrganization?.id) {
+      generate(matterId, currentOrganization.id, 'created');
+    }
+  };
 
   const handleComplete = async (id: string) => {
     try {
