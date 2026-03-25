@@ -10,6 +10,7 @@ import { useOrganization } from '@/hooks/useOrganization';
 import { useInboxMessages, useClientMatters, useClientActivities, type InboxMessage } from '@/hooks/use-inbox';
 import { fromTable } from '@/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useProcessMessage } from '@/hooks/use-process-message';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,7 +18,7 @@ import {
   Mail, MessageCircle, Globe, Phone, ArrowLeft, Inbox as InboxIcon,
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
   AlertCircle, User, ClipboardList, HelpCircle, FileText, ArrowRight,
-  Clock, Briefcase,
+  Clock, Briefcase, Loader2, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -109,8 +110,9 @@ function CategoryBadge({ category }: { category: string | null }) {
 }
 
 // ─── Message list item ───
-function MessageListItem({ msg, isSelected, onSelect }: {
+function MessageListItem({ msg, isSelected, onSelect, onAnalyze, isAnalyzing }: {
   msg: InboxMessage; isSelected: boolean; onSelect: () => void;
+  onAnalyze?: (id: string) => void; isAnalyzing?: boolean;
 }) {
   const navigate = useNavigate();
   const { data: linkedInstruction } = useLinkedInstruction(msg.id);
@@ -118,6 +120,7 @@ function MessageListItem({ msg, isSelected, onSelect }: {
     ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: false, locale: es })
     : '';
   const styles = getCategoryStyles(msg, isSelected);
+  const canAnalyze = !msg.ai_category && onAnalyze;
 
   return (
     <button
@@ -148,6 +151,22 @@ function MessageListItem({ msg, isSelected, onSelect }: {
             className="inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 bg-[#DCFCE7] text-[#15803D] cursor-pointer hover:bg-[#BBF7D0] transition-colors"
           >
             ✅ → Ver en Instrucciones
+          </span>
+        )}
+        {canAnalyze && (
+          <span
+            onClick={(e) => { e.stopPropagation(); onAnalyze(msg.id); }}
+            className={cn(
+              'inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 cursor-pointer transition-colors',
+              'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300',
+              isAnalyzing && 'opacity-60 pointer-events-none'
+            )}
+          >
+            {isAnalyzing ? (
+              <><Loader2 className="h-3 w-3 animate-spin" /> Analizando...</>
+            ) : (
+              <><Sparkles className="h-3 w-3" /> 🤖 Analizar</>
+            )}
           </span>
         )}
       </div>
@@ -636,6 +655,9 @@ export default function CommunicationsUnifiedPage() {
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { processMessage, processAllPending, processingId, processingAll } = useProcessMessage();
+
+  const unanalyzedCount = useMemo(() => messages.filter(m => !m.ai_category && m.status === 'pending').length, [messages]);
 
   // Apply category filter client-side
   const filteredMessages = useMemo(() => {
@@ -666,24 +688,49 @@ export default function CommunicationsUnifiedPage() {
 
   // ─── Message list (used in mobile and as middle content) ───
   const messageList = (
-    <ScrollArea className="flex-1">
-      {isLoading ? (
-        <div className="p-4 space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Analyze all header */}
+      {unanalyzedCount > 0 && (
+        <div className="px-3 py-2 border-b bg-amber-50/50 dark:bg-amber-950/10 flex items-center justify-between gap-2">
+          <span className="text-xs text-amber-700 dark:text-amber-400">
+            {unanalyzedCount} mensaje{unanalyzedCount > 1 ? 's' : ''} sin analizar
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs border-amber-300 text-amber-700 hover:bg-amber-100"
+            onClick={() => processAllPending()}
+            disabled={processingAll}
+          >
+            {processingAll ? (
+              <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analizando...</>
+            ) : (
+              <><Sparkles className="h-3 w-3 mr-1" /> 🤖 Analizar todos</>
+            )}
+          </Button>
         </div>
-      ) : filteredMessages.length === 0 ? (
-        <EmptyStateNoMessages />
-      ) : (
-        filteredMessages.map(msg => (
-          <MessageListItem
-            key={msg.id}
-            msg={msg}
-            isSelected={msg.id === selectedId}
-            onSelect={() => handleSelect(msg.id)}
-          />
-        ))
       )}
-    </ScrollArea>
+      <ScrollArea className="flex-1">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+          </div>
+        ) : filteredMessages.length === 0 ? (
+          <EmptyStateNoMessages />
+        ) : (
+          filteredMessages.map(msg => (
+            <MessageListItem
+              key={msg.id}
+              msg={msg}
+              isSelected={msg.id === selectedId}
+              onSelect={() => handleSelect(msg.id)}
+              onAnalyze={processMessage}
+              isAnalyzing={processingId === msg.id || processingAll}
+            />
+          ))
+        )}
+      </ScrollArea>
+    </div>
   );
 
   // ─── Mobile: list only ───
