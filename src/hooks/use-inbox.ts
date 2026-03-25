@@ -170,3 +170,43 @@ export function useClientActivities(accountId: string | null | undefined) {
     enabled: !!accountId,
   });
 }
+
+/**
+ * Inbox messages with matter join (for grouped view)
+ */
+export function useInboxMessagesWithMatter(channelFilter?: string | null, statusFilter?: string | null) {
+  const { organizationId } = useOrganization();
+
+  return useQuery({
+    queryKey: ['inbox-messages-matter', organizationId, channelFilter, statusFilter],
+    queryFn: async () => {
+      if (!organizationId) return [];
+      let q = fromTable('incoming_messages')
+        .select(`
+          id, channel, sender_name, sender_email, sender_phone,
+          subject, body, ai_category, ai_urgency_score, ai_summary,
+          ai_confidence, ai_proposed_action, ai_draft_response,
+          status, created_at, assigned_to, account_id, contact_id, matter_id, thread_id,
+          account:crm_accounts(id, name),
+          contact:contacts(id, name),
+          matter:matters(id, reference, title, type, status, jurisdiction_code)
+        `)
+        .eq('organization_id', organizationId)
+        .not('status', 'eq', 'archived')
+        .not('ai_category', 'in', '("spam","promo","notification")')
+        .order('created_at', { ascending: false });
+
+      if (channelFilter) q = q.eq('channel', channelFilter);
+      if (statusFilter === 'urgent') q = q.gte('ai_urgency_score', 7);
+      else if (statusFilter === 'pending') q = q.in('status', ['pending', 'awaiting_approval']);
+
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data || []) as (InboxMessage & {
+        thread_id?: string | null;
+        matter?: { id: string; reference?: string; title?: string; type?: string; status?: string; jurisdiction_code?: string } | null;
+      })[];
+    },
+    enabled: !!organizationId,
+  });
+}
