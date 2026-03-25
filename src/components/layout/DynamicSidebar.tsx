@@ -176,7 +176,6 @@ export function DynamicSidebar({
     inbox: inboxCount,
     approvals: approvalsCountData?.total || 0,
   };
-  };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
   
