@@ -47,6 +47,8 @@ export function useInboxMessages(channelFilter?: string | null, statusFilter?: s
           contact:contacts(id, name)
         `)
         .eq('organization_id', organizationId)
+        .not('ai_category', 'in', '("spam","promo","notification")')
+        .not('status', 'eq', 'archived')
         .order('ai_urgency_score', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
 
@@ -101,6 +103,54 @@ export function useClientMatters(accountId: string | null | undefined) {
       return data || [];
     },
     enabled: !!accountId,
+  });
+}
+
+export function useFilteredMessages() {
+  const { organizationId } = useOrganization();
+
+  return useQuery({
+    queryKey: ['inbox-filtered', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+      const { data, error } = await fromTable('incoming_messages')
+        .select(`
+          id, channel, sender_name, sender_email, sender_phone,
+          subject, body, ai_category, ai_urgency_score, ai_summary,
+          ai_confidence, ai_proposed_action, ai_draft_response,
+          status, created_at, assigned_to, account_id, contact_id, matter_id,
+          account:crm_accounts(id, name),
+          contact:contacts(id, name)
+        `)
+        .eq('organization_id', organizationId)
+        .in('ai_category', ['spam', 'promo', 'notification'])
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data || []) as InboxMessage[];
+    },
+    enabled: !!organizationId,
+  });
+}
+
+export function useFilteredCount() {
+  const { organizationId } = useOrganization();
+
+  return useQuery({
+    queryKey: ['inbox-filtered-count', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { count, error } = await fromTable('incoming_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', organizationId)
+        .in('ai_category', ['spam', 'promo', 'notification'])
+        .gte('created_at', today.toISOString());
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!organizationId,
   });
 }
 

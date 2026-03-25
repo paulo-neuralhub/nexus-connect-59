@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useOrganization } from '@/hooks/useOrganization';
-import { useInboxMessages, useClientMatters, useClientActivities, type InboxMessage } from '@/hooks/use-inbox';
+import { useInboxMessages, useClientMatters, useClientActivities, useFilteredMessages, useFilteredCount, type InboxMessage } from '@/hooks/use-inbox';
 import { fromTable } from '@/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProcessMessage } from '@/hooks/use-process-message';
@@ -20,6 +20,7 @@ import {
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
   AlertCircle, User, ClipboardList, HelpCircle, FileText, ArrowRight,
   Clock, Briefcase, Loader2, Sparkles, Eye, EyeOff, Menu, X,
+  ShieldBan, Ban, RotateCcw, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -505,11 +506,15 @@ interface ChannelSidebarProps {
   onStatusChange: (s: string | null) => void;
   categoryFilter: string | null;
   onCategoryChange: (c: string | null) => void;
+  filteredCount?: number;
+  showFiltered?: boolean;
+  onToggleFiltered?: () => void;
 }
 
 function ChannelSidebar({
   messages, channelFilter, onChannelChange,
   statusFilter, onStatusChange, categoryFilter, onCategoryChange,
+  filteredCount, showFiltered, onToggleFiltered,
 }: ChannelSidebarProps) {
   const totalPending = messages.filter(m => m.status === 'pending' || m.status === 'awaiting_approval').length;
 
@@ -630,6 +635,25 @@ function ChannelSidebar({
           </button>
         );
       })}
+
+      {/* Separator */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '8px 0' }} />
+
+      {/* Filtrados (spam/promo/notification) */}
+      <p className="px-4 mb-1 uppercase tracking-[0.1em]"
+        style={{ color: 'rgba(255,255,255,0.40)', fontSize: 10 }}>Sistema</p>
+      <button
+        onClick={() => onToggleFiltered?.()}
+        className={itemClass(!!showFiltered)} style={itemStyle(!!showFiltered)}>
+        <ShieldBan className="h-4 w-4 flex-shrink-0" style={{ opacity: 0.8 }} />
+        <span className="flex-1 truncate">Filtrados</span>
+        {(filteredCount ?? 0) > 0 && (
+          <span className="text-xs rounded-full px-1.5 min-w-[20px] text-center"
+            style={{ background: 'rgba(255,255,255,0.20)', color: 'white', fontSize: 10 }}>
+            {filteredCount}
+          </span>
+        )}
+      </button>
     </div>
   );
 }
@@ -652,8 +676,12 @@ export default function CommunicationsUnifiedPage() {
   const [privateMode, setPrivateMode] = useState(loadPrivateMode);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crmSheetOpen, setCrmSheetOpen] = useState(false);
+  const [showFiltered, setShowFiltered] = useState(false);
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { data: filteredMsgs = [], isLoading: filteredLoading } = useFilteredMessages();
+  const { data: filteredTodayCount = 0 } = useFilteredCount();
+  const qcMain = useQueryClient();
   const { processMessage, processAllPending, processingId, processingAll } = useProcessMessage();
 
   const unanalyzedCount = useMemo(() => messages.filter(m => !m.ai_category && m.status === 'pending').length, [messages]);
@@ -675,8 +703,95 @@ export default function CommunicationsUnifiedPage() {
     setPrivateMode(prev => { const next = !prev; savePrivateMode(next); return next; });
   }, []);
 
+  const handleToggleFiltered = useCallback(() => {
+    setShowFiltered(prev => !prev);
+    setSelectedId(null);
+    setChannelFilter(null);
+    setCategoryFilter(null);
+    setStatusFilter(null);
+  }, []);
+
+  const handleMarkNotSpam = useCallback(async (msgId: string) => {
+    await fromTable('incoming_messages')
+      .update({ status: 'pending', ai_category: null })
+      .eq('id', msgId);
+    toast.success('Mensaje restaurado — será re-analizado');
+    qcMain.invalidateQueries({ queryKey: ['inbox-filtered'] });
+    qcMain.invalidateQueries({ queryKey: ['inbox-filtered-count'] });
+    qcMain.invalidateQueries({ queryKey: ['inbox-messages'] });
+    qcMain.invalidateQueries({ queryKey: ['inbox-count'] });
+  }, [qcMain]);
+
   // ─── Saved panel sizes ───
   const savedSizes = loadPanelSizes();
+
+  // ─── Filtered messages view ───
+  const filteredListContent = (
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[#F1F5F9]">
+      <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div className="flex items-center gap-2">
+          <ShieldBan className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">🚫 Filtrados</span>
+          <Badge variant="secondary" className="text-xs">{filteredMsgs.length}</Badge>
+        </div>
+        <Button variant="ghost" size="sm" className="text-xs h-7"
+          onClick={() => setShowFiltered(false)}>
+          ← Volver al Inbox
+        </Button>
+      </div>
+      <div className="px-3 py-2 bg-muted/50 border-b">
+        <p className="text-xs text-muted-foreground">
+          Mensajes clasificados como spam, promoción o notificación por IP-GENIUS.
+          Puedes restaurarlos si fueron filtrados incorrectamente.
+        </p>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {filteredLoading ? (
+          <div className="p-4 space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+          </div>
+        ) : filteredMsgs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <CheckCircle2 className="h-12 w-12 text-green-400 mb-3" />
+            <p className="text-sm font-medium">Sin mensajes filtrados</p>
+            <p className="text-xs text-muted-foreground mt-1">No se ha detectado spam ni promociones</p>
+          </div>
+        ) : (
+          <div className="py-1 space-y-1">
+            {filteredMsgs.map(msg => {
+              const catLabel = msg.ai_category === 'spam' ? '🚫 Spam'
+                : msg.ai_category === 'promo' ? '📢 Promoción'
+                : msg.ai_category === 'notification' ? '🔔 Notificación'
+                : msg.ai_category || 'Filtrado';
+              const timeAgo = msg.created_at
+                ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: false, locale: es })
+                : '';
+              return (
+                <div key={msg.id}
+                  className="mx-2 rounded-lg border border-muted bg-white p-3 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <ChannelIcon channel={msg.channel} />
+                    <span className="text-sm font-medium truncate flex-1">{msg.sender_name || msg.sender_email || 'Desconocido'}</span>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">{catLabel}</Badge>
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">hace {timeAgo}</span>
+                  </div>
+                  <p className="text-sm truncate">{msg.subject || '(Sin asunto)'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{(msg.body || '').slice(0, 100)}</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button variant="outline" size="sm" className="h-7 text-xs"
+                      onClick={() => handleMarkNotSpam(msg.id)}>
+                      <RotateCcw className="h-3 w-3 mr-1" /> No es spam
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   // ─── Message list content ───
   const messageListContent = (
@@ -693,6 +808,12 @@ export default function CommunicationsUnifiedPage() {
             </Button>
           )}
           <span className="text-sm font-semibold">{filteredMessages.length} mensajes</span>
+          {filteredTodayCount > 0 && (
+            <button onClick={handleToggleFiltered}
+              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+              🚫 {filteredTodayCount} filtrados hoy
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* Private mode toggle */}
@@ -819,9 +940,10 @@ export default function CommunicationsUnifiedPage() {
         <div className="w-[220px] flex-shrink-0 overflow-y-auto">
           <ChannelSidebar
             messages={messages}
-            channelFilter={channelFilter} onChannelChange={setChannelFilter}
-            statusFilter={statusFilter} onStatusChange={setStatusFilter}
-            categoryFilter={categoryFilter} onCategoryChange={setCategoryFilter}
+            channelFilter={channelFilter} onChannelChange={(ch) => { setShowFiltered(false); setChannelFilter(ch); }}
+            statusFilter={statusFilter} onStatusChange={(s) => { setShowFiltered(false); setStatusFilter(s); }}
+            categoryFilter={categoryFilter} onCategoryChange={(c) => { setShowFiltered(false); setCategoryFilter(c); }}
+            filteredCount={filteredTodayCount} showFiltered={showFiltered} onToggleFiltered={handleToggleFiltered}
           />
         </div>
       )}
@@ -833,9 +955,11 @@ export default function CommunicationsUnifiedPage() {
             <SheetHeader className="sr-only"><SheetTitle>Filtros</SheetTitle></SheetHeader>
             <ChannelSidebar
               messages={messages}
-              channelFilter={channelFilter} onChannelChange={(ch) => { setChannelFilter(ch); setSidebarOpen(false); }}
-              statusFilter={statusFilter} onStatusChange={(s) => { setStatusFilter(s); setSidebarOpen(false); }}
-              categoryFilter={categoryFilter} onCategoryChange={(c) => { setCategoryFilter(c); setSidebarOpen(false); }}
+              channelFilter={channelFilter} onChannelChange={(ch) => { setShowFiltered(false); setChannelFilter(ch); setSidebarOpen(false); }}
+              statusFilter={statusFilter} onStatusChange={(s) => { setShowFiltered(false); setStatusFilter(s); setSidebarOpen(false); }}
+              categoryFilter={categoryFilter} onCategoryChange={(c) => { setShowFiltered(false); setCategoryFilter(c); setSidebarOpen(false); }}
+              filteredCount={filteredTodayCount} showFiltered={showFiltered}
+              onToggleFiltered={() => { handleToggleFiltered(); setSidebarOpen(false); }}
             />
           </SheetContent>
         </Sheet>
@@ -848,7 +972,7 @@ export default function CommunicationsUnifiedPage() {
           className="min-h-0"
           defaultSize={savedSizes?.[0] ?? 32}
           minSize={22} maxSize={45}>
-          {messageListContent}
+          {showFiltered ? filteredListContent : messageListContent}
         </ResizablePanel>
 
         <ResizableHandle withHandle />
