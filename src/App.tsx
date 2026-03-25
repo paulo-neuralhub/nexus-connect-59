@@ -446,6 +446,7 @@ const App = () => (
                 <Route path="docket" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="docket/deadlines" element={<DeadlinesPage />} />
                 <Route path="deadlines" element={<DeadlinesPage />} />
+                <Route path="plazos" element={<DeadlinesPage />} />
                 <Route path="docket/new" element={<Navigate to="/app/expedientes/nuevo" replace />} />
                 <Route path="docket/:id" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="docket/:id/edit" element={<Navigate to="/app/expedientes" replace />} />
