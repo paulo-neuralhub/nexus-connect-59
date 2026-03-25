@@ -74,12 +74,8 @@ export function useCreateMatter() {
     },
     onSuccess: (result: any) => {
       queryClient.invalidateQueries({ queryKey: ['matters'] });
-      // Auto-generate deadlines for the new matter
-      if (result?.id) {
-        supabase.functions.invoke('generate-matter-deadlines', {
-          body: { matter_id: result.id, event_type: 'created' },
-        }).catch(console.error);
-      }
+      // Deadline generation is now handled by useGenerateDeadlines hook
+      // in the component layer (MatterDeadlinesTab) to support the fallback modal
     },
   });
 }

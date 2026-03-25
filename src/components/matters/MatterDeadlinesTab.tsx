@@ -3,11 +3,14 @@
  */
 
 import { useState } from 'react';
-import { Calendar, Clock, Plus, Check, AlertTriangle, Bell } from 'lucide-react';
+import { Calendar, Clock, Plus, Check, AlertTriangle, Bell, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMatterDeadlines, useCompleteMatterDeadline } from '@/hooks/use-matter-deadlines';
+import { useGenerateDeadlines } from '@/hooks/use-generate-deadlines';
+import { DeadlineDataModal } from '@/components/features/matters/DeadlineDataModal';
+import { useOrganization } from '@/contexts/organization-context';
 import { format, isPast, isWithinInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -29,9 +32,17 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [filter, setFilter] = useState<'pending' | 'overdue' | 'all'>('pending');
   const { toast } = useToast();
+  const { currentOrganization } = useOrganization();
   
   const { data: deadlines, isLoading } = useMatterDeadlines(matterId);
   const completeDeadline = useCompleteMatterDeadline();
+  const { generate, modalData, closeModal, onModalComplete } = useGenerateDeadlines();
+
+  const handleGenerateDeadlines = () => {
+    if (currentOrganization?.id) {
+      generate(matterId, currentOrganization.id, 'created');
+    }
+  };
 
   const handleComplete = async (id: string) => {
     try {
@@ -83,6 +94,23 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
 
   return (
     <div data-copilot="matter-deadlines" className="space-y-3">
+      {/* Banner: no deadlines */}
+      {!isLoading && (!deadlines || deadlines.length === 0) && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">No hay plazos generados para este expediente</p>
+              <p className="text-xs text-muted-foreground">Los plazos se calculan automáticamente según la jurisdicción y tipo de derecho.</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={handleGenerateDeadlines} className="shrink-0">
+            <Zap className="h-3.5 w-3.5 mr-1.5" />
+            Generar plazos
+          </Button>
+        </div>
+      )}
+
       {/* Sub-tabs outside the card */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -206,6 +234,24 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
         onOpenChange={setShowAddModal}
         matterId={matterId}
       />
+
+      {/* Deadline Data Modal (fallback for incomplete jurisdiction data) */}
+      {modalData && (
+        <DeadlineDataModal
+          open={!!modalData}
+          onOpenChange={(open) => !open && closeModal()}
+          officeCode={modalData.officeCode}
+          officeName={modalData.officeName}
+          officeId={modalData.officeId}
+          countryCode={modalData.countryCode}
+          missingFields={modalData.missingFields}
+          availableData={modalData.availableData}
+          geniusSuggestions={modalData.geniusSuggestions}
+          matterId={modalData.matterId}
+          organizationId={modalData.organizationId}
+          onComplete={onModalComplete}
+        />
+      )}
     </div>
   );
 }
