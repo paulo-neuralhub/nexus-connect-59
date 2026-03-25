@@ -42,38 +42,53 @@ const calendarMessages = {
   showMore: (total: number) => `+ Ver ${total} más`,
 };
 
-// Función para aplicar estilos SILK a los eventos
+// Color config por tipo de evento
+const EVENT_TYPE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  deadline_fatal: { bg: '#FEE2E2', text: '#DC2626', border: '#EF4444' },
+  deadline: { bg: '#FEE2E2', text: '#DC2626', border: '#EF4444' },
+  meeting: { bg: '#EDE9FE', text: '#7C3AED', border: '#8B5CF6' },
+  task: { bg: '#FEF3C7', text: '#B45309', border: '#F59E0B' },
+  reminder: { bg: '#F1F5F9', text: '#475569', border: '#94A3B8' },
+  call: { bg: '#FEF3C7', text: '#B45309', border: '#F59E0B' },
+  renewal: { bg: '#EDE9FE', text: '#7C3AED', border: '#8B5CF6' },
+  appointment: { bg: '#DBEAFE', text: '#1D4ED8', border: '#3B82F6' },
+};
+
+// Función para aplicar estilos mini-card a los eventos
 function eventStyleGetter(event: CalendarEvent) {
-  // Determine if color is a dark color for text contrast
-  const color = event.color || '#3b82f6';
-  
-  // Create gradient colors
-  const lighterColor = adjustColorBrightness(color, 20);
-  
+  const styles = EVENT_TYPE_STYLES[event.type] || EVENT_TYPE_STYLES.task;
+
   return {
     style: {
-      background: `linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%)`,
-      borderRadius: '8px',
-      opacity: 1,
-      color: 'white',
-      border: `1px solid ${color}`,
-      fontSize: '12px',
-      padding: '4px 8px',
+      background: styles.bg,
+      color: styles.text,
+      borderLeft: `3px solid ${styles.border}`,
+      borderRadius: '6px',
+      border: 'none',
+      borderLeftWidth: '3px',
+      borderLeftStyle: 'solid' as const,
+      borderLeftColor: styles.border,
+      fontSize: '11px',
+      fontWeight: 500,
+      padding: '2px 8px',
+      height: '22px',
+      lineHeight: '18px',
       cursor: 'pointer',
-      boxShadow: `0 2px 6px ${color}40`,
-      transition: 'all 0.2s ease',
+      whiteSpace: 'nowrap' as const,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      boxShadow: 'none',
+      opacity: 1,
+      transition: 'filter 0.15s ease, box-shadow 0.15s ease',
     },
   };
 }
 
-// Helper to adjust color brightness
-function adjustColorBrightness(hex: string, percent: number): string {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const amt = Math.round(2.55 * percent);
-  const R = Math.min(255, (num >> 16) + amt);
-  const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
-  const B = Math.min(255, (num & 0x0000FF) + amt);
-  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+// Custom title accessor to show time + title
+function eventTitleAccessor(event: CalendarEvent) {
+  if (event.allDay) return event.title;
+  const time = format(event.start, 'HH:mm');
+  return `${time}  ${event.title}`;
 }
 
 // Cargar preferencias guardadas
