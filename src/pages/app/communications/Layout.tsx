@@ -16,14 +16,21 @@ export default function CommunicationsLayout() {
   const isUnifiedInbox = location.pathname === '/app/communications';
 
   return (
-    <div className={cn("space-y-4", isUnifiedInbox && "space-y-3")}>
+    <div className={cn("space-y-0", isUnifiedInbox && "space-y-0")}>
       {!isUnifiedInbox && (
-        <header className="space-y-1">
+        <header className="space-y-1 px-6 pt-4">
           <h1 className="text-2xl font-bold text-foreground">Inbox</h1>
           <p className="text-sm text-muted-foreground">Gestión omnicanal de comunicaciones</p>
         </header>
       )}
-      <nav className="flex flex-wrap gap-2">
+      {/* CAMBIO 6 — Tabs superiores sticky */}
+      <nav
+        className="sticky top-0 z-10 flex flex-wrap gap-1 bg-white px-6 py-2"
+        style={{
+          borderBottom: '2px solid #F1F5F9',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+        }}
+      >
         {tabs.map((t) => (
           <NavLink
             key={t.to}
@@ -31,10 +38,10 @@ export default function CommunicationsLayout() {
             end={t.end}
             className={({ isActive }) =>
               cn(
-                "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                "inline-flex items-center gap-2 px-3 py-2 text-sm transition-colors border-b-2",
                 isActive
-                  ? "bg-primary text-primary-foreground border-transparent"
-                  : "bg-card text-foreground hover:bg-muted"
+                  ? "border-b-[#3B82F6] text-[#2563EB] font-semibold"
+                  : "border-b-transparent text-[#64748B] hover:text-[#374151] hover:bg-[#F8FAFC] rounded-t-lg"
               )
             }
           >

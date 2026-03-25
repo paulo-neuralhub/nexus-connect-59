@@ -1,11 +1,11 @@
 // ============================================================
-// IP-NEXUS — Unified Inbox (3-panel layout on communications route)
-// Merges incoming_messages data with communications channel sidebar
+// IP-NEXUS — Unified Inbox (redesigned 3+1 panel layout)
 // ============================================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useInboxMessages, useClientMatters, useClientActivities, type InboxMessage } from '@/hooks/use-inbox';
 import { fromTable } from '@/lib/supabase';
@@ -14,19 +14,44 @@ import { useProcessMessage } from '@/hooks/use-process-message';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import DOMPurify from 'dompurify';
 import {
-  Mail, MessageCircle, Globe, Phone, ArrowLeft, Inbox as InboxIcon,
+  Mail, MessageCircle, Phone, ArrowLeft, Inbox as InboxIcon,
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
   AlertCircle, User, ClipboardList, HelpCircle, FileText, ArrowRight,
-  Clock, Briefcase, Loader2, Sparkles,
+  Clock, Briefcase, Loader2, Sparkles, Eye, EyeOff, Menu, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+
+// ─── localStorage helpers ───
+function savePanelSizes(sizes: number[]) {
+  try { localStorage.setItem('inbox-panel-sizes', JSON.stringify(sizes)); } catch { /* silent */ }
+}
+function loadPanelSizes(): number[] | null {
+  try { const s = localStorage.getItem('inbox-panel-sizes'); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+function loadPrivateMode(): boolean {
+  try { return localStorage.getItem('inbox-private-mode') === 'true'; } catch { return false; }
+}
+function savePrivateMode(v: boolean) {
+  try { localStorage.setItem('inbox-private-mode', v ? 'true' : 'false'); } catch { /* silent */ }
+}
 
 // ─── Hook: linked instruction for a message ───
 function useLinkedInstruction(messageId: string | null) {
@@ -46,31 +71,10 @@ function useLinkedInstruction(messageId: string | null) {
   });
 }
 
-// ─── Category color helpers ───
-function getCategoryStyles(msg: InboxMessage, isSelected: boolean) {
-  if (isSelected) {
-    return {
-      bg: 'bg-[#EFF6FF]',
-      border: 'border-l-[3px] border-l-[#2563EB]',
-      shadow: 'shadow-[inset_0_0_0_1px_#BFDBFE]',
-    };
-  }
-  const cat = msg.ai_category;
-  const isUrgent = cat === 'urgent' || (msg.ai_urgency_score != null && msg.ai_urgency_score >= 7);
-
-  if (cat === 'instruction') {
-    return { bg: 'bg-[#F9F5FF]', border: 'border-l-[3px] border-l-[#8B5CF6]', shadow: '' };
-  }
-  if (isUrgent) {
-    return { bg: 'bg-[#FFF5F5]', border: 'border-l-[3px] border-l-[#EF4444]', shadow: '' };
-  }
-  if (cat === 'query') {
-    return { bg: 'bg-[#F0F9FF]', border: 'border-l-[3px] border-l-[#0EA5E9]', shadow: '' };
-  }
-  if (cat === 'admin') {
-    return { bg: 'bg-[#F8FAFC]', border: 'border-l-[3px] border-l-[#94A3B8]', shadow: '' };
-  }
-  return { bg: '', border: 'border-l-[3px] border-l-transparent', shadow: '' };
+// ─── Detect HTML in body ───
+function isHtmlContent(text: string | null): boolean {
+  if (!text) return false;
+  return /<[a-z][\s\S]*>/i.test(text);
 }
 
 // ─── Channel icon helper ───
@@ -78,7 +82,6 @@ function ChannelIcon({ channel, className }: { channel: string; className?: stri
   switch (channel) {
     case 'email': return <Mail className={cn('h-4 w-4 text-primary', className)} />;
     case 'whatsapp': return <MessageCircle className={cn('h-4 w-4 text-green-500', className)} />;
-    case 'portal': return <Globe className={cn('h-4 w-4 text-violet-500', className)} />;
     case 'phone': return <Phone className={cn('h-4 w-4 text-muted-foreground', className)} />;
     default: return <Mail className={cn('h-4 w-4 text-muted-foreground', className)} />;
   }
@@ -88,8 +91,8 @@ function ChannelIcon({ channel, className }: { channel: string; className?: stri
 function UrgencyBadge({ score }: { score: number | null }) {
   if (!score || score < 5) return null;
   if (score >= 9) return <Badge className="bg-destructive/10 text-destructive text-[10px] border-0">🚨 Crítico</Badge>;
-  if (score >= 7) return <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400 text-[10px] border-0">⚠️ Urgente</Badge>;
-  return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 text-[10px] border-0">⚡ Alto</Badge>;
+  if (score >= 7) return <Badge className="bg-orange-100 text-orange-700 text-[10px] border-0">⚠️ Urgente</Badge>;
+  return <Badge className="bg-amber-100 text-amber-700 text-[10px] border-0">⚡ Alto</Badge>;
 }
 
 // ─── Category badge ───
@@ -109,26 +112,44 @@ function CategoryBadge({ category }: { category: string | null }) {
   );
 }
 
-// ─── Message list item ───
-function MessageListItem({ msg, isSelected, onSelect, onAnalyze, isAnalyzing }: {
+// ─── Category card styles ───
+function getCategoryCardClasses(msg: InboxMessage, isSelected: boolean) {
+  if (isSelected) {
+    return 'bg-[#EFF6FF] border-[#BFDBFE] shadow-[0_2px_8px_rgba(59,130,246,0.15)]';
+  }
+  const cat = msg.ai_category;
+  const isUrgent = cat === 'urgent' || (msg.ai_urgency_score != null && msg.ai_urgency_score >= 7);
+  if (cat === 'instruction') return 'bg-[#F9F5FF] border-[#DDD6FE]';
+  if (isUrgent) return 'bg-[#FFF5F5] border-[#FECACA]';
+  if (cat === 'query') return 'bg-[#F0F9FF] border-[#BAE6FD]';
+  return 'bg-white border-[#E2E8F0]';
+}
+
+// ─── Message list item (card style) ───
+function MessageListItem({ msg, isSelected, onSelect, onAnalyze, isAnalyzing, privateMode }: {
   msg: InboxMessage; isSelected: boolean; onSelect: () => void;
-  onAnalyze?: (id: string) => void; isAnalyzing?: boolean;
+  onAnalyze?: (id: string) => void; isAnalyzing?: boolean; privateMode?: boolean;
 }) {
   const navigate = useNavigate();
   const { data: linkedInstruction } = useLinkedInstruction(msg.id);
   const timeAgo = msg.created_at
     ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: false, locale: es })
     : '';
-  const styles = getCategoryStyles(msg, isSelected);
   const canAnalyze = !msg.ai_category && onAnalyze;
+  const cardClasses = getCategoryCardClasses(msg, isSelected);
+
+  const bodyPreview = privateMode ? '••••••••••••••••••' : (msg.body || '').slice(0, 80);
 
   return (
     <button
       onClick={onSelect}
       className={cn(
-        'w-full text-left px-4 py-3 border-b border-b-[#F1F5F9] transition-colors hover:bg-accent/50',
-        styles.bg, styles.border, styles.shadow,
+        'w-full text-left rounded-[10px] border p-3 mx-2 my-1 transition-all duration-150 cursor-pointer',
+        'hover:shadow-[0_3px_10px_rgba(0,0,0,0.08)] hover:-translate-y-[1px]',
+        isSelected && 'translate-y-0',
+        cardClasses,
       )}
+      style={{ minHeight: 72, width: 'calc(100% - 16px)' }}
     >
       <div className="flex items-center gap-2 mb-1">
         <ChannelIcon channel={msg.channel} />
@@ -139,6 +160,10 @@ function MessageListItem({ msg, isSelected, onSelect, onAnalyze, isAnalyzing }: 
         <p className="text-xs text-muted-foreground truncate mb-0.5">{msg.account.name}</p>
       )}
       <p className="text-sm text-foreground truncate">{msg.subject || '(Sin asunto)'}</p>
+      {/* Body preview - 1 line */}
+      {bodyPreview && (
+        <p className="text-[13px] text-[#9CA3AF] truncate mt-0.5">{bodyPreview}</p>
+      )}
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <CategoryBadge category={msg.ai_category} />
         {msg.ai_confidence != null && (
@@ -181,39 +206,27 @@ function LinkedInstructionSection({ messageId }: { messageId: string }) {
   if (!instruction) return null;
 
   const statusLabels: Record<string, string> = {
-    draft: 'Borrador',
-    sent: 'Enviada',
-    in_progress: 'En curso',
-    completed: 'Completada',
-    cancelled: 'Cancelada',
-    partially_executed: 'Parcialmente ejecutada',
+    draft: 'Borrador', sent: 'Enviada', in_progress: 'En curso',
+    completed: 'Completada', cancelled: 'Cancelada', partially_executed: 'Parcialmente ejecutada',
   };
 
   return (
     <div className="mt-4 rounded-[10px] border border-[#86EFAC] bg-[#F0FDF4] p-4 space-y-3">
       <div className="flex items-center gap-2 text-sm font-semibold text-[#15803D]">
-        <CheckCircle2 className="h-4 w-4" />
-        INSTRUCCIÓN GENERADA
+        <CheckCircle2 className="h-4 w-4" /> INSTRUCCIÓN GENERADA
       </div>
-      <p className="text-xs text-muted-foreground">
-        Este mensaje generó la siguiente instrucción:
-      </p>
+      <p className="text-xs text-muted-foreground">Este mensaje generó la siguiente instrucción:</p>
       <div className="space-y-1">
         <p className="text-sm font-medium flex items-center gap-2">
-          <ClipboardList className="h-4 w-4 text-[#15803D]" />
-          {instruction.title}
+          <ClipboardList className="h-4 w-4 text-[#15803D]" /> {instruction.title}
         </p>
         <p className="text-xs text-muted-foreground">
           Status: {statusLabels[instruction.status] || instruction.status}
           {instruction.total_targets ? ` · ${instruction.total_targets} jurisdicciones` : ''}
         </p>
       </div>
-      <Button
-        variant="link"
-        size="sm"
-        className="text-[#15803D] p-0 h-auto text-xs font-medium"
-        onClick={() => navigate('/app/instructions')}
-      >
+      <Button variant="link" size="sm" className="text-[#15803D] p-0 h-auto text-xs font-medium"
+        onClick={() => navigate('/app/instructions')}>
         Ver instrucción completa <ArrowRight className="h-3 w-3 ml-1" />
       </Button>
     </div>
@@ -262,11 +275,28 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
     }
   };
 
+  // Render body: HTML sanitized or plain text
+  const renderBody = () => {
+    if (!msg.body) return <p className="text-sm text-muted-foreground italic">(Sin contenido)</p>;
+    if (isHtmlContent(msg.body)) {
+      return (
+        <div
+          className="text-sm prose prose-sm max-w-none leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.body) }}
+        />
+      );
+    }
+    return <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.body}</p>;
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b space-y-2">
+    <div className="flex flex-col h-full bg-white"
+      style={{ boxShadow: '-2px 0 8px rgba(0,0,0,0.08), inset 1px 0 0 rgba(0,0,0,0.05)' }}>
+      {/* Header */}
+      <div className="border-b border-[#F1F5F9] px-6 py-5"
+        style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
         {onBack && (
-          <Button variant="ghost" size="sm" onClick={onBack} className="mb-1">
+          <Button variant="ghost" size="sm" onClick={onBack} className="mb-2">
             <ArrowLeft className="h-4 w-4 mr-1" /> Volver
           </Button>
         )}
@@ -275,20 +305,23 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
           <span className="text-lg font-semibold">{msg.sender_name || 'Desconocido'}</span>
           <UrgencyBadge score={msg.ai_urgency_score} />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-1">
           {msg.sender_email || msg.sender_phone || ''}
           {msg.created_at && ` · ${format(new Date(msg.created_at), "d MMM yyyy, HH:mm", { locale: es })}`}
         </p>
-        {msg.subject && <h3 className="font-medium">{msg.subject}</h3>}
+        {msg.subject && <h3 className="font-medium mt-1">{msg.subject}</h3>}
       </div>
 
-      <ScrollArea className="flex-1 p-4">
-        <div className="bg-muted/40 rounded-lg p-4 text-sm leading-relaxed whitespace-pre-wrap">
-          {msg.body || '(Sin contenido)'}
+      {/* Body */}
+      <ScrollArea className="flex-1">
+        <div className="p-6">
+          {renderBody()}
         </div>
 
+        {/* IP-GENIUS card */}
         {msg.ai_category && (
-          <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-4 space-y-2">
+          <div className="mx-6 mb-4 rounded-[10px] border border-[#FDE68A] p-4 space-y-2"
+            style={{ background: 'linear-gradient(135deg, #FFFBF0, #FFF7E0)' }}>
             <div className="flex items-center gap-2 text-sm font-medium">
               <Bot className="h-4 w-4 text-amber-600" />
               IP-GENIUS analizó este mensaje
@@ -298,10 +331,8 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Confianza:</span>
                 <div className="flex-1 h-2 bg-muted rounded-full max-w-[200px]">
-                  <div
-                    className="h-full bg-amber-500 rounded-full transition-all"
-                    style={{ width: `${Math.round(msg.ai_confidence * 100)}%` }}
-                  />
+                  <div className="h-full bg-amber-500 rounded-full transition-all"
+                    style={{ width: `${Math.round(msg.ai_confidence * 100)}%` }} />
                 </div>
                 <span className="text-xs font-medium">{Math.round(msg.ai_confidence * 100)}%</span>
               </div>
@@ -314,20 +345,19 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
           </div>
         )}
 
-        {/* Linked instruction section */}
-        <LinkedInstructionSection messageId={msg.id} />
+        {/* Linked instruction */}
+        <div className="px-6">
+          <LinkedInstructionSection messageId={msg.id} />
+        </div>
       </ScrollArea>
 
+      {/* Actions */}
       <div className="p-4 border-t space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           {onAnalyze && (
-            <Button
-              variant="outline"
-              size="sm"
+            <Button variant="outline" size="sm"
               className="border-amber-300 text-amber-700 hover:bg-amber-100"
-              onClick={() => onAnalyze(msg.id)}
-              disabled={isAnalyzing}
-            >
+              onClick={() => onAnalyze(msg.id)} disabled={isAnalyzing}>
               {isAnalyzing ? (
                 <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Analizando...</>
               ) : (
@@ -344,12 +374,8 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
         </div>
         {showReply && (
           <div className="space-y-2">
-            <Textarea
-              value={reply}
-              onChange={e => setReply(e.target.value)}
-              placeholder="Escribe tu respuesta..."
-              rows={3}
-            />
+            <Textarea value={reply} onChange={e => setReply(e.target.value)}
+              placeholder="Escribe tu respuesta..." rows={3} />
             <Button size="sm" onClick={handleReply} disabled={sending || !reply.trim()}>
               {sending ? 'Enviando...' : 'Enviar respuesta'}
             </Button>
@@ -360,7 +386,7 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
   );
 }
 
-// ─── CRM Context panel (enhanced) ───
+// ─── CRM Context panel ───
 function CRMContextPanel({ msg }: { msg: InboxMessage }) {
   const navigate = useNavigate();
   const { data: matters = [] } = useClientMatters(msg.account_id);
@@ -373,9 +399,7 @@ function CRMContextPanel({ msg }: { msg: InboxMessage }) {
           <UserPlus className="h-6 w-6 text-muted-foreground" />
         </div>
         <p className="text-sm font-medium">Remitente no identificado</p>
-        <p className="text-xs text-muted-foreground">
-          {msg.sender_name} no está vinculado a ningún cliente.
-        </p>
+        <p className="text-xs text-muted-foreground">{msg.sender_name} no está vinculado a ningún cliente.</p>
         <div className="flex flex-col gap-2">
           <Button size="sm" variant="outline">Crear contacto nuevo</Button>
           <Button size="sm" variant="outline">Vincular a cliente existente</Button>
@@ -388,70 +412,52 @@ function CRMContextPanel({ msg }: { msg: InboxMessage }) {
   const lastActivity = activities[0] as { id: string; type: string; subject: string; created_at: string } | undefined;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-2 space-y-2">
       {/* Client card */}
-      <div className="rounded-lg border p-3 space-y-2">
+      <div className="rounded-lg border border-[#E2E8F0] bg-white p-3 space-y-2 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{msg.account?.name || msg.sender_name}</p>
-            {msg.sender_email && (
-              <p className="text-xs text-muted-foreground truncate">{msg.sender_email}</p>
-            )}
+            {msg.sender_email && <p className="text-xs text-muted-foreground truncate">{msg.sender_email}</p>}
           </div>
         </div>
-        <Button
-          variant="link"
-          size="sm"
-          className="text-xs p-0 h-auto"
-          onClick={() => msg.account_id && navigate(`/app/crm/accounts/${msg.account_id}`)}
-        >
+        <Button variant="link" size="sm" className="text-xs p-0 h-auto"
+          onClick={() => msg.account_id && navigate(`/app/crm/accounts/${msg.account_id}`)}>
           Ver perfil → <ExternalLink className="h-3 w-3 ml-1" />
         </Button>
       </div>
 
-      {/* Active matters */}
-      <div className="space-y-2">
+      {/* Matters */}
+      <div className="rounded-lg border border-[#E2E8F0] bg-white p-3 space-y-2 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <Briefcase className="h-3 w-3" />
-          Expedientes activos
+          <Briefcase className="h-3 w-3" /> Expedientes activos
         </h4>
-        {matters.length > 0 ? (
-          matters.map((m: any) => (
-            <button
-              key={m.id}
-              className="w-full text-left rounded-md border p-2.5 hover:bg-accent/50 transition-colors"
-              onClick={() => navigate(`/app/expedientes/${m.id}`)}
-            >
-              <div className="flex items-center gap-2 mb-0.5">
-                {m.type && (
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">{m.type}</Badge>
-                )}
-                <span className="text-xs font-medium truncate">{m.reference_number || m.title}</span>
-              </div>
-              {m.title && m.reference_number && (
-                <p className="text-[11px] text-muted-foreground truncate">{m.title}</p>
-              )}
-              {m.status && (
-                <Badge variant="secondary" className="text-[9px] mt-1 px-1.5 py-0 h-4">{m.status}</Badge>
-              )}
-            </button>
-          ))
-        ) : (
+        {matters.length > 0 ? matters.map((m: any) => (
+          <button key={m.id}
+            className="w-full text-left rounded-md border p-2 hover:bg-accent/50 transition-colors"
+            onClick={() => navigate(`/app/expedientes/${m.id}`)}>
+            <div className="flex items-center gap-2 mb-0.5">
+              {m.type && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">{m.type}</Badge>}
+              <span className="text-xs font-medium truncate">{m.reference_number || m.title}</span>
+            </div>
+            {m.title && m.reference_number && <p className="text-[11px] text-muted-foreground truncate">{m.title}</p>}
+            {m.status && <Badge variant="secondary" className="text-[9px] mt-1 px-1.5 py-0 h-4">{m.status}</Badge>}
+          </button>
+        )) : (
           <p className="text-xs text-muted-foreground italic">Sin expedientes activos</p>
         )}
       </div>
 
       {/* Last activity */}
       {lastActivity && (
-        <div className="space-y-2">
+        <div className="rounded-lg border border-[#E2E8F0] bg-white p-3 space-y-2 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Clock className="h-3 w-3" />
-            Último contacto
+            <Clock className="h-3 w-3" /> Último contacto
           </h4>
-          <div className="rounded-md border p-2.5">
+          <div className="rounded-md border p-2">
             <p className="text-xs font-medium truncate">{lastActivity.subject || lastActivity.type}</p>
             <p className="text-[11px] text-muted-foreground">
               {lastActivity.type} · {lastActivity.created_at
@@ -466,21 +472,14 @@ function CRMContextPanel({ msg }: { msg: InboxMessage }) {
 }
 
 // ─── Empty states ───
-function EmptyStateNoIntegration() {
-  const navigate = useNavigate();
+function EmptyDetailState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <div className="rounded-full bg-muted p-4 mb-4">
-        <Plug className="h-16 w-16 text-muted-foreground" />
-      </div>
-      <h3 className="text-lg font-semibold mb-2">Conecta tus canales</h3>
-      <p className="text-sm text-muted-foreground mb-6 max-w-md">
-        Conecta Gmail o WhatsApp para recibir mensajes de clientes automáticamente.
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[#F8FAFC]">
+      <InboxIcon className="h-16 w-16 text-[#CBD5E1] mb-4" />
+      <h3 className="text-base font-semibold mb-1">Selecciona un mensaje</h3>
+      <p className="text-sm text-muted-foreground max-w-[260px]">
+        Haz click en cualquier mensaje de la lista para ver el análisis completo de IP-GENIUS.
       </p>
-      <div className="flex gap-3">
-        <Button onClick={() => navigate('/app/settings/integrations')}>Conectar Gmail</Button>
-        <Button variant="outline" onClick={() => navigate('/app/settings/integrations')}>Conectar WhatsApp</Button>
-      </div>
     </div>
   );
 }
@@ -488,7 +487,7 @@ function EmptyStateNoIntegration() {
 function EmptyStateNoMessages() {
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <div className="rounded-full bg-green-100 dark:bg-green-950/30 p-4 mb-4">
+      <div className="rounded-full bg-green-100 p-4 mb-4">
         <CheckCircle2 className="h-16 w-16 text-green-500" />
       </div>
       <h3 className="text-lg font-semibold mb-2">Todo al día</h3>
@@ -497,19 +496,7 @@ function EmptyStateNoMessages() {
   );
 }
 
-function EmptyDetailState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[#F8FAFC]">
-      <InboxIcon className="h-16 w-16 text-[#CBD5E1] mb-4" />
-      <h3 className="text-base font-semibold mb-1">Selecciona un mensaje</h3>
-      <p className="text-sm text-muted-foreground max-w-[260px]">
-        Haz click en cualquier mensaje de la lista para ver el análisis completo de IP-GENIUS y gestionar la comunicación.
-      </p>
-    </div>
-  );
-}
-
-// ─── Channel sidebar (left panel in desktop) ───
+// ─── CAMBIO 1: Dark sidebar ───
 interface ChannelSidebarProps {
   messages: InboxMessage[];
   channelFilter: string | null;
@@ -533,124 +520,113 @@ function ChannelSidebar({
     { key: 'phone', label: 'Llamadas', icon: Phone },
   ];
 
-  const getCount = (ch: string | null) => {
-    if (ch === null) return messages.length;
-    return messages.filter(m => m.channel === ch).length;
-  };
-
-  const categoryBadgeColors: Record<string, string> = {
-    urgent: 'bg-[#FEE2E2] text-[#DC2626]',
-    instruction: 'bg-[#F3E8FF] text-[#7C3AED]',
-    query: 'bg-[#E0F2FE] text-[#0284C7]',
-    admin: 'bg-[#F1F5F9] text-[#64748B]',
-  };
+  const getCount = (ch: string | null) => ch === null ? messages.length : messages.filter(m => m.channel === ch).length;
 
   const categories = [
-    { key: 'urgent', label: 'Urgentes', icon: AlertCircle, color: 'text-[#EF4444]', getBadge: () => messages.filter(m => (m.ai_urgency_score ?? 0) >= 7).length },
-    { key: 'instruction', label: 'Instrucciones', icon: ClipboardList, color: 'text-[#8B5CF6]', getBadge: () => messages.filter(m => m.ai_category === 'instruction').length },
-    { key: 'query', label: 'Consultas', icon: HelpCircle, color: 'text-[#0EA5E9]', getBadge: () => messages.filter(m => m.ai_category === 'query').length },
-    { key: 'admin', label: 'Administrativo', icon: FileText, color: 'text-[#94A3B8]', getBadge: () => messages.filter(m => m.ai_category === 'admin').length },
+    { key: 'urgent', label: 'Urgentes', dotColor: '#FCA5A5', getBadge: () => messages.filter(m => (m.ai_urgency_score ?? 0) >= 7).length },
+    { key: 'instruction', label: 'Instrucciones', dotColor: '#C4B5FD', getBadge: () => messages.filter(m => m.ai_category === 'instruction').length },
+    { key: 'query', label: 'Consultas', dotColor: '#93C5FD', getBadge: () => messages.filter(m => m.ai_category === 'query').length },
+    { key: 'admin', label: 'Admin', dotColor: 'rgba(255,255,255,0.5)', getBadge: () => messages.filter(m => m.ai_category === 'admin').length },
   ];
 
+  const isActiveItem = (key: string | null, type: 'channel' | 'category' | 'status') => {
+    if (type === 'channel') return channelFilter === key && !categoryFilter && !statusFilter;
+    if (type === 'category') return categoryFilter === key;
+    return statusFilter === key;
+  };
+
+  const itemClass = (active: boolean) => cn(
+    'flex items-center gap-2.5 w-full rounded-md px-4 py-2 text-sm transition-all duration-150 text-left mx-2',
+    active
+      ? 'font-semibold'
+      : 'hover:bg-white/[0.08]',
+  );
+
+  const itemStyle = (active: boolean): React.CSSProperties => ({
+    color: active ? 'white' : 'rgba(255,255,255,0.75)',
+    backgroundColor: active ? 'rgba(255,255,255,0.15)' : undefined,
+    width: 'calc(100% - 16px)',
+  });
+
   return (
-    <div className="flex flex-col h-full p-3 space-y-1">
-      <div className="flex items-center gap-2 px-2 mb-2">
-        <h3 className="text-base font-bold">Inbox</h3>
+    <div className="flex flex-col h-full py-3 space-y-0.5"
+      style={{ background: '#1E293B', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+      {/* Title */}
+      <div className="flex items-center gap-2 px-4 mb-3">
+        <h3 className="text-base font-bold text-white">Inbox</h3>
         {totalPending > 0 && (
-          <Badge variant="destructive" className="h-5 min-w-[20px] text-[10px] px-1.5">
+          <span className="text-[10px] font-medium rounded-full px-1.5 py-0.5 min-w-[20px] text-center text-white"
+            style={{ backgroundColor: '#DC2626' }}>
             {totalPending}
-          </Badge>
+          </span>
         )}
       </div>
 
-      {/* CANALES */}
-      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
-        Canales
-      </h4>
+      {/* Canales */}
+      <p className="px-4 mb-1 uppercase tracking-[0.1em]"
+        style={{ color: 'rgba(255,255,255,0.40)', fontSize: 10 }}>Canales</p>
       {channels.map(({ key, label, icon: Icon }) => {
         const count = getCount(key);
-        const isActive = channelFilter === key && !categoryFilter;
+        const active = isActiveItem(key, 'channel');
         return (
-          <button
-            key={label}
+          <button key={label}
             onClick={() => { onChannelChange(key); onCategoryChange(null); onStatusChange(null); }}
-            className={cn(
-              'flex items-center gap-2.5 w-full rounded-lg px-2.5 py-2 text-sm transition-colors text-left',
-              isActive
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-            )}
-          >
-            <Icon className="h-4 w-4 flex-shrink-0" />
+            className={itemClass(active)} style={itemStyle(active)}>
+            <Icon className="h-4 w-4 flex-shrink-0" style={{ opacity: 0.8 }} />
             <span className="flex-1 truncate">{label}</span>
-            {count > 0 && <span className="text-xs text-muted-foreground">{count}</span>}
+            {count > 0 && (
+              <span className="text-xs rounded-full px-1.5 min-w-[20px] text-center"
+                style={{ background: 'rgba(255,255,255,0.20)', color: 'white', fontSize: 10 }}>
+                {count}
+              </span>
+            )}
           </button>
         );
       })}
 
-      {/* FILTROS RÁPIDOS */}
-      <div className="border-t border-[#F1F5F9] my-2" />
-      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
-        Filtros
-      </h4>
-      <button
-        onClick={() => onStatusChange(statusFilter === 'assigned' ? null : 'assigned')}
-        className={cn(
-          'flex items-center gap-2.5 w-full rounded-lg px-2.5 py-2 text-sm transition-colors text-left',
-          statusFilter === 'assigned'
-            ? 'bg-primary/10 text-primary font-medium'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-        )}
-      >
-        <User className="h-4 w-4 flex-shrink-0" />
-        <span className="flex-1">Asignados a mí</span>
-      </button>
-      <button
-        onClick={() => onStatusChange(statusFilter === 'no-matter' ? null : 'no-matter')}
-        className={cn(
-          'flex items-center gap-2.5 w-full rounded-lg px-2.5 py-2 text-sm transition-colors text-left',
-          statusFilter === 'no-matter'
-            ? 'bg-primary/10 text-primary font-medium'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-        )}
-      >
-        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-        <span className="flex-1">Sin expediente</span>
-      </button>
+      {/* Separator */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '8px 0' }} />
 
-      {/* CATEGORÍAS IA */}
-      <div className="border-t border-[#F1F5F9] my-2" />
-      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
-        Categorías IA
-      </h4>
-      {categories.map(({ key, label, icon: Icon, color, getBadge }) => {
-        const count = getBadge();
-        const isActive = categoryFilter === key;
+      {/* Filtros */}
+      <p className="px-4 mb-1 uppercase tracking-[0.1em]"
+        style={{ color: 'rgba(255,255,255,0.40)', fontSize: 10 }}>Filtros</p>
+      {[
+        { key: 'assigned', label: 'Asignados a mí', icon: User },
+        { key: 'no-matter', label: 'Sin expediente', icon: AlertCircle },
+      ].map(({ key, label, icon: Icon }) => {
+        const active = isActiveItem(key, 'status');
         return (
-          <button
-            key={key}
-            onClick={() => {
-              onCategoryChange(isActive ? null : key);
-              onChannelChange(null);
-              onStatusChange(null);
-            }}
-            className={cn(
-              'flex items-center gap-2.5 w-full rounded-lg px-2.5 py-2 text-sm transition-colors text-left',
-              isActive
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-            )}
-          >
-            <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? '' : color)} />
+          <button key={key}
+            onClick={() => { onStatusChange(statusFilter === key ? null : key); onCategoryChange(null); }}
+            className={itemClass(active)} style={itemStyle(active)}>
+            <Icon className="h-4 w-4 flex-shrink-0" style={{ opacity: 0.8 }} />
             <span className="flex-1 truncate">{label}</span>
-            {count > 0 && (
-              <span className={cn(
-                'text-[10px] font-medium rounded-full px-1.5 py-0 min-w-[20px] text-center',
-                categoryBadgeColors[key] || 'bg-muted text-muted-foreground'
-              )}>
-                {count}
-              </span>
-            )}
+          </button>
+        );
+      })}
+
+      {/* Separator */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '8px 0' }} />
+
+      {/* Categorías IA */}
+      <p className="px-4 mb-1 uppercase tracking-[0.1em]"
+        style={{ color: 'rgba(255,255,255,0.40)', fontSize: 10 }}>Categorías IA</p>
+      {categories.map(({ key, label, dotColor, getBadge }) => {
+        const count = getBadge();
+        const active = isActiveItem(key, 'category');
+        return (
+          <button key={key}
+            onClick={() => { onCategoryChange(active ? null : key); onChannelChange(null); onStatusChange(null); }}
+            className={itemClass(active)} style={itemStyle(active)}>
+            <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+            <span className="flex-1 truncate">{label}</span>
+            {count > 0 && key === 'urgent' ? (
+              <span className="text-[10px] font-medium rounded-full px-1.5 min-w-[20px] text-center text-white"
+                style={{ backgroundColor: '#DC2626' }}>{count}</span>
+            ) : count > 0 ? (
+              <span className="text-xs rounded-full px-1.5 min-w-[20px] text-center"
+                style={{ background: 'rgba(255,255,255,0.20)', color: 'white', fontSize: 10 }}>{count}</span>
+            ) : null}
           </button>
         );
       })}
@@ -658,10 +634,14 @@ function ChannelSidebar({
   );
 }
 
-// ─── Main page ───
+// ═══════════════════════════════════════════
+// MAIN PAGE
+// ═══════════════════════════════════════════
 export default function CommunicationsUnifiedPage() {
   const isMobile = useIsMobile();
-  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024;
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
+  const isDesktopSmall = useMediaQuery('(min-width: 1024px) and (max-width: 1279px)');
+  const isDesktopLarge = useMediaQuery('(min-width: 1280px)');
   const { organizationId } = useOrganization();
 
   const [channelFilter, setChannelFilter] = useState<string | null>(null);
@@ -669,13 +649,15 @@ export default function CommunicationsUnifiedPage() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+  const [privateMode, setPrivateMode] = useState(loadPrivateMode);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [crmSheetOpen, setCrmSheetOpen] = useState(false);
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
   const { processMessage, processAllPending, processingId, processingAll } = useProcessMessage();
 
   const unanalyzedCount = useMemo(() => messages.filter(m => !m.ai_category && m.status === 'pending').length, [messages]);
 
-  // Apply category filter client-side
   const filteredMessages = useMemo(() => {
     if (!categoryFilter) return messages;
     if (categoryFilter === 'urgent') return messages.filter(m => (m.ai_urgency_score ?? 0) >= 7);
@@ -689,37 +671,44 @@ export default function CommunicationsUnifiedPage() {
     if (isMobile) setMobileView('detail');
   }, [isMobile]);
 
-  // ─── Mobile detail ───
-  if (isMobile && mobileView === 'detail' && selectedMsg) {
-    return (
-      <div className="h-[calc(100vh-8rem)] flex flex-col">
-        <MessageDetail
-          msg={selectedMsg}
-          organizationId={organizationId}
-          onBack={() => { setMobileView('list'); setSelectedId(null); }}
-          onAnalyze={processMessage}
-          isAnalyzing={processingId === selectedMsg.id}
-        />
-      </div>
-    );
-  }
+  const togglePrivateMode = useCallback(() => {
+    setPrivateMode(prev => { const next = !prev; savePrivateMode(next); return next; });
+  }, []);
 
-  // ─── Message list (used in mobile and as middle content) ───
-  const messageList = (
-    <div className="flex flex-col flex-1 min-h-0">
-      {/* Analyze all header */}
+  // ─── Saved panel sizes ───
+  const savedSizes = loadPanelSizes();
+
+  // ─── Message list content ───
+  const messageListContent = (
+    <div className="flex flex-col flex-1 min-h-0 bg-[#F1F5F9]">
+      {/* Header */}
+      <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div className="flex items-center gap-2">
+          {/* Hamburger for tablet */}
+          {isTablet && (
+            <Button variant="ghost" size="icon" className="h-8 w-8"
+              onClick={() => setSidebarOpen(true)}>
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
+          <span className="text-sm font-semibold">{filteredMessages.length} mensajes</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Private mode toggle */}
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePrivateMode}
+            title={privateMode ? 'Desactivar modo privado' : 'Activar modo privado'}>
+            {privateMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+      {/* Analyze all banner */}
       {unanalyzedCount > 0 && (
-        <div className="px-3 py-2 border-b bg-amber-50/50 dark:bg-amber-950/10 flex items-center justify-between gap-2">
-          <span className="text-xs text-amber-700 dark:text-amber-400">
-            {unanalyzedCount} mensaje{unanalyzedCount > 1 ? 's' : ''} sin analizar
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="px-3 py-2 border-b bg-amber-50/80 flex items-center justify-between gap-2">
+          <span className="text-xs text-amber-700">{unanalyzedCount} sin analizar</span>
+          <Button variant="outline" size="sm"
             className="h-7 text-xs border-amber-300 text-amber-700 hover:bg-amber-100"
-            onClick={() => processAllPending()}
-            disabled={processingAll}
-          >
+            onClick={() => processAllPending()} disabled={processingAll}>
             {processingAll ? (
               <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analizando...</>
             ) : (
@@ -728,39 +717,76 @@ export default function CommunicationsUnifiedPage() {
           </Button>
         </div>
       )}
+      {/* Tablet channel filter chips */}
+      {isTablet && (
+        <div className="px-3 py-2 border-b bg-white flex gap-1 flex-wrap">
+          {[
+            { key: null, label: 'Todos' },
+            { key: 'email', label: '✉️ Email' },
+            { key: 'whatsapp', label: '💬 WA' },
+            { key: 'phone', label: '📞' },
+          ].map(t => (
+            <button key={t.key ?? 'all'}
+              onClick={() => { setChannelFilter(t.key); setCategoryFilter(null); }}
+              className={cn(
+                'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                channelFilter === t.key && !categoryFilter
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              )}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
       <ScrollArea className="flex-1">
         {isLoading ? (
           <div className="p-4 space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-[10px]" />)}
           </div>
         ) : filteredMessages.length === 0 ? (
           <EmptyStateNoMessages />
         ) : (
-          filteredMessages.map(msg => (
-            <MessageListItem
-              key={msg.id}
-              msg={msg}
-              isSelected={msg.id === selectedId}
-              onSelect={() => handleSelect(msg.id)}
-              onAnalyze={processMessage}
-              isAnalyzing={processingId === msg.id || processingAll}
-            />
-          ))
+          <div className="py-1">
+            {filteredMessages.map(msg => (
+              <MessageListItem
+                key={msg.id} msg={msg}
+                isSelected={msg.id === selectedId}
+                onSelect={() => handleSelect(msg.id)}
+                onAnalyze={processMessage}
+                isAnalyzing={processingId === msg.id || processingAll}
+                privateMode={privateMode}
+              />
+            ))}
+          </div>
         )}
       </ScrollArea>
     </div>
   );
 
+  // ─── Mobile detail ───
+  if (isMobile && mobileView === 'detail' && selectedMsg) {
+    return (
+      <div className="h-[calc(100vh-8rem)] flex flex-col">
+        <MessageDetail msg={selectedMsg} organizationId={organizationId}
+          onBack={() => { setMobileView('list'); setSelectedId(null); }}
+          onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+      </div>
+    );
+  }
+
   // ─── Mobile: list only ───
   if (isMobile) {
     return (
       <div className="h-[calc(100vh-8rem)] flex flex-col">
-        <div className="p-3 border-b space-y-2">
+        <div className="p-3 border-b space-y-2 bg-white">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold">Inbox</h2>
-            {filteredMessages.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{filteredMessages.length}</Badge>
-            )}
+            <Badge variant="secondary" className="text-xs">{filteredMessages.length}</Badge>
+            <div className="flex-1" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePrivateMode}>
+              {privateMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
           </div>
           <div className="flex gap-1 flex-wrap">
             {[
@@ -768,90 +794,109 @@ export default function CommunicationsUnifiedPage() {
               { key: 'email', label: '✉️ Email' },
               { key: 'whatsapp', label: '💬 WA' },
             ].map(t => (
-              <Button
-                key={t.key ?? 'all'}
+              <Button key={t.key ?? 'all'}
                 variant={channelFilter === t.key ? 'default' : 'outline'}
-                size="sm"
-                className="text-xs h-7"
-                onClick={() => { setChannelFilter(t.key); setCategoryFilter(null); }}
-              >
+                size="sm" className="text-xs h-7"
+                onClick={() => { setChannelFilter(t.key); setCategoryFilter(null); }}>
                 {t.label}
               </Button>
             ))}
           </div>
         </div>
-        {messageList}
+        {messageListContent}
       </div>
     );
   }
 
-  // ─── Desktop: 3 panels ───
+  // ─── Desktop / Tablet: Multi-panel ───
+  const showSidebar = isDesktopSmall || isDesktopLarge;
+  const showCRMPanel = isDesktopLarge;
+
   return (
-    <div className="h-[calc(100vh-14rem)] flex rounded-xl border bg-card overflow-hidden">
-      {/* Col 1 — Channel sidebar */}
-      {!isTablet && (
-        <div className="w-[240px] border-r bg-muted/30 flex-shrink-0 overflow-y-auto">
+    <div className="h-[calc(100vh-14rem)] flex rounded-xl border overflow-hidden">
+      {/* Col 1 — Dark sidebar (desktop only) */}
+      {showSidebar && (
+        <div className="w-[220px] flex-shrink-0 overflow-y-auto">
           <ChannelSidebar
             messages={messages}
-            channelFilter={channelFilter}
-            onChannelChange={setChannelFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            categoryFilter={categoryFilter}
-            onCategoryChange={setCategoryFilter}
+            channelFilter={channelFilter} onChannelChange={setChannelFilter}
+            statusFilter={statusFilter} onStatusChange={setStatusFilter}
+            categoryFilter={categoryFilter} onCategoryChange={setCategoryFilter}
           />
         </div>
       )}
 
-      {/* Col 2 — Message list */}
-      <div className="w-[340px] border-r flex-shrink-0 flex flex-col">
-        {isTablet && (
-          <div className="p-3 border-b">
-            <div className="flex gap-1 flex-wrap">
-              {[
-                { key: null, label: 'Todos' },
-                { key: 'email', label: '✉️' },
-                { key: 'whatsapp', label: '💬' },
-                { key: 'phone', label: '📞' },
-              ].map(t => (
-                <button
-                  key={t.key ?? 'all'}
-                  onClick={() => { setChannelFilter(t.key); setCategoryFilter(null); }}
-                  className={cn(
-                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                    channelFilter === t.key && !categoryFilter
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
+      {/* Tablet sidebar sheet */}
+      {isTablet && (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="w-[260px] p-0">
+            <SheetHeader className="sr-only"><SheetTitle>Filtros</SheetTitle></SheetHeader>
+            <ChannelSidebar
+              messages={messages}
+              channelFilter={channelFilter} onChannelChange={(ch) => { setChannelFilter(ch); setSidebarOpen(false); }}
+              statusFilter={statusFilter} onStatusChange={(s) => { setStatusFilter(s); setSidebarOpen(false); }}
+              categoryFilter={categoryFilter} onCategoryChange={(c) => { setCategoryFilter(c); setSidebarOpen(false); }}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Col 2 + 3: Resizable panels */}
+      <ResizablePanelGroup direction="horizontal"
+        onLayout={(sizes) => savePanelSizes(sizes)}>
+        <ResizablePanel
+          defaultSize={savedSizes?.[0] ?? 32}
+          minSize={22} maxSize={45}>
+          {messageListContent}
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={savedSizes?.[1] ?? 68}>
+          <div className="flex h-full">
+            {/* Detail */}
+            <div className="flex-1 flex flex-col min-w-0 relative">
+              {selectedMsg ? (
+                <MessageDetail msg={selectedMsg} organizationId={organizationId}
+                  onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+              ) : (
+                <EmptyDetailState />
+              )}
+              {/* CRM floating button for 1024-1280 */}
+              {isDesktopSmall && selectedMsg && (
+                <Button
+                  className="absolute bottom-20 right-4 shadow-lg z-10"
+                  size="sm"
+                  onClick={() => setCrmSheetOpen(true)}>
+                  <User className="h-4 w-4 mr-1" /> 👤 Ver cliente
+                </Button>
+              )}
             </div>
-          </div>
-        )}
-        {messageList}
-      </div>
 
-      {/* Col 3 — Detail */}
-      <div className="flex-1 flex flex-col min-w-0 border-r">
-        {selectedMsg ? (
-          <MessageDetail msg={selectedMsg} organizationId={organizationId} onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
-        ) : (
-          <EmptyDetailState />
-        )}
-      </div>
-
-      {/* Col 4 — CRM context */}
-      <div className="w-[280px] flex-shrink-0 overflow-y-auto">
-        {selectedMsg ? (
-          <CRMContextPanel msg={selectedMsg} />
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-4">
-            Contexto CRM
+            {/* Col 4 — CRM panel (>1280px) */}
+            {showCRMPanel && (
+              <div className="w-[260px] flex-shrink-0 overflow-y-auto border-l border-[#E2E8F0]"
+                style={{ background: '#F8FAFC' }}>
+                {selectedMsg ? <CRMContextPanel msg={selectedMsg} /> : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-4">
+                    Contexto CRM
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+
+      {/* CRM slide-in sheet for 1024-1280 */}
+      {isDesktopSmall && (
+        <Sheet open={crmSheetOpen} onOpenChange={setCrmSheetOpen}>
+          <SheetContent side="right" className="w-[300px] p-0" style={{ background: '#F8FAFC' }}>
+            <SheetHeader className="sr-only"><SheetTitle>Cliente</SheetTitle></SheetHeader>
+            {selectedMsg && <CRMContextPanel msg={selectedMsg} />}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
