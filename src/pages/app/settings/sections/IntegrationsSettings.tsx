@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CalendarIntegrationSection } from '@/components/settings/CalendarIntegrationSection';
 import { WhatsAppIntegrationSection } from '@/components/settings/WhatsAppIntegrationSection';
+import { IntegrationsCardsSection } from '@/components/settings/IntegrationsCardsSection';
 
 interface IntegrationField {
   key: string;
@@ -167,10 +168,10 @@ export default function IntegrationsSettings() {
   
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Integraciones</h2>
-        <p className="text-muted-foreground">Conecta IP-NEXUS con servicios externos</p>
-      </div>
+      {/* Communication integrations cards */}
+      <IntegrationsCardsSection />
+
+      <Separator className="my-8" />
 
       {/* WhatsApp (Meta Cloud API) */}
       <section aria-label="WhatsApp" id="whatsapp">

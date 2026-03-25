@@ -4,6 +4,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AccountTeamCard } from "@/components/crm/AccountTeamCard";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -17,6 +18,7 @@ import type { CRMAccount } from "@/hooks/crm/v2/types";
 
 interface Props {
   account: CRMAccount;
+  accountId?: string;
   contactsCount: number;
   dealsCount: number;
   mattersCount: number;
@@ -55,7 +57,7 @@ function KpiCard({ icon: Icon, label, value, sub }: {
   );
 }
 
-export function AccountOverviewTab({ account, contactsCount, dealsCount, mattersCount, activitiesCount }: Props) {
+export function AccountOverviewTab({ account, accountId, contactsCount, dealsCount, mattersCount, activitiesCount }: Props) {
   const rating = account.rating_stars ?? 0;
 
   return (
@@ -165,6 +167,9 @@ export function AccountOverviewTab({ account, contactsCount, dealsCount, matters
           </CardContent>
         </Card>
       </div>
+
+      {/* Team Card */}
+      {accountId && <AccountTeamCard accountId={accountId} />}
 
       {/* Notes */}
       {account.notes && (

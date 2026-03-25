@@ -211,6 +211,7 @@ export default function CRMV2AccountDetail() {
                 <TabsContent value="overview">
                   <AccountOverviewTab
                     account={account}
+                    accountId={id}
                     contactsCount={contacts.length}
                     dealsCount={deals.length}
                     mattersCount={mattersCount}

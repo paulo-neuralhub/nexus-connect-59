@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { 
+import { RoutingConfigSection } from '@/components/settings/RoutingConfigSection';
+import {
   UserPlus, 
   Mail, 
   MoreVertical,
@@ -155,6 +156,9 @@ export default function TeamSettings() {
         </div>
       )}
       
+      {/* Routing config */}
+      {isAdmin && <RoutingConfigSection />}
+
       {/* Modal de invitación */}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
         <DialogContent>
