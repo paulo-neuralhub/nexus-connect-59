@@ -130,6 +130,8 @@ export function DynamicSidebar({
   const { data: pendingSignaturesCount = 0 } = usePendingSignaturesCount();
   const { data: alertStats } = useAlertStats();
   const { data: instructionsPendingCount = 0 } = useInstructionsPendingCount();
+  const { data: inboxCount = 0 } = useInboxCount();
+  const { data: approvalsCountData } = useApprovalsCount();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
@@ -169,6 +171,9 @@ export function DynamicSidebar({
     deadlines: 0,
     tasks: 0,
     instructions: instructionsPendingCount,
+    inbox: inboxCount,
+    approvals: approvalsCountData?.total || 0,
+  };
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
