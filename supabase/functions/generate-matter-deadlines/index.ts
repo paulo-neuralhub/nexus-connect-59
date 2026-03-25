@@ -95,15 +95,8 @@ function checkOfficeDataCompleteness(
     }
   }
 
-  if (!office?.grace_period_days && !office?.renewal_grace_period_days) {
-    missing.push({
-      field: "renewal_grace_period_days",
-      label: "Período de gracia para renovación (meses)",
-      type: "number",
-      suggestion: 6,
-      help: "6 meses es habitual bajo el Protocolo de Madrid",
-    });
-  } else {
+  // Grace period is nice-to-have, not blocking
+  if (office?.renewal_grace_period_days || office?.grace_period_days) {
     available.grace_period =
       office?.renewal_grace_period_days || office?.grace_period_days;
   }
