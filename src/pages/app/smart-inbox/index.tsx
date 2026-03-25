@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Building2, Upload, CheckCircle, AlertTriangle, Clock, Search, FileText,
-  ArrowRight, Loader2, Zap, Download, ExternalLink
+  ArrowRight, Loader2, Zap, Download, ExternalLink, Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIpoDocuments, type IpoDocument } from '@/hooks/use-ipo-documents';
@@ -69,23 +69,24 @@ function getUrgencyBadge(doc: IpoDocument) {
   const deadline = getDeadlineFromDoc(doc);
   if (!deadline) return null;
   const days = differenceInDays(new Date(deadline), new Date());
-  if (days < 0) return { label: '🔴 Vencido', color: '#EF4444', days };
-  if (days < 7) return { label: '🔴 CRÍTICO', color: '#EF4444', days };
-  if (days <= 30) return { label: '⚠️ Urgente', color: '#F97316', days };
-  if (days <= 90) return { label: '📅 Próximo', color: '#F59E0B', days };
-  return { label: `${days}d`, color: '#94A3B8', days };
+  if (days < 0) return { label: 'VENCIDO', color: '#DC2626', days, bg: 'bg-destructive/10' };
+  if (days < 7) return { label: `🔴 ${days}d`, color: '#DC2626', days, bg: 'bg-destructive/10' };
+  if (days <= 30) return { label: `${days} días`, color: '#B45309', days, bg: 'bg-amber-100' };
+  if (days <= 90) return { label: `${days} días`, color: '#2563EB', days, bg: 'bg-blue-50' };
+  if (days <= 365) return { label: `${days} días`, color: '#2563EB', days, bg: 'bg-blue-50' };
+  return { label: `${days}d`, color: '#94A3B8', days, bg: 'bg-muted' };
 }
 
 function getBorderColor(doc: IpoDocument) {
   if (doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending') return '#EF4444';
-  const urgency = getUrgencyBadge(doc);
-  if (!urgency) return '#E2E8F0';
-  if (urgency.days !== undefined) {
-    if (urgency.days < 7) return '#EF4444';
-    if (urgency.days <= 30) return '#F97316';
-    if (urgency.days <= 90) return '#F59E0B';
-  }
-  return '#E2E8F0';
+  const deadline = getDeadlineFromDoc(doc);
+  if (!deadline) return '#94A3B8';
+  const days = differenceInDays(new Date(deadline), new Date());
+  if (days < 7) return '#EF4444';
+  if (days < 30) return '#F97316';
+  if (days < 90) return '#F59E0B';
+  if (days < 365) return '#3B82F6';
+  return '#94A3B8';
 }
 
 function getConfidenceInfo(value: number) {
@@ -281,80 +282,94 @@ function DocCard({ doc, isSelected, onClick }: { doc: IpoDocument; isSelected: b
   const borderColor = getBorderColor(doc);
   const isPending = doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending';
   const isManualReview = doc.processing_status === 'unprocessed' && doc.parsing_status !== 'pending';
-
   const deadline = getDeadlineFromDoc(doc);
+  const officeName = getOfficeName(doc.source_ipo_code, pd);
+
+  const docTitle = pd?.document_type === 'office_action' ? 'Office Action'
+    : pd?.document_type === 'publication_notice' ? 'Aviso de publicación'
+    : pd?.document_type === 'registration_certificate' ? 'Certificado de registro'
+    : 'Documento';
+
+  const docNumber = pd?.serial_number || pd?.application_number || pd?.registration_number || '';
 
   return (
-    <Card
+    <div
       className={cn(
-        'cursor-pointer transition-all border-l-4 hover:shadow-md',
-        isSelected && 'ring-2 ring-primary/30 bg-blue-50/50',
+        'group relative rounded-xl border bg-card cursor-pointer transition-all duration-150',
+        'hover:shadow-md hover:-translate-y-0.5',
+        isSelected && 'bg-accent/50 shadow-md ring-1 ring-primary/20',
         isPending && 'animate-pulse',
       )}
-      style={{ borderLeftColor: borderColor }}
+      style={{
+        borderLeftWidth: '4px',
+        borderLeftColor: borderColor,
+      }}
       onClick={onClick}
     >
-      <CardContent className="p-3.5 space-y-1.5">
-        {/* Row 1: flag + office + doc type + time + urgency */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-base leading-none">{getFlag(doc.source_ipo_code)}</span>
-            <span className="font-semibold text-foreground">{getOfficeName(doc.source_ipo_code, pd)}</span>
-            <Badge className={cn('text-[9px] px-1.5 py-0 h-4', docType.bg)}>{docType.label}</Badge>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {urgency && urgency.days !== undefined && urgency.days <= 90 && (
-              <Badge className="text-[9px] px-1.5 py-0 h-4" style={{ backgroundColor: urgency.color + '18', color: urgency.color }}>
-                {urgency.label}
-              </Badge>
-            )}
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {doc.received_at ? formatDistanceToNow(new Date(doc.received_at), { addSuffix: false, locale: es }) : ''}
-            </span>
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 px-3.5 pt-3 pb-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-lg leading-none flex-shrink-0">{getFlag(doc.source_ipo_code)}</span>
+          <span className="text-[13px] font-bold text-foreground">{officeName}</span>
+          <span className="text-muted-foreground text-[11px]">·</span>
+          <Badge className={cn('text-[9px] px-1.5 py-0 h-[18px] border-0 font-medium', docType.bg)}>{docType.label}</Badge>
+          <span className="text-muted-foreground text-[11px]">·</span>
+          <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+            hace {doc.received_at ? formatDistanceToNow(new Date(doc.received_at), { addSuffix: false, locale: es }) : '—'}
+          </span>
         </div>
+        {urgency && (
+          <Badge
+            className={cn('text-[10px] px-2 py-0.5 h-[20px] border-0 font-semibold tabular-nums flex-shrink-0', urgency.bg)}
+            style={{ color: urgency.color }}
+          >
+            {urgency.label}
+          </Badge>
+        )}
+      </div>
 
-        {/* Row 2: title */}
-        <p className="text-sm font-medium text-foreground truncate">
-          {pd?.document_type === 'office_action' ? 'Office Action' :
-           pd?.document_type === 'publication_notice' ? 'Aviso de publicación' :
-           pd?.document_type === 'registration_certificate' ? 'Certificado de registro' :
-           'Documento'} — {pd?.serial_number || pd?.application_number || pd?.registration_number || doc.source_ipo_code}
+      {/* Body */}
+      <div className="px-3.5 pb-2">
+        <p className="text-[14px] font-semibold text-foreground truncate leading-tight">
+          {docTitle} — {docNumber}
         </p>
+      </div>
 
-        {/* Row 3: linked matter */}
+      {/* Linked matter */}
+      <div className="px-3.5 py-1.5 border-t border-border/50">
         {doc.matter ? (
-          <p className="text-xs text-muted-foreground truncate">
-            → {doc.matter.reference} {doc.matter.title}
+          <p className="text-xs flex items-center gap-1.5 text-emerald-600 truncate">
+            <LinkIcon className="w-3 h-3 flex-shrink-0" />
+            {doc.matter.reference} · {doc.matter.title}
           </p>
         ) : (
-          <p className="text-xs text-amber-600 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> Sin expediente asignado
+          <p className="text-xs flex items-center gap-1.5 text-amber-600">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+            Sin expediente asignado
           </p>
         )}
+      </div>
 
-        {/* Row 4: deadline */}
-        {deadline && (
-          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            Plazo: {format(new Date(deadline), 'dd MMM yyyy', { locale: es })}
-            {urgency?.days !== undefined && ` (${urgency.days}d)`}
+      {/* Footer */}
+      <div className="px-3.5 py-2 border-t border-border/50">
+        {isPending ? (
+          <p className="text-xs flex items-center gap-1.5 text-destructive font-medium">
+            <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
+            Pendiente de análisis
           </p>
-        )}
-
-        {/* Status banners */}
-        {isPending && (
-          <div className="text-[10px] bg-red-50 text-red-700 rounded px-2 py-0.5 font-medium">
-            🔴 Sin procesar
-          </div>
-        )}
-        {isManualReview && (
-          <div className="text-[10px] bg-amber-50 text-amber-700 rounded px-2 py-0.5 font-medium">
-            ⚠️ Requiere revisión manual
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        ) : isManualReview ? (
+          <p className="text-xs flex items-center gap-1.5 text-amber-600 font-medium">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+            Requiere revisión manual
+          </p>
+        ) : deadline ? (
+          <p className="text-xs flex items-center gap-1.5 text-muted-foreground" style={urgency && urgency.days !== undefined && urgency.days <= 30 ? { color: urgency.color } : undefined}>
+            <Clock className="w-3 h-3 flex-shrink-0" />
+            Responder antes: {format(new Date(deadline), "dd MMM yyyy", { locale: es })}
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -416,8 +431,8 @@ function DetailPanel({
           </p>
           <div className="flex gap-1.5 mt-2">
             <Badge className={cn('text-[10px]', docType.bg)}>{docType.label}</Badge>
-            {urgency && urgency.days !== undefined && urgency.days <= 90 && (
-              <Badge className="text-[10px]" style={{ backgroundColor: urgency.color + '18', color: urgency.color }}>
+            {urgency && (
+              <Badge className={cn('text-[10px] border-0', urgency.bg)} style={{ color: urgency.color }}>
                 {urgency.label}
               </Badge>
             )}
