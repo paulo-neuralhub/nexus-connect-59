@@ -221,8 +221,9 @@ function LinkedInstructionSection({ messageId }: { messageId: string }) {
 }
 
 // ─── Detail panel ───
-function MessageDetail({ msg, organizationId, onBack }: {
+function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: {
   msg: InboxMessage; organizationId: string | undefined; onBack?: () => void;
+  onAnalyze?: (id: string) => void; isAnalyzing?: boolean;
 }) {
   const [reply, setReply] = useState('');
   const [showReply, setShowReply] = useState(false);
