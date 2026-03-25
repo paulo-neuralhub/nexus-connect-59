@@ -934,9 +934,10 @@ export default function CommunicationsUnifiedPage() {
         <div className="w-[220px] flex-shrink-0 overflow-y-auto">
           <ChannelSidebar
             messages={messages}
-            channelFilter={channelFilter} onChannelChange={setChannelFilter}
-            statusFilter={statusFilter} onStatusChange={setStatusFilter}
-            categoryFilter={categoryFilter} onCategoryChange={setCategoryFilter}
+            channelFilter={channelFilter} onChannelChange={(ch) => { setShowFiltered(false); setChannelFilter(ch); }}
+            statusFilter={statusFilter} onStatusChange={(s) => { setShowFiltered(false); setStatusFilter(s); }}
+            categoryFilter={categoryFilter} onCategoryChange={(c) => { setShowFiltered(false); setCategoryFilter(c); }}
+            filteredCount={filteredTodayCount} showFiltered={showFiltered} onToggleFiltered={handleToggleFiltered}
           />
         </div>
       )}
@@ -948,9 +949,11 @@ export default function CommunicationsUnifiedPage() {
             <SheetHeader className="sr-only"><SheetTitle>Filtros</SheetTitle></SheetHeader>
             <ChannelSidebar
               messages={messages}
-              channelFilter={channelFilter} onChannelChange={(ch) => { setChannelFilter(ch); setSidebarOpen(false); }}
-              statusFilter={statusFilter} onStatusChange={(s) => { setStatusFilter(s); setSidebarOpen(false); }}
-              categoryFilter={categoryFilter} onCategoryChange={(c) => { setCategoryFilter(c); setSidebarOpen(false); }}
+              channelFilter={channelFilter} onChannelChange={(ch) => { setShowFiltered(false); setChannelFilter(ch); setSidebarOpen(false); }}
+              statusFilter={statusFilter} onStatusChange={(s) => { setShowFiltered(false); setStatusFilter(s); setSidebarOpen(false); }}
+              categoryFilter={categoryFilter} onCategoryChange={(c) => { setShowFiltered(false); setCategoryFilter(c); setSidebarOpen(false); }}
+              filteredCount={filteredTodayCount} showFiltered={showFiltered}
+              onToggleFiltered={() => { handleToggleFiltered(); setSidebarOpen(false); }}
             />
           </SheetContent>
         </Sheet>
@@ -963,7 +966,7 @@ export default function CommunicationsUnifiedPage() {
           className="min-h-0"
           defaultSize={savedSizes?.[0] ?? 32}
           minSize={22} maxSize={45}>
-          {messageListContent}
+          {showFiltered ? filteredListContent : messageListContent}
         </ResizablePanel>
 
         <ResizableHandle withHandle />
