@@ -57,6 +57,12 @@ function loadPrivateMode(): boolean {
 function savePrivateMode(v: boolean) {
   try { localStorage.setItem('inbox-private-mode', v ? 'true' : 'false'); } catch { /* silent */ }
 }
+function loadViewMode(): 'individual' | 'by-matter' {
+  try { return (localStorage.getItem('inbox-view-mode') as any) || 'individual'; } catch { return 'individual'; }
+}
+function saveViewMode(v: 'individual' | 'by-matter') {
+  try { localStorage.setItem('inbox-view-mode', v); } catch { /* silent */ }
+}
 
 // ─── Hook: linked instruction for a message ───
 function useLinkedInstruction(messageId: string | null) {
