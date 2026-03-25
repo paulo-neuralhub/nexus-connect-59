@@ -138,7 +138,7 @@ export function DynamicSidebar({
   const { data: ipoDocsCounts } = useIpoDocumentCounts();
 
   // Expandir/contraer secciones
-  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
+  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion", "operaciones"]));
   // Expandir/contraer módulos con sub-items
   const [expandedModules, setExpandedModules] = React.useState<Set<string>>(new Set(["docket"]));
 
