@@ -12,7 +12,7 @@ export function CommEmptyState() {
           <MessageSquare className="h-8 w-8 text-primary" />
         </div>
         <h3 className="text-base font-semibold text-foreground mb-1">
-          Bandeja Unificada
+          Inbox
         </h3>
         <p className="text-sm text-muted-foreground">
           Selecciona una conversación para ver los mensajes

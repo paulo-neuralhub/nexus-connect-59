@@ -3,7 +3,7 @@ import { Mail, MessageSquare, SlidersHorizontal, LayoutList, FileText, MessageCi
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { to: "/app/communications", label: "Bandeja Unificada", icon: LayoutList, end: true },
+  { to: "/app/communications", label: "Inbox", icon: LayoutList, end: true },
   { to: "/app/communications/internal", label: "Chat Interno", icon: MessageCircle },
   { to: "/app/communications/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { to: "/app/communications/email", label: "Email", icon: Mail },
@@ -19,7 +19,7 @@ export default function CommunicationsLayout() {
     <div className={cn("space-y-4", isUnifiedInbox && "space-y-3")}>
       {!isUnifiedInbox && (
         <header className="space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">Comunicaciones</h1>
+          <h1 className="text-2xl font-bold text-foreground">Inbox</h1>
           <p className="text-sm text-muted-foreground">Gestión omnicanal de comunicaciones</p>
         </header>
       )}

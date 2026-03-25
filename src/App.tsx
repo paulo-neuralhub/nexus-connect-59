@@ -445,7 +445,7 @@ const App = () => (
               <Route path="/app" element={<AppLayout />}>
                 <Route index element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="inbox" element={<InboxPage />} />
+                <Route path="inbox" element={<Navigate to="/app/communications" replace />} />
                 <Route path="approvals" element={<ApprovalsPage />} />
                 {/* Legacy Docket redirects to Expedientes V2 */}
                 <Route path="docket" element={<Navigate to="/app/expedientes" replace />} />
