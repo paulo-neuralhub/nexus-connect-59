@@ -69,23 +69,24 @@ function getUrgencyBadge(doc: IpoDocument) {
   const deadline = getDeadlineFromDoc(doc);
   if (!deadline) return null;
   const days = differenceInDays(new Date(deadline), new Date());
-  if (days < 0) return { label: '🔴 Vencido', color: '#EF4444', days };
-  if (days < 7) return { label: '🔴 CRÍTICO', color: '#EF4444', days };
-  if (days <= 30) return { label: '⚠️ Urgente', color: '#F97316', days };
-  if (days <= 90) return { label: '📅 Próximo', color: '#F59E0B', days };
-  return { label: `${days}d`, color: '#94A3B8', days };
+  if (days < 0) return { label: 'VENCIDO', color: '#DC2626', days, bg: 'bg-destructive/10' };
+  if (days < 7) return { label: `🔴 ${days}d`, color: '#DC2626', days, bg: 'bg-destructive/10' };
+  if (days <= 30) return { label: `${days} días`, color: '#B45309', days, bg: 'bg-amber-100' };
+  if (days <= 90) return { label: `${days} días`, color: '#2563EB', days, bg: 'bg-blue-50' };
+  if (days <= 365) return { label: `${days} días`, color: '#2563EB', days, bg: 'bg-blue-50' };
+  return { label: `${days}d`, color: '#94A3B8', days, bg: 'bg-muted' };
 }
 
 function getBorderColor(doc: IpoDocument) {
   if (doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending') return '#EF4444';
-  const urgency = getUrgencyBadge(doc);
-  if (!urgency) return '#E2E8F0';
-  if (urgency.days !== undefined) {
-    if (urgency.days < 7) return '#EF4444';
-    if (urgency.days <= 30) return '#F97316';
-    if (urgency.days <= 90) return '#F59E0B';
-  }
-  return '#E2E8F0';
+  const deadline = getDeadlineFromDoc(doc);
+  if (!deadline) return '#94A3B8';
+  const days = differenceInDays(new Date(deadline), new Date());
+  if (days < 7) return '#EF4444';
+  if (days < 30) return '#F97316';
+  if (days < 90) return '#F59E0B';
+  if (days < 365) return '#3B82F6';
+  return '#94A3B8';
 }
 
 function getConfidenceInfo(value: number) {
