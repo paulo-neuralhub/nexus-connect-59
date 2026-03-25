@@ -57,7 +57,7 @@ function KpiCard({ icon: Icon, label, value, sub }: {
   );
 }
 
-export function AccountOverviewTab({ account, contactsCount, dealsCount, mattersCount, activitiesCount }: Props) {
+export function AccountOverviewTab({ account, accountId, contactsCount, dealsCount, mattersCount, activitiesCount }: Props) {
   const rating = account.rating_stars ?? 0;
 
   return (
