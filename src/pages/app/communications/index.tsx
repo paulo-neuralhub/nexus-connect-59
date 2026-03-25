@@ -14,7 +14,7 @@ import { useProcessMessage } from '@/hooks/use-process-message';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import * as DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify';
 import {
   Mail, MessageCircle, Phone, ArrowLeft, Inbox as InboxIcon,
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
