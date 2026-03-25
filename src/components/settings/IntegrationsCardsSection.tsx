@@ -52,7 +52,7 @@ export function IntegrationsCardsSection() {
       if (error) throw error;
     },
     onSuccess: () => {
-      const qc = useQueryClient();
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-session-status"] });
       toast.success("WhatsApp desconectado");
     },
   });
