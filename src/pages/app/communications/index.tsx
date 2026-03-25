@@ -687,8 +687,12 @@ export default function CommunicationsUnifiedPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crmSheetOpen, setCrmSheetOpen] = useState(false);
   const [showFiltered, setShowFiltered] = useState(false);
+  const [viewMode, setViewMode] = useState<'individual' | 'by-matter'>(loadViewMode);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<MatterGroup | null>(null);
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { data: messagesWithMatter = [], isLoading: matterLoading } = useInboxMessagesWithMatter(channelFilter, statusFilter);
   const { data: filteredMsgs = [], isLoading: filteredLoading } = useFilteredMessages();
   const { data: filteredTodayCount = 0 } = useFilteredCount();
   const qcMain = useQueryClient();
@@ -702,7 +706,21 @@ export default function CommunicationsUnifiedPage() {
     return messages.filter(m => m.ai_category === categoryFilter);
   }, [messages, categoryFilter]);
 
-  const selectedMsg = useMemo(() => filteredMessages.find(m => m.id === selectedId) || null, [filteredMessages, selectedId]);
+  // Grouped data for by-matter view
+  const filteredMessagesWithMatter = useMemo(() => {
+    if (!categoryFilter) return messagesWithMatter;
+    if (categoryFilter === 'urgent') return messagesWithMatter.filter(m => (m.ai_urgency_score ?? 0) >= 7);
+    return messagesWithMatter.filter(m => m.ai_category === categoryFilter);
+  }, [messagesWithMatter, categoryFilter]);
+
+  const matterGroups = useInboxGrouped(filteredMessagesWithMatter as InboxMessage[]);
+
+  const selectedMsg = useMemo(() => {
+    if (viewMode === 'by-matter') {
+      return filteredMessagesWithMatter.find(m => m.id === selectedId) as InboxMessage | null || null;
+    }
+    return filteredMessages.find(m => m.id === selectedId) || null;
+  }, [filteredMessages, filteredMessagesWithMatter, selectedId, viewMode]);
 
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
