@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS uq_matter_deadlines_matter_rule ON matter_deadlines (matter_id, rule_code) WHERE rule_code IS NOT NULL;
