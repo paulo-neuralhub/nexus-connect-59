@@ -16,7 +16,7 @@ export default function CommunicationsLayout() {
   const isUnifiedInbox = location.pathname === '/app/communications';
 
   return (
-    <div className={cn("space-y-0", isUnifiedInbox && "space-y-0")}>
+    <div className={cn("space-y-0 min-h-0", isUnifiedInbox && "space-y-0 min-h-0 h-full flex flex-col")}>
       {!isUnifiedInbox && (
         <header className="space-y-1 px-6 pt-4">
           <h1 className="text-2xl font-bold text-foreground">Inbox</h1>
@@ -50,7 +50,7 @@ export default function CommunicationsLayout() {
           </NavLink>
         ))}
       </nav>
-      <main><Outlet /></main>
+      <main className={cn(isUnifiedInbox && "flex-1 min-h-0")}><Outlet /></main>
     </div>
   );
 }
