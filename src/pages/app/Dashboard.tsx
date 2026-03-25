@@ -12,6 +12,7 @@ import { useDashboardMetrics, DashboardWelcomeHeader } from "@/components/dashbo
 import { FeatureGuide } from "@/components/help";
 import { useContextualHelp } from "@/hooks/useContextualHelp";
 import { BriefingCard } from "@/components/copilot";
+import { PendingApprovalsWidget } from "@/components/dashboard/PendingApprovalsWidget";
  
  // Command Center Components
  import {
@@ -170,8 +171,11 @@ const Dashboard = () => {
        `}</style>
  
 
-         {/* CoPilot Briefing Card */}
-         <BriefingCard />
+          {/* Pending Approvals Widget */}
+          <PendingApprovalsWidget />
+
+          {/* CoPilot Briefing Card */}
+          <BriefingCard />
 
          {/* Welcome Header Card - Saludo + Búsqueda + Notificaciones + Perfil */}
          <DashboardWelcomeHeader plazosEstaSemana={data?.upcomingDeadlines || 0} />
