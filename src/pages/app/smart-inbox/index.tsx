@@ -431,8 +431,8 @@ function DetailPanel({
           </p>
           <div className="flex gap-1.5 mt-2">
             <Badge className={cn('text-[10px]', docType.bg)}>{docType.label}</Badge>
-            {urgency && urgency.days !== undefined && urgency.days <= 90 && (
-              <Badge className="text-[10px]" style={{ backgroundColor: urgency.color + '18', color: urgency.color }}>
+            {urgency && (
+              <Badge className={cn('text-[10px] border-0', urgency.bg)} style={{ color: urgency.color }}>
                 {urgency.label}
               </Badge>
             )}
