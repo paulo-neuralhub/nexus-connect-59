@@ -14,6 +14,7 @@ import { CalendarSidebar } from '@/components/features/calendario/CalendarSideba
 import { CalendarSettingsModal } from '@/components/features/calendario/CalendarSettingsModal';
 import { EventDetailSheet } from '@/components/features/calendario/EventDetailSheet';
 import { CreateEventModal } from '@/components/features/calendario/CreateEventModal';
+import { CalendarEventComponent } from '@/components/features/calendario/CalendarEventWrapper';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Localizer para español
