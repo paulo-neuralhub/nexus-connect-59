@@ -549,7 +549,7 @@ function ChannelSidebar({
   });
 
   return (
-    <div className="flex flex-col h-full py-3 space-y-0.5"
+    <div className="flex flex-col h-full py-3 space-y-0.5 overflow-y-auto"
       style={{ background: '#0f4c75', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Title */}
       <div className="flex items-center gap-2 px-4 mb-3">
