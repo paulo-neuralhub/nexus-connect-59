@@ -33,6 +33,7 @@ import {
   RAGDialog
 } from '@/components/backoffice/ai-brain';
 import { TaskRoutingTab } from '@/components/backoffice/ai-brain/TaskRoutingTab';
+import { PromptsTab } from '@/components/backoffice/ai-brain/PromptsTab';
 
 // Types
 import { 
@@ -322,6 +323,7 @@ export default function AIBrainPage() {
           <TabsTrigger value="providers">Providers</TabsTrigger>
           <TabsTrigger value="models">Modelos</TabsTrigger>
           <TabsTrigger value="router">Routing</TabsTrigger>
+          <TabsTrigger value="prompts">Prompts</TabsTrigger>
           <TabsTrigger value="circuit">Circuit Breaker</TabsTrigger>
           <TabsTrigger value="rag">RAG</TabsTrigger>
           <TabsTrigger value="knowledge">Knowledge Bases</TabsTrigger>
@@ -361,6 +363,10 @@ export default function AIBrainPage() {
 
         <TabsContent value="router" className="space-y-4">
           <TaskRoutingTab />
+        </TabsContent>
+
+        <TabsContent value="prompts" className="space-y-4">
+          <PromptsTab />
         </TabsContent>
 
         <TabsContent value="circuit" className="space-y-4">
