@@ -842,7 +842,7 @@ export default function CommunicationsUnifiedPage() {
       )}
 
       {/* Col 2 + 3: Resizable panels */}
-      <ResizablePanelGroup direction="horizontal"
+      <ResizablePanelGroup direction="horizontal" className="h-full"
         onLayout={(sizes) => savePanelSizes(sizes)}>
         <ResizablePanel
           defaultSize={savedSizes?.[0] ?? 32}
