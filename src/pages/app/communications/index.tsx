@@ -727,6 +727,30 @@ export default function CommunicationsUnifiedPage() {
     if (isMobile) setMobileView('detail');
   }, [isMobile]);
 
+  const handleViewModeChange = useCallback((mode: 'individual' | 'by-matter') => {
+    if (mode === viewMode) return;
+    setViewMode(mode);
+    saveViewMode(mode);
+    if (mode === 'individual' && selectedGroup) {
+      // Keep last message selected
+      setSelectedId(selectedGroup.lastMessage.id);
+      setSelectedGroup(null);
+      setExpandedGroupId(null);
+    } else if (mode === 'by-matter' && selectedId) {
+      // Find the group this message belongs to and expand it
+      const group = matterGroups.find(g => g.messages.some(m => m.id === selectedId));
+      if (group) {
+        setSelectedGroup(group);
+        setExpandedGroupId(group.matterId || '__unlinked__');
+      }
+    }
+  }, [viewMode, selectedGroup, selectedId, matterGroups]);
+
+  const handleGroupSelectMessage = useCallback((msgId: string, group: MatterGroup) => {
+    setSelectedId(msgId);
+    setSelectedGroup(group);
+  }, []);
+
   const togglePrivateMode = useCallback(() => {
     setPrivateMode(prev => { const next = !prev; savePrivateMode(next); return next; });
   }, []);
