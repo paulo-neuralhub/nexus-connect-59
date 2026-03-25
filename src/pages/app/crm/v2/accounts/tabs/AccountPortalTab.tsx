@@ -147,7 +147,7 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
             Estado del Portal
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Estado del acceso</span>
             {isActive ? (
@@ -155,11 +155,25 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
                 <CheckCircle2 className="w-3 h-3 mr-1" /> Activo
               </Badge>
             ) : isInvited ? (
-              <Badge className="bg-amber-100 text-amber-700 border-amber-200">Invitado — Pendiente</Badge>
+              <Badge className="bg-amber-100 text-amber-700 border-amber-200">📨 Invitado — Pendiente</Badge>
             ) : (
               <Badge variant="outline">Sin acceso</Badge>
             )}
           </div>
+
+          {isActive && portalAccess?.activated_at && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Activo desde</span>
+              <span>{format(new Date(portalAccess.activated_at), "d MMM yyyy", { locale: es })}</span>
+            </div>
+          )}
+
+          {isInvited && !isActive && portalAccess?.invited_at && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Invitación enviada</span>
+              <span>{format(new Date(portalAccess.invited_at), "d MMM yyyy", { locale: es })}</span>
+            </div>
+          )}
 
           {hasPortal && crmAccount?.portal_last_login && (
             <div className="flex items-center justify-between text-sm">
@@ -172,6 +186,25 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Accesos totales</span>
               <span>{crmAccount.portal_login_count}</span>
+            </div>
+          )}
+
+          {/* Permisos activos */}
+          {isActive && portalAccess && (
+            <div className="space-y-2 pt-2 border-t">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Permisos activos</p>
+              <div className="grid grid-cols-2 gap-1 text-sm">
+                {portalAccess.can_view_matters && <span className="text-muted-foreground">✅ Ver expedientes</span>}
+                {portalAccess.can_view_documents && <span className="text-muted-foreground">✅ Ver documentos</span>}
+                {portalAccess.can_view_deadlines && <span className="text-muted-foreground">✅ Ver plazos</span>}
+                {portalAccess.can_view_alerts && <span className="text-muted-foreground">✅ Ver alertas</span>}
+                {portalAccess.can_view_invoices && <span className="text-muted-foreground">✅ Ver facturas</span>}
+                {portalAccess.can_message_despacho && <span className="text-muted-foreground">✅ Enviar mensajes</span>}
+                {portalAccess.can_submit_instructions && <span className="text-muted-foreground">✅ Enviar instrucciones</span>}
+                {portalAccess.can_sign_documents && <span className="text-muted-foreground">✅ Firmar documentos</span>}
+                {portalAccess.can_request_services && <span className="text-muted-foreground">✅ Solicitar servicios</span>}
+                {portalAccess.can_pay_invoices && <span className="text-muted-foreground">✅ Pagar facturas</span>}
+              </div>
             </div>
           )}
 
@@ -190,7 +223,18 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
                 <Eye className="w-4 h-4 mr-1" /> Ver como cliente
               </Button>
             )}
-            {!hasPortal && (
+            {isInvited && !isActive && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => inviteMutation.mutate()}
+                disabled={inviteMutation.isPending}
+              >
+                <Send className="w-4 h-4 mr-1" />
+                {inviteMutation.isPending ? 'Reenviando...' : 'Reenviar invitación'}
+              </Button>
+            )}
+            {!isActive && !isInvited && (
               <Button
                 size="sm"
                 onClick={() => inviteMutation.mutate()}
