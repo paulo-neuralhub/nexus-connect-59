@@ -845,6 +845,34 @@ export default function CommunicationsUnifiedPage() {
     </div>
   );
 
+  // ─── View mode toggle component ───
+  const viewToggle = (
+    <div className="flex items-center gap-1 bg-[#F1F5F9] rounded-lg p-0.5">
+      <button
+        onClick={() => handleViewModeChange('individual')}
+        className={cn(
+          'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150',
+          viewMode === 'individual'
+            ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] shadow-sm'
+            : 'text-[#64748B] hover:text-foreground'
+        )}
+      >
+        ☰ Individual
+      </button>
+      <button
+        onClick={() => handleViewModeChange('by-matter')}
+        className={cn(
+          'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150',
+          viewMode === 'by-matter'
+            ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] shadow-sm'
+            : 'text-[#64748B] hover:text-foreground'
+        )}
+      >
+        📁 Por Expediente
+      </button>
+    </div>
+  );
+
   // ─── Message list content ───
   const messageListContent = (
     <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[#F1F5F9]">
@@ -852,14 +880,15 @@ export default function CommunicationsUnifiedPage() {
       <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-center gap-2">
-          {/* Hamburger for tablet */}
           {isTablet && (
             <Button variant="ghost" size="icon" className="h-8 w-8"
               onClick={() => setSidebarOpen(true)}>
               <Menu className="h-4 w-4" />
             </Button>
           )}
-          <span className="text-sm font-semibold">{filteredMessages.length} mensajes</span>
+          <span className="text-sm font-semibold">
+            {viewMode === 'by-matter' ? `${matterGroups.length} expedientes` : `${filteredMessages.length} mensajes`}
+          </span>
           {filteredTodayCount > 0 && (
             <button onClick={handleToggleFiltered}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
@@ -868,7 +897,7 @@ export default function CommunicationsUnifiedPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* Private mode toggle */}
+          {viewToggle}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePrivateMode}
             title={privateMode ? 'Desactivar modo privado' : 'Activar modo privado'}>
             {privateMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -913,10 +942,22 @@ export default function CommunicationsUnifiedPage() {
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {isLoading ? (
+        {(viewMode === 'individual' ? isLoading : matterLoading) ? (
           <div className="p-4 space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-[10px]" />)}
           </div>
+        ) : viewMode === 'by-matter' ? (
+          matterGroups.length === 0 ? (
+            <EmptyStateNoMessages />
+          ) : (
+            <MatterGroupList
+              groups={matterGroups}
+              selectedMessageId={selectedId}
+              expandedGroupId={expandedGroupId}
+              onExpandGroup={setExpandedGroupId}
+              onSelectMessage={handleGroupSelectMessage}
+            />
+          )
         ) : filteredMessages.length === 0 ? (
           <EmptyStateNoMessages />
         ) : (
