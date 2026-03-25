@@ -33,7 +33,7 @@ export function UrgencyBanner() {
         variant="ghost"
         size="sm"
         className="text-white hover:text-white hover:bg-white/20 text-xs h-7"
-        onClick={() => navigate('/app/inbox')}
+        onClick={() => navigate('/app/communications')}
       >
         Ver <ArrowRight className="h-3 w-3 ml-1" />
       </Button>
