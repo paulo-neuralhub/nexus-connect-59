@@ -1075,8 +1075,32 @@ export default function CommunicationsUnifiedPage() {
             {/* Detail */}
             <div className="flex-1 flex flex-col min-w-0 relative">
               {selectedMsg ? (
-                <MessageDetail msg={selectedMsg} organizationId={organizationId}
-                  onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+                <>
+                  {/* Matter thread timeline (only in by-matter mode with a group) */}
+                  {viewMode === 'by-matter' && selectedGroup && selectedGroup.messages.length > 1 && (
+                    <MatterThreadTimeline
+                      messages={selectedGroup.messages}
+                      selectedMessageId={selectedId}
+                      matterReference={selectedGroup.matter?.reference}
+                      matterTitle={selectedGroup.matter?.title}
+                      onSelectMessage={(id) => setSelectedId(id)}
+                    />
+                  )}
+                  {/* Matter group header */}
+                  {viewMode === 'by-matter' && selectedGroup?.matter && (
+                    <div className="px-6 py-2 border-b border-[#F1F5F9] bg-white flex items-center gap-2">
+                      <span className="text-sm">📁</span>
+                      <span className="text-sm font-semibold text-[#0a2540]">
+                        {selectedGroup.matter.reference} — {selectedGroup.matter.title}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {selectedGroup.messages.length} mensajes en este expediente
+                      </span>
+                    </div>
+                  )}
+                  <MessageDetail msg={selectedMsg} organizationId={organizationId}
+                    onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+                </>
               ) : (
                 <EmptyDetailState />
               )}
@@ -1091,11 +1115,15 @@ export default function CommunicationsUnifiedPage() {
               )}
             </div>
 
-            {/* Col 4 — CRM panel (>1280px) */}
+            {/* Col 4 — CRM or Matter panel (>1280px) */}
             {showCRMPanel && (
               <div className="w-[260px] flex-shrink-0 overflow-y-auto border-l border-[#E2E8F0]"
                 style={{ background: '#F8FAFC' }}>
-                {selectedMsg ? <CRMContextPanel msg={selectedMsg} /> : (
+                {viewMode === 'by-matter' && selectedGroup ? (
+                  <MatterDetailPanel group={selectedGroup} selectedMsg={selectedMsg} />
+                ) : selectedMsg ? (
+                  <CRMContextPanel msg={selectedMsg} />
+                ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-4">
                     Contexto CRM
                   </div>
@@ -1111,7 +1139,11 @@ export default function CommunicationsUnifiedPage() {
         <Sheet open={crmSheetOpen} onOpenChange={setCrmSheetOpen}>
           <SheetContent side="right" className="w-[300px] p-0" style={{ background: '#F8FAFC' }}>
             <SheetHeader className="sr-only"><SheetTitle>Cliente</SheetTitle></SheetHeader>
-            {selectedMsg && <CRMContextPanel msg={selectedMsg} />}
+            {viewMode === 'by-matter' && selectedGroup ? (
+              <MatterDetailPanel group={selectedGroup} selectedMsg={selectedMsg} />
+            ) : selectedMsg ? (
+              <CRMContextPanel msg={selectedMsg} />
+            ) : null}
           </SheetContent>
         </Sheet>
       )}
