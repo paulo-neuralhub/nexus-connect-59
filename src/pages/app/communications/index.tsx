@@ -680,7 +680,7 @@ export default function CommunicationsUnifiedPage() {
 
   // ─── Message list content ───
   const messageListContent = (
-    <div className="flex flex-col flex-1 min-h-0 bg-[#F1F5F9]">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-[#F1F5F9]">
       {/* Header */}
       <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
