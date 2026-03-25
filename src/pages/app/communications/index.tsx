@@ -1,5 +1,5 @@
 // ============================================================
-// IP-NEXUS — Unified Inbox (redesigned 3+1 panel layout)
+// IP-NEXUS — Unified Inbox (redesigned 3+1 panel layout v2)
 // ============================================================
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
