@@ -739,7 +739,7 @@ export default function CommunicationsUnifiedPage() {
           ))}
         </div>
       )}
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="p-4 space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-[10px]" />)}
@@ -760,7 +760,7 @@ export default function CommunicationsUnifiedPage() {
             ))}
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 
