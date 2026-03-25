@@ -212,7 +212,6 @@ export default function CalendarioPage() {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                titleAccessor={eventTitleAccessor}
                 view={view}
                 onView={handleViewChange}
                 date={date}
@@ -220,6 +219,7 @@ export default function CalendarioPage() {
                 onSelectEvent={handleSelectEvent}
                 onSelectSlot={handleSelectSlot}
                 eventPropGetter={eventStyleGetter}
+                components={calendarComponents}
                 messages={calendarMessages}
                 culture="es"
                 popup
