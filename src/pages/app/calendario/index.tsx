@@ -215,6 +215,7 @@ export default function CalendarioPage() {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
+                titleAccessor={eventTitleAccessor}
                 view={view}
                 onView={handleViewChange}
                 date={date}
