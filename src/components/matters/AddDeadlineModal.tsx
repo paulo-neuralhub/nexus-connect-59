@@ -2,34 +2,21 @@
  * AddDeadlineModal - Modal para añadir plazo al expediente
  */
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Calendar } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useCreateMatterDeadline } from '@/hooks/use-matter-deadlines';
 import { useToast } from '@/hooks/use-toast';
@@ -51,11 +38,19 @@ interface AddDeadlineModalProps {
 }
 
 const DEADLINE_TYPES = [
-  { value: 'official', label: 'Plazo Oficial' },
-  { value: 'internal', label: 'Plazo Interno' },
+  { value: 'prosecution', label: 'Prosecution' },
   { value: 'renewal', label: 'Renovación' },
-  { value: 'response', label: 'Plazo de Respuesta' },
+  { value: 'opposition', label: 'Oposición' },
+  { value: 'filing', label: 'Presentación' },
+  { value: 'office_action_response', label: 'Office Action' },
+  { value: 'maintenance', label: 'Mantenimiento' },
   { value: 'other', label: 'Otro' },
+];
+
+const PRIORITIES = [
+  { value: 'critical', label: 'Crítico' },
+  { value: 'high', label: 'Alto' },
+  { value: 'normal', label: 'Normal' },
 ];
 
 export function AddDeadlineModal({ open, onOpenChange, matterId }: AddDeadlineModalProps) {
@@ -67,8 +62,9 @@ export function AddDeadlineModal({ open, onOpenChange, matterId }: AddDeadlineMo
     defaultValues: {
       title: '',
       description: '',
-      deadline_type: 'internal',
-      due_date: '',
+      deadline_type: 'other',
+      deadline_date: '',
+      priority: 'normal',
     },
   });
 
@@ -79,7 +75,8 @@ export function AddDeadlineModal({ open, onOpenChange, matterId }: AddDeadlineMo
         title: data.title,
         description: data.description || null,
         deadline_type: data.deadline_type,
-        due_date: data.due_date,
+        deadline_date: data.deadline_date,
+        priority: data.priority,
       });
       toast({ title: 'Plazo añadido' });
       form.reset();
@@ -101,84 +98,61 @@ export function AddDeadlineModal({ open, onOpenChange, matterId }: AddDeadlineMo
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Título</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Respuesta a requerimiento" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="title" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Título</FormLabel>
+                <FormControl><Input placeholder="Ej: Respuesta a requerimiento" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
 
-            <FormField
-              control={form.control}
-              name="deadline_type"
-              render={({ field }) => (
+            <div className="grid grid-cols-2 gap-3">
+              <FormField control={form.control} name="deadline_type" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona tipo" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {DEADLINE_TYPES.map(type => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
+                      {DEADLINE_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
+              )} />
 
-            <FormField
-              control={form.control}
-              name="due_date"
-              render={({ field }) => (
+              <FormField control={form.control} name="priority" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Fecha de vencimiento</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <FormLabel>Prioridad</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Prioridad" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {PRIORITIES.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
+              )} />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción (opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Notas adicionales..."
-                      rows={3}
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="deadline_date" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fecha de vencimiento</FormLabel>
+                <FormControl><Input type="date" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descripción (opcional)</FormLabel>
+                <FormControl><Textarea placeholder="Notas adicionales..." rows={3} {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={createDeadline.isPending}>
-                Añadir plazo
-              </Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+              <Button type="submit" disabled={createDeadline.isPending}>Añadir plazo</Button>
             </div>
           </form>
         </Form>
