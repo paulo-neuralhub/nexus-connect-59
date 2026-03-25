@@ -168,6 +168,9 @@ export function AccountOverviewTab({ account, accountId, contactsCount, dealsCou
         </Card>
       </div>
 
+      {/* Team Card */}
+      {accountId && <AccountTeamCard accountId={accountId} />}
+
       {/* Notes */}
       {account.notes && (
         <Card>
