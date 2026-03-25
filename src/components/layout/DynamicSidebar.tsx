@@ -173,7 +173,7 @@ export function DynamicSidebar({
     deadlines: 0,
     tasks: 0,
     instructions: instructionsPendingCount,
-    inbox: inboxCount,
+    communications: inboxCount,
     approvals: approvalsCountData?.total || 0,
   };
 
