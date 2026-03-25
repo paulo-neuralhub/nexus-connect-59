@@ -12,6 +12,11 @@ const JURISDICTION_ALIASES: Record<string, string[]> = {
   PCT: ["PCT", "WO"],
 };
 
+// Some IANA timezone names aren't supported in Deno's Intl
+const TIMEZONE_FALLBACKS: Record<string, string> = {
+  "Europe/Munich": "Europe/Berlin",
+};
+
 function calculateDeadlineInTimezone(
   baseDate: Date,
   value: number,
