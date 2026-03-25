@@ -12,6 +12,8 @@ import { useSidebarMenu, type SidebarModule, type SidebarSection } from "@/hooks
 import { usePendingSignaturesCount } from "@/hooks/signatures";
 import { useAlertStats } from "@/hooks/usePredictiveAlerts";
 import { useInstructionsPendingCount } from "@/hooks/use-instructions";
+import { useInboxCount } from "@/hooks/use-inbox";
+import { useApprovalsCount } from "@/hooks/use-approvals";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
@@ -20,7 +22,7 @@ import {
   Code, Upload, Wallet, Briefcase, GitBranch, PenTool, Clock, Bell, MessageSquare, 
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
-  Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench,
+  Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
   Users2, KanbanSquare, Cpu
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
