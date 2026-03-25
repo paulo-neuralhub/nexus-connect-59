@@ -72,8 +72,14 @@ export function useCreateMatter() {
       if (error) throw error;
       return matter;
     },
-    onSuccess: () => {
+    onSuccess: (result: any) => {
       queryClient.invalidateQueries({ queryKey: ['matters'] });
+      // Auto-generate deadlines for the new matter
+      if (result?.id) {
+        supabase.functions.invoke('generate-matter-deadlines', {
+          body: { matter_id: result.id, event_type: 'created' },
+        }).catch(console.error);
+      }
     },
   });
 }
@@ -92,9 +98,21 @@ export function useUpdateMatter() {
       if (error) throw error;
       return matter;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ['matters'] });
       queryClient.invalidateQueries({ queryKey: ['matter', variables.id] });
+      // Re-generate deadlines when key fields change
+      const triggerFields = ['status', 'registration_date', 'expiry_date', 'filing_date'];
+      const changedField = triggerFields.find(f => f in variables.data);
+      if (changedField) {
+        supabase.functions.invoke('generate-matter-deadlines', {
+          body: {
+            matter_id: variables.id,
+            event_type: changedField === 'status' ? 'status_changed' : 'date_updated',
+            trigger_field: changedField,
+          },
+        }).catch(console.error);
+      }
     },
   });
 }
