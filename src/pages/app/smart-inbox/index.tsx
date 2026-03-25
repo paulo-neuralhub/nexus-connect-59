@@ -1,236 +1,569 @@
 /**
- * Smart Inbox — /app/smart-inbox
- * Procesamiento de documentos de oficinas PI
+ * Documentos Oficiales — /app/smart-inbox
+ * IPO document processing with 2-panel layout
  */
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NeoBadge } from '@/components/ui/neo-badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Upload, Settings, CheckCircle, AlertTriangle, Clock, Search, FileText, ArrowRight, Inbox } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Building2, Upload, CheckCircle, AlertTriangle, Clock, Search, FileText,
+  ArrowRight, Loader2, Zap, Download, ExternalLink
+} from 'lucide-react';
 import { toast } from 'sonner';
+import { useIpoDocuments, type IpoDocument } from '@/hooks/use-ipo-documents';
+import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow, differenceInDays, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
 
-interface IncomingDocument {
-  id: string;
-  source_type: string;
-  source_email_from: string | null;
-  source_ipo_code: string | null;
-  parsing_status: 'pending' | 'parsed' | 'low_confidence' | 'manual_review' | 'error';
-  processing_status: 'unprocessed' | 'processed' | 'partial' | 'failed';
-  match_confidence: number | null;
-  matched_matter_title: string | null;
-  matched_matter_ref: string | null;
-  parsed_data: {
-    application_number?: string;
-    mark_name?: string;
-    action_type?: string;
-    deadline_date?: string;
-    summary_text?: string;
-  };
-  actions_taken: string[];
-  received_at: string;
+// ── Helpers ──
+const FLAG_MAP: Record<string, string> = {
+  US: '🇺🇸', USPTO: '🇺🇸',
+  EM: '🇪🇺', EUIPO: '🇪🇺',
+  EP: '🏛️', EPO: '🏛️',
+  ES: '🇪🇸', OEPM: '🇪🇸',
+  JP: '🇯🇵', JPO: '🇯🇵',
+  CN: '🇨🇳', CNIPA: '🇨🇳',
+  KR: '🇰🇷', KIPO: '🇰🇷',
+  GB: '🇬🇧', UKIPO: '🇬🇧',
+};
+
+const OFFICE_NAME_MAP: Record<string, string> = {
+  US: 'USPTO', EM: 'EUIPO', EP: 'EPO', ES: 'OEPM', JP: 'JPO',
+};
+
+function getFlag(code: string | null) {
+  if (!code) return '🌐';
+  return FLAG_MAP[code.toUpperCase()] || '🌐';
 }
 
-const MOCK_DOCS: IncomingDocument[] = [
-  {
-    id: 'd1', source_type: 'email', source_email_from: 'notifications@euipo.europa.eu', source_ipo_code: 'EUIPO',
-    parsing_status: 'parsed', processing_status: 'processed', match_confidence: 0.95,
-    matched_matter_title: 'NEXUS — EUIPO', matched_matter_ref: 'NX-2024-001',
-    parsed_data: { application_number: 'TM 018123456', mark_name: 'NEXUS', action_type: 'registration', deadline_date: '15/08/2026', summary_text: 'Registro confirmado de marca NEXUS' },
-    actions_taken: ['Plazo creado', 'Notificación enviada'], received_at: '09:15 hoy',
-  },
-  {
-    id: 'd2', source_type: 'email', source_email_from: 'office@uspto.gov', source_ipo_code: 'USPTO',
-    parsing_status: 'low_confidence', processing_status: 'unprocessed', match_confidence: 0.60,
-    matched_matter_title: null, matched_matter_ref: null,
-    parsed_data: { application_number: '88/123,456', action_type: 'office_action', summary_text: 'Office Action — likelihood of confusion' },
-    actions_taken: [], received_at: '08:45 hoy',
-  },
-  {
-    id: 'd3', source_type: 'manual_upload', source_email_from: null, source_ipo_code: 'OEPM',
-    parsing_status: 'parsed', processing_status: 'processed', match_confidence: 0.90,
-    matched_matter_title: 'BETA — OEPM', matched_matter_ref: 'BT-2024-001',
-    parsed_data: { application_number: 'M4012345', mark_name: 'BETA', action_type: 'renewal_due', deadline_date: '01/09/2026', summary_text: 'Aviso de renovación' },
-    actions_taken: ['Plazo creado'], received_at: 'ayer',
-  },
-  {
-    id: 'd4', source_type: 'email', source_email_from: 'info@jpo.go.jp', source_ipo_code: 'JPO',
-    parsing_status: 'manual_review', processing_status: 'unprocessed', match_confidence: 0.30,
-    matched_matter_title: null, matched_matter_ref: null,
-    parsed_data: { summary_text: 'Documento en japonés — requiere revisión manual' },
-    actions_taken: [], received_at: 'hace 2 días',
-  },
-];
+function getOfficeName(code: string | null, parsed: any) {
+  if (parsed?.office_name) return parsed.office_name;
+  if (!code) return 'Desconocida';
+  return OFFICE_NAME_MAP[code.toUpperCase()] || code.toUpperCase();
+}
 
-const MOCK_SUGGESTIONS = [
-  { id: 's1', title: 'ALPHA — USPTO', ref: 'AL-2025-001' },
-  { id: 's2', title: 'BETA — USPTO', ref: 'BT-2025-002' },
-];
+function getDocTypeBadge(docType: string | undefined) {
+  switch (docType) {
+    case 'office_action': return { label: 'OA', bg: 'bg-orange-100 text-orange-700' };
+    case 'publication_notice': return { label: 'Publicación', bg: 'bg-blue-100 text-blue-700' };
+    case 'registration_certificate': return { label: 'Certificado', bg: 'bg-emerald-100 text-emerald-700' };
+    case 'rejection': return { label: 'Denegación', bg: 'bg-red-100 text-red-700' };
+    default: return { label: 'Documento', bg: 'bg-muted text-muted-foreground' };
+  }
+}
 
+function getDeadlineFromDoc(doc: IpoDocument): string | null {
+  const pd = doc.parsed_data;
+  if (!pd) return null;
+  return pd.response_deadline_date || pd.opposition_deadline || pd.expiry_date || null;
+}
+
+function getUrgencyBadge(doc: IpoDocument) {
+  const deadline = getDeadlineFromDoc(doc);
+  if (!deadline) return null;
+  const days = differenceInDays(new Date(deadline), new Date());
+  if (days < 0) return { label: '🔴 Vencido', color: '#EF4444', days };
+  if (days < 7) return { label: '🔴 CRÍTICO', color: '#EF4444', days };
+  if (days <= 30) return { label: '⚠️ Urgente', color: '#F97316', days };
+  if (days <= 90) return { label: '📅 Próximo', color: '#F59E0B', days };
+  return { label: `${days}d`, color: '#94A3B8', days };
+}
+
+function getBorderColor(doc: IpoDocument) {
+  if (doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending') return '#EF4444';
+  const urgency = getUrgencyBadge(doc);
+  if (!urgency) return '#E2E8F0';
+  if (urgency.days !== undefined) {
+    if (urgency.days < 7) return '#EF4444';
+    if (urgency.days <= 30) return '#F97316';
+    if (urgency.days <= 90) return '#F59E0B';
+  }
+  return '#E2E8F0';
+}
+
+function getConfidenceInfo(value: number) {
+  const pct = Math.round(value * 100);
+  if (pct >= 90) return { pct, color: '#10B981', label: 'Alta confianza' };
+  if (pct >= 70) return { pct, color: '#F59E0B', label: 'Confianza media — revisar' };
+  return { pct, color: '#EF4444', label: 'Baja confianza — revisión manual requerida' };
+}
+
+// ── Component ──
 export default function SmartInboxPage() {
-  const [tab, setTab] = useState('unprocessed');
-  const [docs, setDocs] = useState(MOCK_DOCS);
-  const [searchMatter, setSearchMatter] = useState('');
-  const [assignModal, setAssignModal] = useState<string | null>(null);
+  const { data: documents = [], isLoading } = useIpoDocuments();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [tab, setTab] = useState('auto');
+  const [searchModal, setSearchModal] = useState(false);
+  const [matterSearch, setMatterSearch] = useState('');
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const unprocessed = docs.filter(d => d.processing_status === 'unprocessed');
-  const manualReview = docs.filter(d => d.parsing_status === 'manual_review' || d.parsing_status === 'low_confidence');
-  const processed = docs.filter(d => d.processing_status === 'processed');
+  // Counts
+  const counts = useMemo(() => {
+    const pending = documents.filter(d => d.processing_status === 'unprocessed' && d.parsing_status === 'pending').length;
+    const manual = documents.filter(d => d.processing_status === 'unprocessed' && d.parsing_status !== 'pending').length;
+    const processed = documents.filter(d => d.processing_status === 'processed').length;
+    return { pending, manual, processed, all: documents.length };
+  }, [documents]);
 
-  const filtered = tab === 'unprocessed' ? unprocessed
-    : tab === 'manual_review' ? manualReview
-    : tab === 'processed' ? processed
-    : docs;
+  // Auto-select default tab
+  const activeTab = tab === 'auto'
+    ? (counts.pending > 0 ? 'pending' : counts.manual > 0 ? 'manual_review' : 'all')
+    : tab;
 
-  const assignToMatter = (docId: string, matterTitle: string) => {
-    setDocs(prev => prev.map(d => d.id === docId
-      ? { ...d, matched_matter_title: matterTitle, match_confidence: 1.0, processing_status: 'processed' as const, parsing_status: 'parsed' as const, actions_taken: ['Asignado manualmente', 'Plazo creado'] }
-      : d
-    ));
-    setAssignModal(null);
-    toast.success(`Documento asignado a ${matterTitle}`);
+  // Filter
+  const filtered = useMemo(() => {
+    switch (activeTab) {
+      case 'pending': return documents.filter(d => d.processing_status === 'unprocessed' && d.parsing_status === 'pending');
+      case 'manual_review': return documents.filter(d => d.processing_status === 'unprocessed' && d.parsing_status !== 'pending');
+      case 'processed': return documents.filter(d => d.processing_status === 'processed');
+      default: return documents;
+    }
+  }, [documents, activeTab]);
+
+  const selected = documents.find(d => d.id === selectedId) || null;
+
+  const handleAnalyze = async (docId: string) => {
+    toast.info('🤖 IP-GENIUS está analizando el documento. Recibirás una notificación cuando termine.');
+    try {
+      const client: any = supabase;
+      await client
+        .from('ipo_incoming_documents')
+        .update({ parsing_status: 'manual_review' })
+        .eq('id', docId);
+      queryClient.invalidateQueries({ queryKey: ['ipo-documents'] });
+    } catch { /* silent */ }
+  };
+
+  const handleMarkProcessed = async (docId: string) => {
+    try {
+      const client: any = supabase;
+      await client
+        .from('ipo_incoming_documents')
+        .update({ processing_status: 'processed', processed_at: new Date().toISOString() })
+        .eq('id', docId);
+      queryClient.invalidateQueries({ queryKey: ['ipo-documents'] });
+      queryClient.invalidateQueries({ queryKey: ['ipo-document-counts'] });
+      toast.success('✅ Documento marcado como procesado');
+    } catch { /* silent */ }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">📥 Smart Inbox — Documentos de Oficinas PI</h1>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-primary" />
+            Documentos Oficiales
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Notificaciones de oficinas IP</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Upload className="w-3.5 h-3.5" /> Subir documento
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Settings className="w-3.5 h-3.5" /> Configurar email
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Upload className="w-3.5 h-3.5" /> Subir documento
+        </Button>
       </div>
 
-      {/* KPI Badges */}
-      <div className="flex gap-4 flex-wrap">
-        <NeoBadge value={unprocessed.length} label="Sin procesar" color="#EF4444" size="lg" />
-        <NeoBadge value={docs.filter(d => d.processing_status === 'processed' && d.received_at.includes('hoy')).length} label="Auto-match hoy" color="#10B981" size="lg" />
-        <NeoBadge value={manualReview.length} label="Rev. manual" color="#F59E0B" size="lg" />
-        <NeoBadge value={processed.length} label="Procesados" color="#3B82F6" size="lg" />
+      {/* KPI Pills */}
+      <div className="flex gap-3 flex-wrap">
+        <KpiPill icon="🔴" label="Sin procesar" count={counts.pending} color="bg-red-50 text-red-700 border-red-200" />
+        <KpiPill icon="🟡" label="Revisión manual" count={counts.manual} color="bg-amber-50 text-amber-700 border-amber-200" />
+        <KpiPill icon="🔵" label="Procesados" count={counts.processed} color="bg-blue-50 text-blue-700 border-blue-200" />
       </div>
 
       {/* Tabs */}
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={activeTab} onValueChange={v => setTab(v)}>
         <TabsList>
-          <TabsTrigger value="unprocessed" className="text-xs gap-1">
-            Sin procesar {unprocessed.length > 0 && <Badge variant="destructive" className="h-4 px-1 text-[9px]">{unprocessed.length}</Badge>}
+          <TabsTrigger value="pending" className="text-xs gap-1">
+            Sin procesar {counts.pending > 0 && <Badge variant="destructive" className="h-4 px-1 text-[9px]">{counts.pending}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="manual_review" className="text-xs">Revisión manual ({manualReview.length})</TabsTrigger>
-          <TabsTrigger value="processed" className="text-xs">Procesados ({processed.length})</TabsTrigger>
-          <TabsTrigger value="all" className="text-xs">Todos</TabsTrigger>
+          <TabsTrigger value="manual_review" className="text-xs">Revisión manual ({counts.manual})</TabsTrigger>
+          <TabsTrigger value="processed" className="text-xs">Procesados ({counts.processed})</TabsTrigger>
+          <TabsTrigger value="all" className="text-xs">Todos ({counts.all})</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {/* Documents */}
-      <div className="space-y-3">
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            <Inbox className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>No hay documentos en esta categoría</p>
-          </div>
-        )}
-        {filtered.map(doc => (
-          <Card key={doc.id} className={
-            doc.parsing_status === 'manual_review' || doc.parsing_status === 'low_confidence'
-              ? 'border-amber-200 bg-amber-50/30' : ''
-          }>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {doc.processing_status === 'processed' && (
-                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[10px]">
-                        ✅ Auto-matched ({Math.round((doc.match_confidence || 0) * 100)}%)
-                      </Badge>
-                    )}
-                    {doc.parsing_status === 'low_confidence' && (
-                      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px]">
-                        ⚠️ Revisión manual ({Math.round((doc.match_confidence || 0) * 100)}%)
-                      </Badge>
-                    )}
-                    {doc.parsing_status === 'manual_review' && (
-                      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-[10px]">
-                        ⚠️ Revisión manual
-                      </Badge>
-                    )}
-                    <span className="text-xs text-muted-foreground">{doc.received_at}</span>
-                  </div>
-                  <h3 className="font-semibold text-sm">
-                    {doc.source_type === 'email' ? 'Email' : 'Subida manual'} {doc.source_ipo_code} — {doc.parsed_data.action_type === 'registration' ? 'Registro confirmado' : doc.parsed_data.action_type === 'office_action' ? 'Office Action' : doc.parsed_data.action_type === 'renewal_due' ? 'Aviso de renovación' : doc.parsed_data.summary_text?.substring(0, 50)}
-                  </h3>
-                  {doc.matched_matter_title && (
-                    <div className="text-xs text-muted-foreground">
-                      Expediente: <span className="font-medium text-foreground">{doc.matched_matter_title}</span> ({doc.matched_matter_ref})
-                    </div>
-                  )}
-                  {doc.parsed_data.application_number && (
-                    <div className="text-xs text-muted-foreground">
-                      Nº {doc.parsed_data.application_number}
-                      {doc.parsed_data.deadline_date && ` · Plazo: ${doc.parsed_data.deadline_date}`}
-                    </div>
-                  )}
-                  {doc.actions_taken.length > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      Acciones: {doc.actions_taken.map(a => `${a} ✓`).join(' · ')}
-                    </div>
-                  )}
+      {/* 2-Panel Layout */}
+      <div className="flex gap-4 min-h-[500px]">
+        {/* Left: List */}
+        <div className="w-full lg:w-[40%] space-y-2 overflow-auto max-h-[700px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin mr-2" /> Cargando...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
+              <p className="text-sm">No hay documentos en esta categoría</p>
+            </div>
+          ) : (
+            filtered.map(doc => (
+              <DocCard
+                key={doc.id}
+                doc={doc}
+                isSelected={selectedId === doc.id}
+                onClick={() => setSelectedId(doc.id)}
+              />
+            ))
+          )}
+        </div>
 
-                  {/* Suggestions for low confidence */}
-                  {(doc.parsing_status === 'low_confidence' || doc.parsing_status === 'manual_review') && (
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      <span className="text-xs text-muted-foreground">Sugerencias:</span>
-                      {MOCK_SUGGESTIONS.map(s => (
-                        <Button key={s.id} variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => assignToMatter(doc.id, s.title)}>
-                          {s.title}
-                        </Button>
-                      ))}
-                      <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1" onClick={() => setAssignModal(doc.id)}>
-                        <Search className="w-3 h-3" /> Buscar...
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {doc.processing_status === 'processed' && (
-                  <Button variant="outline" size="sm" className="h-7 text-xs shrink-0">
-                    Ver detalle
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {/* Right: Detail */}
+        <div className="hidden lg:block flex-1 min-w-0">
+          {selected ? (
+            <DetailPanel
+              doc={selected}
+              onAnalyze={handleAnalyze}
+              onMarkProcessed={handleMarkProcessed}
+              onSearchMatter={() => setSearchModal(true)}
+              onViewMatter={() => selected.matched_matter_id && navigate(`/app/expedientes/${selected.matched_matter_id}`)}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+              <Building2 className="w-16 h-16 opacity-15 mb-4" />
+              <p className="text-sm">Selecciona un documento para ver el detalle</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Assign Modal */}
-      <Dialog open={!!assignModal} onOpenChange={() => setAssignModal(null)}>
+      {/* Mobile detail (shown below list) */}
+      {selected && (
+        <div className="lg:hidden">
+          <DetailPanel
+            doc={selected}
+            onAnalyze={handleAnalyze}
+            onMarkProcessed={handleMarkProcessed}
+            onSearchMatter={() => setSearchModal(true)}
+            onViewMatter={() => selected.matched_matter_id && navigate(`/app/expedientes/${selected.matched_matter_id}`)}
+          />
+        </div>
+      )}
+
+      {/* Matter search modal */}
+      <Dialog open={searchModal} onOpenChange={setSearchModal}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base">Asignar a expediente</DialogTitle>
-            <DialogDescription className="text-xs">Busca por nombre, número o cliente</DialogDescription>
+            <DialogTitle>Buscar expediente</DialogTitle>
+            <DialogDescription>Vincula este documento a un expediente existente</DialogDescription>
           </DialogHeader>
-          <Input placeholder="Buscar expediente..." value={searchMatter} onChange={e => setSearchMatter(e.target.value)} />
-          <div className="space-y-1.5 max-h-48 overflow-auto">
-            {MOCK_SUGGESTIONS.map(s => (
-              <Button key={s.id} variant="ghost" className="w-full justify-start text-sm h-auto py-2" onClick={() => assignModal && assignToMatter(assignModal, s.title)}>
-                <div>
-                  <div className="font-medium">{s.title}</div>
-                  <div className="text-xs text-muted-foreground">{s.ref}</div>
-                </div>
-              </Button>
-            ))}
-          </div>
+          <Input placeholder="Buscar por título o referencia..." value={matterSearch} onChange={e => setMatterSearch(e.target.value)} />
+          <p className="text-xs text-muted-foreground text-center py-4">Escribe para buscar expedientes</p>
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ── Sub-components ──
+
+function KpiPill({ icon, label, count, color }: { icon: string; label: string; count: number; color: string }) {
+  return (
+    <div className={cn('inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium', color)}>
+      <span>{icon}</span>
+      <span>{count}</span>
+      <span className="opacity-75">{label}</span>
+    </div>
+  );
+}
+
+function DocCard({ doc, isSelected, onClick }: { doc: IpoDocument; isSelected: boolean; onClick: () => void }) {
+  const pd = doc.parsed_data;
+  const docType = getDocTypeBadge(pd?.document_type);
+  const urgency = getUrgencyBadge(doc);
+  const borderColor = getBorderColor(doc);
+  const isPending = doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending';
+  const isManualReview = doc.processing_status === 'unprocessed' && doc.parsing_status !== 'pending';
+
+  const deadline = getDeadlineFromDoc(doc);
+
+  return (
+    <Card
+      className={cn(
+        'cursor-pointer transition-all border-l-4 hover:shadow-md',
+        isSelected && 'ring-2 ring-primary/30 bg-blue-50/50',
+        isPending && 'animate-pulse',
+      )}
+      style={{ borderLeftColor: borderColor }}
+      onClick={onClick}
+    >
+      <CardContent className="p-3.5 space-y-1.5">
+        {/* Row 1: flag + office + doc type + time + urgency */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-base leading-none">{getFlag(doc.source_ipo_code)}</span>
+            <span className="font-semibold text-foreground">{getOfficeName(doc.source_ipo_code, pd)}</span>
+            <Badge className={cn('text-[9px] px-1.5 py-0 h-4', docType.bg)}>{docType.label}</Badge>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {urgency && urgency.days !== undefined && urgency.days <= 90 && (
+              <Badge className="text-[9px] px-1.5 py-0 h-4" style={{ backgroundColor: urgency.color + '18', color: urgency.color }}>
+                {urgency.label}
+              </Badge>
+            )}
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {doc.received_at ? formatDistanceToNow(new Date(doc.received_at), { addSuffix: false, locale: es }) : ''}
+            </span>
+          </div>
+        </div>
+
+        {/* Row 2: title */}
+        <p className="text-sm font-medium text-foreground truncate">
+          {pd?.document_type === 'office_action' ? 'Office Action' :
+           pd?.document_type === 'publication_notice' ? 'Aviso de publicación' :
+           pd?.document_type === 'registration_certificate' ? 'Certificado de registro' :
+           'Documento'} — {pd?.serial_number || pd?.application_number || pd?.registration_number || doc.source_ipo_code}
+        </p>
+
+        {/* Row 3: linked matter */}
+        {doc.matter ? (
+          <p className="text-xs text-muted-foreground truncate">
+            → {doc.matter.reference} {doc.matter.title}
+          </p>
+        ) : (
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> Sin expediente asignado
+          </p>
+        )}
+
+        {/* Row 4: deadline */}
+        {deadline && (
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Plazo: {format(new Date(deadline), 'dd MMM yyyy', { locale: es })}
+            {urgency?.days !== undefined && ` (${urgency.days}d)`}
+          </p>
+        )}
+
+        {/* Status banners */}
+        {isPending && (
+          <div className="text-[10px] bg-red-50 text-red-700 rounded px-2 py-0.5 font-medium">
+            🔴 Sin procesar
+          </div>
+        )}
+        {isManualReview && (
+          <div className="text-[10px] bg-amber-50 text-amber-700 rounded px-2 py-0.5 font-medium">
+            ⚠️ Requiere revisión manual
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DetailPanel({
+  doc, onAnalyze, onMarkProcessed, onSearchMatter, onViewMatter
+}: {
+  doc: IpoDocument;
+  onAnalyze: (id: string) => void;
+  onMarkProcessed: (id: string) => void;
+  onSearchMatter: () => void;
+  onViewMatter: () => void;
+}) {
+  const pd = doc.parsed_data;
+  const docType = getDocTypeBadge(pd?.document_type);
+  const urgency = getUrgencyBadge(doc);
+  const isPending = doc.processing_status === 'unprocessed' && doc.parsing_status === 'pending';
+  const deadlines = Array.isArray(doc.deadlines_created) ? doc.deadlines_created : [];
+
+  // Build parsed_data table rows
+  const extractedFields: { label: string; value: string }[] = [];
+  if (pd) {
+    if (pd.serial_number) extractedFields.push({ label: 'Número expediente', value: pd.serial_number });
+    if (pd.application_number) extractedFields.push({ label: 'Número solicitud', value: pd.application_number });
+    if (pd.registration_number) extractedFields.push({ label: 'Número registro', value: pd.registration_number });
+    if (pd.document_type) extractedFields.push({ label: 'Tipo documento', value: pd.document_type.replace(/_/g, ' ') });
+    if (pd.mark_name) extractedFields.push({ label: 'Marca', value: pd.mark_name });
+    if (pd.action_date) extractedFields.push({ label: 'Fecha del acto', value: pd.action_date });
+    if (pd.response_deadline_months) extractedFields.push({ label: 'Plazo de respuesta', value: `${pd.response_deadline_months} meses` });
+    if (pd.response_deadline_date) extractedFields.push({ label: 'Fecha límite', value: pd.response_deadline_date });
+    if (pd.opposition_deadline) extractedFields.push({ label: 'Fecha oposición', value: pd.opposition_deadline });
+    if (pd.publication_date) extractedFields.push({ label: 'Fecha publicación', value: pd.publication_date });
+    if (pd.registration_date) extractedFields.push({ label: 'Fecha registro', value: pd.registration_date });
+    if (pd.expiry_date) extractedFields.push({ label: 'Fecha vencimiento', value: pd.expiry_date });
+    if (pd.examiner_name) extractedFields.push({ label: 'Examinador', value: pd.examiner_name });
+    if (pd.classes) extractedFields.push({ label: 'Clases', value: pd.classes.join(', ') });
+    if (pd.language) extractedFields.push({ label: 'Idioma', value: pd.language.toUpperCase() });
+    if (pd.requires_translation) extractedFields.push({ label: 'Traducción', value: 'Requerida' });
+    if (pd.rejection_grounds) extractedFields.push({ label: 'Motivos', value: pd.rejection_grounds.join(', ').replace(/_/g, ' ') });
+    if (pd.conflicting_marks) extractedFields.push({ label: 'Marcas conflictivas', value: pd.conflicting_marks.join(', ') });
+  }
+
+  return (
+    <Card className="h-full overflow-auto">
+      <CardContent className="p-5 space-y-5">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-2xl">{getFlag(doc.source_ipo_code)}</span>
+            <span className="text-lg font-bold">{getOfficeName(doc.source_ipo_code, pd)}</span>
+          </div>
+          <p className="text-base font-semibold text-foreground">
+            {pd?.document_type === 'office_action' ? 'Office Action' :
+             pd?.document_type === 'publication_notice' ? 'Aviso de publicación' :
+             pd?.document_type === 'registration_certificate' ? 'Certificado de registro' :
+             'Documento oficial'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Recibido: {doc.received_at ? format(new Date(doc.received_at), "dd 'de' MMMM yyyy, HH:mm", { locale: es }) : 'Desconocido'}
+          </p>
+          <div className="flex gap-1.5 mt-2">
+            <Badge className={cn('text-[10px]', docType.bg)}>{docType.label}</Badge>
+            {urgency && urgency.days !== undefined && urgency.days <= 90 && (
+              <Badge className="text-[10px]" style={{ backgroundColor: urgency.color + '18', color: urgency.color }}>
+                {urgency.label}
+              </Badge>
+            )}
+            {doc.processing_status === 'processed' && (
+              <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">✅ Procesado</Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Pending state */}
+        {isPending && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center space-y-2">
+            <Loader2 className="w-8 h-8 text-red-400 mx-auto animate-spin" />
+            <p className="text-sm font-medium text-red-700">⏳ Documento pendiente de análisis</p>
+            <p className="text-xs text-red-600">IP-GENIUS aún no ha procesado este documento</p>
+            <Button size="sm" className="gap-1.5 mt-2" onClick={() => onAnalyze(doc.id)}>
+              <Zap className="w-3.5 h-3.5" /> Analizar con IP-GENIUS
+            </Button>
+          </div>
+        )}
+
+        {/* IP-GENIUS extraction */}
+        {pd && !isPending && (
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200/50 rounded-lg p-4 space-y-3">
+            <p className="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
+              🤖 IP-GENIUS extrajo automáticamente:
+            </p>
+            <div className="divide-y divide-blue-200/30">
+              {extractedFields.map(f => (
+                <div key={f.label} className="flex justify-between py-1.5 text-xs">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  <span className="font-medium text-foreground text-right max-w-[60%] truncate">{f.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Confidence bar */}
+            {doc.parsing_confidence != null && (
+              <div className="pt-2">
+                {(() => {
+                  const ci = getConfidenceInfo(doc.parsing_confidence);
+                  return (
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-muted-foreground">Confianza del análisis</span>
+                        <span className="font-semibold" style={{ color: ci.color }}>{ci.pct}% — {ci.label}</span>
+                      </div>
+                      <div className="h-2 bg-white/70 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${ci.pct}%`, backgroundColor: ci.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Linked matter */}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expediente vinculado</p>
+          {doc.matter ? (
+            <Card className="border-emerald-200 bg-emerald-50/30">
+              <CardContent className="p-3 space-y-1">
+                <p className="text-sm font-semibold">{doc.matter.reference}</p>
+                <p className="text-xs text-muted-foreground">{doc.matter.title}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Badge className="text-[9px] bg-muted">{doc.matter.type}</Badge>
+                  <Badge className="text-[9px] bg-muted">{doc.matter.status}</Badge>
+                  {doc.match_confidence != null && (
+                    <Badge className="text-[9px] bg-emerald-100 text-emerald-700">
+                      Match {Math.round(doc.match_confidence * 100)}%
+                    </Badge>
+                  )}
+                  {doc.auto_matched && (
+                    <span className="text-[9px] text-emerald-600">Auto-vinculado ✅</span>
+                  )}
+                </div>
+                <Button variant="ghost" size="sm" className="text-xs gap-1 mt-1 h-7 px-2" onClick={() => doc.matched_matter_id && window.location.assign(`/app/expedientes/${doc.matched_matter_id}`)}>
+                  Ver expediente completo <ArrowRight className="w-3 h-3" />
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+              <p className="text-xs text-amber-700">No se encontró expediente automáticamente</p>
+              <Button variant="outline" size="sm" className="text-xs gap-1 h-7" onClick={onSearchMatter}>
+                <Search className="w-3 h-3" /> Buscar expediente...
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Deadlines created */}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Plazos creados</p>
+          {deadlines.length > 0 ? (
+            <div className="space-y-1">
+              {deadlines.map((dl: any, i: number) => (
+                <div key={i} className="flex items-center justify-between text-xs bg-emerald-50 rounded px-2.5 py-1.5">
+                  <span>{dl.type?.replace(/_/g, ' ')}</span>
+                  <span className="text-emerald-600 font-medium">{dl.deadline} ✅</span>
+                </div>
+              ))}
+            </div>
+          ) : doc.processing_status !== 'processed' && doc.matched_matter_id ? (
+            <Button variant="outline" size="sm" className="text-xs gap-1">
+              <Zap className="w-3 h-3" /> Generar plazos automáticamente
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">Sin plazos asociados</p>
+          )}
+        </div>
+
+        {/* Raw content */}
+        {doc.raw_email_content && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contenido original</p>
+            <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-auto">
+              {doc.raw_email_content}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2 pt-2 border-t">
+          {doc.processing_status !== 'processed' && (
+            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => onMarkProcessed(doc.id)}>
+              <CheckCircle className="w-3.5 h-3.5" /> Marcar procesado
+            </Button>
+          )}
+          {doc.matched_matter_id && (
+            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={onViewMatter}>
+              <ExternalLink className="w-3.5 h-3.5" /> Ver expediente
+            </Button>
+          )}
+          {doc.file_storage_path && (
+            <Button size="sm" variant="outline" className="text-xs gap-1">
+              <Download className="w-3.5 h-3.5" /> Descargar
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

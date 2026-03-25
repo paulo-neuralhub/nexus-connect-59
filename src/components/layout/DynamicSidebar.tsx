@@ -14,6 +14,7 @@ import { useAlertStats } from "@/hooks/usePredictiveAlerts";
 import { useInstructionsPendingCount } from "@/hooks/use-instructions";
 import { useInboxCount } from "@/hooks/use-inbox";
 import { useApprovalsCount } from "@/hooks/use-approvals";
+import { useIpoDocumentCounts } from "@/hooks/use-ipo-documents";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
@@ -134,6 +135,7 @@ export function DynamicSidebar({
   const { data: instructionsPendingCount = 0 } = useInstructionsPendingCount();
   const { data: inboxCount = 0 } = useInboxCount();
   const { data: approvalsCountData } = useApprovalsCount();
+  const { data: ipoDocsCounts } = useIpoDocumentCounts();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
@@ -175,6 +177,7 @@ export function DynamicSidebar({
     instructions: instructionsPendingCount,
     communications: inboxCount,
     approvals: approvalsCountData?.total || 0,
+    'docs-oficiales': ipoDocsCounts?.actionRequired || 0,
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
