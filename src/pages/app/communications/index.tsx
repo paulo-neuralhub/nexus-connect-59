@@ -7,7 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useOrganization } from '@/hooks/useOrganization';
-import { useInboxMessages, useClientMatters, useClientActivities, useFilteredMessages, useFilteredCount, type InboxMessage } from '@/hooks/use-inbox';
+import { useInboxMessages, useClientMatters, useClientActivities, useFilteredMessages, useFilteredCount, useInboxMessagesWithMatter, type InboxMessage } from '@/hooks/use-inbox';
+import { useInboxGrouped, type MatterGroup } from '@/hooks/use-inbox-grouped';
+import { MatterGroupList } from '@/components/inbox/MatterGroupList';
+import { MatterThreadTimeline } from '@/components/inbox/MatterThreadTimeline';
+import { MatterDetailPanel } from '@/components/inbox/MatterDetailPanel';
 import { fromTable } from '@/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProcessMessage } from '@/hooks/use-process-message';
@@ -52,6 +56,12 @@ function loadPrivateMode(): boolean {
 }
 function savePrivateMode(v: boolean) {
   try { localStorage.setItem('inbox-private-mode', v ? 'true' : 'false'); } catch { /* silent */ }
+}
+function loadViewMode(): 'individual' | 'by-matter' {
+  try { return (localStorage.getItem('inbox-view-mode') as any) || 'individual'; } catch { return 'individual'; }
+}
+function saveViewMode(v: 'individual' | 'by-matter') {
+  try { localStorage.setItem('inbox-view-mode', v); } catch { /* silent */ }
 }
 
 // ─── Hook: linked instruction for a message ───
@@ -677,8 +687,12 @@ export default function CommunicationsUnifiedPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crmSheetOpen, setCrmSheetOpen] = useState(false);
   const [showFiltered, setShowFiltered] = useState(false);
+  const [viewMode, setViewMode] = useState<'individual' | 'by-matter'>(loadViewMode);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<MatterGroup | null>(null);
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { data: messagesWithMatter = [], isLoading: matterLoading } = useInboxMessagesWithMatter(channelFilter, statusFilter);
   const { data: filteredMsgs = [], isLoading: filteredLoading } = useFilteredMessages();
   const { data: filteredTodayCount = 0 } = useFilteredCount();
   const qcMain = useQueryClient();
@@ -692,12 +706,50 @@ export default function CommunicationsUnifiedPage() {
     return messages.filter(m => m.ai_category === categoryFilter);
   }, [messages, categoryFilter]);
 
-  const selectedMsg = useMemo(() => filteredMessages.find(m => m.id === selectedId) || null, [filteredMessages, selectedId]);
+  // Grouped data for by-matter view
+  const filteredMessagesWithMatter = useMemo(() => {
+    if (!categoryFilter) return messagesWithMatter;
+    if (categoryFilter === 'urgent') return messagesWithMatter.filter(m => (m.ai_urgency_score ?? 0) >= 7);
+    return messagesWithMatter.filter(m => m.ai_category === categoryFilter);
+  }, [messagesWithMatter, categoryFilter]);
+
+  const matterGroups = useInboxGrouped(filteredMessagesWithMatter as InboxMessage[]);
+
+  const selectedMsg = useMemo(() => {
+    if (viewMode === 'by-matter') {
+      return filteredMessagesWithMatter.find(m => m.id === selectedId) as InboxMessage | null || null;
+    }
+    return filteredMessages.find(m => m.id === selectedId) || null;
+  }, [filteredMessages, filteredMessagesWithMatter, selectedId, viewMode]);
 
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
     if (isMobile) setMobileView('detail');
   }, [isMobile]);
+
+  const handleViewModeChange = useCallback((mode: 'individual' | 'by-matter') => {
+    if (mode === viewMode) return;
+    setViewMode(mode);
+    saveViewMode(mode);
+    if (mode === 'individual' && selectedGroup) {
+      // Keep last message selected
+      setSelectedId(selectedGroup.lastMessage.id);
+      setSelectedGroup(null);
+      setExpandedGroupId(null);
+    } else if (mode === 'by-matter' && selectedId) {
+      // Find the group this message belongs to and expand it
+      const group = matterGroups.find(g => g.messages.some(m => m.id === selectedId));
+      if (group) {
+        setSelectedGroup(group);
+        setExpandedGroupId(group.matterId || '__unlinked__');
+      }
+    }
+  }, [viewMode, selectedGroup, selectedId, matterGroups]);
+
+  const handleGroupSelectMessage = useCallback((msgId: string, group: MatterGroup) => {
+    setSelectedId(msgId);
+    setSelectedGroup(group);
+  }, []);
 
   const togglePrivateMode = useCallback(() => {
     setPrivateMode(prev => { const next = !prev; savePrivateMode(next); return next; });
@@ -793,6 +845,34 @@ export default function CommunicationsUnifiedPage() {
     </div>
   );
 
+  // ─── View mode toggle component ───
+  const viewToggle = (
+    <div className="flex items-center gap-1 bg-[#F1F5F9] rounded-lg p-0.5">
+      <button
+        onClick={() => handleViewModeChange('individual')}
+        className={cn(
+          'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150',
+          viewMode === 'individual'
+            ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] shadow-sm'
+            : 'text-[#64748B] hover:text-foreground'
+        )}
+      >
+        ☰ Individual
+      </button>
+      <button
+        onClick={() => handleViewModeChange('by-matter')}
+        className={cn(
+          'px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150',
+          viewMode === 'by-matter'
+            ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] shadow-sm'
+            : 'text-[#64748B] hover:text-foreground'
+        )}
+      >
+        📁 Por Expediente
+      </button>
+    </div>
+  );
+
   // ─── Message list content ───
   const messageListContent = (
     <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[#F1F5F9]">
@@ -800,14 +880,15 @@ export default function CommunicationsUnifiedPage() {
       <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-center gap-2">
-          {/* Hamburger for tablet */}
           {isTablet && (
             <Button variant="ghost" size="icon" className="h-8 w-8"
               onClick={() => setSidebarOpen(true)}>
               <Menu className="h-4 w-4" />
             </Button>
           )}
-          <span className="text-sm font-semibold">{filteredMessages.length} mensajes</span>
+          <span className="text-sm font-semibold">
+            {viewMode === 'by-matter' ? `${matterGroups.length} expedientes` : `${filteredMessages.length} mensajes`}
+          </span>
           {filteredTodayCount > 0 && (
             <button onClick={handleToggleFiltered}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
@@ -816,7 +897,7 @@ export default function CommunicationsUnifiedPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* Private mode toggle */}
+          {viewToggle}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={togglePrivateMode}
             title={privateMode ? 'Desactivar modo privado' : 'Activar modo privado'}>
             {privateMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -861,10 +942,22 @@ export default function CommunicationsUnifiedPage() {
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {isLoading ? (
+        {(viewMode === 'individual' ? isLoading : matterLoading) ? (
           <div className="p-4 space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-[10px]" />)}
           </div>
+        ) : viewMode === 'by-matter' ? (
+          matterGroups.length === 0 ? (
+            <EmptyStateNoMessages />
+          ) : (
+            <MatterGroupList
+              groups={matterGroups}
+              selectedMessageId={selectedId}
+              expandedGroupId={expandedGroupId}
+              onExpandGroup={setExpandedGroupId}
+              onSelectMessage={handleGroupSelectMessage}
+            />
+          )
         ) : filteredMessages.length === 0 ? (
           <EmptyStateNoMessages />
         ) : (
@@ -982,8 +1075,32 @@ export default function CommunicationsUnifiedPage() {
             {/* Detail */}
             <div className="flex-1 flex flex-col min-w-0 relative">
               {selectedMsg ? (
-                <MessageDetail msg={selectedMsg} organizationId={organizationId}
-                  onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+                <>
+                  {/* Matter thread timeline (only in by-matter mode with a group) */}
+                  {viewMode === 'by-matter' && selectedGroup && selectedGroup.messages.length > 1 && (
+                    <MatterThreadTimeline
+                      messages={selectedGroup.messages}
+                      selectedMessageId={selectedId}
+                      matterReference={selectedGroup.matter?.reference}
+                      matterTitle={selectedGroup.matter?.title}
+                      onSelectMessage={(id) => setSelectedId(id)}
+                    />
+                  )}
+                  {/* Matter group header */}
+                  {viewMode === 'by-matter' && selectedGroup?.matter && (
+                    <div className="px-6 py-2 border-b border-[#F1F5F9] bg-white flex items-center gap-2">
+                      <span className="text-sm">📁</span>
+                      <span className="text-sm font-semibold text-[#0a2540]">
+                        {selectedGroup.matter.reference} — {selectedGroup.matter.title}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {selectedGroup.messages.length} mensajes en este expediente
+                      </span>
+                    </div>
+                  )}
+                  <MessageDetail msg={selectedMsg} organizationId={organizationId}
+                    onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
+                </>
               ) : (
                 <EmptyDetailState />
               )}
@@ -998,11 +1115,15 @@ export default function CommunicationsUnifiedPage() {
               )}
             </div>
 
-            {/* Col 4 — CRM panel (>1280px) */}
+            {/* Col 4 — CRM or Matter panel (>1280px) */}
             {showCRMPanel && (
               <div className="w-[260px] flex-shrink-0 overflow-y-auto border-l border-[#E2E8F0]"
                 style={{ background: '#F8FAFC' }}>
-                {selectedMsg ? <CRMContextPanel msg={selectedMsg} /> : (
+                {viewMode === 'by-matter' && selectedGroup ? (
+                  <MatterDetailPanel group={selectedGroup} selectedMsg={selectedMsg} />
+                ) : selectedMsg ? (
+                  <CRMContextPanel msg={selectedMsg} />
+                ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-4">
                     Contexto CRM
                   </div>
@@ -1018,7 +1139,11 @@ export default function CommunicationsUnifiedPage() {
         <Sheet open={crmSheetOpen} onOpenChange={setCrmSheetOpen}>
           <SheetContent side="right" className="w-[300px] p-0" style={{ background: '#F8FAFC' }}>
             <SheetHeader className="sr-only"><SheetTitle>Cliente</SheetTitle></SheetHeader>
-            {selectedMsg && <CRMContextPanel msg={selectedMsg} />}
+            {viewMode === 'by-matter' && selectedGroup ? (
+              <MatterDetailPanel group={selectedGroup} selectedMsg={selectedMsg} />
+            ) : selectedMsg ? (
+              <CRMContextPanel msg={selectedMsg} />
+            ) : null}
           </SheetContent>
         </Sheet>
       )}
