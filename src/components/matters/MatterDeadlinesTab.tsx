@@ -94,6 +94,23 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
 
   return (
     <div data-copilot="matter-deadlines" className="space-y-3">
+      {/* Banner: no deadlines */}
+      {!isLoading && (!deadlines || deadlines.length === 0) && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">No hay plazos generados para este expediente</p>
+              <p className="text-xs text-muted-foreground">Los plazos se calculan automáticamente según la jurisdicción y tipo de derecho.</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={handleGenerateDeadlines} className="shrink-0">
+            <Zap className="h-3.5 w-3.5 mr-1.5" />
+            Generar plazos
+          </Button>
+        </div>
+      )}
+
       {/* Sub-tabs outside the card */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -217,6 +234,24 @@ export function MatterDeadlinesTab({ matterId }: MatterDeadlinesTabProps) {
         onOpenChange={setShowAddModal}
         matterId={matterId}
       />
+
+      {/* Deadline Data Modal (fallback for incomplete jurisdiction data) */}
+      {modalData && (
+        <DeadlineDataModal
+          open={!!modalData}
+          onOpenChange={(open) => !open && closeModal()}
+          officeCode={modalData.officeCode}
+          officeName={modalData.officeName}
+          officeId={modalData.officeId}
+          countryCode={modalData.countryCode}
+          missingFields={modalData.missingFields}
+          availableData={modalData.availableData}
+          geniusSuggestions={modalData.geniusSuggestions}
+          matterId={modalData.matterId}
+          organizationId={modalData.organizationId}
+          onComplete={onModalComplete}
+        />
+      )}
     </div>
   );
 }
