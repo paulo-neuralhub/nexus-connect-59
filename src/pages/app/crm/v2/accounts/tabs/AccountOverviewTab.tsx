@@ -18,6 +18,7 @@ import type { CRMAccount } from "@/hooks/crm/v2/types";
 
 interface Props {
   account: CRMAccount;
+  accountId?: string;
   contactsCount: number;
   dealsCount: number;
   mattersCount: number;
