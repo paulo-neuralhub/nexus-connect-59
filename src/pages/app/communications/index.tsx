@@ -110,8 +110,9 @@ function CategoryBadge({ category }: { category: string | null }) {
 }
 
 // ─── Message list item ───
-function MessageListItem({ msg, isSelected, onSelect }: {
+function MessageListItem({ msg, isSelected, onSelect, onAnalyze, isAnalyzing }: {
   msg: InboxMessage; isSelected: boolean; onSelect: () => void;
+  onAnalyze?: (id: string) => void; isAnalyzing?: boolean;
 }) {
   const navigate = useNavigate();
   const { data: linkedInstruction } = useLinkedInstruction(msg.id);
@@ -119,6 +120,7 @@ function MessageListItem({ msg, isSelected, onSelect }: {
     ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: false, locale: es })
     : '';
   const styles = getCategoryStyles(msg, isSelected);
+  const canAnalyze = !msg.ai_category && onAnalyze;
 
   return (
     <button
@@ -149,6 +151,22 @@ function MessageListItem({ msg, isSelected, onSelect }: {
             className="inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 bg-[#DCFCE7] text-[#15803D] cursor-pointer hover:bg-[#BBF7D0] transition-colors"
           >
             ✅ → Ver en Instrucciones
+          </span>
+        )}
+        {canAnalyze && (
+          <span
+            onClick={(e) => { e.stopPropagation(); onAnalyze(msg.id); }}
+            className={cn(
+              'inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 cursor-pointer transition-colors',
+              'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300',
+              isAnalyzing && 'opacity-60 pointer-events-none'
+            )}
+          >
+            {isAnalyzing ? (
+              <><Loader2 className="h-3 w-3 animate-spin" /> Analizando...</>
+            ) : (
+              <><Sparkles className="h-3 w-3" /> 🤖 Analizar</>
+            )}
           </span>
         )}
       </div>
