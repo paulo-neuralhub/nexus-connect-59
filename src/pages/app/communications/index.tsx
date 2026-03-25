@@ -655,6 +655,9 @@ export default function CommunicationsUnifiedPage() {
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { processMessage, processAllPending, processingId, processingAll } = useProcessMessage();
+
+  const unanalyzedCount = useMemo(() => messages.filter(m => !m.ai_category && m.status === 'pending').length, [messages]);
 
   // Apply category filter client-side
   const filteredMessages = useMemo(() => {
