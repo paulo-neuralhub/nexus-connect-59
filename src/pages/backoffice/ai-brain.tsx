@@ -33,6 +33,7 @@ import {
   RAGDialog
 } from '@/components/backoffice/ai-brain';
 import { TaskRoutingTab } from '@/components/backoffice/ai-brain/TaskRoutingTab';
+import { PromptsTab } from '@/components/backoffice/ai-brain/PromptsTab';
 
 // Types
 import { 
