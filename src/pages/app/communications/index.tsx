@@ -676,8 +676,12 @@ export default function CommunicationsUnifiedPage() {
   const [privateMode, setPrivateMode] = useState(loadPrivateMode);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crmSheetOpen, setCrmSheetOpen] = useState(false);
+  const [showFiltered, setShowFiltered] = useState(false);
 
   const { data: messages = [], isLoading } = useInboxMessages(channelFilter, statusFilter);
+  const { data: filteredMsgs = [], isLoading: filteredLoading } = useFilteredMessages();
+  const { data: filteredTodayCount = 0 } = useFilteredCount();
+  const qcMain = useQueryClient();
   const { processMessage, processAllPending, processingId, processingAll } = useProcessMessage();
 
   const unanalyzedCount = useMemo(() => messages.filter(m => !m.ai_category && m.status === 'pending').length, [messages]);
