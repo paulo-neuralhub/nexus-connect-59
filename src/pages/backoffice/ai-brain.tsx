@@ -365,6 +365,10 @@ export default function AIBrainPage() {
           <TaskRoutingTab />
         </TabsContent>
 
+        <TabsContent value="prompts" className="space-y-4">
+          <PromptsTab />
+        </TabsContent>
+
         <TabsContent value="circuit" className="space-y-4">
           <CircuitBreakerTab />
         </TabsContent>
