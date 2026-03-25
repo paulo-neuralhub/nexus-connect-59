@@ -14,6 +14,7 @@ import { CalendarSidebar } from '@/components/features/calendario/CalendarSideba
 import { CalendarSettingsModal } from '@/components/features/calendario/CalendarSettingsModal';
 import { EventDetailSheet } from '@/components/features/calendario/EventDetailSheet';
 import { CreateEventModal } from '@/components/features/calendario/CreateEventModal';
+import { CalendarEventComponent } from '@/components/features/calendario/CalendarEventWrapper';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Localizer para español
@@ -70,13 +71,11 @@ function eventStyleGetter(event: CalendarEvent) {
       borderLeftColor: styles.border,
       fontSize: '11px',
       fontWeight: 500,
-      padding: '2px 8px',
-      height: '22px',
-      lineHeight: '18px',
+      padding: '0',
+      minHeight: '28px',
+      height: 'auto',
       cursor: 'pointer',
-      whiteSpace: 'nowrap' as const,
       overflow: 'hidden',
-      textOverflow: 'ellipsis',
       boxShadow: 'none',
       opacity: 1,
       transition: 'filter 0.15s ease, box-shadow 0.15s ease',
@@ -84,12 +83,10 @@ function eventStyleGetter(event: CalendarEvent) {
   };
 }
 
-// Custom title accessor to show time + title
-function eventTitleAccessor(event: CalendarEvent) {
-  if (event.allDay) return event.title;
-  const time = format(event.start, 'HH:mm');
-  return `${time}  ${event.title}`;
-}
+// Custom components for react-big-calendar
+const calendarComponents = {
+  event: CalendarEventComponent,
+};
 
 // Cargar preferencias guardadas
 function loadSavedFilters(): EventFilters {
@@ -215,7 +212,6 @@ export default function CalendarioPage() {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                titleAccessor={eventTitleAccessor}
                 view={view}
                 onView={handleViewChange}
                 date={date}
@@ -223,6 +219,7 @@ export default function CalendarioPage() {
                 onSelectEvent={handleSelectEvent}
                 onSelectSlot={handleSelectSlot}
                 eventPropGetter={eventStyleGetter}
+                components={calendarComponents}
                 messages={calendarMessages}
                 culture="es"
                 popup
