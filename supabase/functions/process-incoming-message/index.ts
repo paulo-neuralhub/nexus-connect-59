@@ -6,6 +6,77 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
+// ── Helper: read prompt + model config from DB ──
+async function getPromptFromDB(
+  supabase: any,
+  taskType: string
+): Promise<{ systemPrompt: string; userTemplate: string; model: string; maxTokens: number; temperature: number } | null> {
+  const { data: prompt } = await supabase
+    .from('ai_prompt_templates')
+    .select('system_prompt, user_prompt_template')
+    .eq('task_type', taskType)
+    .eq('is_active', true)
+    .single()
+
+  const { data: task } = await supabase
+    .from('ai_tasks')
+    .select('primary_model, temperature, max_tokens')
+    .eq('task_code', taskType)
+    .eq('is_active', true)
+    .single()
+
+  if (!prompt || !task) return null
+
+  return {
+    systemPrompt: prompt.system_prompt,
+    userTemplate: prompt.user_prompt_template,
+    model: task.primary_model,
+    maxTokens: task.max_tokens || 1000,
+    temperature: task.temperature || 0.1,
+  }
+}
+
+// ── Helper: fill {{var}} placeholders ──
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  let result = template
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value || '')
+  }
+  return result
+}
+
+// ── Helper: generic Claude call ──
+async function callClaude(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  temperature: number
+): Promise<string> {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+  const data = await response.json()
+  return data.content?.[0]?.text?.trim() || ''
+}
+
+// ── Hardcoded fallback system prompt (used if DB has no SPAM_FILTER prompt) ──
+const FALLBACK_SPAM_SYSTEM = `You classify emails. Return JSON: {"type":"business"|"spam"|"promo"|"notification","confidence":0.0-1.0}. Only JSON, no extra text.`
+const FALLBACK_IP_SYSTEM = `Eres IP-GENIUS, el asistente especializado en Propiedad Intelectual de IP-NEXUS. Analizas mensajes de clientes y devuelves ÚNICAMENTE JSON con: category, urgency_score, summary, proposed_action, draft_response, entities, is_instruction, instruction_type, instruction_details.`
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -62,74 +133,122 @@ serve(async (req) => {
         .update({ status: 'processing' })
         .eq('id', message.id)
 
-      const systemPrompt = `Eres IP-GENIUS, el asistente especializado en Propiedad Intelectual de IP-NEXUS. Recibes mensajes de clientes (emails, WhatsApp) y los analizas con precisión legal.
+      // ═══════════════════════════════════════
+      // NIVEL 1: SPAM FILTER
+      // ═══════════════════════════════════════
 
-Tu tarea es analizar el mensaje y devolver ÚNICAMENTE un JSON con esta estructura exacta:
+      // Check whitelist: known contact in CRM → skip spam filter
+      const isKnownContact = message.sender_email
+        ? await supabase
+            .from('contacts')
+            .select('id')
+            .ilike('email', message.sender_email)
+            .eq('organization_id', message.organization_id)
+            .maybeSingle()
+        : { data: null }
 
-{
-  "category": "instruction" | "query" | "urgent" | "admin" | "spam",
-  "urgency_score": 1-10,
-  "summary": "Resumen ejecutivo en máximo 2 frases",
-  "proposed_action": "Acción concreta que debe tomar el agente",
-  "draft_response": "Borrador de respuesta al cliente (opcional, solo si es query simple)",
-  "entities": {
-    "marks": ["nombres de marcas mencionadas"],
-    "jurisdictions": ["países o oficinas mencionadas"],
-    "nice_classes": [],
-    "deadlines": ["fechas o plazos mencionados"]
-  },
-  "is_instruction": true | false,
-  "instruction_type": "trademark_registration" | "trademark_renewal" | "patent_prosecution" | "other" | null,
-  "instruction_details": {
-    "mark_name": null,
-    "jurisdictions": [],
-    "nice_classes": [],
-    "description": null
-  }
-}
+      const skipSpamFilter = !!isKnownContact.data
 
-REGLAS:
-- category "instruction": el cliente solicita un servicio formal
-- category "query": pregunta de estado o información
-- category "urgent": OA recibida, plazo inminente, emergencia legal
-- category "admin": factura, dirección, datos de contacto
-- urgency_score 9-10: plazo < 7 días o acción legal inminente
-- urgency_score 7-8: plazo < 30 días o instrucción urgente
-- urgency_score 4-6: instrucción normal o consulta importante
-- urgency_score 1-3: consulta rutinaria o admin
-- NUNCA inventes datos que no estén en el mensaje
-- Responde SOLO con JSON, sin texto adicional`
+      let messageType = 'business' // safe default
 
-      const userPrompt = `Cliente: ${message.account?.name || 'Desconocido'}
-Canal: ${message.channel}
-Remitente: ${message.sender_name || 'Desconocido'}
-${message.subject ? `Asunto: ${message.subject}` : ''}
+      if (!skipSpamFilter && message.sender_email) {
+        const spamConfig = await getPromptFromDB(supabase, 'SPAM_FILTER')
 
-Mensaje:
-${message.body || '(sin contenido)'}`
+        const senderDomain = message.sender_email.split('@')[1] || ''
+        const bodyPreview = (message.body || '').split(' ').slice(0, 50).join(' ')
+
+        const systemPrompt = spamConfig?.systemPrompt || FALLBACK_SPAM_SYSTEM
+        const userPrompt = spamConfig
+          ? fillTemplate(spamConfig.userTemplate, {
+              sender_email: message.sender_email || '',
+              sender_domain: senderDomain,
+              is_known_contact: 'NO',
+              subject: message.subject || '',
+              body_preview: bodyPreview,
+            })
+          : `From: ${message.sender_email}\nSubject: ${message.subject || ''}\nBody preview: ${bodyPreview}`
+
+        const model = spamConfig?.model || 'claude-haiku-4-5-20251001'
+        const maxTokens = spamConfig?.maxTokens || 150
+        const temperature = spamConfig?.temperature || 0.1
+
+        try {
+          const rawResult = await callClaude(anthropicKey, model, systemPrompt, userPrompt, maxTokens, temperature)
+          const spamResult = JSON.parse(rawResult.replace(/```json|```/g, '').trim())
+          messageType = spamResult.type || 'business'
+        } catch {
+          messageType = 'business' // If fails → treat as business
+        }
+      }
+
+      // If spam/promo/notification → archive without deep analysis
+      if (messageType !== 'business') {
+        await supabase
+          .from('incoming_messages')
+          .update({
+            status: 'archived',
+            ai_category: messageType,
+            ai_processed_at: new Date().toISOString(),
+          })
+          .eq('id', message.id)
+
+        results.push({
+          message_id: message.id,
+          filtered_as: messageType,
+          processed: false,
+          success: true,
+        })
+        continue // Next message
+      }
+
+      // ═══════════════════════════════════════
+      // NIVEL 2: DEEP IP ANALYSIS (business only)
+      // ═══════════════════════════════════════
+
+      // Load org context
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', message.organization_id)
+        .single()
+
+      // Load active matters for thread matching
+      const { data: matters } = await supabase
+        .from('matters')
+        .select('reference, title, type, status')
+        .eq('crm_account_id', message.account_id)
+        .in('status', ['pending', 'examining', 'office_action', 'published'])
+        .limit(10)
+
+      const mattersList = matters?.map((m: any) =>
+        `${m.reference}: ${m.title} (${m.type}, ${m.status})`
+      ).join('\n') || 'Sin expedientes activos'
+
+      // Get IP classification prompt from DB
+      const ipConfig = await getPromptFromDB(supabase, 'EMAIL_CLASSIFICATION_IP')
+
+      const ipSystemPrompt = ipConfig?.systemPrompt || FALLBACK_IP_SYSTEM
+      const ipUserPrompt = ipConfig
+        ? fillTemplate(ipConfig.userTemplate, {
+            org_name: org?.name || '',
+            main_jurisdictions: 'EU, ES, US, EP',
+            account_name: message.account?.name || 'Desconocido',
+            channel: message.channel || 'email',
+            sender_name: message.sender_name || '',
+            sender_email: message.sender_email || '',
+            subject_line: message.subject ? `Asunto: ${message.subject}` : '',
+            body: message.body || '',
+          })
+        : `Cliente: ${message.account?.name || 'Desconocido'}\nCanal: ${message.channel}\nRemitente: ${message.sender_name || 'Desconocido'}\n${message.subject ? `Asunto: ${message.subject}` : ''}\n\nMensaje:\n${message.body || '(sin contenido)'}`
+
+      const ipModel = ipConfig?.model || 'claude-sonnet-4-5-20250929'
+      const ipMaxTokens = ipConfig?.maxTokens || 1000
+      const ipTemperature = ipConfig?.temperature || 0.1
 
       let analysis: any
       try {
-        const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': anthropicKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            temperature: 0.1,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-          }),
-        })
-
-        const anthropicData = await anthropicResponse.json()
-        const rawText = anthropicData.content?.[0]?.text?.trim() || ''
-        const cleanJson = rawText.replace(/```json|```/g, '').trim()
-        analysis = JSON.parse(cleanJson)
+        const rawAnalysis = await callClaude(anthropicKey, ipModel, ipSystemPrompt, ipUserPrompt, ipMaxTokens, ipTemperature)
+        analysis = JSON.parse(rawAnalysis.replace(/```json|```/g, '').trim())
       } catch (parseErr) {
         console.error('Claude parse error:', parseErr)
         analysis = {
@@ -141,7 +260,48 @@ ${message.body || '(sin contenido)'}`
         }
       }
 
-      // Update incoming_messages
+      // ── NIVEL 2B: THREAD MATCHER (if matters exist) ──
+      let matchedMatterRef = null
+      if (matters && matters.length > 0) {
+        const threadConfig = await getPromptFromDB(supabase, 'EMAIL_THREAD_MATCHER')
+
+        if (threadConfig) {
+          const threadPrompt = fillTemplate(threadConfig.userTemplate, {
+            matters_list: mattersList,
+            body: message.body || '',
+          })
+
+          try {
+            const threadRaw = await callClaude(
+              anthropicKey, threadConfig.model, threadConfig.systemPrompt,
+              threadPrompt, threadConfig.maxTokens, threadConfig.temperature
+            )
+            const threadResult = JSON.parse(threadRaw.replace(/```json|```/g, '').trim())
+
+            if (threadResult.confidence >= 0.6) {
+              matchedMatterRef = threadResult.matched_matter_reference
+
+              if (matchedMatterRef) {
+                const { data: matter } = await supabase
+                  .from('matters')
+                  .select('id')
+                  .eq('reference', matchedMatterRef)
+                  .eq('organization_id', message.organization_id)
+                  .single()
+
+                if (matter) {
+                  await supabase
+                    .from('incoming_messages')
+                    .update({ matter_id: matter.id })
+                    .eq('id', message.id)
+                }
+              }
+            }
+          } catch { /* silent fail for thread matcher */ }
+        }
+      }
+
+      // Update incoming_messages with full analysis
       await supabase
         .from('incoming_messages')
         .update({
@@ -256,6 +416,7 @@ ${message.body || '(sin contenido)'}`
         category: analysis.category,
         urgency: analysis.urgency_score,
         is_instruction: analysis.is_instruction,
+        matched_matter: matchedMatterRef,
         success: true,
       })
     }
