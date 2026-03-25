@@ -115,7 +115,8 @@ Deno.serve(async (req) => {
       .in("code", officeCodes);
 
     const office = offices?.[0];
-    const officeTimezone = office?.timezone || "UTC";
+    const rawTz = office?.timezone || "UTC";
+    const officeTimezone = TIMEZONE_FALLBACKS[rawTz] || rawTz;
 
     // 3. Load applicable rules
     const officeIds = (offices || []).map((o: any) => o.id);
