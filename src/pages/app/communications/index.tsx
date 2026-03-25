@@ -7,16 +7,17 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrganization } from '@/hooks/useOrganization';
-import { useInboxMessages, useClientMatters, type InboxMessage } from '@/hooks/use-inbox';
+import { useInboxMessages, useClientMatters, useClientActivities, type InboxMessage } from '@/hooks/use-inbox';
 import { fromTable } from '@/lib/supabase';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   Mail, MessageCircle, Globe, Phone, ArrowLeft, Inbox as InboxIcon,
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
-  AlertCircle, User, ClipboardList, HelpCircle, FileText,
+  AlertCircle, User, ClipboardList, HelpCircle, FileText, ArrowRight,
+  Clock, Briefcase,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,51 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
+// ─── Hook: linked instruction for a message ───
+function useLinkedInstruction(messageId: string | null) {
+  return useQuery({
+    queryKey: ['linked-instruction', messageId],
+    queryFn: async () => {
+      if (!messageId) return null;
+      const { data, error } = await fromTable('bulk_instructions')
+        .select('id, title, status, total_targets, executed_count')
+        .eq('source_message_id', messageId)
+        .maybeSingle();
+      if (error) return null;
+      return data as { id: string; title: string; status: string; total_targets: number | null; executed_count: number | null } | null;
+    },
+    enabled: !!messageId,
+    staleTime: 60_000,
+  });
+}
+
+// ─── Category color helpers ───
+function getCategoryStyles(msg: InboxMessage, isSelected: boolean) {
+  if (isSelected) {
+    return {
+      bg: 'bg-[#EFF6FF]',
+      border: 'border-l-[3px] border-l-[#2563EB]',
+      shadow: 'shadow-[inset_0_0_0_1px_#BFDBFE]',
+    };
+  }
+  const cat = msg.ai_category;
+  const isUrgent = cat === 'urgent' || (msg.ai_urgency_score != null && msg.ai_urgency_score >= 7);
+
+  if (cat === 'instruction') {
+    return { bg: 'bg-[#F9F5FF]', border: 'border-l-[3px] border-l-[#8B5CF6]', shadow: '' };
+  }
+  if (isUrgent) {
+    return { bg: 'bg-[#FFF5F5]', border: 'border-l-[3px] border-l-[#EF4444]', shadow: '' };
+  }
+  if (cat === 'query') {
+    return { bg: 'bg-[#F0F9FF]', border: 'border-l-[3px] border-l-[#0EA5E9]', shadow: '' };
+  }
+  if (cat === 'admin') {
+    return { bg: 'bg-[#F8FAFC]', border: 'border-l-[3px] border-l-[#94A3B8]', shadow: '' };
+  }
+  return { bg: '', border: 'border-l-[3px] border-l-transparent', shadow: '' };
+}
 
 // ─── Channel icon helper ───
 function ChannelIcon({ channel, className }: { channel: string; className?: string }) {
@@ -66,17 +112,19 @@ function CategoryBadge({ category }: { category: string | null }) {
 function MessageListItem({ msg, isSelected, onSelect }: {
   msg: InboxMessage; isSelected: boolean; onSelect: () => void;
 }) {
+  const navigate = useNavigate();
+  const { data: linkedInstruction } = useLinkedInstruction(msg.id);
   const timeAgo = msg.created_at
     ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: false, locale: es })
     : '';
+  const styles = getCategoryStyles(msg, isSelected);
 
   return (
     <button
       onClick={onSelect}
       className={cn(
-        'w-full text-left px-4 py-3 border-b transition-colors hover:bg-accent/50',
-        isSelected && 'bg-primary/5 border-l-[3px] border-l-primary',
-        !isSelected && 'border-l-[3px] border-l-transparent'
+        'w-full text-left px-4 py-3 border-b border-b-[#F1F5F9] transition-colors hover:bg-accent/50',
+        styles.bg, styles.border, styles.shadow,
       )}
     >
       <div className="flex items-center gap-2 mb-1">
@@ -88,14 +136,68 @@ function MessageListItem({ msg, isSelected, onSelect }: {
         <p className="text-xs text-muted-foreground truncate mb-0.5">{msg.account.name}</p>
       )}
       <p className="text-sm text-foreground truncate">{msg.subject || '(Sin asunto)'}</p>
-      <div className="flex items-center gap-2 mt-1.5">
+      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <CategoryBadge category={msg.ai_category} />
         {msg.ai_confidence != null && (
           <span className="text-[10px] text-muted-foreground">{Math.round(msg.ai_confidence * 100)}%</span>
         )}
         <UrgencyBadge score={msg.ai_urgency_score} />
+        {linkedInstruction && (
+          <span
+            onClick={(e) => { e.stopPropagation(); navigate('/app/instructions'); }}
+            className="inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 bg-[#DCFCE7] text-[#15803D] cursor-pointer hover:bg-[#BBF7D0] transition-colors"
+          >
+            ✅ → Ver en Instrucciones
+          </span>
+        )}
       </div>
     </button>
+  );
+}
+
+// ─── Linked instruction section for detail panel ───
+function LinkedInstructionSection({ messageId }: { messageId: string }) {
+  const navigate = useNavigate();
+  const { data: instruction } = useLinkedInstruction(messageId);
+  if (!instruction) return null;
+
+  const statusLabels: Record<string, string> = {
+    draft: 'Borrador',
+    sent: 'Enviada',
+    in_progress: 'En curso',
+    completed: 'Completada',
+    cancelled: 'Cancelada',
+    partially_executed: 'Parcialmente ejecutada',
+  };
+
+  return (
+    <div className="mt-4 rounded-[10px] border border-[#86EFAC] bg-[#F0FDF4] p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-semibold text-[#15803D]">
+        <CheckCircle2 className="h-4 w-4" />
+        INSTRUCCIÓN GENERADA
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Este mensaje generó la siguiente instrucción:
+      </p>
+      <div className="space-y-1">
+        <p className="text-sm font-medium flex items-center gap-2">
+          <ClipboardList className="h-4 w-4 text-[#15803D]" />
+          {instruction.title}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Status: {statusLabels[instruction.status] || instruction.status}
+          {instruction.total_targets ? ` · ${instruction.total_targets} jurisdicciones` : ''}
+        </p>
+      </div>
+      <Button
+        variant="link"
+        size="sm"
+        className="text-[#15803D] p-0 h-auto text-xs font-medium"
+        onClick={() => navigate('/app/instructions')}
+      >
+        Ver instrucción completa <ArrowRight className="h-3 w-3 ml-1" />
+      </Button>
+    </div>
   );
 }
 
@@ -191,6 +293,9 @@ function MessageDetail({ msg, organizationId, onBack }: {
             )}
           </div>
         )}
+
+        {/* Linked instruction section */}
+        <LinkedInstructionSection messageId={msg.id} />
       </ScrollArea>
 
       <div className="p-4 border-t space-y-3">
@@ -220,10 +325,11 @@ function MessageDetail({ msg, organizationId, onBack }: {
   );
 }
 
-// ─── CRM Context panel ───
+// ─── CRM Context panel (enhanced) ───
 function CRMContextPanel({ msg }: { msg: InboxMessage }) {
   const navigate = useNavigate();
   const { data: matters = [] } = useClientMatters(msg.account_id);
+  const { data: activities = [] } = useClientActivities(msg.account_id);
 
   if (!msg.account_id && !msg.account) {
     return (
@@ -243,15 +349,22 @@ function CRMContextPanel({ msg }: { msg: InboxMessage }) {
     );
   }
 
+  const initials = (msg.account?.name || msg.sender_name || 'X').substring(0, 2).toUpperCase();
+  const lastActivity = activities[0] as { id: string; type: string; subject: string; created_at: string } | undefined;
+
   return (
     <div className="p-4 space-y-4">
+      {/* Client card */}
       <div className="rounded-lg border p-3 space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-            {(msg.account?.name || msg.sender_name || 'X').substring(0, 2).toUpperCase()}
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm truncate">{msg.account?.name || msg.sender_name}</p>
+            <p className="font-semibold text-sm truncate">{msg.account?.name || msg.sender_name}</p>
+            {msg.sender_email && (
+              <p className="text-xs text-muted-foreground truncate">{msg.sender_email}</p>
+            )}
           </div>
         </div>
         <Button
@@ -264,19 +377,53 @@ function CRMContextPanel({ msg }: { msg: InboxMessage }) {
         </Button>
       </div>
 
-      {matters.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expedientes</h4>
-          {matters.map((m: any) => (
+      {/* Active matters */}
+      <div className="space-y-2">
+        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Briefcase className="h-3 w-3" />
+          Expedientes activos
+        </h4>
+        {matters.length > 0 ? (
+          matters.map((m: any) => (
             <button
               key={m.id}
-              className="w-full text-left rounded-md border p-2 hover:bg-accent/50 transition-colors"
+              className="w-full text-left rounded-md border p-2.5 hover:bg-accent/50 transition-colors"
               onClick={() => navigate(`/app/expedientes/${m.id}`)}
             >
-              <p className="text-xs font-medium truncate">{m.reference_number || m.title}</p>
-              <p className="text-[11px] text-muted-foreground">{m.status} · {m.type}</p>
+              <div className="flex items-center gap-2 mb-0.5">
+                {m.type && (
+                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">{m.type}</Badge>
+                )}
+                <span className="text-xs font-medium truncate">{m.reference_number || m.title}</span>
+              </div>
+              {m.title && m.reference_number && (
+                <p className="text-[11px] text-muted-foreground truncate">{m.title}</p>
+              )}
+              {m.status && (
+                <Badge variant="secondary" className="text-[9px] mt-1 px-1.5 py-0 h-4">{m.status}</Badge>
+              )}
             </button>
-          ))}
+          ))
+        ) : (
+          <p className="text-xs text-muted-foreground italic">Sin expedientes activos</p>
+        )}
+      </div>
+
+      {/* Last activity */}
+      {lastActivity && (
+        <div className="space-y-2">
+          <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="h-3 w-3" />
+            Último contacto
+          </h4>
+          <div className="rounded-md border p-2.5">
+            <p className="text-xs font-medium truncate">{lastActivity.subject || lastActivity.type}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {lastActivity.type} · {lastActivity.created_at
+                ? formatDistanceToNow(new Date(lastActivity.created_at), { addSuffix: true, locale: es })
+                : ''}
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -317,9 +464,12 @@ function EmptyStateNoMessages() {
 
 function EmptyDetailState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <InboxIcon className="h-16 w-16 text-muted-foreground/30 mb-4" />
-      <p className="text-muted-foreground">Selecciona un mensaje</p>
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[#F8FAFC]">
+      <InboxIcon className="h-16 w-16 text-[#CBD5E1] mb-4" />
+      <h3 className="text-base font-semibold mb-1">Selecciona un mensaje</h3>
+      <p className="text-sm text-muted-foreground max-w-[260px]">
+        Haz click en cualquier mensaje de la lista para ver el análisis completo de IP-GENIUS y gestionar la comunicación.
+      </p>
     </div>
   );
 }
@@ -353,11 +503,18 @@ function ChannelSidebar({
     return messages.filter(m => m.channel === ch).length;
   };
 
+  const categoryBadgeColors: Record<string, string> = {
+    urgent: 'bg-[#FEE2E2] text-[#DC2626]',
+    instruction: 'bg-[#F3E8FF] text-[#7C3AED]',
+    query: 'bg-[#E0F2FE] text-[#0284C7]',
+    admin: 'bg-[#F1F5F9] text-[#64748B]',
+  };
+
   const categories = [
-    { key: 'urgent', label: 'Urgentes', icon: AlertCircle, color: 'text-destructive', getBadge: () => messages.filter(m => (m.ai_urgency_score ?? 0) >= 7).length },
-    { key: 'instruction', label: 'Instrucciones', icon: ClipboardList, color: 'text-primary', getBadge: () => messages.filter(m => m.ai_category === 'instruction').length },
-    { key: 'query', label: 'Consultas', icon: HelpCircle, color: 'text-muted-foreground', getBadge: () => messages.filter(m => m.ai_category === 'query').length },
-    { key: 'admin', label: 'Administrativo', icon: FileText, color: 'text-muted-foreground', getBadge: () => messages.filter(m => m.ai_category === 'admin').length },
+    { key: 'urgent', label: 'Urgentes', icon: AlertCircle, color: 'text-[#EF4444]', getBadge: () => messages.filter(m => (m.ai_urgency_score ?? 0) >= 7).length },
+    { key: 'instruction', label: 'Instrucciones', icon: ClipboardList, color: 'text-[#8B5CF6]', getBadge: () => messages.filter(m => m.ai_category === 'instruction').length },
+    { key: 'query', label: 'Consultas', icon: HelpCircle, color: 'text-[#0EA5E9]', getBadge: () => messages.filter(m => m.ai_category === 'query').length },
+    { key: 'admin', label: 'Administrativo', icon: FileText, color: 'text-[#94A3B8]', getBadge: () => messages.filter(m => m.ai_category === 'admin').length },
   ];
 
   return (
@@ -371,7 +528,8 @@ function ChannelSidebar({
         )}
       </div>
 
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+      {/* CANALES */}
+      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
         Canales
       </h4>
       {channels.map(({ key, label, icon: Icon }) => {
@@ -395,10 +553,10 @@ function ChannelSidebar({
         );
       })}
 
-      <Separator className="my-3" />
-
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
-        Filtros rápidos
+      {/* FILTROS RÁPIDOS */}
+      <div className="border-t border-[#F1F5F9] my-2" />
+      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
+        Filtros
       </h4>
       <button
         onClick={() => onStatusChange(statusFilter === 'assigned' ? null : 'assigned')}
@@ -425,9 +583,9 @@ function ChannelSidebar({
         <span className="flex-1">Sin expediente</span>
       </button>
 
-      <Separator className="my-3" />
-
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+      {/* CATEGORÍAS IA */}
+      <div className="border-t border-[#F1F5F9] my-2" />
+      <h4 className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider px-2 mb-1">
         Categorías IA
       </h4>
       {categories.map(({ key, label, icon: Icon, color, getBadge }) => {
@@ -451,12 +609,12 @@ function ChannelSidebar({
             <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? '' : color)} />
             <span className="flex-1 truncate">{label}</span>
             {count > 0 && (
-              <Badge
-                variant={key === 'urgent' ? 'destructive' : 'secondary'}
-                className="h-5 min-w-[20px] text-[10px] px-1.5"
-              >
+              <span className={cn(
+                'text-[10px] font-medium rounded-full px-1.5 py-0 min-w-[20px] text-center',
+                categoryBadgeColors[key] || 'bg-muted text-muted-foreground'
+              )}>
                 {count}
-              </Badge>
+              </span>
             )}
           </button>
         );
@@ -532,7 +690,6 @@ export default function CommunicationsUnifiedPage() {
   if (isMobile) {
     return (
       <div className="h-[calc(100vh-8rem)] flex flex-col">
-        {/* Channel pills for mobile */}
         <div className="p-3 border-b space-y-2">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold">Inbox</h2>
@@ -583,7 +740,6 @@ export default function CommunicationsUnifiedPage() {
 
       {/* Col 2 — Message list */}
       <div className="w-[340px] border-r flex-shrink-0 flex flex-col">
-        {/* Tablet: inline channel pills */}
         {isTablet && (
           <div className="p-3 border-b">
             <div className="flex gap-1 flex-wrap">
