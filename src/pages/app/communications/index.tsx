@@ -320,6 +320,21 @@ function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: 
 
       <div className="p-4 border-t space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
+          {onAnalyze && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100"
+              onClick={() => onAnalyze(msg.id)}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Analizando...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-1" /> {msg.ai_category ? '🤖 Re-analizar' : '🤖 Analizar'}</>
+              )}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleArchive}>
             <Archive className="h-4 w-4 mr-1" /> Archivar
           </Button>
