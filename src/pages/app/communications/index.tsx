@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useOrganization } from '@/hooks/useOrganization';
-import { useInboxMessages, useClientMatters, useClientActivities, type InboxMessage } from '@/hooks/use-inbox';
+import { useInboxMessages, useClientMatters, useClientActivities, useFilteredMessages, useFilteredCount, type InboxMessage } from '@/hooks/use-inbox';
 import { fromTable } from '@/lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProcessMessage } from '@/hooks/use-process-message';
@@ -20,6 +20,7 @@ import {
   Archive, UserPlus, Send, Bot, ExternalLink, Plug, CheckCircle2,
   AlertCircle, User, ClipboardList, HelpCircle, FileText, ArrowRight,
   Clock, Briefcase, Loader2, Sparkles, Eye, EyeOff, Menu, X,
+  ShieldBan, Ban, RotateCcw, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
