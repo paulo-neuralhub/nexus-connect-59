@@ -51,13 +51,21 @@ function useAccountActivities(accountId: string, page: number) {
     queryFn: async () => {
       if (!organizationId) return { data: [] as Activity[], hasMore: false };
 
-      // 1. Get contact IDs from crm_contacts for this account
-      const { data: contacts } = await fromTable("crm_contacts")
+      // 1. Get contact IDs from BOTH crm_contacts and contacts tables
+      const { data: crmContacts } = await fromTable("crm_contacts")
         .select("id")
         .eq("account_id", accountId)
         .eq("organization_id", organizationId);
 
-      const contactIds = (contacts ?? []).map((c: any) => c.id);
+      const { data: legacyContacts } = await (supabase.from("contacts") as any)
+        .select("id")
+        .or(`account_id.eq.${accountId},crm_account_id.eq.${accountId}`)
+        .eq("organization_id", organizationId);
+
+      const contactIds = [
+        ...(crmContacts ?? []).map((c: any) => c.id),
+        ...(legacyContacts ?? []).map((c: any) => c.id),
+      ].filter((id, i, arr) => arr.indexOf(id) === i); // dedupe
       if (contactIds.length === 0) return { data: [] as Activity[], hasMore: false };
 
       // 2. Query activities table by those contact_ids

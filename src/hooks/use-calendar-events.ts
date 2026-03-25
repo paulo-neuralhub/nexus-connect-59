@@ -206,7 +206,64 @@ export function useCalendarEvents(startDate: Date, endDate: Date, filters: Event
         }
       }
       
-      // 3. Cargar tareas desde crm_tasks
+      // 3. Cargar calendar_events
+      {
+        const { data: calEvents, error: calError } = await supabase
+          .from('calendar_events')
+          .select(`
+            id, title, description, event_type,
+            start_at, end_at, all_day,
+            color, status,
+            matter_id, contact_id
+          `)
+          .eq('organization_id', currentOrganization.id)
+          .gte('start_at', startDate.toISOString())
+          .lte('start_at', endDate.toISOString())
+          .order('start_at', { ascending: true });
+
+        if (!calError && calEvents) {
+          const typeColorMap: Record<string, string> = {
+            deadline: '#EF4444',
+            meeting: '#8B5CF6',
+            task: '#F59E0B',
+            reminder: '#94A3B8',
+          };
+          for (const ev of calEvents) {
+            const evType = ev.event_type || 'task';
+            // Map to CalendarEvent type
+            let mappedType: CalendarEvent['type'] = 'appointment';
+            if (evType === 'deadline') mappedType = 'deadline';
+            else if (evType === 'meeting') mappedType = 'meeting';
+            else if (evType === 'task') mappedType = 'task';
+            else if (evType === 'reminder') mappedType = 'reminder';
+            else if (evType === 'call') mappedType = 'call';
+
+            // Apply filter
+            if (mappedType === 'deadline' && !filters.showDeadlines) continue;
+            if (mappedType === 'meeting' && !filters.showMeetings) continue;
+            if (mappedType === 'task' && !filters.showTasks) continue;
+            if (mappedType === 'reminder' && !filters.showReminders) continue;
+            if (mappedType === 'call' && !filters.showCalls) continue;
+
+            const color = ev.color || typeColorMap[evType] || '#3B82F6';
+
+            events.push({
+              id: `cal-${ev.id}`,
+              title: ev.title,
+              start: new Date(ev.start_at),
+              end: ev.end_at ? new Date(ev.end_at) : new Date(ev.start_at),
+              type: mappedType,
+              color,
+              allDay: ev.all_day ?? false,
+              description: ev.description ?? undefined,
+              source_table: 'calendar_events',
+              source_id: ev.id,
+            });
+          }
+        }
+      }
+
+      // 4. Cargar tareas desde crm_tasks
       if (filters.showTasks) {
         // Format dates as YYYY-MM-DD for date column comparison
         const startDateStr = startDate.toISOString().split('T')[0];

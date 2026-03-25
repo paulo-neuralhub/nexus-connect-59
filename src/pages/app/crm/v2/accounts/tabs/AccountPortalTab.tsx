@@ -134,8 +134,8 @@ export function AccountPortalTab({ accountId, accountName }: AccountPortalTabPro
   }
 
   const isActive = portalAccess?.status === 'active';
-  const isInvited = !!crmAccount?.portal_invited_at;
-  const hasPortal = crmAccount?.portal_enabled;
+  const isInvited = portalAccess?.status === 'invited' || !!crmAccount?.portal_invited_at;
+  const hasPortal = isActive || crmAccount?.portal_enabled;
 
   return (
     <div className="space-y-6">
