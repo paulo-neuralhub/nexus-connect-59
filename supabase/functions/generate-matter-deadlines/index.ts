@@ -195,9 +195,35 @@ Deno.serve(async (req) => {
           officeTimezone
         );
 
-        // 6. Upsert into matter_deadlines
-        const { error: dlErr } = await supabase.from("matter_deadlines").upsert(
-          {
+        // 6. Insert or update matter_deadlines (no unique constraint on composite)
+        // Check if deadline already exists for this matter+rule
+        const { data: existing } = await supabase
+          .from("matter_deadlines")
+          .select("id")
+          .eq("matter_id", matter.id)
+          .eq("rule_code", rule.code)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from("matter_deadlines")
+            .update({
+              deadline_date: deadlineDate.toISOString(),
+              trigger_date: baseDate.toISOString(),
+              original_deadline: deadlineDate.toISOString(),
+              status: deadlineDate > now ? "pending" : "overdue",
+              priority: rule.criticality === "critical" ? "critical" : "high",
+              metadata: {
+                rule_code: rule.code,
+                office_timezone: officeTimezone,
+                office_code: office?.code || jCode,
+                calculated_at: now.toISOString(),
+              },
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+        } else {
+          const { error: dlErr } = await supabase.from("matter_deadlines").insert({
             organization_id: matter.organization_id,
             matter_id: matter.id,
             rule_id: rule.id,
@@ -218,86 +244,12 @@ Deno.serve(async (req) => {
               office_code: office?.code || jCode,
               calculated_at: now.toISOString(),
             },
-          },
-          { onConflict: "matter_id,rule_code" }
-        );
-
-        if (dlErr) {
-          errors.push(`Deadline ${rule.code}: ${dlErr.message}`);
-          // If upsert conflict strategy fails, try insert without onConflict
-          if (dlErr.message?.includes("unique") || dlErr.message?.includes("conflict")) {
-            // Already exists, update instead
-            await supabase
-              .from("matter_deadlines")
-              .update({
-                deadline_date: deadlineDate.toISOString(),
-                status: deadlineDate > now ? "pending" : "overdue",
-                metadata: {
-                  rule_code: rule.code,
-                  office_timezone: officeTimezone,
-                  office_code: office?.code || jCode,
-                  calculated_at: now.toISOString(),
-                },
-                updated_at: new Date().toISOString(),
-              })
-              .eq("matter_id", matter.id)
-              .eq("rule_code", rule.code);
+          });
+          if (dlErr) {
+            errors.push(`Deadline ${rule.code}: ${dlErr.message}`);
           }
         }
         deadlinesCreated++;
-
-        // 7. Delete existing auto-generated calendar events for this rule
-        await supabase
-          .from("calendar_events")
-          .delete()
-          .eq("matter_id", matter.id)
-          .eq("organization_id", matter.organization_id)
-          .like("title", `%${rule.name_es || rule.name_en}%`);
-
-        // 8. Generate calendar reminders from alert_days
-        const alertDays: number[] = rule.alert_days || [];
-
-        for (const daysBefore of alertDays) {
-          const alertDate = new Date(deadlineDate);
-          alertDate.setDate(alertDate.getDate() - daysBefore);
-
-          // Skip past alerts
-          if (alertDate < now) continue;
-
-          const daysText = formatDaysText(daysBefore);
-          const prefix = getAlertPrefix(daysBefore);
-          const color = getAlertColor(daysBefore);
-
-          const { error: ceErr } = await supabase.from("calendar_events").insert({
-            organization_id: matter.organization_id,
-            title: `${prefix}${rule.name_es || rule.name_en} — vence en ${daysText}`,
-            description: [
-              `Expediente: ${matter.application_number || matter.registration_number || ""}`,
-              `Oficina: ${office?.name_short || jCode} (${office?.code || jCode})`,
-              `Timezone oficina: ${officeTimezone}`,
-              `Vencimiento: ${deadlineDate.toLocaleDateString("es-ES")}`,
-              rule.consequence_if_missed
-                ? `Si se pierde: ${rule.consequence_if_missed}`
-                : "",
-            ]
-              .filter(Boolean)
-              .join("\n"),
-            event_type: daysBefore <= 14 ? "deadline_fatal" : "deadline",
-            start_at: alertDate.toISOString(),
-            end_at: new Date(alertDate.getTime() + 3600000).toISOString(),
-            all_day: false,
-            matter_id: matter.id,
-            color,
-            status: "confirmed",
-            created_by: matter.assigned_to,
-          });
-
-          if (ceErr) {
-            errors.push(`Calendar ${rule.code}@${daysBefore}d: ${ceErr.message}`);
-          } else {
-            calendarEventsCreated++;
-          }
-        }
 
         // 9. Event on the exact deadline day
         if (deadlineDate > now) {
