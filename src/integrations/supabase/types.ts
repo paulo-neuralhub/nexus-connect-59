@@ -5396,6 +5396,7 @@ export type Database = {
           sent_at: string | null
           sent_by: string
           source: string | null
+          source_message_id: string | null
           status: string | null
           target_family_id: string | null
           target_ids: string[]
@@ -5423,6 +5424,7 @@ export type Database = {
           sent_at?: string | null
           sent_by: string
           source?: string | null
+          source_message_id?: string | null
           status?: string | null
           target_family_id?: string | null
           target_ids?: string[]
@@ -5450,6 +5452,7 @@ export type Database = {
           sent_at?: string | null
           sent_by?: string
           source?: string | null
+          source_message_id?: string | null
           status?: string | null
           target_family_id?: string | null
           target_ids?: string[]
@@ -5478,6 +5481,13 @@ export type Database = {
             columns: ["sent_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_instructions_source_message_id_fkey"
+            columns: ["source_message_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_messages"
             referencedColumns: ["id"]
           },
           {
