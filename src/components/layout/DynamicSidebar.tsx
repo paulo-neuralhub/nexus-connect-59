@@ -135,6 +135,7 @@ export function DynamicSidebar({
   const { data: instructionsPendingCount = 0 } = useInstructionsPendingCount();
   const { data: inboxCount = 0 } = useInboxCount();
   const { data: approvalsCountData } = useApprovalsCount();
+  const { data: ipoDocsCounts } = useIpoDocumentCounts();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
