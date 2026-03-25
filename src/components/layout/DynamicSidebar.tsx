@@ -12,6 +12,8 @@ import { useSidebarMenu, type SidebarModule, type SidebarSection } from "@/hooks
 import { usePendingSignaturesCount } from "@/hooks/signatures";
 import { useAlertStats } from "@/hooks/usePredictiveAlerts";
 import { useInstructionsPendingCount } from "@/hooks/use-instructions";
+import { useInboxCount } from "@/hooks/use-inbox";
+import { useApprovalsCount } from "@/hooks/use-approvals";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
@@ -20,8 +22,8 @@ import {
   Code, Upload, Wallet, Briefcase, GitBranch, PenTool, Clock, Bell, MessageSquare, 
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
-  Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench,
-  Users2, KanbanSquare, Cpu
+  Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
+  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -108,6 +110,9 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   Shield,
   Send,
   Wrench,
+  Inbox,
+  CalendarClock,
+  ClipboardList,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
@@ -127,6 +132,8 @@ export function DynamicSidebar({
   const { data: pendingSignaturesCount = 0 } = usePendingSignaturesCount();
   const { data: alertStats } = useAlertStats();
   const { data: instructionsPendingCount = 0 } = useInstructionsPendingCount();
+  const { data: inboxCount = 0 } = useInboxCount();
+  const { data: approvalsCountData } = useApprovalsCount();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion"]));
@@ -166,6 +173,9 @@ export function DynamicSidebar({
     deadlines: 0,
     tasks: 0,
     instructions: instructionsPendingCount,
+    inbox: inboxCount,
+    approvals: approvalsCountData?.total || 0,
+  };
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);

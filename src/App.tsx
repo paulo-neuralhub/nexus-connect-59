@@ -257,7 +257,10 @@ import InternalChatPage from "./pages/app/communications/internal";
 import BackofficeWhatsAppCommunicationsPage from "./pages/backoffice/communications/whatsapp";
 import BackofficeEmailCommunicationsPage from "./pages/backoffice/communications/email";
 
-// Legal Ops Pages
+// Inbox + Approvals
+import InboxPage from "./pages/app/inbox";
+import ApprovalsPage from "./pages/app/approvals";
+
 import LegalOpsAssistantPage from "./pages/app/legal-ops/assistant";
 import LegalOpsClient360Page from "./pages/app/legal-ops/client-360";
 import LegalOpsCommunicationsPage from "./pages/app/legal-ops/communications";
@@ -442,6 +445,8 @@ const App = () => (
               <Route path="/app" element={<AppLayout />}>
                 <Route index element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="inbox" element={<InboxPage />} />
+                <Route path="approvals" element={<ApprovalsPage />} />
                 {/* Legacy Docket redirects to Expedientes V2 */}
                 <Route path="docket" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="docket/deadlines" element={<DeadlinesPage />} />
