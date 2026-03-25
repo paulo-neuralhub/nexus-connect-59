@@ -221,8 +221,9 @@ function LinkedInstructionSection({ messageId }: { messageId: string }) {
 }
 
 // ─── Detail panel ───
-function MessageDetail({ msg, organizationId, onBack }: {
+function MessageDetail({ msg, organizationId, onBack, onAnalyze, isAnalyzing }: {
   msg: InboxMessage; organizationId: string | undefined; onBack?: () => void;
+  onAnalyze?: (id: string) => void; isAnalyzing?: boolean;
 }) {
   const [reply, setReply] = useState('');
   const [showReply, setShowReply] = useState(false);
@@ -319,6 +320,21 @@ function MessageDetail({ msg, organizationId, onBack }: {
 
       <div className="p-4 border-t space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
+          {onAnalyze && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100"
+              onClick={() => onAnalyze(msg.id)}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Analizando...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-1" /> {msg.ai_category ? '🤖 Re-analizar' : '🤖 Analizar'}</>
+              )}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleArchive}>
             <Archive className="h-4 w-4 mr-1" /> Archivar
           </Button>
@@ -681,6 +697,8 @@ export default function CommunicationsUnifiedPage() {
           msg={selectedMsg}
           organizationId={organizationId}
           onBack={() => { setMobileView('list'); setSelectedId(null); }}
+          onAnalyze={processMessage}
+          isAnalyzing={processingId === selectedMsg.id}
         />
       </div>
     );
@@ -818,7 +836,7 @@ export default function CommunicationsUnifiedPage() {
       {/* Col 3 — Detail */}
       <div className="flex-1 flex flex-col min-w-0 border-r">
         {selectedMsg ? (
-          <MessageDetail msg={selectedMsg} organizationId={organizationId} />
+          <MessageDetail msg={selectedMsg} organizationId={organizationId} onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
         ) : (
           <EmptyDetailState />
         )}
