@@ -175,6 +175,7 @@ export function DynamicSidebar({
     instructions: instructionsPendingCount,
     communications: inboxCount,
     approvals: approvalsCountData?.total || 0,
+    'docs-oficiales': ipoDocsCounts?.actionRequired || 0,
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);

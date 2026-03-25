@@ -60,7 +60,9 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleOrder: 2,
         moduleCategory: "core",
         moduleExpanded: false,
-        moduleMenuItems: [],
+        moduleMenuItems: [
+          { label: "Documentos", path: "/app/smart-inbox", icon: "Building2" },
+        ],
         moduleRequires: [],
         modulePopular: false,
         moduleComingSoon: false,
