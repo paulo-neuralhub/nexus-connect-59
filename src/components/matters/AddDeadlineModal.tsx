@@ -38,7 +38,8 @@ const schema = z.object({
   title: z.string().min(1, 'Título requerido'),
   description: z.string().optional(),
   deadline_type: z.string().min(1, 'Tipo requerido'),
-  due_date: z.string().min(1, 'Fecha requerida'),
+  deadline_date: z.string().min(1, 'Fecha requerida'),
+  priority: z.string().min(1, 'Prioridad requerida'),
 });
 
 type FormData = z.infer<typeof schema>;

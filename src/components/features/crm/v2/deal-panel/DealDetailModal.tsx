@@ -337,14 +337,14 @@ export function DealDetailModal({
   );
 
   const pendingDeadlines = useMemo(
-    () => deadlines.filter((d) => !d.is_completed).slice(0, 3),
+    () => deadlines.filter((d) => d.status !== 'completed').slice(0, 3),
     [deadlines]
   );
 
   const actionItems = useMemo(() => {
     const items: { id: string; type: "task" | "deadline"; title: string; daysLeft: number | null; isUrgent: boolean; isWarning: boolean }[] = [];
     pendingDeadlines.forEach((d) => {
-      const days = differenceInDays(new Date(d.due_date), new Date());
+      const days = differenceInDays(new Date(d.deadline_date), new Date());
       items.push({ id: d.id, type: "deadline", title: d.title, daysLeft: days, isUrgent: days < 7, isWarning: days >= 7 && days <= 30 });
     });
     sortedTasks.slice(0, 5).forEach((t: any) => {
