@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Building2, Upload, CheckCircle, AlertTriangle, Clock, Search, FileText,
-  ArrowRight, Loader2, Zap, Download, ExternalLink
+  ArrowRight, Loader2, Zap, Download, ExternalLink, Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIpoDocuments, type IpoDocument } from '@/hooks/use-ipo-documents';
