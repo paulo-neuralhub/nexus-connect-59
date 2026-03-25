@@ -18,6 +18,7 @@ import { WhatsAppQrModal } from "./WhatsAppQrModal";
 export function IntegrationsCardsSection() {
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [waMode, setWaMode] = useState<"qr" | "api">("qr");
   const [showWaModal, setShowWaModal] = useState(false);
 
