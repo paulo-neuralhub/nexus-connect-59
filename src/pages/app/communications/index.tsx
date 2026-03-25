@@ -688,24 +688,49 @@ export default function CommunicationsUnifiedPage() {
 
   // ─── Message list (used in mobile and as middle content) ───
   const messageList = (
-    <ScrollArea className="flex-1">
-      {isLoading ? (
-        <div className="p-4 space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Analyze all header */}
+      {unanalyzedCount > 0 && (
+        <div className="px-3 py-2 border-b bg-amber-50/50 dark:bg-amber-950/10 flex items-center justify-between gap-2">
+          <span className="text-xs text-amber-700 dark:text-amber-400">
+            {unanalyzedCount} mensaje{unanalyzedCount > 1 ? 's' : ''} sin analizar
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs border-amber-300 text-amber-700 hover:bg-amber-100"
+            onClick={() => processAllPending()}
+            disabled={processingAll}
+          >
+            {processingAll ? (
+              <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analizando...</>
+            ) : (
+              <><Sparkles className="h-3 w-3 mr-1" /> 🤖 Analizar todos</>
+            )}
+          </Button>
         </div>
-      ) : filteredMessages.length === 0 ? (
-        <EmptyStateNoMessages />
-      ) : (
-        filteredMessages.map(msg => (
-          <MessageListItem
-            key={msg.id}
-            msg={msg}
-            isSelected={msg.id === selectedId}
-            onSelect={() => handleSelect(msg.id)}
-          />
-        ))
       )}
-    </ScrollArea>
+      <ScrollArea className="flex-1">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+          </div>
+        ) : filteredMessages.length === 0 ? (
+          <EmptyStateNoMessages />
+        ) : (
+          filteredMessages.map(msg => (
+            <MessageListItem
+              key={msg.id}
+              msg={msg}
+              isSelected={msg.id === selectedId}
+              onSelect={() => handleSelect(msg.id)}
+              onAnalyze={processMessage}
+              isAnalyzing={processingId === msg.id || processingAll}
+            />
+          ))
+        )}
+      </ScrollArea>
+    </div>
   );
 
   // ─── Mobile: list only ───
