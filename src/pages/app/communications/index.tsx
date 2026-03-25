@@ -506,11 +506,15 @@ interface ChannelSidebarProps {
   onStatusChange: (s: string | null) => void;
   categoryFilter: string | null;
   onCategoryChange: (c: string | null) => void;
+  filteredCount?: number;
+  showFiltered?: boolean;
+  onToggleFiltered?: () => void;
 }
 
 function ChannelSidebar({
   messages, channelFilter, onChannelChange,
   statusFilter, onStatusChange, categoryFilter, onCategoryChange,
+  filteredCount, showFiltered, onToggleFiltered,
 }: ChannelSidebarProps) {
   const totalPending = messages.filter(m => m.status === 'pending' || m.status === 'awaiting_approval').length;
 
