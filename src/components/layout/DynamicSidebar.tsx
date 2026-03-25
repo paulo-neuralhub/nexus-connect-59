@@ -110,6 +110,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   Shield,
   Send,
   Wrench,
+  Inbox,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
