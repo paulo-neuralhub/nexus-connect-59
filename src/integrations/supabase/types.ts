@@ -159,6 +159,80 @@ export type Database = {
           },
         ]
       }
+      account_team_members: {
+        Row: {
+          account_id: string
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          notifications_enabled: boolean | null
+          organization_id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          notifications_enabled?: boolean | null
+          organization_id: string
+          role?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          notifications_enabled?: boolean | null
+          organization_id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_team_members_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_team_members_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_team_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activities: {
         Row: {
           call_duration: number | null
@@ -14242,6 +14316,139 @@ export type Database = {
         }
         Relationships: []
       }
+      incoming_messages: {
+        Row: {
+          account_id: string | null
+          ai_category: string | null
+          ai_confidence: number | null
+          ai_draft_response: string | null
+          ai_processed_at: string | null
+          ai_proposed_action: string | null
+          ai_summary: string | null
+          ai_urgency_score: number | null
+          assigned_at: string | null
+          assigned_to: string | null
+          attachments: Json | null
+          body: string | null
+          channel: string
+          contact_id: string | null
+          created_at: string | null
+          external_id: string | null
+          id: string
+          matter_id: string | null
+          organization_id: string
+          raw_content: Json | null
+          sender_email: string | null
+          sender_name: string | null
+          sender_phone: string | null
+          status: string | null
+          subject: string | null
+          thread_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          ai_category?: string | null
+          ai_confidence?: number | null
+          ai_draft_response?: string | null
+          ai_processed_at?: string | null
+          ai_proposed_action?: string | null
+          ai_summary?: string | null
+          ai_urgency_score?: number | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          body?: string | null
+          channel: string
+          contact_id?: string | null
+          created_at?: string | null
+          external_id?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id: string
+          raw_content?: Json | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_phone?: string | null
+          status?: string | null
+          subject?: string | null
+          thread_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          ai_category?: string | null
+          ai_confidence?: number | null
+          ai_draft_response?: string | null
+          ai_processed_at?: string | null
+          ai_proposed_action?: string | null
+          ai_summary?: string | null
+          ai_urgency_score?: number | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          body?: string | null
+          channel?: string
+          contact_id?: string | null
+          created_at?: string | null
+          external_id?: string | null
+          id?: string
+          matter_id?: string | null
+          organization_id?: string
+          raw_content?: Json | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_phone?: string | null
+          status?: string | null
+          subject?: string | null
+          thread_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_messages_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_messages_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_messages_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intelligence_config: {
         Row: {
           config: Json | null
@@ -22570,6 +22777,73 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_routing_rules: {
+        Row: {
+          auto_assign_leads: boolean | null
+          case_type_rules: Json | null
+          created_at: string | null
+          default_owner_id: string | null
+          escalate_after_hours: number | null
+          escalate_to_id: string | null
+          id: string
+          notify_on_new_message: boolean | null
+          organization_id: string
+          routing_type: string | null
+          territory_rules: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_assign_leads?: boolean | null
+          case_type_rules?: Json | null
+          created_at?: string | null
+          default_owner_id?: string | null
+          escalate_after_hours?: number | null
+          escalate_to_id?: string | null
+          id?: string
+          notify_on_new_message?: boolean | null
+          organization_id: string
+          routing_type?: string | null
+          territory_rules?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_assign_leads?: boolean | null
+          case_type_rules?: Json | null
+          created_at?: string | null
+          default_owner_id?: string | null
+          escalate_after_hours?: number | null
+          escalate_to_id?: string | null
+          id?: string
+          notify_on_new_message?: boolean | null
+          organization_id?: string
+          routing_type?: string | null
+          territory_rules?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_routing_rules_default_owner_id_fkey"
+            columns: ["default_owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_routing_rules_escalate_to_id_fkey"
+            columns: ["escalate_to_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_routing_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string | null
@@ -22812,6 +23086,131 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      pending_approvals: {
+        Row: {
+          account_id: string | null
+          ai_analysis: string | null
+          ai_confidence: number | null
+          assigned_to: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          instruction_id: string | null
+          matter_id: string | null
+          organization_id: string
+          proposed_action: string | null
+          proposed_data: Json | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_id: string | null
+          source_type: string
+          status: string | null
+          summary: string | null
+          title: string
+          updated_at: string | null
+          urgency_level: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          ai_analysis?: string | null
+          ai_confidence?: number | null
+          assigned_to?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          instruction_id?: string | null
+          matter_id?: string | null
+          organization_id: string
+          proposed_action?: string | null
+          proposed_data?: Json | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id?: string | null
+          source_type: string
+          status?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string | null
+          urgency_level?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          ai_analysis?: string | null
+          ai_confidence?: number | null
+          assigned_to?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          instruction_id?: string | null
+          matter_id?: string | null
+          organization_id?: string
+          proposed_action?: string | null
+          proposed_data?: Json | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string | null
+          urgency_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_approvals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_instruction_id_fkey"
+            columns: ["instruction_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_instructions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plan_definitions: {
         Row: {
@@ -29551,6 +29950,78 @@ export type Database = {
           },
         ]
       }
+      whatsapp_sessions: {
+        Row: {
+          api_account_sid: string | null
+          api_token_encrypted: string | null
+          created_at: string | null
+          display_name: string | null
+          error_message: string | null
+          id: string
+          last_connected_at: string | null
+          organization_id: string
+          phone_number: string | null
+          qr_code: string | null
+          session_data: Json | null
+          session_type: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_account_sid?: string | null
+          api_token_encrypted?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          error_message?: string | null
+          id?: string
+          last_connected_at?: string | null
+          organization_id: string
+          phone_number?: string | null
+          qr_code?: string | null
+          session_data?: Json | null
+          session_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_account_sid?: string | null
+          api_token_encrypted?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          error_message?: string | null
+          id?: string
+          last_connected_at?: string | null
+          organization_id?: string
+          phone_number?: string | null
+          qr_code?: string | null
+          session_data?: Json | null
+          session_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_definitions: {
         Row: {
           config: Json | null
@@ -29873,6 +30344,10 @@ export type Database = {
         Returns: string
       }
       apply_research_data: { Args: { p_queue_id: string }; Returns: Json }
+      approve_pending_item: {
+        Args: { p_approval_id: string; p_notes?: string; p_user_id: string }
+        Returns: Json
+      }
       calculate_daily_metrics: {
         Args: { p_date?: string; p_org_id: string }
         Returns: undefined
@@ -29905,6 +30380,7 @@ export type Database = {
       }
       cleanup_expired_memories: { Args: never; Returns: undefined }
       delete_user_ai_data: { Args: { p_user_id: string }; Returns: undefined }
+      expire_pending_approvals: { Args: never; Returns: number }
       generate_journal_entry_for_invoice: {
         Args: { p_invoice_id: string }
         Returns: string
@@ -29974,7 +30450,9 @@ export type Database = {
         }
         Returns: string
       }
+      get_user_account_ids: { Args: never; Returns: string[] }
       get_user_org_id: { Args: never; Returns: string }
+      get_user_role: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
