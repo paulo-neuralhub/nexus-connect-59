@@ -680,7 +680,7 @@ export default function CommunicationsUnifiedPage() {
 
   // ─── Message list content ───
   const messageListContent = (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-[#F1F5F9]">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[#F1F5F9]">
       {/* Header */}
       <div className="bg-white border-b border-[#F1F5F9] px-4 py-3 flex items-center justify-between gap-2"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -739,7 +739,7 @@ export default function CommunicationsUnifiedPage() {
           ))}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {isLoading ? (
           <div className="p-4 space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-[10px]" />)}
@@ -813,7 +813,7 @@ export default function CommunicationsUnifiedPage() {
   const showCRMPanel = isDesktopLarge;
 
   return (
-    <div className="h-[calc(100vh-14rem)] flex rounded-xl border overflow-hidden">
+    <div className="h-[calc(100vh-14rem)] min-h-0 flex rounded-xl border overflow-hidden">
       {/* Col 1 — Dark sidebar (desktop only) */}
       {showSidebar && (
         <div className="w-[220px] flex-shrink-0 overflow-y-auto">
@@ -845,6 +845,7 @@ export default function CommunicationsUnifiedPage() {
       <ResizablePanelGroup direction="horizontal" className="h-full"
         onLayout={(sizes) => savePanelSizes(sizes)}>
         <ResizablePanel
+          className="min-h-0"
           defaultSize={savedSizes?.[0] ?? 32}
           minSize={22} maxSize={45}>
           {messageListContent}
@@ -852,7 +853,7 @@ export default function CommunicationsUnifiedPage() {
 
         <ResizableHandle withHandle />
 
-        <ResizablePanel defaultSize={savedSizes?.[1] ?? 68}>
+        <ResizablePanel className="min-h-0" defaultSize={savedSizes?.[1] ?? 68}>
           <div className="flex h-full">
             {/* Detail */}
             <div className="flex-1 flex flex-col min-w-0 relative">
