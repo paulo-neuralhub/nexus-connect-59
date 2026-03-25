@@ -40,7 +40,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleExpanded: false,
         moduleMenuItems: [
           { label: "Todos", path: "/app/expedientes", icon: "List" },
-          { label: "Plazos", path: "/app/calendario", icon: "Calendar" },
+          { label: "Plazos", path: "/app/deadlines", icon: "Calendar" },
           { label: "Crear nuevo", path: "/app/expedientes/nuevo", icon: "Plus" },
         ],
         moduleRequires: [],

@@ -1,5 +1,6 @@
 /**
  * use-matter-deadlines - Hook para plazos del expediente
+ * Uses real matter_deadlines columns: deadline_date, status, priority, etc.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,22 +11,30 @@ export interface MatterDeadline {
   id: string;
   matter_id: string;
   organization_id: string;
+  rule_code?: string | null;
   title: string;
   description?: string | null;
   deadline_type?: string;
-  due_date: string;
-  is_completed: boolean;
+  deadline_date: string;
+  status: string; // pending | overdue | completed | cancelled
+  priority?: string; // critical | high | normal
   completed_at?: string | null;
   completed_by?: string | null;
-  assigned_to?: string | null;
+  completion_notes?: string | null;
+  extension_count?: number;
+  extension_reason?: string | null;
+  original_deadline?: string | null;
+  auto_generated?: boolean;
+  source?: string | null;
+  metadata?: any;
   created_at: string;
+  assigned_to?: string | null;
 }
 
 export function useMatterDeadlines(matterId: string) {
   return useQuery({
     queryKey: ['matter-deadlines', matterId],
     queryFn: async () => {
-      // Query from matter_deadlines table
       const client: any = supabase;
       const { data, error } = await client
         .from('matter_deadlines')
@@ -34,22 +43,7 @@ export function useMatterDeadlines(matterId: string) {
         .order('deadline_date', { ascending: true });
       
       if (error) throw error;
-      
-      // Map fields to interface
-      return (data || []).map((d: any) => ({
-        id: d.id,
-        matter_id: d.matter_id,
-        organization_id: d.organization_id,
-        title: d.title,
-        description: d.description,
-        deadline_type: d.deadline_type,
-        due_date: d.deadline_date,
-        is_completed: d.status === 'completed',
-        completed_at: d.completed_at,
-        completed_by: d.completed_by,
-        assigned_to: d.assigned_to,
-        created_at: d.created_at,
-      })) as MatterDeadline[];
+      return (data || []) as MatterDeadline[];
     },
     enabled: !!matterId,
   });
@@ -65,7 +59,8 @@ export function useCreateMatterDeadline() {
       title: string;
       description?: string | null;
       deadline_type?: string;
-      due_date: string;
+      deadline_date: string;
+      priority?: string;
     }) => {
       const client: any = supabase;
       const { data: deadline, error } = await client
@@ -75,9 +70,12 @@ export function useCreateMatterDeadline() {
           organization_id: currentOrganization!.id,
           title: data.title,
           description: data.description,
-          deadline_type: data.deadline_type || 'internal',
-          deadline_date: data.due_date,
+          deadline_type: data.deadline_type || 'other',
+          deadline_date: data.deadline_date,
+          priority: data.priority || 'normal',
           status: 'pending',
+          auto_generated: false,
+          source: 'manual',
         })
         .select()
         .single();
@@ -95,14 +93,49 @@ export function useCompleteMatterDeadline() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, notes }: { id: string; notes?: string }) => {
       const client: any = supabase;
       const { error } = await client
         .from('matter_deadlines')
         .update({ 
           status: 'completed',
           completed_at: new Date().toISOString(),
+          completion_notes: notes || null,
         })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matter-deadlines'] });
+    },
+  });
+}
+
+export function useExtendMatterDeadline() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, newDate, reason, currentDate, currentExtensionCount }: {
+      id: string;
+      newDate: string;
+      reason: string;
+      currentDate: string;
+      currentExtensionCount: number;
+    }) => {
+      const client: any = supabase;
+      const updateData: any = {
+        deadline_date: newDate,
+        extension_count: (currentExtensionCount || 0) + 1,
+        extension_reason: reason,
+      };
+      // Store original deadline on first extension
+      if (currentExtensionCount === 0) {
+        updateData.original_deadline = currentDate;
+      }
+      const { error } = await client
+        .from('matter_deadlines')
+        .update(updateData)
         .eq('id', id);
       
       if (error) throw error;
