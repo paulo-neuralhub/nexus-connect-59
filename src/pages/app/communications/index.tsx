@@ -635,6 +635,25 @@ function ChannelSidebar({
           </button>
         );
       })}
+
+      {/* Separator */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '8px 0' }} />
+
+      {/* Filtrados (spam/promo/notification) */}
+      <p className="px-4 mb-1 uppercase tracking-[0.1em]"
+        style={{ color: 'rgba(255,255,255,0.40)', fontSize: 10 }}>Sistema</p>
+      <button
+        onClick={() => onToggleFiltered?.()}
+        className={itemClass(!!showFiltered)} style={itemStyle(!!showFiltered)}>
+        <ShieldBan className="h-4 w-4 flex-shrink-0" style={{ opacity: 0.8 }} />
+        <span className="flex-1 truncate">Filtrados</span>
+        {(filteredCount ?? 0) > 0 && (
+          <span className="text-xs rounded-full px-1.5 min-w-[20px] text-center"
+            style={{ background: 'rgba(255,255,255,0.20)', color: 'white', fontSize: 10 }}>
+            {filteredCount}
+          </span>
+        )}
+      </button>
     </div>
   );
 }
