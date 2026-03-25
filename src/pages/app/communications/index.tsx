@@ -697,6 +697,8 @@ export default function CommunicationsUnifiedPage() {
           msg={selectedMsg}
           organizationId={organizationId}
           onBack={() => { setMobileView('list'); setSelectedId(null); }}
+          onAnalyze={processMessage}
+          isAnalyzing={processingId === selectedMsg.id}
         />
       </div>
     );
@@ -834,7 +836,7 @@ export default function CommunicationsUnifiedPage() {
       {/* Col 3 — Detail */}
       <div className="flex-1 flex flex-col min-w-0 border-r">
         {selectedMsg ? (
-          <MessageDetail msg={selectedMsg} organizationId={organizationId} />
+          <MessageDetail msg={selectedMsg} organizationId={organizationId} onAnalyze={processMessage} isAnalyzing={processingId === selectedMsg.id} />
         ) : (
           <EmptyDetailState />
         )}
