@@ -808,6 +808,12 @@ export default function CommunicationsUnifiedPage() {
             </Button>
           )}
           <span className="text-sm font-semibold">{filteredMessages.length} mensajes</span>
+          {filteredTodayCount > 0 && (
+            <button onClick={handleToggleFiltered}
+              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+              🚫 {filteredTodayCount} filtrados hoy
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* Private mode toggle */}
