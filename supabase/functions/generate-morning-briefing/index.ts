@@ -385,9 +385,10 @@ serve(async (req) => {
       health_dimensions: healthDimensions,
       whats_new: {
         new_messages: newMessages?.length || 0,
-        new_deadlines: newDeadlines?.map((d: any) => ({
-          title: d.title, matter_ref: d.matter?.reference
-        })) || [],
+        new_deadlines: newDeadlines?.map((d: any) => {
+          const mi = matters?.find((m: any) => m.id === d.matter_id)
+          return { title: d.title, matter_ref: mi?.reference }
+        }) || [],
         approved_budgets: approvedBudgets?.map((b: any) => ({
           title: b.title, client: b.crm_account?.name
         })) || []
