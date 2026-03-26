@@ -32,9 +32,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const { user_id: userId, organization_id: orgId } = await req.json()
+    const requestBody = await req.json()
+    const { user_id: userId, organization_id: orgId, force } = requestBody
     if (!userId || !orgId) throw new Error('user_id y organization_id requeridos')
-    console.log('[B1] userId:', userId, 'orgId:', orgId)
+    console.log('[B1] userId:', userId, 'orgId:', orgId, 'force:', !!force)
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -48,7 +49,7 @@ serve(async (req) => {
       .single()
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    if (existing?.created_at > oneHourAgo) {
+    if (existing?.created_at > oneHourAgo && !force) {
       return new Response(
         JSON.stringify({ success: true, cached: true, data: existing }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -99,7 +100,7 @@ serve(async (req) => {
     ]
     const allDeadlines = await safeQuery('deadlines', () =>
       supabase.from('matter_deadlines')
-        .select('id, title, deadline_date, priority, type, matter_id')
+        .select('id, title, deadline_date, priority, matter_id')
         .in('matter_id', safeMatterIds)
         .eq('status', 'pending')
         .lte('deadline_date',
@@ -130,7 +131,7 @@ serve(async (req) => {
         jurisdiction: matterInfo?.jurisdiction_code,
         deadline_date: d.deadline_date,
         days_remaining: daysLeft,
-        is_non_extensible: nonExtensibleTypes.includes(d.type),
+        is_non_extensible: false,
         assignee_name: null,
         is_unassigned: true,
         action_url: '/app/matters',
@@ -167,12 +168,8 @@ serve(async (req) => {
           .eq('status', 'awaiting_approval')
           .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       )
-      const watches = await safeQuery('watches', () =>
-        supabase.from('watch_items')
-          .select('id')
-          .eq('organization_id', orgId)
-          .eq('status', 'active')
-      )
+      const watches = { length: 0 }
+      // watch_items temporalmente desactivado
       const dims = {
         plazos: Math.max(0, 100
           - (urgentItems.fatal.length * 25)
@@ -214,7 +211,7 @@ serve(async (req) => {
     )
     const newDeadlines = await safeQuery('newDL', () =>
       supabase.from('matter_deadlines')
-        .select('title, matter:matters(reference)')
+        .select('title, matter_id')
         .in('matter_id', safeMatterIds)
         .gte('created_at', yesterday)
     )
@@ -344,11 +341,8 @@ serve(async (req) => {
     // OPORTUNIDADES (solo IP_GENIUS)
     let opportunities: any[] = []
     if (hasIPGenius) {
-      const trademarks = await safeQuery('trademarks', () =>
-        supabase.from('trademark_assets')
-          .select('mark_name, matter:matters(jurisdiction_code)')
-          .in('matter_id', safeMatterIds)
-      )
+      const trademarks = null
+      // trademark_assets temporalmente desactivado
       const majorJ = ['US', 'EM', 'ES', 'EP', 'CN', 'GB']
       const oppMap: Record<string, string[]> = {}
       trademarks?.forEach((tm: any) => {
@@ -373,19 +367,8 @@ serve(async (req) => {
     // ADMIN STATS
     let adminStats = null
     if (profile?.role === 'admin') {
-      const invoices = await safeQuery('invoices', () =>
-        supabase.from('invoices')
-          .select('total_amount, status')
-          .eq('organization_id', orgId)
-          .in('status', ['sent', 'overdue'])
-      )
-      adminStats = {
-        pending_invoices: invoices?.length || 0,
-        pending_amount: invoices?.reduce(
-          (s: number, i: any) => s + (i.total_amount || 0), 0
-        ) || 0,
-        overdue: invoices?.filter((i: any) => i.status === 'overdue').length || 0
-      }
+      // invoices temporalmente desactivado
+      adminStats = { pending_invoices: 0, pending_amount: 0, overdue: 0 }
     }
 
     // CONSTRUIR content_json
@@ -402,9 +385,10 @@ serve(async (req) => {
       health_dimensions: healthDimensions,
       whats_new: {
         new_messages: newMessages?.length || 0,
-        new_deadlines: newDeadlines?.map((d: any) => ({
-          title: d.title, matter_ref: d.matter?.reference
-        })) || [],
+        new_deadlines: newDeadlines?.map((d: any) => {
+          const mi = matters?.find((m: any) => m.id === d.matter_id)
+          return { title: d.title, matter_ref: mi?.reference }
+        }) || [],
         approved_budgets: approvedBudgets?.map((b: any) => ({
           title: b.title, client: b.crm_account?.name
         })) || []
