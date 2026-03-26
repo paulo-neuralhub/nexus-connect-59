@@ -98,8 +98,7 @@ serve(async (req) => {
       supabase.from('matter_deadlines')
         .select(`
           id, title, deadline_date, priority, type,
-          matter:matters(reference, title, jurisdiction_code),
-          assignee:profiles(first_name, last_name)
+          matter:matters(reference, title, jurisdiction_code)
         `)
         .in('matter_id', safeMatterIds)
         .eq('status', 'pending')
@@ -129,10 +128,8 @@ serve(async (req) => {
         deadline_date: d.deadline_date,
         days_remaining: daysLeft,
         is_non_extensible: nonExtensibleTypes.includes(d.type),
-        assignee_name: d.assignee
-          ? `${d.assignee.first_name} ${d.assignee.last_name}`
-          : null,
-        is_unassigned: !d.assignee,
+        assignee_name: null,
+        is_unassigned: true,
         action_url: '/app/matters',
         status: 'pending'
       }
