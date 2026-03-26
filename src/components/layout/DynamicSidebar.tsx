@@ -25,7 +25,7 @@ import {
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
   Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
-  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList
+  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -115,6 +115,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   Inbox,
   CalendarClock,
   ClipboardList,
+  Sun,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
