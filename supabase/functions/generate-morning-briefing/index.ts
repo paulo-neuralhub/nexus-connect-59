@@ -96,10 +96,7 @@ serve(async (req) => {
     ]
     const allDeadlines = await safeQuery('deadlines', () =>
       supabase.from('matter_deadlines')
-        .select(`
-          id, title, deadline_date, priority, type,
-          matter:matters(reference, title, jurisdiction_code)
-        `)
+        .select('id, title, deadline_date, priority, type, matter_id')
         .in('matter_id', safeMatterIds)
         .eq('status', 'pending')
         .lte('deadline_date',
@@ -115,16 +112,17 @@ serve(async (req) => {
       const daysLeft = Math.ceil(
         (new Date(d.deadline_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
       )
+      const matterInfo = matters?.find((m: any) => m.id === d.matter_id)
       const item = {
         item_id: `deadline-${d.id}`,
         item_type: 'deadline',
         item_source_id: d.id,
-        item_ref: d.matter?.reference,
+        item_ref: matterInfo?.reference,
         item_title: d.title,
         title: d.title,
-        matter_ref: d.matter?.reference,
-        matter_title: d.matter?.title,
-        jurisdiction: d.matter?.jurisdiction_code,
+        matter_ref: matterInfo?.reference,
+        matter_title: matterInfo?.title,
+        jurisdiction: matterInfo?.jurisdiction_code,
         deadline_date: d.deadline_date,
         days_remaining: daysLeft,
         is_non_extensible: nonExtensibleTypes.includes(d.type),
