@@ -25,7 +25,7 @@ const BriefingPage: React.FC = () => {
   if (!briefing || !content) return null;
 
   return (
-    <div>
+    <div style={{ background: '#EEF2F7', minHeight: '100%' }}>
       <HeroBriefing
         content={content}
         briefing={briefing}

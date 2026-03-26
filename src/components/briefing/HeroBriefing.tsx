@@ -6,12 +6,25 @@ interface HeroBriefingProps {
   onRefresh: () => void;
 }
 
+/* Silk v2 shared constants */
+const SILK = {
+  neu: '4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff',
+  neuHover: '0 4px 16px rgba(0,0,0,0.12)',
+  border: '1px solid rgba(0,0,0,0.06)',
+  radius: 14,
+  dark: '#0F172A',
+  muted: '#64748B',
+  label: { fontSize: 13, fontWeight: 600 as const, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: '#64748B' },
+  font: "'Plus Jakarta Sans', sans-serif",
+  tabNum: 'tabular-nums' as const,
+};
+
 export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps) {
   const score = content.health_score || 0;
   const animatedScore = useCountUp(score, 1200);
-  const scoreColor = score >= 80 ? '#22C55E' : score >= 60 ? '#F59E0B' : '#EF4444';
-  const circumference = 2 * Math.PI * 68;
-  const strokeOffset = circumference * (1 - score / 100);
+  const circumference48 = 2 * Math.PI * 20;
+  const strokeOffset48 = circumference48 * (1 - score / 100);
+  const scoreLargeColor = score >= 80 ? '#16A34A' : score >= 60 ? '#D97706' : '#DC2626';
 
   const fatalCount = content.sections?.urgent?.fatal?.length || 0;
   const criticalCount =
@@ -29,20 +42,17 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
     : criticalItems.length > 0 ? '#EF4444'
     : '#F59E0B';
 
-  const circumference48 = 2 * Math.PI * 20;
-  const strokeOffset48 = circumference48 * (1 - score / 100);
-  const scoreLargeColor = score >= 80 ? '#16A34A' : score >= 60 ? '#D97706' : '#DC2626';
-
   return (
     <>
-      {/* ═══════ SECTION 1 — HEADER IP-NEXUS STYLE ═══════ */}
+      {/* ═══════ SECTION 1 — HEADER ═══════ */}
       <div style={{ padding: '32px 32px 0' }}>
 
-        {/* Breadcrumb IA */}
+        {/* Badge IP-GENIUS — Silk v2 semantic badge */}
         {content.has_ip_genius && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: '#FEF3C7', border: '1px solid #FDE68A',
+            background: 'rgba(245,158,11,0.15)',
+            border: '1px solid rgba(245,158,11,0.25)',
             borderRadius: 999, padding: '4px 12px',
             fontSize: 11, fontWeight: 600, color: '#B45309', marginBottom: 16
           }}>
@@ -50,32 +60,28 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           </div>
         )}
 
-        {/* Título de página */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start',
-          justifyContent: 'space-between', marginBottom: 24
-        }}>
+        {/* Título */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
             <h1 style={{
-              fontSize: 36, fontWeight: 800, color: '#0F172A', margin: 0,
-              letterSpacing: '-0.02em', fontFamily: "'Plus Jakarta Sans', sans-serif"
+              fontSize: 36, fontWeight: 800, color: SILK.dark, margin: 0,
+              letterSpacing: '-0.02em', fontFamily: SILK.font
             }}>
               Buenos días, {content.user_name} 👋
             </h1>
-            <p style={{
-              fontSize: 14, color: '#64748B', marginTop: 6,
-              fontFamily: "'Plus Jakarta Sans', sans-serif"
-            }}>
+            <p style={{ fontSize: 14, color: SILK.muted, marginTop: 6, fontFamily: SILK.font }}>
               {new Date().toLocaleDateString('es-ES', {
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
               })}
             </p>
           </div>
+          {/* Botón Actualizar — Silk v2 neumórfico */}
           <button onClick={onRefresh} style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'white', border: '1px solid #E2E8F0',
-            borderRadius: 8, padding: '8px 16px',
-            fontSize: 13, color: '#64748B', cursor: 'pointer', fontWeight: 500
+            background: 'white', border: SILK.border,
+            borderRadius: 11, padding: '8px 16px',
+            boxShadow: SILK.neu,
+            fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500
           }}>
             ↻ Actualizar
           </button>
@@ -87,8 +93,9 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           <div style={{
             flex: 1,
             background: fatalCount > 0 ? '#FEF2F2' : 'white',
-            border: `2px solid ${fatalCount > 0 ? '#FCA5A5' : '#E2E8F0'}`,
-            borderRadius: 14, padding: '20px 24px',
+            border: `2px solid ${fatalCount > 0 ? '#FCA5A5' : 'rgba(0,0,0,0.06)'}`,
+            borderRadius: SILK.radius, padding: '20px 24px',
+            boxShadow: SILK.neu,
             display: 'flex', alignItems: 'center', gap: 16
           }}>
             <div style={{
@@ -101,13 +108,10 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
               <div style={{
                 fontSize: 40, fontWeight: 800,
                 color: fatalCount > 0 ? '#DC2626' : '#CBD5E1',
-                lineHeight: 1, letterSpacing: '-0.03em',
-                fontFamily: "'Plus Jakarta Sans', sans-serif"
+                lineHeight: 1, letterSpacing: '-0.02em',
+                fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
               }}>{fatalCount}</div>
-              <div style={{
-                fontSize: 12, fontWeight: 600,
-                color: fatalCount > 0 ? '#EF4444' : '#94A3B8', marginTop: 2
-              }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: fatalCount > 0 ? '#EF4444' : '#94A3B8', marginTop: 2 }}>
                 {fatalCount > 0 ? 'FATALES — acción YA' : 'Sin plazos fatales'}
               </div>
             </div>
@@ -117,8 +121,9 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           <div style={{
             flex: 1,
             background: criticalCount > 0 ? '#FFF7ED' : 'white',
-            border: `2px solid ${criticalCount > 0 ? '#FED7AA' : '#E2E8F0'}`,
-            borderRadius: 14, padding: '20px 24px',
+            border: `2px solid ${criticalCount > 0 ? '#FED7AA' : 'rgba(0,0,0,0.06)'}`,
+            borderRadius: SILK.radius, padding: '20px 24px',
+            boxShadow: SILK.neu,
             display: 'flex', alignItems: 'center', gap: 16
           }}>
             <div style={{
@@ -129,8 +134,8 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
             <div>
               <div style={{
                 fontSize: 40, fontWeight: 800, color: '#EA580C',
-                lineHeight: 1, letterSpacing: '-0.03em',
-                fontFamily: "'Plus Jakarta Sans', sans-serif"
+                lineHeight: 1, letterSpacing: '-0.02em',
+                fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
               }}>{criticalCount}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: '#F97316', marginTop: 2 }}>
                 URGENTES — menos de 7 días
@@ -140,8 +145,10 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
 
           {/* PILL HOY */}
           <div style={{
-            flex: 1, background: '#EFF6FF', border: '2px solid #BFDBFE',
-            borderRadius: 14, padding: '20px 24px',
+            flex: 1, background: '#EFF6FF',
+            border: '2px solid #BFDBFE',
+            borderRadius: SILK.radius, padding: '20px 24px',
+            boxShadow: SILK.neu,
             display: 'flex', alignItems: 'center', gap: 16
           }}>
             <div style={{
@@ -152,8 +159,8 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
             <div>
               <div style={{
                 fontSize: 40, fontWeight: 800, color: '#2563EB',
-                lineHeight: 1, letterSpacing: '-0.03em',
-                fontFamily: "'Plus Jakarta Sans', sans-serif"
+                lineHeight: 1, letterSpacing: '-0.02em',
+                fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
               }}>{agendaCount}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: '#3B82F6', marginTop: 2 }}>
                 EVENTOS HOY
@@ -164,15 +171,23 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           {/* HEALTH SCORE */}
           {content.has_ip_genius && (
             <div style={{
-              flex: 1, background: 'white', border: '2px solid #E2E8F0',
-              borderRadius: 14, padding: '20px 24px',
+              flex: 1, background: 'white',
+              border: SILK.border,
+              borderRadius: SILK.radius, padding: '20px 24px',
+              boxShadow: SILK.neu,
               display: 'flex', alignItems: 'center', gap: 16
             }}>
               <div style={{ position: 'relative', width: 48, height: 48, flexShrink: 0 }}>
                 <svg width="48" height="48" viewBox="0 0 48 48">
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#00b4d8" />
+                      <stop offset="100%" stopColor="#00d4aa" />
+                    </linearGradient>
+                  </defs>
                   <circle cx="24" cy="24" r="20" fill="none" stroke="#F1F5F9" strokeWidth="5" />
                   <circle cx="24" cy="24" r="20" fill="none"
-                    stroke={scoreColor} strokeWidth="5" strokeLinecap="round"
+                    stroke="url(#scoreGradient)" strokeWidth="5" strokeLinecap="round"
                     strokeDasharray={circumference48} strokeDashoffset={strokeOffset48}
                     transform="rotate(-90 24 24)"
                     style={{ transition: 'stroke-dashoffset 800ms ease' }} />
@@ -181,7 +196,7 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
                   position: 'absolute', inset: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#0F172A' }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: SILK.dark }}>
                     {animatedScore}
                   </span>
                 </div>
@@ -189,10 +204,10 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
               <div>
                 <div style={{
                   fontSize: 40, fontWeight: 800, color: scoreLargeColor,
-                  lineHeight: 1, letterSpacing: '-0.03em',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif"
+                  lineHeight: 1, letterSpacing: '-0.02em',
+                  fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
                 }}>{animatedScore}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B', marginTop: 2 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: SILK.muted, marginTop: 2 }}>
                   Portfolio Health Score
                 </div>
                 {content.health_dimensions?.penalties?.[0] && (
@@ -211,25 +226,42 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'auto auto', gap: 16 }}>
 
           {/* CARD 1 — ACCIÓN INMEDIATA */}
-          <div style={{ background: 'white', borderRadius: 14, border: '1px solid #E2E8F0', borderLeft: `5px solid ${borderLeftColor}`, overflow: 'hidden' }}>
+          <div style={{
+            background: 'white', borderRadius: SILK.radius,
+            border: SILK.border, borderLeft: `5px solid ${borderLeftColor}`,
+            boxShadow: SILK.neu, overflow: 'hidden'
+          }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <div style={{ ...SILK.label, fontFamily: SILK.font }}>
                 🚨 Acción Inmediata
               </div>
-              <div style={{ background: '#FEE2E2', color: '#DC2626', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>
+              <div style={{
+                background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)',
+                color: '#DC2626', fontSize: 11, fontWeight: 700,
+                padding: '2px 8px', borderRadius: 999
+              }}>
                 {fatalCount + criticalItems.length} críticos
               </div>
             </div>
 
             {fatalItems.map((item: any) => (
               <div key={item.item_id} style={{ padding: '14px 20px', borderBottom: '1px solid #FEF2F2', background: '#FFF5F5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ background: '#FEE2E2', color: '#DC2626', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>
-                    VENCIDO · {item.jurisdiction}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <span style={{
+                    background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)',
+                    color: '#DC2626', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6
+                  }}>
+                    VENCIDO
+                  </span>
+                  <span style={{
+                    background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)',
+                    color: '#2563EB', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6
+                  }}>
+                    {item.jurisdiction}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8' }}>{item.matter_ref}</span>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: SILK.dark, marginBottom: 8, fontFamily: SILK.font }}>
                   {item.title}
                 </div>
                 <a href="/app/matters" style={{ fontSize: 12, color: '#2563EB', textDecoration: 'none', fontWeight: 500 }}>
@@ -240,13 +272,22 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
 
             {criticalItems.map((item: any) => (
               <div key={item.item_id} style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ background: '#FEF3C7', color: '#D97706', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>
-                    {item.days_remaining}d · {item.jurisdiction}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <span style={{
+                    background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)',
+                    color: '#D97706', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6
+                  }}>
+                    {item.days_remaining}d
+                  </span>
+                  <span style={{
+                    background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)',
+                    color: '#2563EB', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6
+                  }}>
+                    {item.jurisdiction}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8' }}>{item.matter_ref}</span>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: SILK.dark, marginBottom: 8, fontFamily: SILK.font }}>
                   {(item.title || '').replace('⚠️ URGENTE: ', '')}
                 </div>
                 <a href="/app/matters" style={{ fontSize: 12, color: '#2563EB', textDecoration: 'none', fontWeight: 500 }}>
@@ -257,9 +298,12 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           </div>
 
           {/* CARD 2 — AGENDA HOY */}
-          <div style={{ background: 'white', borderRadius: 14, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <div style={{
+            background: 'white', borderRadius: SILK.radius,
+            border: SILK.border, boxShadow: SILK.neu, overflow: 'hidden'
+          }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <div style={{ ...SILK.label, fontFamily: SILK.font }}>
                 📅 Agenda Hoy
               </div>
             </div>
@@ -274,7 +318,7 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
                         {' — '}
                         {new Date(event.end_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: SILK.dark, fontFamily: SILK.font }}>
                         {event.title}
                       </div>
                       {event.matter_ref && (
@@ -292,10 +336,16 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           </div>
 
           {/* CARD 3 — INBOX */}
-          <div style={{ background: 'white', borderRadius: 14, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <div style={{
+            background: 'white', borderRadius: SILK.radius,
+            border: SILK.border, boxShadow: SILK.neu, overflow: 'hidden'
+          }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>📬 Inbox</div>
-              <div style={{ background: '#EFF6FF', color: '#2563EB', fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>
+              <div style={{ ...SILK.label, fontFamily: SILK.font }}>📬 Inbox</div>
+              <div style={{
+                background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)',
+                color: '#2563EB', fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999
+              }}>
                 {inbox.total} total
               </div>
             </div>
@@ -307,7 +357,10 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
                 { label: 'Admin', value: inbox.admin, bg: '#F8FAFC', color: '#64748B' }
               ].map(pill => (
                 <div key={pill.label} style={{ background: pill.bg, borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: pill.color, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <div style={{
+                    fontSize: 32, fontWeight: 800, color: pill.color, lineHeight: 1,
+                    fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
+                  }}>
                     {pill.value}
                   </div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: pill.color, marginTop: 6, opacity: 0.8 }}>
@@ -326,10 +379,16 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
           </div>
 
           {/* CARD 4 — PORTFOLIO */}
-          <div style={{ background: 'white', borderRadius: 14, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <div style={{
+            background: 'white', borderRadius: SILK.radius,
+            border: SILK.border, boxShadow: SILK.neu, overflow: 'hidden'
+          }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>📊 Portfolio</div>
-              <div style={{ background: '#F1F5F9', color: '#64748B', fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>
+              <div style={{ ...SILK.label, fontFamily: SILK.font }}>📊 Portfolio</div>
+              <div style={{
+                background: 'rgba(100,116,139,0.15)', border: '1px solid rgba(100,116,139,0.25)',
+                color: SILK.muted, fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999
+              }}>
                 {portfolio.total} expedientes
               </div>
             </div>
@@ -342,7 +401,7 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
                 { label: 'Pendientes', key: 'pending', color: '#94A3B8', value: portfolio.by_status?.pending || 0 }
               ].map(bar => (
                 <div key={bar.key} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                  <span style={{ fontSize: 12, color: '#64748B', width: 100, flexShrink: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <span style={{ fontSize: 12, color: SILK.muted, width: 100, flexShrink: 0, fontFamily: SILK.font }}>
                     {bar.label}
                   </span>
                   <div style={{ flex: 1, height: 8, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden' }}>
@@ -352,7 +411,10 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
                       background: bar.color, borderRadius: 4, transition: 'width 600ms ease-out'
                     }} />
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', width: 20, textAlign: 'right', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <span style={{
+                    fontSize: 13, fontWeight: 700, color: SILK.dark, width: 20, textAlign: 'right',
+                    fontFamily: SILK.font, fontVariantNumeric: SILK.tabNum
+                  }}>
                     {bar.value}
                   </span>
                 </div>
