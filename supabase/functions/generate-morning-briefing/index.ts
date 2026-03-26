@@ -32,9 +32,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const { user_id: userId, organization_id: orgId } = await req.json()
+    const requestBody = await req.json()
+    const { user_id: userId, organization_id: orgId, force } = requestBody
     if (!userId || !orgId) throw new Error('user_id y organization_id requeridos')
-    console.log('[B1] userId:', userId, 'orgId:', orgId)
+    console.log('[B1] userId:', userId, 'orgId:', orgId, 'force:', !!force)
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -47,10 +48,8 @@ serve(async (req) => {
       .eq('briefing_date', today)
       .single()
 
-    const body = { user_id: userId, organization_id: orgId, force: false }
-    try { Object.assign(body, await req.clone().json()) } catch (_) {}
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    if (existing?.created_at > oneHourAgo && !body.force) {
+    if (existing?.created_at > oneHourAgo && !force) {
       return new Response(
         JSON.stringify({ success: true, cached: true, data: existing }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
