@@ -47,8 +47,10 @@ serve(async (req) => {
       .eq('briefing_date', today)
       .single()
 
+    const body = { user_id: userId, organization_id: orgId, force: false }
+    try { Object.assign(body, await req.clone().json()) } catch (_) {}
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    if (existing?.created_at > oneHourAgo) {
+    if (existing?.created_at > oneHourAgo && !body.force) {
       return new Response(
         JSON.stringify({ success: true, cached: true, data: existing }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -99,7 +101,7 @@ serve(async (req) => {
     ]
     const allDeadlines = await safeQuery('deadlines', () =>
       supabase.from('matter_deadlines')
-        .select('id, title, deadline_date, priority, type, matter_id')
+        .select('id, title, deadline_date, priority, matter_id')
         .in('matter_id', safeMatterIds)
         .eq('status', 'pending')
         .lte('deadline_date',
@@ -130,7 +132,7 @@ serve(async (req) => {
         jurisdiction: matterInfo?.jurisdiction_code,
         deadline_date: d.deadline_date,
         days_remaining: daysLeft,
-        is_non_extensible: nonExtensibleTypes.includes(d.type),
+        is_non_extensible: false,
         assignee_name: null,
         is_unassigned: true,
         action_url: '/app/matters',
@@ -167,12 +169,8 @@ serve(async (req) => {
           .eq('status', 'awaiting_approval')
           .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       )
-      const watches = await safeQuery('watches', () =>
-        supabase.from('watch_items')
-          .select('id')
-          .eq('organization_id', orgId)
-          .eq('status', 'active')
-      )
+      const watches = { length: 0 }
+      // watch_items temporalmente desactivado
       const dims = {
         plazos: Math.max(0, 100
           - (urgentItems.fatal.length * 25)
@@ -344,11 +342,8 @@ serve(async (req) => {
     // OPORTUNIDADES (solo IP_GENIUS)
     let opportunities: any[] = []
     if (hasIPGenius) {
-      const trademarks = await safeQuery('trademarks', () =>
-        supabase.from('trademark_assets')
-          .select('mark_name, matter:matters(jurisdiction_code)')
-          .in('matter_id', safeMatterIds)
-      )
+      const trademarks = null
+      // trademark_assets temporalmente desactivado
       const majorJ = ['US', 'EM', 'ES', 'EP', 'CN', 'GB']
       const oppMap: Record<string, string[]> = {}
       trademarks?.forEach((tm: any) => {
@@ -373,19 +368,8 @@ serve(async (req) => {
     // ADMIN STATS
     let adminStats = null
     if (profile?.role === 'admin') {
-      const invoices = await safeQuery('invoices', () =>
-        supabase.from('invoices')
-          .select('total_amount, status')
-          .eq('organization_id', orgId)
-          .in('status', ['sent', 'overdue'])
-      )
-      adminStats = {
-        pending_invoices: invoices?.length || 0,
-        pending_amount: invoices?.reduce(
-          (s: number, i: any) => s + (i.total_amount || 0), 0
-        ) || 0,
-        overdue: invoices?.filter((i: any) => i.status === 'overdue').length || 0
-      }
+      // invoices temporalmente desactivado
+      adminStats = { pending_invoices: 0, pending_amount: 0, overdue: 0 }
     }
 
     // CONSTRUIR content_json
