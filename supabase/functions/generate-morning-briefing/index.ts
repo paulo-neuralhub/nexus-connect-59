@@ -212,7 +212,7 @@ serve(async (req) => {
     )
     const newDeadlines = await safeQuery('newDL', () =>
       supabase.from('matter_deadlines')
-        .select('title, matter:matters(reference)')
+        .select('title, matter_id')
         .in('matter_id', safeMatterIds)
         .gte('created_at', yesterday)
     )
