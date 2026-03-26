@@ -144,6 +144,7 @@ serve(async (req) => {
 
       briefingItems.push({ ...item, severity, days_remaining_at_briefing: daysLeft })
     })
+    console.log('[B4] fatal:', urgentItems.fatal.length, 'critical:', urgentItems.critical.length)
 
     // HEALTH SCORE (solo IP_GENIUS)
     let healthScore = null
