@@ -137,6 +137,7 @@ export function DynamicSidebar({
   const { data: inboxCount = 0 } = useInboxCount();
   const { data: approvalsCountData } = useApprovalsCount();
   const { data: ipoDocsCounts } = useIpoDocumentCounts();
+  const { data: briefingUrgent = 0 } = useBriefingBadge();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion", "operaciones"]));
@@ -179,6 +180,7 @@ export function DynamicSidebar({
     communications: inboxCount,
     approvals: approvalsCountData?.total || 0,
     'docs-oficiales': ipoDocsCounts?.actionRequired || 0,
+    briefing: briefingUrgent,
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
