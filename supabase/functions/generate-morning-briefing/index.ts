@@ -34,6 +34,7 @@ serve(async (req) => {
 
     const { user_id: userId, organization_id: orgId } = await req.json()
     if (!userId || !orgId) throw new Error('user_id y organization_id requeridos')
+    console.log('[B1] userId:', userId, 'orgId:', orgId)
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -88,6 +89,8 @@ serve(async (req) => {
     const matterIds = matters?.map((m: any) => m.id) || []
     const safeMatterIds = matterIds.length > 0
       ? matterIds : ['00000000-0000-0000-0000-000000000000']
+    console.log('[B2] matters count:', matters?.length ?? 'NULL')
+    console.log('[B2] safeMatterIds:', JSON.stringify(safeMatterIds?.slice(0, 2)))
 
     // PLAZOS — 4 NIVELES LEGALES
     const nonExtensibleTypes = [
@@ -104,6 +107,8 @@ serve(async (req) => {
         )
         .order('deadline_date', { ascending: true })
     )
+
+    console.log('[B3] allDeadlines:', allDeadlines?.length ?? 'NULL - FAILED')
 
     const urgentItems: any = { fatal: [], critical: [], urgent: [], attention: [] }
     const briefingItems: any[] = []
@@ -139,6 +144,7 @@ serve(async (req) => {
 
       briefingItems.push({ ...item, severity, days_remaining_at_briefing: daysLeft })
     })
+    console.log('[B4] fatal:', urgentItems.fatal.length, 'critical:', urgentItems.critical.length)
 
     // HEALTH SCORE (solo IP_GENIUS)
     let healthScore = null
@@ -510,7 +516,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('[Briefing] Fatal error:', error)
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: error.message, stack: error.stack?.slice(0, 500) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
