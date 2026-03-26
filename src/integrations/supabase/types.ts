@@ -5179,6 +5179,101 @@ export type Database = {
           },
         ]
       }
+      briefing_item_resolutions: {
+        Row: {
+          auto_resolved: boolean | null
+          briefing_date: string
+          briefing_id: string
+          created_at: string | null
+          days_remaining_at_briefing: number | null
+          id: string
+          item_id: string
+          item_ref: string | null
+          item_source_id: string | null
+          item_title: string
+          item_type: string
+          organization_id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string | null
+          status: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auto_resolved?: boolean | null
+          briefing_date: string
+          briefing_id: string
+          created_at?: string | null
+          days_remaining_at_briefing?: number | null
+          id?: string
+          item_id: string
+          item_ref?: string | null
+          item_source_id?: string | null
+          item_title: string
+          item_type: string
+          organization_id: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auto_resolved?: boolean | null
+          briefing_date?: string
+          briefing_id?: string
+          created_at?: string | null
+          days_remaining_at_briefing?: number | null
+          id?: string
+          item_id?: string
+          item_ref?: string | null
+          item_source_id?: string | null
+          item_title?: string
+          item_type?: string
+          organization_id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "briefing_item_resolutions_briefing_id_fkey"
+            columns: ["briefing_id"]
+            isOneToOne: false
+            referencedRelation: "genius_daily_briefings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefing_item_resolutions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefing_item_resolutions_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefing_item_resolutions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bug_report_replies: {
         Row: {
           content: string | null
