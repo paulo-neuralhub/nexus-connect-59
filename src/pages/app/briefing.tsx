@@ -2,7 +2,7 @@ import { useMorningBriefing } from '@/hooks/useMorningBriefing';
 import { HeroBriefing } from '@/components/briefing/HeroBriefing';
 import { Loader2 } from 'lucide-react';
 
-const BriefingPage = () => {
+const BriefingPage: React.FC = () => {
   const { briefing, loading, generating, generateBriefing, resolveItem, content } =
     useMorningBriefing();
 
