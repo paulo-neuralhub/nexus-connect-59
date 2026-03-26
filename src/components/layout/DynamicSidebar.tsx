@@ -15,6 +15,7 @@ import { useInstructionsPendingCount } from "@/hooks/use-instructions";
 import { useInboxCount } from "@/hooks/use-inbox";
 import { useApprovalsCount } from "@/hooks/use-approvals";
 import { useIpoDocumentCounts } from "@/hooks/use-ipo-documents";
+import { useBriefingBadge } from "@/hooks/useBriefingBadge";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
