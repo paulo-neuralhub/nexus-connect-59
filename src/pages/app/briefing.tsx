@@ -25,7 +25,7 @@ const BriefingPage: React.FC = () => {
   if (!briefing || !content) return null;
 
   return (
-    <div className="-m-6">
+    <div>
       <HeroBriefing
         content={content}
         briefing={briefing}

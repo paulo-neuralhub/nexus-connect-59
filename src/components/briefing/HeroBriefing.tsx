@@ -29,119 +29,177 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
     : criticalItems.length > 0 ? '#EF4444'
     : '#F59E0B';
 
+  const circumference48 = 2 * Math.PI * 20;
+  const strokeOffset48 = circumference48 * (1 - score / 100);
+  const scoreLargeColor = score >= 80 ? '#16A34A' : score >= 60 ? '#D97706' : '#DC2626';
+
   return (
     <>
-      {/* ═══════ SECTION 1 — HERO ═══════ */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%)', minHeight: 260 }}>
-        {/* Grid pattern */}
+      {/* ═══════ SECTION 1 — HEADER IP-NEXUS STYLE ═══════ */}
+      <div style={{ padding: '32px 32px 0' }}>
+
+        {/* Breadcrumb IA */}
+        {content.has_ip_genius && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: '#FEF3C7', border: '1px solid #FDE68A',
+            borderRadius: 999, padding: '4px 12px',
+            fontSize: 11, fontWeight: 600, color: '#B45309', marginBottom: 16
+          }}>
+            ✨ IP-GENIUS · Morning Briefing
+          </div>
+        )}
+
+        {/* Título de página */}
         <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)',
-          backgroundSize: '32px 32px',
-          pointerEvents: 'none'
-        }} />
-
-        <div className="relative z-10 flex items-center justify-between gap-8" style={{ padding: '40px 48px' }}>
-          {/* ZONE 1 — LEFT */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-3">
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 0 3px rgba(34,197,94,0.25)' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                {content.has_ip_genius ? 'IP-GENIUS · Morning Briefing' : 'Daily Report'}
-              </span>
-            </div>
-
-            <h1 style={{ fontSize: 44, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Buenos días,<br />
-              <span style={{ color: '#93C5FD' }}>{content.user_name}</span>
+          display: 'flex', alignItems: 'flex-start',
+          justifyContent: 'space-between', marginBottom: 24
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: 36, fontWeight: 800, color: '#0F172A', margin: 0,
+              letterSpacing: '-0.02em', fontFamily: "'Plus Jakarta Sans', sans-serif"
+            }}>
+              Buenos días, {content.user_name} 👋
             </h1>
-
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            <p style={{
+              fontSize: 14, color: '#64748B', marginTop: 6,
+              fontFamily: "'Plus Jakarta Sans', sans-serif"
+            }}>
+              {new Date().toLocaleDateString('es-ES', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+              })}
             </p>
-
-            <button
-              onClick={onRefresh}
-              style={{
-                marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 8, padding: '6px 14px', color: 'rgba(255,255,255,0.6)',
-                fontSize: 12, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif"
-              }}
-            >
-              ↻ Actualizar briefing
-            </button>
           </div>
+          <button onClick={onRefresh} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'white', border: '1px solid #E2E8F0',
+            borderRadius: 8, padding: '8px 16px',
+            fontSize: 13, color: '#64748B', cursor: 'pointer', fontWeight: 500
+          }}>
+            ↻ Actualizar
+          </button>
+        </div>
 
-          {/* ZONE 2 — 3 PILLS */}
-          <div className="flex gap-3 flex-shrink-0">
-            {/* FATAL */}
+        {/* 3+1 KPI PILLS */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+          {/* PILL FATAL */}
+          <div style={{
+            flex: 1,
+            background: fatalCount > 0 ? '#FEF2F2' : 'white',
+            border: `2px solid ${fatalCount > 0 ? '#FCA5A5' : '#E2E8F0'}`,
+            borderRadius: 14, padding: '20px 24px',
+            display: 'flex', alignItems: 'center', gap: 16
+          }}>
             <div style={{
-              background: fatalCount > 0 ? 'rgba(127,29,29,0.6)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${fatalCount > 0 ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: 16, padding: '24px 28px', minWidth: 150,
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
-            }}>
-              <div style={{ fontSize: 56, fontWeight: 800, color: fatalCount > 0 ? '#FCA5A5' : 'rgba(255,255,255,0.2)', lineHeight: 1, letterSpacing: '-0.04em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {fatalCount}
+              width: 48, height: 48, borderRadius: 12,
+              background: fatalCount > 0 ? '#FEE2E2' : '#F1F5F9',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, flexShrink: 0
+            }}>⛔</div>
+            <div>
+              <div style={{
+                fontSize: 40, fontWeight: 800,
+                color: fatalCount > 0 ? '#DC2626' : '#CBD5E1',
+                lineHeight: 1, letterSpacing: '-0.03em',
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+              }}>{fatalCount}</div>
+              <div style={{
+                fontSize: 12, fontWeight: 600,
+                color: fatalCount > 0 ? '#EF4444' : '#94A3B8', marginTop: 2
+              }}>
+                {fatalCount > 0 ? 'FATALES — acción YA' : 'Sin plazos fatales'}
               </div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: fatalCount > 0 ? '#FCA5A5' : 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 10 }}>FATAL</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4, lineHeight: 1.3 }}>
-                {fatalCount > 0 ? 'sin posibilidad de prórroga' : 'sin plazos vencidos'}
-              </div>
-            </div>
-
-            {/* URGENTES */}
-            <div style={{
-              background: 'rgba(124,45,18,0.6)', border: '1px solid rgba(249,115,22,0.5)',
-              borderRadius: 16, padding: '24px 28px', minWidth: 150,
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
-            }}>
-              <div style={{ fontSize: 56, fontWeight: 800, color: '#FED7AA', lineHeight: 1, letterSpacing: '-0.04em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {criticalCount}
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#FED7AA', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 10 }}>URGENTES</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4, lineHeight: 1.3 }}>menos de 7 días</div>
-            </div>
-
-            {/* HOY */}
-            <div style={{
-              background: 'rgba(30,64,175,0.6)', border: '1px solid rgba(59,130,246,0.5)',
-              borderRadius: 16, padding: '24px 28px', minWidth: 150,
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
-            }}>
-              <div style={{ fontSize: 56, fontWeight: 800, color: '#93C5FD', lineHeight: 1, letterSpacing: '-0.04em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {agendaCount}
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#93C5FD', letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: 10 }}>HOY</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4, lineHeight: 1.3 }}>eventos en agenda</div>
             </div>
           </div>
 
-          {/* ZONE 3 — HEALTH SCORE */}
-          {content.has_ip_genius && content.health_score !== null && (
-            <div className="flex flex-col items-center gap-3 flex-shrink-0">
-              <div style={{ position: 'relative', width: 160, height: 160 }}>
-                <svg width="160" height="160" viewBox="0 0 160 160">
-                  <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
-                  <circle cx="80" cy="80" r="68" fill="none" stroke={scoreColor} strokeWidth="12" strokeLinecap="round"
-                    strokeDasharray={circumference} strokeDashoffset={strokeOffset}
-                    transform="rotate(-90 80 80)" style={{ transition: 'stroke-dashoffset 1000ms ease-in-out' }} />
+          {/* PILL URGENTES */}
+          <div style={{
+            flex: 1,
+            background: criticalCount > 0 ? '#FFF7ED' : 'white',
+            border: `2px solid ${criticalCount > 0 ? '#FED7AA' : '#E2E8F0'}`,
+            borderRadius: 14, padding: '20px 24px',
+            display: 'flex', alignItems: 'center', gap: 16
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 12, background: '#FEF3C7',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, flexShrink: 0
+            }}>⚠️</div>
+            <div>
+              <div style={{
+                fontSize: 40, fontWeight: 800, color: '#EA580C',
+                lineHeight: 1, letterSpacing: '-0.03em',
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+              }}>{criticalCount}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#F97316', marginTop: 2 }}>
+                URGENTES — menos de 7 días
+              </div>
+            </div>
+          </div>
+
+          {/* PILL HOY */}
+          <div style={{
+            flex: 1, background: '#EFF6FF', border: '2px solid #BFDBFE',
+            borderRadius: 14, padding: '20px 24px',
+            display: 'flex', alignItems: 'center', gap: 16
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 12, background: '#DBEAFE',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, flexShrink: 0
+            }}>📅</div>
+            <div>
+              <div style={{
+                fontSize: 40, fontWeight: 800, color: '#2563EB',
+                lineHeight: 1, letterSpacing: '-0.03em',
+                fontFamily: "'Plus Jakarta Sans', sans-serif"
+              }}>{agendaCount}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#3B82F6', marginTop: 2 }}>
+                EVENTOS HOY
+              </div>
+            </div>
+          </div>
+
+          {/* HEALTH SCORE */}
+          {content.has_ip_genius && (
+            <div style={{
+              flex: 1, background: 'white', border: '2px solid #E2E8F0',
+              borderRadius: 14, padding: '20px 24px',
+              display: 'flex', alignItems: 'center', gap: 16
+            }}>
+              <div style={{ position: 'relative', width: 48, height: 48, flexShrink: 0 }}>
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="#F1F5F9" strokeWidth="5" />
+                  <circle cx="24" cy="24" r="20" fill="none"
+                    stroke={scoreColor} strokeWidth="5" strokeLinecap="round"
+                    strokeDasharray={circumference48} strokeDashoffset={strokeOffset48}
+                    transform="rotate(-90 24 24)"
+                    style={{ transition: 'stroke-dashoffset 800ms ease' }} />
                 </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 40, fontWeight: 800, color: 'white', lineHeight: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: '#0F172A' }}>
                     {animatedScore}
                   </span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>/100</span>
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textAlign: 'center', letterSpacing: '0.05em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <div style={{
+                  fontSize: 40, fontWeight: 800, color: scoreLargeColor,
+                  lineHeight: 1, letterSpacing: '-0.03em',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif"
+                }}>{animatedScore}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B', marginTop: 2 }}>
                   Portfolio Health Score
                 </div>
-                {content.health_dimensions?.penalties?.map((p: string, i: number) => (
-                  <div key={i} style={{ fontSize: 10, color: 'rgba(239,68,68,0.7)', textAlign: 'center', marginTop: 3 }}>↓ {p}</div>
-                ))}
+                {content.health_dimensions?.penalties?.[0] && (
+                  <div style={{ fontSize: 10, color: '#EF4444', marginTop: 2 }}>
+                    ↓ {content.health_dimensions.penalties[0]}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -149,7 +207,7 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
       </div>
 
       {/* ═══════ SECTION 2 — 4 CARDS ═══════ */}
-      <div style={{ padding: '24px 32px' }}>
+      <div style={{ padding: '0 32px 32px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'auto auto', gap: 16 }}>
 
           {/* CARD 1 — ACCIÓN INMEDIATA */}
