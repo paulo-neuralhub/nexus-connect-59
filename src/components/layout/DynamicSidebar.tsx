@@ -15,6 +15,7 @@ import { useInstructionsPendingCount } from "@/hooks/use-instructions";
 import { useInboxCount } from "@/hooks/use-inbox";
 import { useApprovalsCount } from "@/hooks/use-approvals";
 import { useIpoDocumentCounts } from "@/hooks/use-ipo-documents";
+import { useBriefingBadge } from "@/hooks/useBriefingBadge";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, FileText, Database, Radar, Users, Megaphone,
@@ -24,7 +25,7 @@ import {
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
   Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
-  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList
+  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -114,6 +115,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   Inbox,
   CalendarClock,
   ClipboardList,
+  Sun,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
@@ -136,6 +138,7 @@ export function DynamicSidebar({
   const { data: inboxCount = 0 } = useInboxCount();
   const { data: approvalsCountData } = useApprovalsCount();
   const { data: ipoDocsCounts } = useIpoDocumentCounts();
+  const { data: briefingUrgent = 0 } = useBriefingBadge();
 
   // Expandir/contraer secciones
   const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion", "operaciones"]));
@@ -178,6 +181,7 @@ export function DynamicSidebar({
     communications: inboxCount,
     approvals: approvalsCountData?.total || 0,
     'docs-oficiales': ipoDocsCounts?.actionRequired || 0,
+    briefing: briefingUrgent,
   };
 
   const otherOrgs = memberships.filter(m => m.organization_id !== currentOrganization?.id);
