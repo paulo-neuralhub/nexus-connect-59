@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useQuery } from '@tanstack/react-query';
+import { useBriefingPDF } from '@/hooks/useBriefingPDF';
 import { NeoBadge } from '@/components/ui/neo-badge';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -12,7 +13,7 @@ import {
 import { HeroBriefing } from '@/components/briefing/HeroBriefing';
 import {
   ArrowLeft, ArrowRight, CalendarDays, AlertTriangle,
-  Check, Circle, Search, Loader2, Clock,
+  Check, Circle, Search, Loader2, Clock, Download,
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
