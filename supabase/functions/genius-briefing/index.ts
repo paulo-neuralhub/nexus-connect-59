@@ -67,7 +67,7 @@ async function generateBriefingForOrg(
   // A. Fatal deadlines (< 72h)
   const { data: fatalDl } = await db
     .from("matter_deadlines")
-    .select("title, deadline_date, is_critical, matter_id")
+    .select("title, deadline_date, priority, matter_id")
     .eq("organization_id", orgId)
     .eq("status", "pending")
     .gte("deadline_date", now)
@@ -90,7 +90,7 @@ async function generateBriefingForOrg(
         type: "deadline",
         priority: hoursLeft < 24 ? "fatal" : "high",
         title: `Plazo ${hoursLeft < 24 ? "fatal" : "urgente"}: ${d.title}`,
-        description: `${m?.title || ""} (${m?.reference || ""}) — Vence en ${hoursLeft}h.${d.is_critical ? " Sin respuesta → expediente cerrado." : ""}`,
+        description: `${m?.title || ""} (${m?.reference || ""}) — Vence en ${hoursLeft}h.${d.priority === "critical" ? " Sin respuesta → expediente cerrado." : ""}`,
         matter_id: d.matter_id,
         action_url: `/app/matters/${d.matter_id}`,
         days_remaining: Math.round(hoursLeft / 24 * 100) / 100,
