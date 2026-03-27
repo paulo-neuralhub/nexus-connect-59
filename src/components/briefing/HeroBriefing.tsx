@@ -1,4 +1,5 @@
 import { useCountUp } from '@/hooks/use-count-up';
+import { useBriefingPDF } from '@/hooks/useBriefingPDF';
 
 interface HeroBriefingProps {
   content: any;
@@ -18,6 +19,35 @@ const SILK = {
   font: "'Plus Jakarta Sans', sans-serif",
   tabNum: 'tabular-nums' as const,
 };
+
+/* ── PDF download mini-button ── */
+function PDFButton({ briefing, content }: { briefing: any; content: any }) {
+  const { download, generating } = useBriefingPDF();
+  return (
+    <button
+      disabled={generating}
+      onClick={(e) => {
+        e.stopPropagation();
+        download({
+          date: briefing.briefing_date,
+          contentJson: content,
+          totalItems: briefing.total_items || 0,
+          urgentItems: briefing.urgent_items || 0,
+        });
+      }}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        background: 'white', border: SILK.border,
+        borderRadius: 11, padding: '8px 16px',
+        boxShadow: SILK.neu,
+        fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500,
+        opacity: generating ? 0.6 : 1,
+      }}
+    >
+      {generating ? '⏳ Generando…' : '⬇ PDF'}
+    </button>
+  );
+}
 
 export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps) {
   const score = content.health_score || 0;
@@ -75,16 +105,19 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
               })}
             </p>
           </div>
-          {/* Botón Actualizar — Silk v2 neumórfico */}
-          <button onClick={onRefresh} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'white', border: SILK.border,
-            borderRadius: 11, padding: '8px 16px',
-            boxShadow: SILK.neu,
-            fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500
-          }}>
-            ↻ Actualizar
-          </button>
+          {/* Botones — Silk v2 neumórfico */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <PDFButton briefing={briefing} content={content} />
+            <button onClick={onRefresh} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'white', border: SILK.border,
+              borderRadius: 11, padding: '8px 16px',
+              boxShadow: SILK.neu,
+              fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500
+            }}>
+              ↻ Actualizar
+            </button>
+          </div>
         </div>
 
         {/* 3+1 KPI PILLS */}
