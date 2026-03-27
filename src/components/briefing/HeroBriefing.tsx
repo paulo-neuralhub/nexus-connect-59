@@ -1,4 +1,5 @@
 import { useCountUp } from '@/hooks/use-count-up';
+import { useBriefingPDF } from '@/hooks/useBriefingPDF';
 
 interface HeroBriefingProps {
   content: any;
@@ -75,16 +76,19 @@ export function HeroBriefing({ content, briefing, onRefresh }: HeroBriefingProps
               })}
             </p>
           </div>
-          {/* Botón Actualizar — Silk v2 neumórfico */}
-          <button onClick={onRefresh} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'white', border: SILK.border,
-            borderRadius: 11, padding: '8px 16px',
-            boxShadow: SILK.neu,
-            fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500
-          }}>
-            ↻ Actualizar
-          </button>
+          {/* Botones — Silk v2 neumórfico */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <PDFButton briefing={briefing} content={content} />
+            <button onClick={onRefresh} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'white', border: SILK.border,
+              borderRadius: 11, padding: '8px 16px',
+              boxShadow: SILK.neu,
+              fontSize: 13, color: SILK.muted, cursor: 'pointer', fontWeight: 500
+            }}>
+              ↻ Actualizar
+            </button>
+          </div>
         </div>
 
         {/* 3+1 KPI PILLS */}
