@@ -18,6 +18,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import Onboarding from "./pages/app/Onboarding";
 import Dashboard from "./pages/app/Dashboard";
 import BriefingPage from "./pages/app/briefing";
+import BriefingHistoryPage from "./pages/app/BriefingHistoryPage";
 import HelpLayout from "./pages/app/help/HelpLayout";
 import HelpCenterIndex from "./pages/app/help/index";
 import VideoTutorialsPage from "./pages/app/help/videos";
@@ -447,6 +448,7 @@ const App = () => (
                 <Route index element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="briefing" element={<BriefingPage />} />
+                <Route path="briefing/history" element={<BriefingHistoryPage />} />
                 <Route path="inbox" element={<Navigate to="/app/communications" replace />} />
                 <Route path="approvals" element={<ApprovalsPage />} />
                 {/* Legacy Docket redirects to Expedientes V2 */}
