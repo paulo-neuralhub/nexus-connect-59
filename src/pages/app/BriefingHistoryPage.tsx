@@ -51,6 +51,7 @@ const BriefingHistoryPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedBriefing, setSelectedBriefing] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { download: downloadPDF } = useBriefingPDF();
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ['briefing-history', organizationId, dateFrom.toISOString(), dateTo.toISOString()],
@@ -301,7 +302,21 @@ const BriefingHistoryPage: React.FC = () => {
                           ) : '—'}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <span className="text-xs text-primary font-medium">Ver →</span>
+                          <button
+                            title="Descargar PDF de este briefing"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadPDF({
+                                date: row.briefing_date,
+                                contentJson: row.content_json || {},
+                                totalItems: row.total_items || 0,
+                                urgentItems: row.urgent_items || 0,
+                              });
+                            }}
+                            className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                          >
+                            <Download className="w-3.5 h-3.5" /> PDF
+                          </button>
                         </td>
                       </tr>
                     );
