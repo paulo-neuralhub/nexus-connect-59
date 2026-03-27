@@ -67,12 +67,12 @@ async function generateBriefingForOrg(
   // A. Fatal deadlines (< 72h)
   const { data: fatalDl } = await db
     .from("matter_deadlines")
-    .select("title, due_date, is_critical, matter_id")
+    .select("title, deadline_date, is_critical, matter_id")
     .eq("organization_id", orgId)
     .eq("status", "pending")
-    .gte("due_date", now)
-    .lte("due_date", in72h)
-    .order("due_date", { ascending: true })
+    .gte("deadline_date", now)
+    .lte("deadline_date", in72h)
+    .order("deadline_date", { ascending: true })
     .limit(10);
 
   if (fatalDl?.length) {
@@ -85,7 +85,7 @@ async function generateBriefingForOrg(
 
     for (const d of fatalDl) {
       const m = mMap.get(d.matter_id);
-      const hoursLeft = Math.round((new Date(d.due_date).getTime() - Date.now()) / 3600000);
+      const hoursLeft = Math.round((new Date(d.deadline_date).getTime() - Date.now()) / 3600000);
       items.push({
         type: "deadline",
         priority: hoursLeft < 24 ? "fatal" : "high",
@@ -104,12 +104,12 @@ async function generateBriefingForOrg(
   const in7d = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
   const { data: upcomingDl } = await db
     .from("matter_deadlines")
-    .select("title, due_date, matter_id")
+    .select("title, deadline_date, matter_id")
     .eq("organization_id", orgId)
     .eq("status", "pending")
-    .gte("due_date", in3d)
-    .lte("due_date", in7d)
-    .order("due_date", { ascending: true })
+    .gte("deadline_date", in3d)
+    .lte("deadline_date", in7d)
+    .order("deadline_date", { ascending: true })
     .limit(5);
 
   if (upcomingDl?.length) {
@@ -119,7 +119,7 @@ async function generateBriefingForOrg(
 
     for (const d of upcomingDl) {
       const m = mMap.get(d.matter_id);
-      const daysLeft = Math.round((new Date(d.due_date).getTime() - Date.now()) / 86400000);
+      const daysLeft = Math.round((new Date(d.deadline_date).getTime() - Date.now()) / 86400000);
       items.push({
         type: "deadline",
         priority: "medium",
