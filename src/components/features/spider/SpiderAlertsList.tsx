@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon,
+  Image as ImageIcon, Globe, Camera,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -214,8 +214,11 @@ function AlertCard({
 
   const isSnoozed = effectiveSnoozed && new Date(effectiveSnoozed) > now;
   const isResolved = ['actioned', 'resolved'].includes(effectiveStatus);
-  const isDomain = alert.source_code === 'domain' || alert.alert_category === 'online';
+  const isDomain = alert.alert_category === 'domain' || alert.source_code === 'domain';
   const watch = alert.spider_watches;
+
+  // Evidence capture state (domain alerts)
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
 
   let style = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
   let cardBorder = style.border;
@@ -355,6 +358,27 @@ function AlertCard({
     }
   };
 
+  // ── Evidence capture handler (domain) ──
+  const handleEvidenceCapture = async () => {
+    setEvidenceLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('spider-evidence-capture', {
+        body: {
+          url: alert.source_url ?? `https://${alert.detected_mark_name}`,
+          alert_id: alert.id,
+          organization_id: orgId,
+          evidence_type: 'domain_scan',
+        },
+      });
+      if (error) throw error;
+      toast.success('Evidencia capturada y guardada');
+    } catch {
+      toast.error('No se pudo capturar. El dominio puede estar inactivo.');
+    } finally {
+      setEvidenceLoading(false);
+    }
+  };
+
   // ── Action buttons (shared between collapsed row 4 and expanded section 4) ──
   const renderActions = () => {
     if (isSnoozed) {
@@ -376,6 +400,64 @@ function AlertCard({
         </Button>
       );
     }
+
+    // Domain-specific actions
+    if (isDomain) {
+      return (
+        <>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-teal-300 text-teal-700"
+            onClick={() => navigate('/app/marketplace?jurisdiction=domain&practice=udrp')}
+          >
+            <Globe className="w-3 h-3" /> UDRP
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-blue-300 text-blue-700"
+            onClick={handleCnD}
+            disabled={cndLoading}
+          >
+            {cndLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+            {cndLoading ? 'Generando...' : 'C&D'}
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-green-300 text-green-700"
+            onClick={() => navigate(`/app/marketplace?jurisdiction=${alert.detected_jurisdiction || ''}`)}
+          >
+            <Users className="w-3 h-3" /> Agente
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                <MoreHorizontal className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Posponer</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {[3, 7, 14, 30].map(d => (
+                    <DropdownMenuItem
+                      key={d}
+                      onClick={() => snoozeMutation.mutate(d)}
+                      disabled={snoozeMutation.isPending}
+                    >
+                      {d} días
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuItem onClick={() => setDismissOpen(true)}>Descartar</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPortalEditing(true)}>Portal cliente</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      );
+    }
+
+    // Standard trademark actions
     return (
       <>
         {alert.opposition_deadline && (
