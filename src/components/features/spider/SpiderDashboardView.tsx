@@ -246,14 +246,10 @@ export function SpiderDashboardView() {
           <SpiderAlertsList activeFilter={activeFilter} />
         </div>
 
-        {/* Right 30% — Watches placeholder */}
+        {/* Right 30% — Watches */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Mis Vigilancias</h2>
-          <div className="rounded-[14px] border border-border bg-card p-6 min-h-[300px]">
-            <Skeleton className="h-6 w-32 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
+          <SpiderWatchesPanel />
         </div>
       </div>
     </div>
