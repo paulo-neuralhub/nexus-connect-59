@@ -516,8 +516,6 @@ function KPICard({
     </div>
   );
 }
-  label: string;
-  value: string | number;
   subtitle?: string;
   color: string;
 }) {
