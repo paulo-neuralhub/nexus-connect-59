@@ -164,7 +164,7 @@ export default function GeoRiskMap({ alerts, onCountryClick }: GeoRiskMapProps) 
           <rect width="600" height="320" fill="hsl(var(--muted))" rx="8" />
           <path d={pathGenerator(graticuleData) ?? ''} fill="none" stroke="hsl(var(--border))" strokeWidth="0.3" />
           {(geoData.features ?? []).map((feature: any) => {
-            const iso = feature.properties?.ISO_A3;
+            const iso = feature.properties?.['ISO3166-1-Alpha-3'];
             if (!iso) return null;
             const riskData = riskByISO[iso];
             const score = riskData?.score;
@@ -189,7 +189,7 @@ export default function GeoRiskMap({ alerts, onCountryClick }: GeoRiskMapProps) 
                     visible: true,
                     x: e.clientX - rect.left,
                     y: e.clientY - rect.top,
-                    name: ISO_TO_NAME[iso] ?? feature.properties?.ADMIN ?? iso,
+                    name: ISO_TO_NAME[iso] ?? feature.properties?.name ?? iso,
                     score: score ?? 0,
                     alertCount,
                   });
