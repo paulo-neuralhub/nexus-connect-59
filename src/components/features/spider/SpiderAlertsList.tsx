@@ -174,6 +174,9 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ))}
         </div>
       )}
+
+      {/* Discarded signals footer */}
+      <DiscardedSignalsFooter orgId={orgId!} />
     </div>
   );
 }
@@ -1127,4 +1130,80 @@ function CommercialIntentBadge({ type }: { type?: string }) {
   };
   const m = map[type] || map.unclear!;
   return <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1 inline-block', m.cls)}>{m.label}</span>;
+}
+
+// ════════════════════════════════════════════
+// Discarded Signals Footer
+// ════════════════════════════════════════════
+function DiscardedSignalsFooter({ orgId }: { orgId: string }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [sample, setSample] = useState<any[]>([]);
+
+  const { data: discardedCount } = useQuery({
+    queryKey: ['spider-discarded-count', orgId],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count, error } = await fromTable('spider_discarded_signals')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+        .gte('discarded_at', since);
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const loadSample = async () => {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await fromTable('spider_discarded_signals')
+      .select('source_code, signal_text, signal_url, discard_reason, commercial_intent_score')
+      .eq('organization_id', orgId)
+      .gte('discarded_at', since)
+      .limit(10);
+    setSample(data || []);
+    setModalOpen(true);
+  };
+
+  if (!discardedCount || discardedCount === 0) return null;
+
+  return (
+    <>
+      <div className="rounded-lg p-3 bg-slate-50 border border-slate-200 flex items-center gap-2">
+        <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <span className="text-xs text-muted-foreground flex-1">
+          Hoy se filtraron <strong>{discardedCount}</strong> señales sin intención comercial
+        </span>
+        <button onClick={loadSample} className="text-xs text-primary hover:underline whitespace-nowrap">
+          Ver muestra →
+        </button>
+      </div>
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Señales filtradas (últimas 24h)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {sample.map((s, i) => (
+              <div key={i} className="rounded border border-border p-2 text-xs space-y-1">
+                <div className="flex items-center gap-2">
+                  <SocialPlatformIcon platform={s.source_code} />
+                  <span className="text-foreground line-clamp-1 flex-1">{s.signal_text || s.signal_url || '—'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {s.discard_reason && (
+                    <Badge variant="secondary" className="text-[10px]">{s.discard_reason}</Badge>
+                  )}
+                  {s.commercial_intent_score != null && (
+                    <span className="text-[10px] text-muted-foreground">Intent: {s.commercial_intent_score}%</span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {sample.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Sin datos</p>}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
