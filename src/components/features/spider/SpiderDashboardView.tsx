@@ -516,8 +516,6 @@ function KPICard({
     </div>
   );
 }
-        </span>
-        {subtitle && (
           <span className="text-[10px] text-muted-foreground">{subtitle}</span>
         )}
       </div>
