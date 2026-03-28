@@ -49,7 +49,7 @@ const SEVERITY_STYLES: Record<string, { border: string; bg: string; label: strin
 const RESOLVED_STYLE = { border: 'border-l-green-500', bg: 'bg-green-50' };
 const SNOOZED_STYLE = { border: 'border-l-slate-300', bg: 'bg-slate-50' };
 
-export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
+export function SpiderAlertsList({ activeFilter, incidentFilterIds, onFilterByIncident }: SpiderAlertsListProps) {
   const { currentOrganization } = useOrganization();
   const orgId = currentOrganization?.id;
   const [statusTab, setStatusTab] = useState('all');
