@@ -25,6 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -62,6 +63,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           detected_application_number, detected_applicant,
           detected_applicant_country, detected_nice_classes,
           detected_mark_status, detected_goods_services,
+          detected_mark_image_url,
           phonetic_score, visual_score, semantic_score, combined_score,
           weight_phonetic_used, weight_visual_used, weight_semantic_used,
           severity, opposition_deadline, opposition_days_remaining,
@@ -69,9 +71,11 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ai_disclaimer, status, snoozed_until,
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
+          incident_group_id,
           spider_watches!watch_id (
             watch_name, nice_classes,
-            weight_phonetic, weight_semantic, weight_visual
+            weight_phonetic, weight_semantic, weight_visual,
+            mark_image_url
           )
         `)
         .eq('organization_id', orgId!)
