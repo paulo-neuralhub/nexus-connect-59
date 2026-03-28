@@ -524,19 +524,36 @@ function AlertCard({
           {/* ROW 1 */}
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
+              {isDomain && <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />}
               <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
-              {!isResolved && !isSnoozed && style.label && (
-                <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
-                  {style.label}
-                </span>
-              )}
-              {alert.detected_jurisdiction && (
-                <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
-              )}
-              {watch?.mark_image_url && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
-                  👁 Visual
-                </span>
+              {isDomain ? (
+                <>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
+                    DOMINIO
+                  </span>
+                  {!isResolved && !isSnoozed && alert.combined_score >= 85 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">ALTO</span>
+                  )}
+                  {!isResolved && !isSnoozed && alert.combined_score >= 70 && alert.combined_score < 85 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">MEDIO</span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {!isResolved && !isSnoozed && style.label && (
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
+                      {style.label}
+                    </span>
+                  )}
+                  {alert.detected_jurisdiction && (
+                    <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
+                  )}
+                  {watch?.mark_image_url && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                      👁 Visual
+                    </span>
+                  )}
+                </>
               )}
               {isSnoozed && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
@@ -544,7 +561,7 @@ function AlertCard({
                 </span>
               )}
             </div>
-            {daysUrgent != null && !isResolved && (
+            {!isDomain && daysUrgent != null && !isResolved && (
               <span className={cn(
                 'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
                 daysUrgent < 7 && 'animate-pulse'
@@ -558,9 +575,7 @@ function AlertCard({
           <div className="flex items-center gap-4">
             <div className="flex-1 space-y-1">
               {isDomain ? (
-                alert.weight_semantic_used > 0 && (
-                  <SimilarityBar label="Similitud conceptual" score={alert.semantic_score} color="bg-teal-500" />
-                )
+                <SimilarityBar label="Similitud con tu marca" score={alert.combined_score} color="bg-teal-500" />
               ) : (
                 <>
                   {alert.weight_phonetic_used > 0 && <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />}
