@@ -11,10 +11,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Eye, Plus, Settings, Pause, Play } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Eye, Plus, Settings, Pause, Play, Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 import { SpiderWatchSheet } from './SpiderWatchSheet';
 
 const SPIDER_VIOLET = '#8B5CF6';
@@ -164,15 +168,18 @@ export function SpiderWatchesPanel() {
 
 function WatchCard({
   watch,
+  orgId,
   onEdit,
   onToggle,
   toggling,
 }: {
   watch: any;
+  orgId: string;
   onEdit: () => void;
   onToggle: () => void;
   toggling: boolean;
 }) {
+  const [domainScanning, setDomainScanning] = useState(false);
   const jurisdictions: string[] = Array.isArray(watch.jurisdictions) ? watch.jurisdictions : [];
   const niceClasses: number[] = Array.isArray(watch.nice_classes) ? watch.nice_classes : [];
   const visibleJurisdictions = jurisdictions.slice(0, 4);

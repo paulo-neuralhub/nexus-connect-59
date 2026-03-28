@@ -71,7 +71,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ai_disclaimer, status, snoozed_until,
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
-          incident_group_id,
+          incident_group_id, detected_at, source_url,
           spider_watches!watch_id (
             watch_name, nice_classes,
             weight_phonetic, weight_semantic, weight_visual,
