@@ -78,6 +78,7 @@ export default function GeniusLayout() {
               {geniusNav.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
+                const isAgentes = item.path.includes('/studio');
 
                 return (
                   <NavLink
@@ -85,9 +86,13 @@ export default function GeniusLayout() {
                     to={item.path}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
-                      isActive
-                        ? "bg-sidebar text-sidebar-foreground shadow-md"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      isAgentes
+                        ? isActive
+                          ? "bg-[hsl(263,70%,50%)] text-white shadow-[0_4px_14px_-3px_hsl(263,70%,50%/0.5)]"
+                          : "bg-[hsl(263,70%,50%)/0.12] text-[hsl(263,70%,50%)] border border-[hsl(263,70%,50%)/0.3] hover:bg-[hsl(263,70%,50%)/0.2] shadow-[2px_2px_6px_#cdd1dc,-2px_-2px_6px_#ffffff]"
+                        : isActive
+                          ? "bg-sidebar text-sidebar-foreground shadow-md"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     <Icon className="h-4 w-4" />
