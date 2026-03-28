@@ -376,7 +376,7 @@ function AlertCard({
           url: captureUrl,
           alert_id: alert.id,
           organization_id: orgId,
-          evidence_type,
+          evidence_type: evidenceType,
         },
       });
       if (error) throw error;
@@ -810,7 +810,7 @@ function AlertCard({
                 <Button
                   variant="outline" size="sm"
                   className="h-7 text-xs gap-1 border-purple-300 text-purple-700"
-                  onClick={handleEvidenceCapture}
+                  onClick={() => handleEvidenceCapture('domain_scan')}
                   disabled={evidenceLoading}
                 >
                   {evidenceLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
