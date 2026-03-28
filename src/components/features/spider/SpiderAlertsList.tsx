@@ -36,6 +36,8 @@ type SeverityFilter = 'critical' | 'high' | 'medium' | 'resolved' | null;
 
 interface SpiderAlertsListProps {
   activeFilter: SeverityFilter;
+  incidentFilterIds?: string[] | null;
+  onFilterByIncident?: (ids: string[], title: string) => void;
 }
 
 const SEVERITY_STYLES: Record<string, { border: string; bg: string; label: string; badgeColor: string }> = {
