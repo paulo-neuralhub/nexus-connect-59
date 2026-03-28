@@ -103,16 +103,6 @@ export default function GeoRiskMap({ alerts, onCountryClick }: GeoRiskMapProps) 
     return () => { mounted = false; controller.abort(); };
   }, []);
 
-  // ─── LEVEL 0: No registral data ───
-  if (geoData && !hasRegistralData) {
-    return (
-      <div className="flex flex-col items-center justify-center py-10 text-center">
-        <Globe className="w-10 h-10 text-muted-foreground/40 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Sin alertas registrales activas</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">El mapa se activa cuando se detecten similitudes en registros oficiales</p>
-      </div>
-    );
-  }
 
   // ─── LEVEL 1: Loading ───
   if (!geoData && !loadError) {
