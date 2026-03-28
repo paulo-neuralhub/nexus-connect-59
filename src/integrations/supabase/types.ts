@@ -27118,6 +27118,9 @@ export type Database = {
           ai_risk_level: string | null
           alert_category: string | null
           combined_score: number
+          commercial_intent_reason: string | null
+          commercial_intent_score: number | null
+          commercial_intent_type: string | null
           created_at: string | null
           crm_deal_id: string | null
           detected_applicant: string | null
@@ -27133,11 +27136,15 @@ export type Database = {
           detected_mark_status: string | null
           detected_nice_classes: number[] | null
           detected_publication_date: string | null
+          entity_name_normalized: string | null
           evidence_type: string | null
           id: string
           incident_group_id: string | null
           incident_group_size: number | null
           matter_id: string | null
+          media_screenshot_at: string | null
+          media_screenshot_hash: string | null
+          media_screenshot_url: string | null
           opposition_days_remaining: number | null
           opposition_deadline: string | null
           opposition_matter_id: string | null
@@ -27147,9 +27154,14 @@ export type Database = {
           portal_approved_by: string | null
           portal_despacho_analysis: string | null
           portal_visible: boolean | null
+          risk_score_unified: number | null
           semantic_score: number | null
           severity: string
           snoozed_until: string | null
+          social_followers: number | null
+          social_handle: string | null
+          social_platform: string | null
+          social_profile_url: string | null
           source_code: string
           source_reliability: string | null
           source_url: string | null
@@ -27175,6 +27187,9 @@ export type Database = {
           ai_risk_level?: string | null
           alert_category?: string | null
           combined_score: number
+          commercial_intent_reason?: string | null
+          commercial_intent_score?: number | null
+          commercial_intent_type?: string | null
           created_at?: string | null
           crm_deal_id?: string | null
           detected_applicant?: string | null
@@ -27190,11 +27205,15 @@ export type Database = {
           detected_mark_status?: string | null
           detected_nice_classes?: number[] | null
           detected_publication_date?: string | null
+          entity_name_normalized?: string | null
           evidence_type?: string | null
           id?: string
           incident_group_id?: string | null
           incident_group_size?: number | null
           matter_id?: string | null
+          media_screenshot_at?: string | null
+          media_screenshot_hash?: string | null
+          media_screenshot_url?: string | null
           opposition_days_remaining?: number | null
           opposition_deadline?: string | null
           opposition_matter_id?: string | null
@@ -27204,9 +27223,14 @@ export type Database = {
           portal_approved_by?: string | null
           portal_despacho_analysis?: string | null
           portal_visible?: boolean | null
+          risk_score_unified?: number | null
           semantic_score?: number | null
           severity: string
           snoozed_until?: string | null
+          social_followers?: number | null
+          social_handle?: string | null
+          social_platform?: string | null
+          social_profile_url?: string | null
           source_code: string
           source_reliability?: string | null
           source_url?: string | null
@@ -27232,6 +27256,9 @@ export type Database = {
           ai_risk_level?: string | null
           alert_category?: string | null
           combined_score?: number
+          commercial_intent_reason?: string | null
+          commercial_intent_score?: number | null
+          commercial_intent_type?: string | null
           created_at?: string | null
           crm_deal_id?: string | null
           detected_applicant?: string | null
@@ -27247,11 +27274,15 @@ export type Database = {
           detected_mark_status?: string | null
           detected_nice_classes?: number[] | null
           detected_publication_date?: string | null
+          entity_name_normalized?: string | null
           evidence_type?: string | null
           id?: string
           incident_group_id?: string | null
           incident_group_size?: number | null
           matter_id?: string | null
+          media_screenshot_at?: string | null
+          media_screenshot_hash?: string | null
+          media_screenshot_url?: string | null
           opposition_days_remaining?: number | null
           opposition_deadline?: string | null
           opposition_matter_id?: string | null
@@ -27261,9 +27292,14 @@ export type Database = {
           portal_approved_by?: string | null
           portal_despacho_analysis?: string | null
           portal_visible?: boolean | null
+          risk_score_unified?: number | null
           semantic_score?: number | null
           severity?: string
           snoozed_until?: string | null
+          social_followers?: number | null
+          social_handle?: string | null
+          social_platform?: string | null
+          social_profile_url?: string | null
           source_code?: string
           source_reliability?: string | null
           source_url?: string | null
@@ -27393,6 +27429,173 @@ export type Database = {
           },
         ]
       }
+      spider_discarded_signals: {
+        Row: {
+          commercial_intent_score: number | null
+          discard_reason: string | null
+          discarded_at: string | null
+          id: string
+          organization_id: string
+          signal_text: string | null
+          signal_url: string | null
+          source_code: string | null
+          watch_id: string | null
+        }
+        Insert: {
+          commercial_intent_score?: number | null
+          discard_reason?: string | null
+          discarded_at?: string | null
+          id?: string
+          organization_id: string
+          signal_text?: string | null
+          signal_url?: string | null
+          source_code?: string | null
+          watch_id?: string | null
+        }
+        Update: {
+          commercial_intent_score?: number | null
+          discard_reason?: string | null
+          discarded_at?: string | null
+          id?: string
+          organization_id?: string
+          signal_text?: string | null
+          signal_url?: string | null
+          source_code?: string | null
+          watch_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_discarded_signals_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "spider_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_evidence: {
+        Row: {
+          alert_id: string | null
+          captured_at: string | null
+          captured_by: string | null
+          chain_of_custody: Json | null
+          created_at: string | null
+          evidence_type: string
+          file_hash: string | null
+          file_size_bytes: number | null
+          file_url: string | null
+          id: string
+          incident_id: string | null
+          is_legally_certified: boolean | null
+          metadata: Json | null
+          organization_id: string
+          source_url: string | null
+        }
+        Insert: {
+          alert_id?: string | null
+          captured_at?: string | null
+          captured_by?: string | null
+          chain_of_custody?: Json | null
+          created_at?: string | null
+          evidence_type: string
+          file_hash?: string | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          id?: string
+          incident_id?: string | null
+          is_legally_certified?: boolean | null
+          metadata?: Json | null
+          organization_id: string
+          source_url?: string | null
+        }
+        Update: {
+          alert_id?: string | null
+          captured_at?: string | null
+          captured_by?: string | null
+          chain_of_custody?: Json | null
+          created_at?: string | null
+          evidence_type?: string
+          file_hash?: string | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          id?: string
+          incident_id?: string | null
+          is_legally_certified?: boolean | null
+          metadata?: Json | null
+          organization_id?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_evidence_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "spider_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spider_evidence_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "spider_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spider_incidents: {
+        Row: {
+          alert_count: number | null
+          alert_ids: string[] | null
+          created_at: string | null
+          entity_name: string | null
+          entity_name_normalized: string | null
+          first_detected_at: string | null
+          id: string
+          incident_title: string
+          last_updated_at: string | null
+          organization_id: string
+          platforms: string[] | null
+          risk_score_unified: number | null
+          severity: string | null
+          sources: string[] | null
+          status: string | null
+        }
+        Insert: {
+          alert_count?: number | null
+          alert_ids?: string[] | null
+          created_at?: string | null
+          entity_name?: string | null
+          entity_name_normalized?: string | null
+          first_detected_at?: string | null
+          id?: string
+          incident_title: string
+          last_updated_at?: string | null
+          organization_id: string
+          platforms?: string[] | null
+          risk_score_unified?: number | null
+          severity?: string | null
+          sources?: string[] | null
+          status?: string | null
+        }
+        Update: {
+          alert_count?: number | null
+          alert_ids?: string[] | null
+          created_at?: string | null
+          entity_name?: string | null
+          entity_name_normalized?: string | null
+          first_detected_at?: string | null
+          id?: string
+          incident_title?: string
+          last_updated_at?: string | null
+          organization_id?: string
+          platforms?: string[] | null
+          risk_score_unified?: number | null
+          severity?: string | null
+          sources?: string[] | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       spider_opposition_deadlines: {
         Row: {
           count_from: string
@@ -27437,6 +27640,71 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      spider_platform_reports: {
+        Row: {
+          alert_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          evidence_ids: string[] | null
+          form_data: Json
+          id: string
+          organization_id: string
+          platform: string
+          platform_case_id: string | null
+          platform_response: string | null
+          report_type: string | null
+          status: string | null
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          evidence_ids?: string[] | null
+          form_data?: Json
+          id?: string
+          organization_id: string
+          platform: string
+          platform_case_id?: string | null
+          platform_response?: string | null
+          report_type?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          evidence_ids?: string[] | null
+          form_data?: Json
+          id?: string
+          organization_id?: string
+          platform?: string
+          platform_case_id?: string | null
+          platform_response?: string | null
+          report_type?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spider_platform_reports_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "spider_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       spider_reports: {
         Row: {
@@ -27666,6 +27934,7 @@ export type Database = {
           activated_by: string | null
           alerts_month_reset_at: string | null
           alerts_this_month: number | null
+          commercial_intent_filter_enabled: boolean | null
           default_jurisdictions: string[] | null
           default_scan_frequency: string | null
           default_similarity_threshold: number | null
@@ -27674,8 +27943,11 @@ export type Database = {
           feature_semantic: boolean | null
           feature_visual: boolean | null
           id: string
+          incidents_this_month: number | null
           is_active: boolean | null
+          marketplace_watch_enabled: boolean | null
           max_alerts_per_month: number | null
+          max_incidents_per_month: number | null
           max_jurisdictions_per_watch: number | null
           max_scans_per_month: number | null
           max_watches: number | null
@@ -27688,7 +27960,9 @@ export type Database = {
           organization_id: string
           plan_code: string
           realtime_scan_enabled: boolean | null
+          social_watch_enabled: boolean | null
           updated_at: string | null
+          visual_watch_enabled: boolean | null
           webhook_secret: string | null
           webhook_url: string | null
           weight_phonetic: number | null
@@ -27700,6 +27974,7 @@ export type Database = {
           activated_by?: string | null
           alerts_month_reset_at?: string | null
           alerts_this_month?: number | null
+          commercial_intent_filter_enabled?: boolean | null
           default_jurisdictions?: string[] | null
           default_scan_frequency?: string | null
           default_similarity_threshold?: number | null
@@ -27708,8 +27983,11 @@ export type Database = {
           feature_semantic?: boolean | null
           feature_visual?: boolean | null
           id?: string
+          incidents_this_month?: number | null
           is_active?: boolean | null
+          marketplace_watch_enabled?: boolean | null
           max_alerts_per_month?: number | null
+          max_incidents_per_month?: number | null
           max_jurisdictions_per_watch?: number | null
           max_scans_per_month?: number | null
           max_watches?: number | null
@@ -27722,7 +28000,9 @@ export type Database = {
           organization_id: string
           plan_code?: string
           realtime_scan_enabled?: boolean | null
+          social_watch_enabled?: boolean | null
           updated_at?: string | null
+          visual_watch_enabled?: boolean | null
           webhook_secret?: string | null
           webhook_url?: string | null
           weight_phonetic?: number | null
@@ -27734,6 +28014,7 @@ export type Database = {
           activated_by?: string | null
           alerts_month_reset_at?: string | null
           alerts_this_month?: number | null
+          commercial_intent_filter_enabled?: boolean | null
           default_jurisdictions?: string[] | null
           default_scan_frequency?: string | null
           default_similarity_threshold?: number | null
@@ -27742,8 +28023,11 @@ export type Database = {
           feature_semantic?: boolean | null
           feature_visual?: boolean | null
           id?: string
+          incidents_this_month?: number | null
           is_active?: boolean | null
+          marketplace_watch_enabled?: boolean | null
           max_alerts_per_month?: number | null
+          max_incidents_per_month?: number | null
           max_jurisdictions_per_watch?: number | null
           max_scans_per_month?: number | null
           max_watches?: number | null
@@ -27756,7 +28040,9 @@ export type Database = {
           organization_id?: string
           plan_code?: string
           realtime_scan_enabled?: boolean | null
+          social_watch_enabled?: boolean | null
           updated_at?: string | null
+          visual_watch_enabled?: boolean | null
           webhook_secret?: string | null
           webhook_url?: string | null
           weight_phonetic?: number | null
@@ -27783,6 +28069,8 @@ export type Database = {
       spider_watches: {
         Row: {
           active_alerts_count: number | null
+          brand_authorized_handles: string[] | null
+          brand_logo_embedding: string | null
           check_phonetic: boolean | null
           check_semantic: boolean | null
           check_visual: boolean | null
@@ -27816,6 +28104,8 @@ export type Database = {
         }
         Insert: {
           active_alerts_count?: number | null
+          brand_authorized_handles?: string[] | null
+          brand_logo_embedding?: string | null
           check_phonetic?: boolean | null
           check_semantic?: boolean | null
           check_visual?: boolean | null
@@ -27849,6 +28139,8 @@ export type Database = {
         }
         Update: {
           active_alerts_count?: number | null
+          brand_authorized_handles?: string[] | null
+          brand_logo_embedding?: string | null
           check_phonetic?: boolean | null
           check_semantic?: boolean | null
           check_visual?: boolean | null

@@ -1,8 +1,9 @@
 /**
- * SP01-C — Spider Watch Sheet (create/edit)
+ * SP01-C + SP02-A — Spider Watch Sheet (create/edit)
  * Lateral sheet with form validation (weights must sum 100%).
+ * SP02-A: logo upload + brand_authorized_handles tag input.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useOrganization } from '@/contexts/organization-context';
 import { supabase } from '@/lib/supabase';
@@ -19,7 +20,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -43,6 +45,9 @@ const QUICK_PRESETS: { label: string; codes: string[] }[] = [
 
 const NICE_CLASSES = Array.from({ length: 45 }, (_, i) => i + 1);
 
+const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/svg+xml'];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
   const { currentOrganization } = useOrganization();
   const orgId = currentOrganization?.id;
@@ -64,6 +69,17 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
   const [scanFrequency, setScanFrequency] = useState('daily');
   const [niceSearch, setNiceSearch] = useState('');
 
+  // SP02-A: Logo state
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [existingLogoUrl, setExistingLogoUrl] = useState<string | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // SP02-A: Brand authorized handles
+  const [handles, setHandles] = useState<string[]>([]);
+  const [handleInput, setHandleInput] = useState('');
+
   // Reset form on open
   useEffect(() => {
     if (open) {
@@ -80,6 +96,8 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
         setWeightSemantic(watch.weight_semantic ?? 30);
         setWeightVisual(watch.weight_visual ?? 35);
         setScanFrequency(watch.scan_frequency || 'daily');
+        setExistingLogoUrl(watch.mark_image_url || null);
+        setHandles(Array.isArray(watch.brand_authorized_handles) ? watch.brand_authorized_handles : []);
       } else {
         setName('');
         setWatchType('trademark');
@@ -93,8 +111,14 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
         setWeightSemantic(30);
         setWeightVisual(35);
         setScanFrequency('daily');
+        setExistingLogoUrl(null);
+        setHandles([]);
       }
       setNiceSearch('');
+      setLogoFile(null);
+      setLogoPreview(null);
+      setRemoveLogo(false);
+      setHandleInput('');
     }
   }, [open, watch]);
 
@@ -104,6 +128,7 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
 
   const domainDisabled = !config?.domain_watch_enabled;
   const realtimeDisabled = !config?.realtime_scan_enabled;
+  const showLogoField = watchType === 'device' || watchType === 'combined';
 
   const filteredNice = useMemo(() => {
     if (!niceSearch) return NICE_CLASSES;
@@ -122,9 +147,72 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
     setJurisdictions(codes);
   };
 
+  // ── Logo handling ──
+  const handleFileSelect = useCallback((file: File) => {
+    if (!ALLOWED_MIME.includes(file.type)) {
+      toast.error('Formato no soportado. Usa PNG, JPG o SVG.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('El archivo supera 2MB. Reduce el tamaño e inténtalo de nuevo.');
+      return;
+    }
+    setLogoFile(file);
+    setRemoveLogo(false);
+    const reader = new FileReader();
+    reader.onload = (e) => setLogoPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  }, [handleFileSelect]);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelect(file);
+    if (e.target) e.target.value = '';
+  };
+
+  const clearLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (existingLogoUrl) setRemoveLogo(true);
+  };
+
+  // ── Handles ──
+  const addHandle = () => {
+    const h = handleInput.trim();
+    if (h && !handles.includes(h)) {
+      setHandles(prev => [...prev, h]);
+      setHandleInput('');
+    }
+  };
+
+  const removeHandle = (h: string) => {
+    setHandles(prev => prev.filter(x => x !== h));
+  };
+
+  // ── Upload helper ──
+  const uploadLogo = async (watchId: string): Promise<string | null> => {
+    if (!logoFile || !orgId) return null;
+    const ext = logoFile.name.split('.').pop() || 'png';
+    const path = `${orgId}/${watchId}.${ext}`;
+    const { error } = await supabase.storage
+      .from('spider-logos')
+      .upload(path, logoFile, { upsert: true });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage
+      .from('spider-logos')
+      .getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const payload: Record<string, any> = {
         watch_name: name.trim(),
         watch_type: watchType,
         nice_classes: niceClasses,
@@ -138,10 +226,20 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
         check_visual: checkVisual,
         scan_frequency: scanFrequency,
         organization_id: orgId,
+        brand_authorized_handles: handles.length > 0 ? handles : null,
       };
 
       if (isEdit) {
         const { organization_id: _, ...updatePayload } = payload;
+
+        // Handle logo upload/removal
+        if (logoFile) {
+          const url = await uploadLogo(watch.id);
+          if (url) updatePayload.mark_image_url = url;
+        } else if (removeLogo) {
+          updatePayload.mark_image_url = null;
+        }
+
         const { error } = await supabase
           .from('spider_watches' as any)
           .update(updatePayload as any)
@@ -149,10 +247,24 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
           .eq('organization_id', orgId!);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data: inserted, error } = await supabase
           .from('spider_watches' as any)
-          .insert(payload as any);
+          .insert(payload as any)
+          .select('id')
+          .single();
         if (error) throw error;
+
+        // Upload logo for new watch
+        if (logoFile && inserted?.id) {
+          const url = await uploadLogo(inserted.id);
+          if (url) {
+            await supabase
+              .from('spider_watches' as any)
+              .update({ mark_image_url: url } as any)
+              .eq('id', inserted.id)
+              .eq('organization_id', orgId!);
+          }
+        }
       }
     },
     onSuccess: () => {
@@ -160,6 +272,9 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
       qc.invalidateQueries({ queryKey: ['spider-kpis'] });
       qc.invalidateQueries({ queryKey: ['spider-shell-config'] });
       onOpenChange(false);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Error al guardar la vigilancia');
     },
   });
 
@@ -198,7 +313,67 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
             </Select>
           </div>
 
-          {/* 3: Nice Classes */}
+          {/* 3: Logo upload — only for device/combined */}
+          {showLogoField && (
+            <div className="space-y-1.5">
+              <Label>Logo de la marca</Label>
+              {/* Preview state */}
+              {(logoPreview || (existingLogoUrl && !removeLogo)) ? (
+                <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30">
+                  <img
+                    src={logoPreview || existingLogoUrl!}
+                    alt="Logo preview"
+                    className="w-20 h-20 object-contain rounded border border-border bg-background"
+                  />
+                  <div className="flex flex-col gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-7"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Cambiar logo
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7 text-destructive hover:text-destructive"
+                      onClick={clearLogo}
+                    >
+                      <X className="w-3 h-3 mr-1" /> Eliminar logo
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Drop zone */
+                <div
+                  className="flex flex-col items-center justify-center gap-2 h-[120px] border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={handleDrop}
+                >
+                  <Upload className="w-8 h-8 text-muted-foreground/60" />
+                  <p className="text-xs text-muted-foreground text-center">
+                    Arrastra tu logo aquí o haz clic para seleccionar
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/60">
+                    PNG, SVG o JPG · Máx 2MB
+                  </p>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".png,.jpg,.jpeg,.svg"
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+            </div>
+          )}
+
+          {/* 4: Nice Classes */}
           <div className="space-y-1.5">
             <Label>Clases Nice *</Label>
             <Input
@@ -233,7 +408,7 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
             )}
           </div>
 
-          {/* 4: Jurisdictions */}
+          {/* 5: Jurisdictions */}
           <div className="space-y-1.5">
             <Label>Jurisdicciones</Label>
             <div className="flex flex-wrap gap-1 mb-2">
@@ -275,7 +450,7 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
             ))}
           </div>
 
-          {/* 5: Threshold & Weights */}
+          {/* 6: Threshold & Weights */}
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Umbral mínimo: {threshold}%</Label>
@@ -324,7 +499,7 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
             </p>
           </div>
 
-          {/* 6: Frequency */}
+          {/* 7: Frequency */}
           <div className="space-y-1.5">
             <Label>Frecuencia</Label>
             <Select value={scanFrequency} onValueChange={setScanFrequency}>
@@ -337,6 +512,51 @@ export function SpiderWatchSheet({ open, onOpenChange, watch, config }: Props) {
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 8: Brand authorized handles */}
+          <div className="space-y-1.5">
+            <Label>Handles oficiales autorizados (opcional)</Label>
+            <p className="text-[10px] text-muted-foreground">
+              Cuentas propias que NO deben generar alertas
+            </p>
+            {handles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {handles.map(h => (
+                  <Badge key={h} variant="secondary" className="pl-2 pr-1 gap-1 text-xs">
+                    {h}
+                    <button
+                      type="button"
+                      onClick={() => removeHandle(h)}
+                      className="ml-0.5 hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                value={handleInput}
+                onChange={e => setHandleInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); addHandle(); }
+                }}
+                placeholder="@cuenta_oficial_marca"
+                className="flex-1 h-8 text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2"
+                onClick={addHandle}
+                disabled={!handleInput.trim()}
+              >
+                +
+              </Button>
+            </div>
           </div>
         </div>
 

@@ -35,7 +35,8 @@ export function SpiderWatchesPanel() {
           nice_classes, similarity_threshold, is_active,
           scan_frequency, last_scanned_at,
           total_alerts_generated, active_alerts_count,
-          weight_phonetic, weight_semantic, weight_visual
+          weight_phonetic, weight_semantic, weight_visual,
+          mark_image_url, brand_authorized_handles
         `)
         .eq('organization_id', orgId!)
         .order('active_alerts_count', { ascending: false });
