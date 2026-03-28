@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/tooltip';
 import {
   ArrowLeft, ChevronRight, Clock, ExternalLink, Check, ShieldAlert,
-  AlertTriangle, Eye, Keyboard,
+  AlertTriangle, Eye, Keyboard, Sparkles, Image as ImageIcon, Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -59,7 +59,7 @@ export default function SpiderAlertDetailPage() {
           spider_watches!watch_id (
             watch_name, nice_classes, jurisdictions,
             weight_phonetic, weight_semantic, weight_visual,
-            goods_services_description
+            goods_services_description, mark_image_url
           ),
           spider_workflow_steps!workflow_step_id (
             step_order, step_name, assignee_role, sla_hours,
@@ -265,6 +265,9 @@ export default function SpiderAlertDetailPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge className={cn('text-[11px] font-bold border', severity.cls)}>{severity.label}</Badge>
+            {alert.visual_score > 0 && (
+              <Badge className="text-[10px] font-bold bg-purple-100 text-purple-700 border-purple-200">Visual {Math.round(alert.visual_score)}%</Badge>
+            )}
             <h1 className="text-2xl font-bold text-foreground">{alert.detected_mark_name}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -286,7 +289,11 @@ export default function SpiderAlertDetailPage() {
       {/* BLOCK 1 — DETECTION */}
       <Card>
         <CardHeader><CardTitle>Marca detectada</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Logo comparison section */}
+          <LogoComparison alert={alert} watch={watch} orgId={orgId!} alertId={id!} />
+
+          {/* Text comparison */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
