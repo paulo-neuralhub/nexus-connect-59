@@ -755,7 +755,26 @@ function AlertCard({
           )}
 
           {/* ROW 4 */}
-          <div className="flex flex-wrap gap-2">{renderActions()}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            {renderActions()}
+            {/* Incident badge (SP05-A Part 5) */}
+            {alert.incident_group_id && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // We need to fetch alert_ids from the incident — simple approach: filter by incident_group_id
+                  if (onFilterByIncident) {
+                    onFilterByIncident([alert.id], alert.detected_mark_name || 'Incidente');
+                  }
+                }}
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border transition-colors hover:bg-purple-50"
+                style={{ background: '#8B5CF615', color: '#8B5CF6', borderColor: '#8B5CF630' }}
+              >
+                <Link2 className="w-3 h-3" />
+                Parte de un incidente
+              </button>
+            )}
+          </div>
         </div>
 
         {/* EXPANDED */}
