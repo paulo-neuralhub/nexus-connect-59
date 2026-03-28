@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/tooltip';
 import {
   ArrowLeft, ChevronRight, Clock, ExternalLink, Check, ShieldAlert,
-  AlertTriangle, Eye, Keyboard,
+  AlertTriangle, Eye, Keyboard, Sparkles, Image as ImageIcon, Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -59,7 +59,7 @@ export default function SpiderAlertDetailPage() {
           spider_watches!watch_id (
             watch_name, nice_classes, jurisdictions,
             weight_phonetic, weight_semantic, weight_visual,
-            goods_services_description
+            goods_services_description, mark_image_url
           ),
           spider_workflow_steps!workflow_step_id (
             step_order, step_name, assignee_role, sla_hours,
@@ -265,6 +265,9 @@ export default function SpiderAlertDetailPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge className={cn('text-[11px] font-bold border', severity.cls)}>{severity.label}</Badge>
+            {alert.visual_score > 0 && (
+              <Badge className="text-[10px] font-bold bg-purple-100 text-purple-700 border-purple-200">Visual {Math.round(alert.visual_score)}%</Badge>
+            )}
             <h1 className="text-2xl font-bold text-foreground">{alert.detected_mark_name}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -286,7 +289,11 @@ export default function SpiderAlertDetailPage() {
       {/* BLOCK 1 — DETECTION */}
       <Card>
         <CardHeader><CardTitle>Marca detectada</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Logo comparison section */}
+          <LogoComparison alert={alert} watch={watch} orgId={orgId!} alertId={id!} />
+
+          {/* Text comparison */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
@@ -698,6 +705,139 @@ function LoadingSkeleton() {
       {Array.from({ length: 7 }).map((_, i) => (
         <Skeleton key={i} className="h-48 w-full rounded-xl" />
       ))}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════
+// Logo Comparison (SP02-C)
+// ════════════════════════════════════════════
+
+function LogoComparison({ alert, watch, orgId, alertId }: { alert: any; watch: any; orgId: string; alertId: string }) {
+  const [analyzing, setAnalyzing] = useState(false);
+  const [imgError1, setImgError1] = useState(false);
+  const [imgError2, setImgError2] = useState(false);
+  const qc = useQueryClient();
+
+  const watchLogo = watch?.mark_image_url;
+  const detectedLogo = alert.detected_mark_image_url;
+  const visualScore = alert.visual_score;
+  const bothLogos = !!watchLogo && !!detectedLogo;
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('trademark-comparison', {
+        body: {
+          image_url_1: watchLogo,
+          image_url_2: detectedLogo,
+          watch_id: alert.watch_id,
+          alert_id: alertId,
+        },
+      });
+      if (error) throw error;
+      const score = data?.visual_score ?? data?.similarity_score ?? 0;
+      await fromTable('spider_alerts')
+        .update({ visual_score: score })
+        .eq('id', alertId)
+        .eq('organization_id', orgId);
+      qc.invalidateQueries({ queryKey: ['spider-alert-detail'] });
+      toast.success(`Análisis visual completado: ${Math.round(score)}%`);
+    } catch {
+      toast.error('No se pudo analizar. Comprueba que ambos logos sean imágenes accesibles públicamente.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const scoreLabel = visualScore >= 85 ? 'Muy alta — posible copia del logotipo'
+    : visualScore >= 70 ? 'Alta — elementos visuales similares detectados'
+    : visualScore >= 50 ? 'Media — revisar manualmente'
+    : 'Baja — diferencias visuales significativas';
+
+  // CASE: no logos at all
+  if (!watchLogo && !detectedLogo) return null;
+
+  // CASE: only watch logo
+  if (watchLogo && !detectedLogo) {
+    return (
+      <div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-muted/20">
+        {!imgError1 ? (
+          <img src={watchLogo} alt="Tu logo" className="w-20 h-20 object-contain rounded-lg border border-border bg-background" onError={() => setImgError1(true)} />
+        ) : (
+          <div className="w-20 h-20 rounded-lg border border-border bg-muted/40 flex items-center justify-center"><ImageIcon className="w-6 h-6 text-muted-foreground/50" /></div>
+        )}
+        <div>
+          <p className="text-sm font-medium text-foreground">Logo del cliente cargado</p>
+          <p className="text-xs text-muted-foreground">La marca detectada no tiene imagen en el registro</p>
+        </div>
+      </div>
+    );
+  }
+
+  // CASE: only detected logo
+  if (!watchLogo && detectedLogo) {
+    return (
+      <div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-muted/20">
+        {!imgError2 ? (
+          <img src={detectedLogo} alt="Logo detectado" className="w-20 h-20 object-contain rounded-lg border border-border bg-background" onError={() => setImgError2(true)} />
+        ) : (
+          <div className="w-20 h-20 rounded-lg border border-border bg-muted/40 flex items-center justify-center"><ImageIcon className="w-6 h-6 text-muted-foreground/50" /></div>
+        )}
+        <div>
+          <p className="text-xs text-muted-foreground">Añade tu logo al watch para activar análisis visual</p>
+          <Link to="/app/spider" className="text-xs text-primary hover:underline">→ Configurar watch</Link>
+        </div>
+      </div>
+    );
+  }
+
+  // CASE: both logos
+  return (
+    <div className="rounded-lg border border-border bg-muted/10 p-5 space-y-4">
+      <div className="flex items-center justify-center gap-8">
+        <div className="text-center space-y-2">
+          {!imgError1 ? (
+            <img src={watchLogo} alt="Tu logo" className="w-[120px] h-[120px] object-contain rounded-lg border border-border bg-background mx-auto" onError={() => setImgError1(true)} />
+          ) : (
+            <div className="w-[120px] h-[120px] rounded-lg border border-border bg-muted/40 flex items-center justify-center mx-auto"><ImageIcon className="w-8 h-8 text-muted-foreground/50" /></div>
+          )}
+          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
+        </div>
+        <div className="text-center space-y-2">
+          {!imgError2 ? (
+            <img src={detectedLogo} alt="Logo detectado" className="w-[120px] h-[120px] object-contain rounded-lg border border-border bg-background mx-auto" onError={() => setImgError2(true)} />
+          ) : (
+            <div className="w-[120px] h-[120px] rounded-lg border border-border bg-muted/40 flex items-center justify-center mx-auto"><ImageIcon className="w-8 h-8 text-muted-foreground/50" /></div>
+          )}
+          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
+        </div>
+      </div>
+
+      {visualScore > 0 ? (
+        <div className="space-y-1.5">
+          <p className="text-sm font-bold text-purple-700 text-center">
+            Similitud visual: {Math.round(visualScore)}%
+          </p>
+          <div className="h-2.5 rounded-full bg-muted/60 overflow-hidden">
+            <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${Math.round(visualScore)}%` }} />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">{scoreLabel}</p>
+        </div>
+      ) : (
+        <div className="text-center space-y-2">
+          <Button
+            variant="outline"
+            className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+            onClick={handleAnalyze}
+            disabled={analyzing}
+          >
+            {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {analyzing ? 'Analizando logos...' : 'Analizar similitud visual'}
+          </Button>
+          <p className="text-[10px] text-muted-foreground">Compara los logotipos usando IA visual</p>
+        </div>
+      )}
     </div>
   );
 }
