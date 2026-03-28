@@ -1,161 +1,289 @@
 /**
- * Spider Dashboard — main view when has_spider = true
- * Usage bars, NeoBadges, critical banner, tabs
+ * SP01-A — IP-SPIDER Shell: Header + 4 Filter Badges + 4 KPIs + 70/30 Layout
+ * All data from real DB queries. Columns are empty placeholders (SP01-B/C).
  */
 import { useState } from 'react';
-import { Radar } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { NeoBadge } from '@/components/ui/neo-badge';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Eye, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useSpiderDashboardStats } from '@/hooks/use-spider-data';
-import { SpiderAlertsTab } from './SpiderAlertsTab';
-import { SpiderWatchesTab } from './SpiderWatchesTab';
-import { SpiderStatsTab } from './SpiderStatsTab';
-import { SpiderConfigTab } from './SpiderConfigTab';
+import { Skeleton } from '@/components/ui/skeleton';
+import { NeoBadge } from '@/components/ui/neo-badge';
+import { useOrganization } from '@/contexts/organization-context';
+import { useQuery } from '@tanstack/react-query';
+import { fromTable } from '@/lib/supabase';
 
 const SPIDER_VIOLET = '#8B5CF6';
 
-export function SpiderDashboardView() {
-  const { data: stats, isLoading } = useSpiderDashboardStats();
-  const [activeTab, setActiveTab] = useState('alerts');
+type SeverityFilter = 'critical' | 'high' | 'medium' | 'resolved' | null;
 
-  const scansPercent = stats?.scansLimit ? Math.round((stats.scansUsed / stats.scansLimit) * 100) : 0;
-  const alertsPercent = stats?.alertsLimit ? Math.round((stats.alertsUsed / stats.alertsLimit) * 100) : 0;
+export function SpiderDashboardView() {
+  const { currentOrganization } = useOrganization();
+  const orgId = currentOrganization?.id;
+  const [activeFilter, setActiveFilter] = useState<SeverityFilter>(null);
+
+  // ── Tenant Config ──
+  const { data: config, isLoading: configLoading } = useQuery({
+    queryKey: ['spider-shell-config', orgId],
+    queryFn: async () => {
+      const { data, error } = await fromTable('spider_tenant_config')
+        .select('is_active, plan_code, alerts_this_month, max_alerts_per_month')
+        .eq('organization_id', orgId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // ── Filter Badge Counts ──
+  const { data: badgeCounts, isLoading: badgeLoading } = useQuery({
+    queryKey: ['spider-badge-counts', orgId],
+    queryFn: async () => {
+      const [criticalRes, highRes, mediumRes, resolvedRes] = await Promise.all([
+        fromTable('spider_alerts')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', orgId!)
+          .eq('severity', 'critical')
+          .not('status', 'in', '("resolved","actioned")'),
+        fromTable('spider_alerts')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', orgId!)
+          .eq('severity', 'high')
+          .eq('status', 'new'),
+        fromTable('spider_alerts')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', orgId!)
+          .eq('severity', 'medium')
+          .eq('status', 'new'),
+        fromTable('spider_alerts')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', orgId!)
+          .in('status', ['resolved', 'actioned']),
+      ]);
+      return {
+        critical: criticalRes.count ?? 0,
+        high: highRes.count ?? 0,
+        medium: mediumRes.count ?? 0,
+        resolved: resolvedRes.count ?? 0,
+      };
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 2,
+  });
+
+  // ── KPI Data ──
+  const { data: kpis, isLoading: kpiLoading } = useQuery({
+    queryKey: ['spider-kpis', orgId],
+    queryFn: async () => {
+      const [watchesRes, urgentRes, scoreRes] = await Promise.all([
+        fromTable('spider_watches')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', orgId!)
+          .eq('is_active', true),
+        fromTable('spider_alerts')
+          .select('opposition_days_remaining')
+          .eq('organization_id', orgId!)
+          .eq('status', 'new')
+          .not('opposition_days_remaining', 'is', null)
+          .order('opposition_days_remaining', { ascending: true })
+          .limit(1),
+        fromTable('spider_alerts')
+          .select('combined_score')
+          .eq('organization_id', orgId!)
+          .eq('status', 'new')
+          .not('combined_score', 'is', null)
+          .order('combined_score', { ascending: false })
+          .limit(1),
+      ]);
+
+      const urgentDays = (urgentRes.data as any)?.[0]?.opposition_days_remaining ?? null;
+      const maxScore = (scoreRes.data as any)?.[0]?.combined_score ?? null;
+
+      return {
+        activeWatches: watchesRes.count ?? 0,
+        alertsThisMonth: 0,  // filled from config
+        maxAlerts: 0,         // filled from config
+        urgentDays: urgentDays as number | null,
+        maxScore: maxScore as number | null,
+      };
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const isLoading = configLoading || badgeLoading || kpiLoading;
+
+  // ── Inactive State ──
+  if (!configLoading && config && config.is_active === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Eye className="w-16 h-16 text-muted-foreground/40" />
+        <p className="text-lg font-semibold text-muted-foreground">IP-SPIDER no está activo</p>
+        <Button asChild>
+          <a href="/app/settings/subscription">Ver planes</a>
+        </Button>
+      </div>
+    );
+  }
+
+  const alertsMonth = config?.alerts_this_month ?? kpis?.alertsThisMonth ?? 0;
+  const maxAlertsMonth = config?.max_alerts_per_month ?? kpis?.maxAlerts ?? 0;
+
+  const urgentColor = kpis?.urgentDays != null
+    ? kpis.urgentDays < 30 ? '#EF4444' : kpis.urgentDays < 60 ? '#F59E0B' : '#22C55E'
+    : '#94a3b8';
+
+  const scoreColor = kpis?.maxScore != null
+    ? kpis.maxScore > 84 ? '#EF4444' : kpis.maxScore > 69 ? '#F59E0B' : '#22C55E'
+    : '#94a3b8';
+
+  const filterBadges: { key: SeverityFilter; label: string; count: number; color: string }[] = [
+    { key: 'critical', label: 'Críticas', count: badgeCounts?.critical ?? 0, color: '#EF4444' },
+    { key: 'high', label: 'Altas', count: badgeCounts?.high ?? 0, color: '#F97316' },
+    { key: 'medium', label: 'Medias', count: badgeCounts?.medium ?? 0, color: '#EAB308' },
+    { key: 'resolved', label: 'Resueltas', count: badgeCounts?.resolved ?? 0, color: '#22C55E' },
+  ];
 
   return (
-    <div data-copilot="spider-dashboard" className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div
-          className="w-12 h-12 rounded-[14px] flex items-center justify-center"
-          style={{
-            background: `linear-gradient(135deg, ${SPIDER_VIOLET}, #7C3AED)`,
-            boxShadow: `0 4px 12px ${SPIDER_VIOLET}40`,
-          }}
-        >
-          <Radar className="w-6 h-6 text-white" />
+    <div className="space-y-6">
+      {/* ── HEADER ── */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <Eye className="w-6 h-6" style={{ color: SPIDER_VIOLET }} />
+          <div>
+            <h1 className="text-xl font-bold text-foreground leading-none">IP-SPIDER</h1>
+            <p className="text-sm text-slate-500">Brand Defense Center</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">IP-SPIDER</h1>
-          <p className="text-sm text-muted-foreground">Vigilancia y monitorización de PI</p>
+        <div className="flex items-center gap-3">
+          {config?.plan_code && (
+            <Badge variant="outline" className="text-xs font-mono">
+              {config.plan_code}
+            </Badge>
+          )}
+          <Button
+            size="sm"
+            disabled={!config?.is_active}
+            className="gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva Vigilancia
+          </Button>
         </div>
       </div>
 
-      {/* Usage bars */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <UsageBar
-          label="Escaneos este mes"
-          used={stats?.scansUsed ?? 0}
-          limit={stats?.scansLimit ?? 0}
-          percent={scansPercent}
-          loading={isLoading}
-        />
-        <UsageBar
-          label="Alertas este mes"
-          used={stats?.alertsUsed ?? 0}
-          limit={stats?.alertsLimit ?? 0}
-          percent={alertsPercent}
-          loading={isLoading}
-        />
+      {/* ── FILTER BADGES ── */}
+      <div className="flex flex-wrap gap-2">
+        {badgeLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-24 rounded-full" />
+            ))
+          : filterBadges.map((b) => {
+              const isActive = activeFilter === b.key;
+              const isZero = b.count === 0;
+              return (
+                <button
+                  key={b.key}
+                  disabled={isZero}
+                  onClick={() => setActiveFilter(isActive ? null : b.key)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-default"
+                  style={{
+                    background: isZero ? '#f1f5f9' : `${b.color}15`,
+                    color: isZero ? '#94a3b8' : b.color,
+                    border: isActive ? `2px solid ${b.color}` : `1px solid ${isZero ? '#e2e8f0' : b.color}40`,
+                  }}
+                >
+                  <span className="w-2 h-2 rounded-full" style={{ background: isZero ? '#94a3b8' : b.color }} />
+                  {b.label}
+                  <span className="font-bold tabular-nums">{b.count}</span>
+                </button>
+              );
+            })
+        }
       </div>
 
-      {/* KPI NeoBadges */}
+      {/* ── 4 KPIs ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {isLoading ? (
+        {kpiLoading || configLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-[72px] rounded-[14px]" />
           ))
         ) : (
           <>
-            <KPICard icon="📊" label="Vigilancias" value={stats?.activeWatches ?? 0} />
-            <KPICard icon="📥" label="Pendientes" value={stats?.pendingAlerts ?? 0} />
-            <KPICard icon="⚠️" label="Amenazas" value={stats?.threatsActive ?? 0} />
-            <KPICard icon="🔴" label="Críticas" value={stats?.criticalAlerts ?? 0} urgent />
+            <KPICard
+              label="Watches activos"
+              value={kpis?.activeWatches ?? 0}
+              color={SPIDER_VIOLET}
+            />
+            <KPICard
+              label="Alertas este mes"
+              value={alertsMonth}
+              subtitle={`de ${maxAlertsMonth === 0 ? '∞' : maxAlertsMonth}`}
+              color={SPIDER_VIOLET}
+            />
+            <KPICard
+              label="Plazo urgente"
+              value={kpis?.urgentDays != null ? `${kpis.urgentDays}d` : '—'}
+              color={urgentColor}
+            />
+            <KPICard
+              label="Score máx"
+              value={kpis?.maxScore != null ? `${Math.round(kpis.maxScore)}%` : '—'}
+              color={scoreColor}
+            />
           </>
         )}
       </div>
 
-      {/* Critical banner */}
-      {(stats?.criticalAlerts ?? 0) > 0 && (
-        <div className="rounded-xl border-2 border-[#EF4444]/30 bg-[#EF4444]/5 p-4 flex items-center gap-3">
-          <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-[#EF4444] animate-pulse" />
-            <div className="absolute inset-0 w-3 h-3 rounded-full bg-[#EF4444] animate-ping opacity-50" />
+      {/* ── 70/30 LAYOUT ── */}
+      <div className="grid grid-cols-1 md:grid-cols-[7fr_3fr] gap-6">
+        {/* Left 70% — Alerts placeholder */}
+        <div>
+          <h2 className="text-sm font-semibold text-foreground mb-3">Alertas detectadas</h2>
+          <div className="rounded-[14px] border border-border bg-card p-6 min-h-[300px]">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-5/6" />
           </div>
-          <p className="font-medium text-[#EF4444] text-sm">
-            {stats!.criticalAlerts} alerta{stats!.criticalAlerts > 1 ? 's' : ''} crítica{stats!.criticalAlerts > 1 ? 's' : ''} requiere{stats!.criticalAlerts > 1 ? 'n' : ''} atención inmediata
-          </p>
         </div>
-      )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full justify-start bg-muted/50 p-1">
-          <TabsTrigger value="alerts" className="gap-1.5">
-            🔔 Alertas
-            {(stats?.pendingAlerts ?? 0) > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{stats!.pendingAlerts}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="watches">🔍 Vigilancias</TabsTrigger>
-          <TabsTrigger value="stats">📈 Estadísticas</TabsTrigger>
-          <TabsTrigger value="config">⚙️ Config</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="alerts" className="mt-4">
-          <SpiderAlertsTab />
-        </TabsContent>
-        <TabsContent value="watches" className="mt-4">
-          <SpiderWatchesTab />
-        </TabsContent>
-        <TabsContent value="stats" className="mt-4">
-          <SpiderStatsTab />
-        </TabsContent>
-        <TabsContent value="config" className="mt-4">
-          <SpiderConfigTab />
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-function UsageBar({ label, used, limit, percent, loading }: { label: string; used: number; limit: number; percent: number; loading: boolean }) {
-  const color = percent >= 80 ? '#EF4444' : percent >= 60 ? '#F97316' : percent >= 40 ? '#F59E0B' : '#22C55E';
-
-  if (loading) return <Skeleton className="h-16 rounded-xl" />;
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <span className="text-xs font-semibold" style={{ color }}>
-          {used} / {limit === 0 ? '∞' : limit}
-        </span>
+        {/* Right 30% — Watches placeholder */}
+        <div>
+          <h2 className="text-sm font-semibold text-foreground mb-3">Mis Vigilancias</h2>
+          <div className="rounded-[14px] border border-border bg-card p-6 min-h-[300px]">
+            <Skeleton className="h-6 w-32 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </div>
       </div>
-      <Progress value={limit ? Math.min(percent, 100) : 0} stateColor={color} />
     </div>
   );
 }
 
-function KPICard({ icon, label, value, urgent }: { icon: string; label: string; value: number; urgent?: boolean }) {
+function KPICard({
+  label,
+  value,
+  subtitle,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  subtitle?: string;
+  color: string;
+}) {
   return (
     <div className="rounded-[14px] border border-border bg-card p-4 flex items-center gap-3">
-      <div className="relative">
-        {urgent && value > 0 && (
-          <>
-            <div className="absolute -inset-1 rounded-[14px] animate-pulse" style={{ background: '#EF444425', border: '2px solid #EF444440' }} />
-            <div className="absolute -inset-1 rounded-[14px] animate-ping opacity-30" style={{ border: '2px solid #EF444430' }} />
-          </>
-        )}
-        <NeoBadge value={value} color={urgent && value > 0 ? '#EF4444' : SPIDER_VIOLET} size="md" />
-      </div>
+      <NeoBadge value={value} color={color} size="md" />
       <div className="min-w-0">
-        <div className="flex items-center gap-1">
-          <span className="text-sm">{icon}</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground truncate">{label}</span>
-        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground block truncate">
+          {label}
+        </span>
+        {subtitle && (
+          <span className="text-[10px] text-muted-foreground">{subtitle}</span>
+        )}
       </div>
     </div>
   );
