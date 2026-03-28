@@ -179,6 +179,7 @@ export function SpiderAlertsList({ activeFilter, incidentFilterIds, onFilterByIn
               orgId={orgId!}
               expanded={expandedIds.has(alert.id)}
               onToggle={() => toggleExpand(alert.id)}
+              onFilterByIncident={onFilterByIncident}
             />
           ))}
         </div>
