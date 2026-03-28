@@ -21455,7 +21455,6 @@ export type Database = {
           assigned_to: string | null
           auto_renewal: boolean | null
           billing_account_id: string | null
-          client_id: string | null
           cost_center: string | null
           created_at: string
           created_by: string | null
@@ -21526,7 +21525,6 @@ export type Database = {
           assigned_to?: string | null
           auto_renewal?: boolean | null
           billing_account_id?: string | null
-          client_id?: string | null
           cost_center?: string | null
           created_at?: string
           created_by?: string | null
@@ -21597,7 +21595,6 @@ export type Database = {
           assigned_to?: string | null
           auto_renewal?: boolean | null
           billing_account_id?: string | null
-          client_id?: string | null
           cost_center?: string | null
           created_at?: string
           created_by?: string | null
@@ -21668,13 +21665,6 @@ export type Database = {
             columns: ["billing_account_id"]
             isOneToOne: false
             referencedRelation: "crm_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matters_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
           {
@@ -30667,7 +30657,6 @@ export type Database = {
           assigned_to: string | null
           auto_renewal: boolean | null
           billing_account_id: string | null
-          client_id: string | null
           cost_center: string | null
           created_at: string | null
           created_by: string | null
@@ -30742,15 +30731,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "matters_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "matters_crm_account_id_fkey"
+            columns: ["crm_account_id"]
             isOneToOne: false
-            referencedRelation: "contacts"
+            referencedRelation: "crm_accounts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "matters_crm_account_id_fkey"
-            columns: ["crm_account_id"]
+            columns: ["resolved_account_id"]
             isOneToOne: false
             referencedRelation: "crm_accounts"
             referencedColumns: ["id"]
