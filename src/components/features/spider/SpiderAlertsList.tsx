@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon, Globe, Camera,
+  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -72,6 +72,10 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
           incident_group_id, detected_at, source_url,
+          social_platform, social_handle, social_followers,
+          social_profile_url, commercial_intent_score,
+          commercial_intent_type, commercial_intent_reason,
+          workflow_step_id,
           spider_watches!watch_id (
             watch_name, nice_classes,
             weight_phonetic, weight_semantic, weight_visual,
@@ -215,10 +219,12 @@ function AlertCard({
   const isSnoozed = effectiveSnoozed && new Date(effectiveSnoozed) > now;
   const isResolved = ['actioned', 'resolved'].includes(effectiveStatus);
   const isDomain = alert.alert_category === 'domain' || alert.source_code === 'domain';
+  const isSocial = alert.alert_category === 'social';
   const watch = alert.spider_watches;
 
-  // Evidence capture state (domain alerts)
+  // Evidence capture state (domain/social alerts)
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [platformReportLoading, setPlatformReportLoading] = useState(false);
 
   let style = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
   let cardBorder = style.border;
