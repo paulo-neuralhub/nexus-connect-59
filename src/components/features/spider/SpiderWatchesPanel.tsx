@@ -263,6 +263,7 @@ function WatchCard({
                   <><Globe className="w-3 h-3 mr-1" /> Escanear redes sociales</>
                 )}
                 {!socialEnabled && <span className="ml-1 text-[10px] text-muted-foreground">(Pro)</span>}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
