@@ -130,6 +130,7 @@ export function SpiderWatchesPanel() {
                 key={w.id}
                 watch={w}
                 orgId={orgId!}
+                config={config}
                 onEdit={() => openEdit(w)}
                 onToggle={() => toggleActive.mutate({ id: w.id, is_active: w.is_active })}
                 toggling={toggleActive.isPending}
