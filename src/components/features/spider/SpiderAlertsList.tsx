@@ -1,28 +1,35 @@
 /**
- * SP01-B — Spider Alerts List (left 70% column)
- * Real DB data, filter integration, collapsible cards.
+ * SP01-B + SP01-D — Spider Alerts List with active action buttons.
+ * Real DB data, filter integration, collapsible cards, mutations.
  */
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/contexts/organization-context';
 import { fromTable } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from '@/components/ui/dropdown-menu';
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
-  Gavel, Mail, Users, MoreHorizontal, RotateCcw, History,
+  Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 type SeverityFilter = 'critical' | 'high' | 'medium' | 'resolved' | null;
 
@@ -80,8 +87,6 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
   const filtered = useMemo(() => {
     if (!alerts) return [];
     let list = [...alerts];
-
-    // Badge filter from header
     if (activeFilter === 'critical') {
       list = list.filter(a => a.severity === 'critical' && !['resolved', 'actioned'].includes(a.status));
     } else if (activeFilter === 'high') {
@@ -91,17 +96,12 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
     } else if (activeFilter === 'resolved') {
       list = list.filter(a => ['resolved', 'actioned'].includes(a.status));
     }
-
-    // Status tab filter
     if (statusTab === 'new') list = list.filter(a => a.status === 'new');
     else if (statusTab === 'actioned') list = list.filter(a => a.status === 'actioned');
     else if (statusTab === 'resolved') list = list.filter(a => a.status === 'resolved');
-
-    // Severity dropdown
     if (severityDropdown !== 'all') {
       list = list.filter(a => a.severity === severityDropdown);
     }
-
     return list;
   }, [alerts, activeFilter, statusTab, severityDropdown]);
 
@@ -125,7 +125,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
 
   return (
     <div className="space-y-4">
-      {/* ── Toolbar ── */}
+      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <Tabs value={statusTab} onValueChange={setStatusTab}>
           <TabsList className="h-8 bg-muted/50">
@@ -135,7 +135,6 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
             <TabsTrigger value="resolved" className="text-xs h-7 px-3">Resueltas</TabsTrigger>
           </TabsList>
         </Tabs>
-
         <select
           value={severityDropdown}
           onChange={e => setSeverityDropdown(e.target.value)}
@@ -148,7 +147,6 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
         </select>
       </div>
 
-      {/* ── Alert Cards ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
           <ShieldCheck className="w-12 h-12 opacity-40" />
@@ -161,6 +159,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
             <AlertCard
               key={alert.id}
               alert={alert}
+              orgId={orgId!}
               expanded={expandedIds.has(alert.id)}
               onToggle={() => toggleExpand(alert.id)}
             />
@@ -172,32 +171,54 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
 }
 
 // ════════════════════════════════════════════
-// Alert Card
+// Alert Card (with active actions)
 // ════════════════════════════════════════════
 
 function AlertCard({
   alert,
+  orgId,
   expanded,
   onToggle,
 }: {
   alert: any;
+  orgId: string;
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const now = new Date();
-  const isSnoozed = alert.snoozed_until && new Date(alert.snoozed_until) > now;
-  const isResolved = ['actioned', 'resolved'].includes(alert.status);
+
+  // Local optimistic state
+  const [localStatus, setLocalStatus] = useState<string | null>(null);
+  const [localSnoozedUntil, setLocalSnoozedUntil] = useState<string | null>(null);
+  const [localPortalVisible, setLocalPortalVisible] = useState<boolean | null>(null);
+
+  // Dialog states
+  const [oppositionOpen, setOppositionOpen] = useState(false);
+  const [dismissOpen, setDismissOpen] = useState(false);
+  const [dismissReason, setDismissReason] = useState('');
+  const [cndLoading, setCndLoading] = useState(false);
+  const [cndDoc, setCndDoc] = useState<any>(null);
+  const [cndDialogOpen, setCndDialogOpen] = useState(false);
+  const [portalText, setPortalText] = useState('');
+  const [portalEditing, setPortalEditing] = useState(false);
+
+  const effectiveStatus = localStatus ?? alert.status;
+  const effectiveSnoozed = localSnoozedUntil ?? alert.snoozed_until;
+  const effectivePortalVisible = localPortalVisible ?? alert.portal_visible;
+
+  const isSnoozed = effectiveSnoozed && new Date(effectiveSnoozed) > now;
+  const isResolved = ['actioned', 'resolved'].includes(effectiveStatus);
   const isDomain = alert.source_code === 'domain' || alert.alert_category === 'online';
   const watch = alert.spider_watches;
 
-  // Style
   let style = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
   let cardBorder = style.border;
   let cardBg = style.bg;
   if (isResolved) { cardBorder = RESOLVED_STYLE.border; cardBg = RESOLVED_STYLE.bg; }
   if (isSnoozed) { cardBorder = SNOOZED_STYLE.border; cardBg = SNOOZED_STYLE.bg; }
 
-  // Score color
   const scoreColor = alert.combined_score >= 85 ? '#EF4444'
     : alert.combined_score >= 70 ? '#F59E0B'
     : alert.combined_score >= 50 ? '#EAB308'
@@ -205,244 +226,494 @@ function AlertCard({
 
   const daysUrgent = alert.opposition_days_remaining;
 
+  // Extract cost from ai_recommendation
+  const estimatedCost = useMemo(() => {
+    if (!alert.ai_recommendation) return null;
+    const match = alert.ai_recommendation.match(/(\d[\d.,]*)\s*€|€\s*(\d[\d.,]*)/);
+    return match ? (match[1] || match[2]) : null;
+  }, [alert.ai_recommendation]);
+
+  // ── Mutations ──
+
+  const snoozeMutation = useMutation({
+    mutationFn: async (days: number) => {
+      const snoozedUntil = addDays(new Date(), days).toISOString();
+      const { error } = await supabase
+        .from('spider_alerts' as any)
+        .update({ snoozed_until: snoozedUntil, status: 'viewed' } as any)
+        .eq('id', alert.id)
+        .eq('organization_id', orgId);
+      if (error) throw error;
+      return { snoozedUntil, days };
+    },
+    onSuccess: ({ snoozedUntil, days }) => {
+      setLocalSnoozedUntil(snoozedUntil);
+      setLocalStatus('viewed');
+      toast.success(`Alerta pospuesta hasta ${format(addDays(new Date(), days), "dd/MM/yyyy")}`);
+      qc.invalidateQueries({ queryKey: ['spider-alerts-list'] });
+      qc.invalidateQueries({ queryKey: ['spider-badge-counts'] });
+    },
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('spider_alerts' as any)
+        .update({ snoozed_until: null, status: 'new' } as any)
+        .eq('id', alert.id)
+        .eq('organization_id', orgId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setLocalSnoozedUntil('');
+      setLocalStatus('new');
+      toast.success('Alerta reactivada');
+      qc.invalidateQueries({ queryKey: ['spider-alerts-list'] });
+      qc.invalidateQueries({ queryKey: ['spider-badge-counts'] });
+    },
+  });
+
+  const dismissMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('spider_alerts' as any)
+        .update({
+          status: 'resolved',
+          action_taken: 'dismissed',
+          action_notes: reason || null,
+          actioned_at: new Date().toISOString(),
+          actioned_by: user?.id || null,
+        } as any)
+        .eq('id', alert.id)
+        .eq('organization_id', orgId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setLocalStatus('resolved');
+      setDismissOpen(false);
+      setDismissReason('');
+      toast.success('Alerta descartada');
+      qc.invalidateQueries({ queryKey: ['spider-alerts-list'] });
+      qc.invalidateQueries({ queryKey: ['spider-badge-counts'] });
+    },
+  });
+
+  const portalMutation = useMutation({
+    mutationFn: async ({ visible, text }: { visible: boolean; text?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const updates: any = { portal_visible: visible };
+      if (visible) {
+        updates.portal_approved_by = user?.id || null;
+        updates.portal_approved_at = new Date().toISOString();
+        if (text) updates.portal_despacho_analysis = text;
+      }
+      const { error } = await supabase
+        .from('spider_alerts' as any)
+        .update(updates)
+        .eq('id', alert.id)
+        .eq('organization_id', orgId);
+      if (error) throw error;
+      return visible;
+    },
+    onSuccess: (visible) => {
+      setLocalPortalVisible(visible);
+      setPortalEditing(false);
+      toast.success(visible ? 'Alerta publicada en portal del cliente' : 'Alerta retirada del portal');
+    },
+  });
+
+  // ── C&D handler ──
+  const handleCnD = async () => {
+    setCndLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('genius-generate-document', {
+        body: {
+          document_type: 'cease_desist',
+          organization_id: orgId,
+          context: {
+            threat_name: alert.detected_mark_name,
+            threat_applicant: alert.detected_applicant,
+            threat_jurisdiction: alert.detected_jurisdiction,
+            our_mark: watch?.watch_name,
+            similarity_score: alert.combined_score,
+            ai_analysis: alert.ai_analysis,
+          },
+        },
+      });
+      if (error) throw error;
+      setCndDoc(data);
+      setCndDialogOpen(true);
+    } catch {
+      toast.error('No se pudo generar el documento. Inténtalo de nuevo.');
+    } finally {
+      setCndLoading(false);
+    }
+  };
+
+  // ── Action buttons (shared between collapsed row 4 and expanded section 4) ──
+  const renderActions = () => {
+    if (isSnoozed) {
+      return (
+        <Button
+          variant="outline" size="sm"
+          className="h-7 text-xs gap-1"
+          onClick={() => reactivateMutation.mutate()}
+          disabled={reactivateMutation.isPending}
+        >
+          <RotateCcw className="w-3 h-3" /> Reactivar
+        </Button>
+      );
+    }
+    if (isResolved) {
+      return (
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" disabled>
+          <History className="w-3 h-3" /> Ver historial
+        </Button>
+      );
+    }
+    return (
+      <>
+        {alert.opposition_deadline && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-purple-300 text-purple-700"
+            onClick={() => setOppositionOpen(true)}
+          >
+            <Gavel className="w-3 h-3" /> Oposición
+          </Button>
+        )}
+        <Button
+          variant="outline" size="sm"
+          className="h-7 text-xs gap-1 border-blue-300 text-blue-700"
+          onClick={handleCnD}
+          disabled={cndLoading}
+        >
+          {cndLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+          {cndLoading ? 'Generando...' : 'C&D'}
+        </Button>
+        <Button
+          variant="outline" size="sm"
+          className="h-7 text-xs gap-1 border-green-300 text-green-700"
+          onClick={() => navigate(`/app/marketplace?jurisdiction=${alert.detected_jurisdiction || ''}`)}
+        >
+          <Users className="w-3 h-3" /> Agente
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+              <MoreHorizontal className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Posponer</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {[3, 7, 14, 30].map(d => (
+                  <DropdownMenuItem
+                    key={d}
+                    onClick={() => snoozeMutation.mutate(d)}
+                    disabled={snoozeMutation.isPending}
+                  >
+                    {d} días
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuItem onClick={() => setDismissOpen(true)}>Descartar</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setPortalEditing(true)}>Portal cliente</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </>
+    );
+  };
+
   return (
-    <div className={cn(
-      'rounded-[14px] border border-border border-l-4 overflow-hidden transition-all',
-      cardBorder, cardBg
-    )}>
-      <div className="p-4 space-y-3">
-        {/* ── ROW 1: Name + severity + jurisdiction + deadline ── */}
-        <div className="flex items-start justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
-            {!isResolved && !isSnoozed && style.label && (
-              <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
-                {style.label}
+    <>
+      <div className={cn(
+        'rounded-[14px] border border-border border-l-4 overflow-hidden transition-all',
+        cardBorder, cardBg
+      )}>
+        <div className="p-4 space-y-3">
+          {/* ROW 1 */}
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
+              {!isResolved && !isSnoozed && style.label && (
+                <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
+                  {style.label}
+                </span>
+              )}
+              {alert.detected_jurisdiction && (
+                <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
+              )}
+              {isSnoozed && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
+                  POSPUESTA hasta {format(new Date(effectiveSnoozed), 'dd/MM/yy')}
+                </span>
+              )}
+            </div>
+            {daysUrgent != null && !isResolved && (
+              <span className={cn(
+                'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
+                daysUrgent < 7 && 'animate-pulse'
+              )}>
+                <Clock className="w-3 h-3" />{daysUrgent}d
               </span>
             )}
-            {alert.detected_jurisdiction && (
-              <Badge variant="outline" className="text-[10px] font-mono">
-                {alert.detected_jurisdiction}
-              </Badge>
-            )}
-            {isSnoozed && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
-                POSPUESTA hasta {format(new Date(alert.snoozed_until), 'dd/MM/yy')}
+          </div>
+
+          {/* ROW 2 */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 space-y-1">
+              {isDomain ? (
+                alert.weight_semantic_used > 0 && (
+                  <SimilarityBar label="Similitud conceptual" score={alert.semantic_score} color="bg-teal-500" />
+                )
+              ) : (
+                <>
+                  {alert.weight_phonetic_used > 0 && <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />}
+                  {alert.weight_visual_used > 0 && <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />}
+                  {alert.weight_semantic_used > 0 && <SimilarityBar label="Semántica" score={alert.semantic_score} color="bg-teal-500" />}
+                </>
+              )}
+            </div>
+            <div className="flex-shrink-0 text-right">
+              <span className="text-[36px] font-bold leading-none tabular-nums" style={{ color: scoreColor }}>
+                {alert.combined_score != null ? Math.round(alert.combined_score) : '—'}
               </span>
-            )}
+              {alert.combined_score != null && (
+                <span className="text-[10px] block text-muted-foreground">score</span>
+              )}
+            </div>
           </div>
-          {daysUrgent != null && !isResolved && (
-            <span className={cn(
-              'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
-              daysUrgent < 7 && 'animate-pulse'
-            )}>
-              <Clock className="w-3 h-3" />
-              {daysUrgent}d
-            </span>
-          )}
-        </div>
 
-        {/* ── ROW 2: Similarity bars + combined score ── */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 space-y-1">
-            {isDomain ? (
-              // Domain: only semantic
-              alert.weight_semantic_used > 0 && (
-                <SimilarityBar label="Similitud conceptual" score={alert.semantic_score} color="bg-teal-500" />
-              )
-            ) : (
-              <>
-                {alert.weight_phonetic_used > 0 && (
-                  <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />
-                )}
-                {alert.weight_visual_used > 0 && (
-                  <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />
-                )}
-                {alert.weight_semantic_used > 0 && (
-                  <SimilarityBar label="Semántica" score={alert.semantic_score} color="bg-teal-500" />
-                )}
-              </>
-            )}
-          </div>
-          <div className="flex-shrink-0 text-right">
-            <span className="text-[36px] font-bold leading-none tabular-nums" style={{ color: scoreColor }}>
-              {alert.combined_score != null ? Math.round(alert.combined_score) : '—'}
-            </span>
-            {alert.combined_score != null && (
-              <span className="text-[10px] block text-muted-foreground">score</span>
-            )}
-          </div>
-        </div>
-
-        {/* ── ROW 3: AI recommendation ── */}
-        {alert.ai_recommendation && (
-          <div className="flex items-start gap-2">
-            <Lightbulb className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-muted-foreground line-clamp-1 flex-1">{alert.ai_recommendation}</p>
-            <button
-              onClick={onToggle}
-              className="text-xs text-primary font-medium flex items-center gap-0.5 whitespace-nowrap hover:underline"
-            >
-              {expanded ? 'Ocultar' : 'Ver análisis'}
+          {/* ROW 3 */}
+          {alert.ai_recommendation ? (
+            <div className="flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground line-clamp-1 flex-1">{alert.ai_recommendation}</p>
+              <button onClick={onToggle} className="text-xs text-primary font-medium flex items-center gap-0.5 whitespace-nowrap hover:underline">
+                {expanded ? 'Ocultar' : 'Ver análisis'}
+                {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+          ) : (
+            <button onClick={onToggle} className="text-xs text-primary font-medium flex items-center gap-0.5 hover:underline">
+              {expanded ? 'Ocultar' : 'Ver detalles'}
               {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
-          </div>
-        )}
-        {!alert.ai_recommendation && (
-          <button
-            onClick={onToggle}
-            className="text-xs text-primary font-medium flex items-center gap-0.5 hover:underline"
-          >
-            {expanded ? 'Ocultar' : 'Ver detalles'}
-            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          </button>
-        )}
-
-        {/* ── ROW 4: Quick actions ── */}
-        <div className="flex flex-wrap gap-2">
-          {isSnoozed ? (
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" disabled>
-              <RotateCcw className="w-3 h-3" /> Reactivar
-            </Button>
-          ) : isResolved ? (
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" disabled>
-              <History className="w-3 h-3" /> Ver historial
-            </Button>
-          ) : (
-            <>
-              {alert.opposition_deadline && (
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-purple-300 text-purple-700" disabled>
-                  <Gavel className="w-3 h-3" /> Oposición
-                </Button>
-              )}
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-blue-300 text-blue-700" disabled>
-                <Mail className="w-3 h-3" /> C&D
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-green-300 text-green-700" disabled>
-                <Users className="w-3 h-3" /> Agente
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                    <MoreHorizontal className="w-3 h-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled>Posponer</DropdownMenuItem>
-                  <DropdownMenuItem disabled>Descartar</DropdownMenuItem>
-                  <DropdownMenuItem disabled>Portal cliente</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
           )}
+
+          {/* ROW 4 */}
+          <div className="flex flex-wrap gap-2">{renderActions()}</div>
         </div>
-      </div>
 
-      {/* ── EXPANDED SECTION ── */}
-      {expanded && (
-        <div className="border-t border-border bg-card/80 p-4 space-y-4">
-          {/* Section 1: Comparison */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
-              <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
-              {watch?.nice_classes && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {(Array.isArray(watch.nice_classes) ? watch.nice_classes : []).map((c: any) => (
-                    <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
-              <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
-              {alert.detected_application_number && (
-                <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
-              )}
-              {alert.detected_nice_classes && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {(Array.isArray(alert.detected_nice_classes) ? alert.detected_nice_classes : []).map((c: any) => (
-                    <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
-                  ))}
-                </div>
-              )}
-              {alert.detected_mark_status && (
-                <Badge variant="outline" className="text-[10px] mt-1">{alert.detected_mark_status}</Badge>
-              )}
-              {alert.detected_applicant && (
-                <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Section 2: AI Analysis */}
-          {alert.ai_analysis && (
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Análisis IA</p>
-              <p className="text-xs text-foreground whitespace-pre-line">{alert.ai_analysis}</p>
-              {alert.ai_key_factors && Array.isArray(alert.ai_key_factors) && alert.ai_key_factors.length > 0 && (
-                <ul className="list-disc list-inside text-xs text-foreground space-y-0.5 pl-1">
-                  {alert.ai_key_factors.map((f: string, i: number) => (
-                    <li key={i}>{f}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-
-          {/* Section 3: Deadline */}
-          {alert.opposition_deadline && (
-            <div className={cn(
-              'rounded-lg p-3 text-xs',
-              daysUrgent != null && daysUrgent < 7 ? 'bg-red-50 border border-red-200' : 'bg-muted/50'
-            )}>
-              <span className="font-semibold text-foreground">
-                Vence {format(new Date(alert.opposition_deadline), "dd 'de' MMMM yyyy", { locale: es })}
-              </span>
-              {daysUrgent != null && (
-                <span className="ml-2 text-muted-foreground">· Quedan {daysUrgent} días</span>
-              )}
-            </div>
-          )}
-
-          {/* Section 4: Expanded actions (same as row 4, visual only) */}
-          <div className="flex flex-wrap gap-2">
-            {isResolved ? (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" disabled>
-                <History className="w-3 h-3" /> Ver historial
-              </Button>
-            ) : (
-              <>
-                {alert.opposition_deadline && (
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-purple-300 text-purple-700" disabled>
-                    <Gavel className="w-3 h-3" /> Oposición
-                  </Button>
+        {/* EXPANDED */}
+        {expanded && (
+          <div className="border-t border-border bg-card/80 p-4 space-y-4">
+            {/* Comparison */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
+                <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
+                {watch?.nice_classes && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(Array.isArray(watch.nice_classes) ? watch.nice_classes : []).map((c: any) => (
+                      <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
+                    ))}
+                  </div>
                 )}
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-blue-300 text-blue-700" disabled>
-                  <Mail className="w-3 h-3" /> C&D
-                </Button>
-                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-green-300 text-green-700" disabled>
-                  <Users className="w-3 h-3" /> Agente
-                </Button>
-              </>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
+                <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
+                {alert.detected_application_number && (
+                  <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
+                )}
+                {alert.detected_nice_classes && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(Array.isArray(alert.detected_nice_classes) ? alert.detected_nice_classes : []).map((c: any) => (
+                      <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
+                    ))}
+                  </div>
+                )}
+                {alert.detected_mark_status && <Badge variant="outline" className="text-[10px] mt-1">{alert.detected_mark_status}</Badge>}
+                {alert.detected_applicant && <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>}
+              </div>
+            </div>
+
+            {/* AI Analysis */}
+            {alert.ai_analysis && (
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Análisis IA</p>
+                <p className="text-xs text-foreground whitespace-pre-line">{alert.ai_analysis}</p>
+                {alert.ai_key_factors && Array.isArray(alert.ai_key_factors) && alert.ai_key_factors.length > 0 && (
+                  <ul className="list-disc list-inside text-xs text-foreground space-y-0.5 pl-1">
+                    {alert.ai_key_factors.map((f: string, i: number) => <li key={i}>{f}</li>)}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Deadline */}
+            {alert.opposition_deadline && (
+              <div className={cn(
+                'rounded-lg p-3 text-xs',
+                daysUrgent != null && daysUrgent < 7 ? 'bg-red-50 border border-red-200' : 'bg-muted/50'
+              )}>
+                <span className="font-semibold text-foreground">
+                  Vence {format(new Date(alert.opposition_deadline), "dd 'de' MMMM yyyy", { locale: es })}
+                </span>
+                {daysUrgent != null && <span className="ml-2 text-muted-foreground">· Quedan {daysUrgent} días</span>}
+              </div>
+            )}
+
+            {/* Expanded actions */}
+            <div className="flex flex-wrap gap-2">{renderActions()}</div>
+
+            {/* Portal toggle (in expanded only) */}
+            {!isResolved && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={effectivePortalVisible || false}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setPortalEditing(true);
+                      } else {
+                        portalMutation.mutate({ visible: false });
+                      }
+                    }}
+                  />
+                  <span className="text-xs text-foreground">Aprobar para portal cliente</span>
+                </div>
+                {portalEditing && (
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Análisis para el cliente (lenguaje no técnico)..."
+                      value={portalText}
+                      onChange={e => setPortalText(e.target.value)}
+                      className="text-xs min-h-[60px]"
+                    />
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={!portalText.trim() || portalMutation.isPending}
+                      onClick={() => portalMutation.mutate({ visible: true, text: portalText })}
+                    >
+                      {portalMutation.isPending ? 'Publicando...' : 'Publicar en portal'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Disclaimer */}
+            {alert.ai_disclaimer && (
+              <p className="text-[11px] text-muted-foreground/70 italic">{alert.ai_disclaimer}</p>
             )}
           </div>
+        )}
+      </div>
 
-          {/* Section 5: Disclaimer */}
-          {alert.ai_disclaimer && (
-            <p className="text-[11px] text-muted-foreground/70 italic">{alert.ai_disclaimer}</p>
+      {/* ── OPPOSITION DIALOG ── */}
+      <Dialog open={oppositionOpen} onOpenChange={setOppositionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Iniciar proceso de oposición</DialogTitle>
+            <DialogDescription>
+              Marca: {alert.detected_mark_name} · {alert.detected_jurisdiction}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p>Plazo: <strong>{alert.opposition_days_remaining} días</strong></p>
+            {estimatedCost && <p>Coste estimado: <strong>{estimatedCost}€</strong></p>}
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="default"
+              onClick={() => {
+                setOppositionOpen(false);
+                navigate(`/app/matters/new?type=trademark&alert_id=${alert.id}&jurisdiction=${alert.detected_jurisdiction || ''}&title=Oposición vs ${encodeURIComponent(alert.detected_mark_name || '')}`);
+              }}
+            >
+              Crear expediente en IP-DOCKET
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOppositionOpen(false);
+                navigate(`/app/marketplace?jurisdiction=${alert.detected_jurisdiction || ''}`);
+              }}
+            >
+              Buscar agente primero
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── DISMISS DIALOG ── */}
+      <Dialog open={dismissOpen} onOpenChange={setDismissOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Descartar alerta</DialogTitle>
+            <DialogDescription>
+              {alert.detected_mark_name} · {alert.detected_jurisdiction}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Razón (opcional)"
+            value={dismissReason}
+            onChange={e => setDismissReason(e.target.value)}
+            className="min-h-[60px]"
+          />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDismissOpen(false)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => dismissMutation.mutate(dismissReason)}
+              disabled={dismissMutation.isPending}
+            >
+              {dismissMutation.isPending ? 'Descartando...' : 'Descartar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── C&D PREVIEW DIALOG ── */}
+      <Dialog open={cndDialogOpen} onOpenChange={setCndDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Carta de Cese y Desistimiento</DialogTitle>
+          </DialogHeader>
+          {cndDoc && (
+            <div className="text-xs whitespace-pre-wrap bg-muted/30 rounded-lg p-4 border border-border">
+              {cndDoc.content || cndDoc.document || JSON.stringify(cndDoc, null, 2)}
+            </div>
           )}
-        </div>
-      )}
-    </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCndDialogOpen(false)}>Cerrar</Button>
+            <Button onClick={() => {
+              // Download as text
+              const blob = new Blob([cndDoc?.content || cndDoc?.document || ''], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `CeD_${alert.detected_mark_name || 'documento'}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}>
+              Descargar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
 // ════════════════════════════════════════════
-// Similarity Bar
-// ════════════════════════════════════════════
-
 function SimilarityBar({ label, score, color }: { label: string; score: number | null; color: string }) {
   const pct = score != null ? Math.round(score) : 0;
   return (
