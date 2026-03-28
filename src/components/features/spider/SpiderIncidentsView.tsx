@@ -747,8 +747,12 @@ export function SpiderIncidentsView({
                       className="h-7 text-xs gap-1"
                       style={{ borderColor: `${SPIDER_VIOLET}40`, color: SPIDER_VIOLET }}
                       onClick={() => {
-                        const firstAlertId = inc.alert_ids?.[0];
-                        if (firstAlertId) navigate(`/app/spider/alerts/${firstAlertId}`);
+                        if ((inc.alert_count ?? 0) >= 2) {
+                          navigate(`/app/spider/incidents/${inc.id}`);
+                        } else {
+                          const firstAlertId = inc.alert_ids?.[0];
+                          if (firstAlertId) navigate(`/app/spider/alerts/${firstAlertId}`);
+                        }
                       }}
                     >
                       Ver incidente →
