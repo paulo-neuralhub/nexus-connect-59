@@ -96,7 +96,7 @@ export default function SpiderBrandDashboard() {
         .select('id, risk_score_unified, severity, status, alert_count, alert_ids, entity_name, sources, first_detected_at')
         .eq('organization_id', organizationId),
       supabase.from('spider_alerts')
-        .select('id, combined_score, severity, status, alert_category, created_at')
+        .select('id, combined_score, severity, status, alert_category, created_at, detected_jurisdiction')
         .eq('organization_id', organizationId),
       supabase.from('spider_tenant_config')
         .select('plan_code, max_watches, alerts_this_month, max_alerts_per_month')
