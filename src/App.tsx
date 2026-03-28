@@ -84,6 +84,7 @@ import WatchResultList from "./pages/app/spider/results";
 import NewWatchlistPage from "./pages/app/spider/watchlists/new";
 import WatchlistDetailPage from "./pages/app/spider/watchlists/[id]";
 import AnalyzePage from "./pages/app/spider/analyze";
+import SpiderAlertDetailPage from "./pages/app/spider/alerts/[id]";
 import SpiderLandingPage from "./pages/landing/SpiderLanding";
 import DocketLandingPage from "./pages/landing/DocketLanding";
 import NexusLandingPage from "./pages/landing/NexusLanding";
