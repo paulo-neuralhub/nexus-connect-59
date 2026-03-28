@@ -239,15 +239,10 @@ export function SpiderDashboardView() {
 
       {/* ── 70/30 LAYOUT ── */}
       <div className="grid grid-cols-1 md:grid-cols-[7fr_3fr] gap-6">
-        {/* Left 70% — Alerts placeholder */}
+        {/* Left 70% — Alerts */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Alertas detectadas</h2>
-          <div className="rounded-[14px] border border-border bg-card p-6 min-h-[300px]">
-            <Skeleton className="h-6 w-48 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-5/6" />
-          </div>
+          <SpiderAlertsList activeFilter={activeFilter} />
         </div>
 
         {/* Right 30% — Watches placeholder */}
