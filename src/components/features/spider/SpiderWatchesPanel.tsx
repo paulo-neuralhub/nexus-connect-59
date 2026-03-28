@@ -171,6 +171,7 @@ export function SpiderWatchesPanel() {
 function WatchCard({
   watch,
   orgId,
+  config,
   onEdit,
   onToggle,
   toggling,
