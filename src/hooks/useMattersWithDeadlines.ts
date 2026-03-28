@@ -75,7 +75,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           title,
           type,
           status,
-          client_id,
+          crm_account_id,
           jurisdiction,
           jurisdiction_code,
           application_number,
@@ -117,21 +117,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
         return [];
       }
 
-      // Fetch client names from contacts table for matters with client_id
-      const clientIds = [...new Set(matters.map((m: any) => m.client_id).filter(Boolean))];
-      let clientMap = new Map<string, string>();
-      if (clientIds.length > 0) {
-        const { data: clients } = await (supabase as any)
-          .from('contacts')
-          .select('id, name')
-          .in('id', clientIds);
-        if (clients) {
-          for (const c of clients) {
-            clientMap.set(c.id, c.name);
-          }
-        }
-      }
-      
+
       // Fetch next deadlines for all matters
       const matterIds = matters.map(m => m.id);
       const { data: deadlines, error: deadlinesError } = await supabase
@@ -191,8 +177,8 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           matter_type: m.type || 'TM_NAT',
           status: m.status || 'active',
           current_phase: m.current_phase || 'F0',
-          client_id: m.client_id,
-          client_name: m.crm_account?.name || (m.client_id ? clientMap.get(m.client_id) : null) || null,
+          client_id: m.crm_account_id,
+          client_name: m.crm_account?.name || null,
           jurisdiction_code: m.jurisdiction_code || m.jurisdiction || null,
           application_number: m.application_number,
           registration_number: m.registration_number,
