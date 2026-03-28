@@ -516,9 +516,6 @@ function KPICard({
     </div>
   );
 }
-      <div className="min-w-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground block truncate">
-          {label}
         </span>
         {subtitle && (
           <span className="text-[10px] text-muted-foreground">{subtitle}</span>
