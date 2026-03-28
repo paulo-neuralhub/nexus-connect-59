@@ -364,24 +364,55 @@ function AlertCard({
     }
   };
 
-  // ── Evidence capture handler (domain) ──
-  const handleEvidenceCapture = async () => {
+  // ── Evidence capture handler (domain/social) ──
+  const handleEvidenceCapture = async (evidenceType: string = 'domain_scan') => {
     setEvidenceLoading(true);
     try {
+      const captureUrl = evidenceType === 'social_profile'
+        ? alert.social_profile_url
+        : (alert.source_url ?? `https://${alert.detected_mark_name}`);
       const { error } = await supabase.functions.invoke('spider-evidence-capture', {
         body: {
-          url: alert.source_url ?? `https://${alert.detected_mark_name}`,
+          url: captureUrl,
           alert_id: alert.id,
           organization_id: orgId,
-          evidence_type: 'domain_scan',
+          evidence_type,
         },
       });
       if (error) throw error;
-      toast.success('Evidencia capturada y guardada');
+      toast.success(evidenceType === 'social_profile' ? 'Perfil capturado como evidencia' : 'Evidencia capturada y guardada');
     } catch {
-      toast.error('No se pudo capturar. El dominio puede estar inactivo.');
+      toast.error(evidenceType === 'social_profile'
+        ? 'No se pudo capturar el perfil.'
+        : 'No se pudo capturar. El dominio puede estar inactivo.');
     } finally {
       setEvidenceLoading(false);
+    }
+  };
+
+  // ── Platform Report handler (social) ──
+  const handlePlatformReport = async () => {
+    setPlatformReportLoading(true);
+    try {
+      // Find workflow step for level 7 (Online enforcement)
+      const { data: steps } = await fromTable('spider_workflow_steps')
+        .select('id')
+        .eq('level', 7)
+        .limit(1);
+      const stepId = steps?.[0]?.id;
+      if (stepId) {
+        await supabase
+          .from('spider_alerts' as any)
+          .update({ workflow_step_id: stepId } as any)
+          .eq('id', alert.id)
+          .eq('organization_id', orgId);
+      }
+      toast.success('Alerta escalada a Platform Reporting');
+      qc.invalidateQueries({ queryKey: ['spider-alerts-list'] });
+    } catch {
+      toast.error('No se pudo escalar la alerta');
+    } finally {
+      setPlatformReportLoading(false);
     }
   };
 
