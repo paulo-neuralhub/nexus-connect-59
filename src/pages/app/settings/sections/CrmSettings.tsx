@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useOrganization } from '@/contexts/organization-context';
 import { useNavigate } from 'react-router-dom';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -37,6 +38,7 @@ import { SortableStageRow } from './crm/SortableStageRow';
 
 export default function CrmSettings() {
   const navigate = useNavigate();
+  const { currentOrganization } = useOrganization();
   const { data: pipelines = [], isLoading } = usePipelines();
   const updatePipeline = useUpdatePipeline();
   const createPipeline = useCreatePipeline();
@@ -272,6 +274,7 @@ export default function CrmSettings() {
                         id={stage.id}
                         stage={stage}
                         pipelineId={selectedPipeline?.id}
+                        organizationId={currentOrganization?.id}
                         onUpdate={async (updates) => {
                           try {
                             await updateStage.mutateAsync({ id: stage.id, ...updates });
