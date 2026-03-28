@@ -84,6 +84,7 @@ import WatchResultList from "./pages/app/spider/results";
 import NewWatchlistPage from "./pages/app/spider/watchlists/new";
 import WatchlistDetailPage from "./pages/app/spider/watchlists/[id]";
 import AnalyzePage from "./pages/app/spider/analyze";
+import SpiderAlertDetailPage from "./pages/app/spider/alerts/[id]";
 import SpiderLandingPage from "./pages/landing/SpiderLanding";
 import DocketLandingPage from "./pages/landing/DocketLanding";
 import NexusLandingPage from "./pages/landing/NexusLanding";
@@ -463,6 +464,7 @@ const App = () => (
                 <Route path="data-hub/import-export" element={<ImportExportPage />} />
                 <Route path="spider" element={<SpiderLayout />}>
                   <Route index element={<SpiderDashboard />} />
+                  <Route path="alerts/:id" element={<SpiderAlertDetailPage />} />
                   <Route path="results" element={<WatchResultList />} />
                   <Route path="watchlists/new" element={<NewWatchlistPage />} />
                   <Route path="watchlists/:id" element={<WatchlistDetailPage />} />

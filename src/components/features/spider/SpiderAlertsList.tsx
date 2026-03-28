@@ -613,6 +613,18 @@ function AlertCard({
             {alert.ai_disclaimer && (
               <p className="text-[11px] text-muted-foreground/70 italic">{alert.ai_disclaimer}</p>
             )}
+
+            {/* Link to full detail page */}
+            <div className="pt-2 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs w-full"
+                onClick={() => navigate(`/app/spider/alerts/${alert.id}`)}
+              >
+                Ver análisis completo →
+              </Button>
+            </div>
           </div>
         )}
       </div>
