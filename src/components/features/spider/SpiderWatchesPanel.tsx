@@ -183,6 +183,8 @@ function WatchCard({
   toggling: boolean;
 }) {
   const [domainScanning, setDomainScanning] = useState(false);
+  const [socialScanning, setSocialScanning] = useState(false);
+  const socialEnabled = config?.social_watch_enabled ?? false;
   const jurisdictions: string[] = Array.isArray(watch.jurisdictions) ? watch.jurisdictions : [];
   const niceClasses: number[] = Array.isArray(watch.nice_classes) ? watch.nice_classes : [];
   const visibleJurisdictions = jurisdictions.slice(0, 4);
@@ -236,6 +238,31 @@ function WatchCard({
                   <><Globe className="w-3 h-3 mr-1" /> Escanear dominios ahora</>
                 )}
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  if (!socialEnabled) return;
+                  setSocialScanning(true);
+                  try {
+                    const { error } = await supabase.functions.invoke('spider-social-scan', {
+                      body: { organization_id: orgId },
+                    });
+                    if (error) throw error;
+                    toast.success('Escaneando Instagram y TikTok... Los resultados aparecerán en los próximos minutos');
+                  } catch {
+                    toast.error('No se pudo iniciar el escaneo social');
+                  } finally {
+                    setTimeout(() => setSocialScanning(false), 120000);
+                  }
+                }}
+                disabled={socialScanning || !socialEnabled}
+                title={!socialEnabled ? 'Requiere plan Professional' : undefined}
+              >
+                {socialScanning ? (
+                  <><Loader2 className="w-3 h-3 animate-spin mr-1" /> Escaneando...</>
+                ) : (
+                  <><Globe className="w-3 h-3 mr-1" /> Escanear redes sociales</>
+                )}
+                {!socialEnabled && <span className="ml-1 text-[10px] text-muted-foreground">(Pro)</span>}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
