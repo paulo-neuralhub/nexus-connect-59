@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag,
+  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag, Link2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
