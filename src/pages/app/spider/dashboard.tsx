@@ -378,7 +378,7 @@ export default function SpiderBrandDashboard() {
       </div>
 
       {/* ── Donut + Map placeholder ── */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid md:grid-cols-7 gap-4">
         {/* Donut by channel — compact */}
         <div className="md:col-span-2 rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">Alertas por canal</h3>
@@ -409,7 +409,7 @@ export default function SpiderBrandDashboard() {
         </div>
 
         {/* Geographic Risk Map — SP05-C2 */}
-        <div className="md:col-span-3 rounded-xl border border-border bg-card p-5">
+        <div className="md:col-span-5 rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">Distribución geográfica</h3>
           <GeoRiskMap
             alerts={alerts}
