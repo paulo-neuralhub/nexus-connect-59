@@ -9489,11 +9489,15 @@ export type Database = {
       }
       crm_pipeline_stages: {
         Row: {
+          allowed_roles: string[] | null
+          automation_summary: Json | null
           color: string | null
           created_at: string
+          entry_checklist: Json | null
           id: string
           is_lost_stage: boolean | null
           is_won_stage: boolean | null
+          lock_direction: string | null
           lock_message: string | null
           lock_type: string | null
           matter_status_trigger: string | null
@@ -9501,13 +9505,19 @@ export type Database = {
           pipeline_id: string
           position: number | null
           probability: number | null
+          requires_matter: boolean | null
+          stage_icon: string | null
         }
         Insert: {
+          allowed_roles?: string[] | null
+          automation_summary?: Json | null
           color?: string | null
           created_at?: string
+          entry_checklist?: Json | null
           id?: string
           is_lost_stage?: boolean | null
           is_won_stage?: boolean | null
+          lock_direction?: string | null
           lock_message?: string | null
           lock_type?: string | null
           matter_status_trigger?: string | null
@@ -9515,13 +9525,19 @@ export type Database = {
           pipeline_id: string
           position?: number | null
           probability?: number | null
+          requires_matter?: boolean | null
+          stage_icon?: string | null
         }
         Update: {
+          allowed_roles?: string[] | null
+          automation_summary?: Json | null
           color?: string | null
           created_at?: string
+          entry_checklist?: Json | null
           id?: string
           is_lost_stage?: boolean | null
           is_won_stage?: boolean | null
+          lock_direction?: string | null
           lock_message?: string | null
           lock_type?: string | null
           matter_status_trigger?: string | null
@@ -9529,6 +9545,8 @@ export type Database = {
           pipeline_id?: string
           position?: number | null
           probability?: number | null
+          requires_matter?: boolean | null
+          stage_icon?: string | null
         }
         Relationships: [
           {
