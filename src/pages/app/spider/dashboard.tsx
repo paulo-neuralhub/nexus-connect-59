@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle, Eye, Bell, Globe, ChevronRight } from 'lucide-react';
+import GeoRiskMap from '@/components/spider/GeoRiskMap';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -407,14 +408,13 @@ export default function SpiderBrandDashboard() {
           )}
         </div>
 
-        {/* Map placeholder */}
+        {/* Geographic Risk Map — SP05-C2 */}
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">Distribución geográfica</h3>
-          <div className="bg-muted rounded-xl flex flex-col items-center justify-center" style={{ height: '200px' }}>
-            <Globe className="w-8 h-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Mapa de riesgo geográfico</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Implementado en SP05-C2</p>
-          </div>
+          <GeoRiskMap
+            alerts={alerts}
+            onCountryClick={() => navigate('/app/spider')}
+          />
         </div>
       </div>
 
