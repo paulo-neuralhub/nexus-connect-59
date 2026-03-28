@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag,
+  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag, Link2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -36,6 +36,8 @@ type SeverityFilter = 'critical' | 'high' | 'medium' | 'resolved' | null;
 
 interface SpiderAlertsListProps {
   activeFilter: SeverityFilter;
+  incidentFilterIds?: string[] | null;
+  onFilterByIncident?: (ids: string[], title: string) => void;
 }
 
 const SEVERITY_STYLES: Record<string, { border: string; bg: string; label: string; badgeColor: string }> = {
@@ -47,7 +49,7 @@ const SEVERITY_STYLES: Record<string, { border: string; bg: string; label: strin
 const RESOLVED_STYLE = { border: 'border-l-green-500', bg: 'bg-green-50' };
 const SNOOZED_STYLE = { border: 'border-l-slate-300', bg: 'bg-slate-50' };
 
-export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
+export function SpiderAlertsList({ activeFilter, incidentFilterIds, onFilterByIncident }: SpiderAlertsListProps) {
   const { currentOrganization } = useOrganization();
   const orgId = currentOrganization?.id;
   const [statusTab, setStatusTab] = useState('all');
@@ -95,6 +97,13 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
   const filtered = useMemo(() => {
     if (!alerts) return [];
     let list = [...alerts];
+
+    // Incident filter takes priority
+    if (incidentFilterIds && incidentFilterIds.length > 0) {
+      list = list.filter(a => incidentFilterIds.includes(a.id));
+      return list;
+    }
+
     if (activeFilter === 'critical') {
       list = list.filter(a => a.severity === 'critical' && !['resolved', 'actioned'].includes(a.status));
     } else if (activeFilter === 'high') {
@@ -111,7 +120,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
       list = list.filter(a => a.severity === severityDropdown);
     }
     return list;
-  }, [alerts, activeFilter, statusTab, severityDropdown]);
+  }, [alerts, activeFilter, statusTab, severityDropdown, incidentFilterIds]);
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -170,6 +179,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
               orgId={orgId!}
               expanded={expandedIds.has(alert.id)}
               onToggle={() => toggleExpand(alert.id)}
+              onFilterByIncident={onFilterByIncident}
             />
           ))}
         </div>
@@ -190,11 +200,13 @@ function AlertCard({
   orgId,
   expanded,
   onToggle,
+  onFilterByIncident,
 }: {
   alert: any;
   orgId: string;
   expanded: boolean;
   onToggle: () => void;
+  onFilterByIncident?: (ids: string[], title: string) => void;
 }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -743,7 +755,26 @@ function AlertCard({
           )}
 
           {/* ROW 4 */}
-          <div className="flex flex-wrap gap-2">{renderActions()}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            {renderActions()}
+            {/* Incident badge (SP05-A Part 5) */}
+            {alert.incident_group_id && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // We need to fetch alert_ids from the incident — simple approach: filter by incident_group_id
+                  if (onFilterByIncident) {
+                    onFilterByIncident([alert.id], alert.detected_mark_name || 'Incidente');
+                  }
+                }}
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border transition-colors hover:bg-purple-50"
+                style={{ background: '#8B5CF615', color: '#8B5CF6', borderColor: '#8B5CF630' }}
+              >
+                <Link2 className="w-3 h-3" />
+                Parte de un incidente
+              </button>
+            )}
+          </div>
         </div>
 
         {/* EXPANDED */}
