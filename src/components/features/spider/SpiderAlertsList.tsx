@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon, Globe, Camera,
+  Image as ImageIcon, Globe, Camera, Music, Youtube, Square, Filter, Flag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -72,6 +72,10 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
           incident_group_id, detected_at, source_url,
+          social_platform, social_handle, social_followers,
+          social_profile_url, commercial_intent_score,
+          commercial_intent_type, commercial_intent_reason,
+          workflow_step_id,
           spider_watches!watch_id (
             watch_name, nice_classes,
             weight_phonetic, weight_semantic, weight_visual,
@@ -170,6 +174,9 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ))}
         </div>
       )}
+
+      {/* Discarded signals footer */}
+      <DiscardedSignalsFooter orgId={orgId!} />
     </div>
   );
 }
@@ -215,10 +222,12 @@ function AlertCard({
   const isSnoozed = effectiveSnoozed && new Date(effectiveSnoozed) > now;
   const isResolved = ['actioned', 'resolved'].includes(effectiveStatus);
   const isDomain = alert.alert_category === 'domain' || alert.source_code === 'domain';
+  const isSocial = alert.alert_category === 'social';
   const watch = alert.spider_watches;
 
-  // Evidence capture state (domain alerts)
+  // Evidence capture state (domain/social alerts)
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [platformReportLoading, setPlatformReportLoading] = useState(false);
 
   let style = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
   let cardBorder = style.border;
@@ -358,24 +367,55 @@ function AlertCard({
     }
   };
 
-  // ── Evidence capture handler (domain) ──
-  const handleEvidenceCapture = async () => {
+  // ── Evidence capture handler (domain/social) ──
+  const handleEvidenceCapture = async (evidenceType: string = 'domain_scan') => {
     setEvidenceLoading(true);
     try {
+      const captureUrl = evidenceType === 'social_profile'
+        ? alert.social_profile_url
+        : (alert.source_url ?? `https://${alert.detected_mark_name}`);
       const { error } = await supabase.functions.invoke('spider-evidence-capture', {
         body: {
-          url: alert.source_url ?? `https://${alert.detected_mark_name}`,
+          url: captureUrl,
           alert_id: alert.id,
           organization_id: orgId,
-          evidence_type: 'domain_scan',
+          evidence_type: evidenceType,
         },
       });
       if (error) throw error;
-      toast.success('Evidencia capturada y guardada');
+      toast.success(evidenceType === 'social_profile' ? 'Perfil capturado como evidencia' : 'Evidencia capturada y guardada');
     } catch {
-      toast.error('No se pudo capturar. El dominio puede estar inactivo.');
+      toast.error(evidenceType === 'social_profile'
+        ? 'No se pudo capturar el perfil.'
+        : 'No se pudo capturar. El dominio puede estar inactivo.');
     } finally {
       setEvidenceLoading(false);
+    }
+  };
+
+  // ── Platform Report handler (social) ──
+  const handlePlatformReport = async () => {
+    setPlatformReportLoading(true);
+    try {
+      // Find workflow step for level 7 (Online enforcement)
+      const { data: steps } = await fromTable('spider_workflow_steps')
+        .select('id')
+        .eq('level', 7)
+        .limit(1);
+      const stepId = steps?.[0]?.id;
+      if (stepId) {
+        await supabase
+          .from('spider_alerts' as any)
+          .update({ workflow_step_id: stepId } as any)
+          .eq('id', alert.id)
+          .eq('organization_id', orgId);
+      }
+      toast.success('Alerta escalada a Platform Reporting');
+      qc.invalidateQueries({ queryKey: ['spider-alerts-list'] });
+    } catch {
+      toast.error('No se pudo escalar la alerta');
+    } finally {
+      setPlatformReportLoading(false);
     }
   };
 
@@ -411,6 +451,66 @@ function AlertCard({
             onClick={() => navigate('/app/marketplace?jurisdiction=domain&practice=udrp')}
           >
             <Globe className="w-3 h-3" /> UDRP
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-blue-300 text-blue-700"
+            onClick={handleCnD}
+            disabled={cndLoading}
+          >
+            {cndLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+            {cndLoading ? 'Generando...' : 'C&D'}
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-green-300 text-green-700"
+            onClick={() => navigate(`/app/marketplace?jurisdiction=${alert.detected_jurisdiction || ''}`)}
+          >
+            <Users className="w-3 h-3" /> Agente
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                <MoreHorizontal className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Posponer</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {[3, 7, 14, 30].map(d => (
+                    <DropdownMenuItem
+                      key={d}
+                      onClick={() => snoozeMutation.mutate(d)}
+                      disabled={snoozeMutation.isPending}
+                    >
+                      {d} días
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuItem onClick={() => setDismissOpen(true)}>Descartar</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPortalEditing(true)}>Portal cliente</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      );
+    }
+
+    // Social-specific actions
+    if (isSocial) {
+      const platformColor = alert.social_platform === 'instagram' ? 'border-pink-300 text-pink-700'
+        : alert.social_platform === 'tiktok' ? 'border-slate-700 text-slate-900'
+        : alert.social_platform === 'youtube' ? 'border-red-300 text-red-700'
+        : 'border-teal-300 text-teal-700';
+      return (
+        <>
+          <Button
+            variant="outline" size="sm"
+            className={cn('h-7 text-xs gap-1', platformColor)}
+            onClick={() => navigate(`/app/spider/alerts/${alert.id}`)}
+          >
+            <Flag className="w-3 h-3" /> Platform Report
           </Button>
           <Button
             variant="outline" size="sm"
@@ -525,8 +625,21 @@ function AlertCard({
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               {isDomain && <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />}
+              {isSocial && <SocialPlatformIcon platform={alert.social_platform} />}
               <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
-              {isDomain ? (
+              {isSocial ? (
+                <>
+                  <SocialPlatformBadge platform={alert.social_platform} />
+                  {alert.social_followers > 0 && (
+                    <span className="text-[10px] text-muted-foreground">{formatFollowers(alert.social_followers)} seguidores</span>
+                  )}
+                  {!isResolved && !isSnoozed && style.label && (
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
+                      {style.label}
+                    </span>
+                  )}
+                </>
+              ) : isDomain ? (
                 <>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
                     DOMINIO
@@ -561,7 +674,7 @@ function AlertCard({
                 </span>
               )}
             </div>
-            {!isDomain && daysUrgent != null && !isResolved && (
+            {!isDomain && !isSocial && daysUrgent != null && !isResolved && (
               <span className={cn(
                 'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
                 daysUrgent < 7 && 'animate-pulse'
@@ -574,7 +687,21 @@ function AlertCard({
           {/* ROW 2 */}
           <div className="flex items-center gap-4">
             <div className="flex-1 space-y-1">
-              {isDomain ? (
+              {isSocial ? (
+                <>
+                  <SimilarityBar label="Similitud de nombre" score={alert.semantic_score} color="bg-pink-500" />
+                  <SimilarityBar
+                    label="Intención comercial"
+                    score={alert.commercial_intent_score}
+                    color={
+                      (alert.commercial_intent_score ?? 0) >= 70 ? 'bg-red-500'
+                      : (alert.commercial_intent_score ?? 0) >= 50 ? 'bg-amber-500'
+                      : 'bg-slate-300'
+                    }
+                    placeholder={!alert.commercial_intent_score && alert.commercial_intent_score !== 0}
+                  />
+                </>
+              ) : isDomain ? (
                 <SimilarityBar label="Similitud con tu marca" score={alert.combined_score} color="bg-teal-500" />
               ) : (
                 <>
@@ -773,7 +900,7 @@ function AlertCard({
                 <Button
                   variant="outline" size="sm"
                   className="h-7 text-xs gap-1 border-purple-300 text-purple-700"
-                  onClick={handleEvidenceCapture}
+                  onClick={() => handleEvidenceCapture('domain_scan')}
                   disabled={evidenceLoading}
                 >
                   {evidenceLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
@@ -941,11 +1068,11 @@ function AlertCard({
 }
 
 // ════════════════════════════════════════════
-function SimilarityBar({ label, score, color, pending }: { label: string; score: number | null; color: string; pending?: boolean }) {
-  const pct = score != null ? Math.round(score) : 0;
+function SimilarityBar({ label, score, color, pending, placeholder }: { label: string; score: number | null; color: string; pending?: boolean; placeholder?: boolean }) {
+  const pct = placeholder ? 0 : (score != null ? Math.round(score) : 0);
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-[90px] truncate flex items-center gap-1">
+      <span className="text-[10px] text-muted-foreground w-[120px] truncate flex items-center gap-1">
         {label}
         {pending && (
           <span className="text-[8px] px-1 py-0.5 rounded bg-slate-200 text-slate-500 font-medium" title="El análisis visual se ejecuta en el siguiente scan">
@@ -956,7 +1083,127 @@ function SimilarityBar({ label, score, color, pending }: { label: string; score:
       <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
         <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-bold tabular-nums w-8 text-right text-foreground">{pct}%</span>
+      <span className="text-[10px] font-bold tabular-nums w-8 text-right text-foreground">{placeholder ? '—' : `${pct}%`}</span>
     </div>
+  );
+}
+
+// ════════════════════════════════════════════
+// Social helper components
+// ════════════════════════════════════════════
+function formatFollowers(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function SocialPlatformIcon({ platform }: { platform?: string }) {
+  switch (platform) {
+    case 'instagram': return <Square className="w-4 h-4 text-pink-600 flex-shrink-0" />;
+    case 'tiktok': return <Music className="w-4 h-4 text-slate-900 flex-shrink-0" />;
+    case 'youtube': return <Youtube className="w-4 h-4 text-red-600 flex-shrink-0" />;
+    default: return <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />;
+  }
+}
+
+function SocialPlatformBadge({ platform }: { platform?: string }) {
+  const styles: Record<string, string> = {
+    instagram: 'bg-pink-100 text-pink-700 border-pink-200',
+    tiktok: 'bg-slate-900 text-white border-slate-700',
+    youtube: 'bg-red-100 text-red-700 border-red-200',
+  };
+  const labels: Record<string, string> = {
+    instagram: 'INSTAGRAM', tiktok: 'TIKTOK', youtube: 'YOUTUBE',
+  };
+  const s = styles[platform || ''] || 'bg-teal-100 text-teal-700 border-teal-200';
+  const l = labels[platform || ''] || (platform || 'SOCIAL').toUpperCase();
+  return <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', s)}>{l}</span>;
+}
+
+function CommercialIntentBadge({ type }: { type?: string }) {
+  if (!type) return null;
+  const map: Record<string, { cls: string; label: string }> = {
+    sale: { cls: 'bg-red-100 text-red-700 border-red-200', label: 'VENTA DETECTADA' },
+    impersonation: { cls: 'bg-amber-100 text-amber-700 border-amber-200', label: 'SUPLANTACIÓN' },
+    legitimate_use: { cls: 'bg-green-100 text-green-700 border-green-200', label: 'USO LEGÍTIMO' },
+    unclear: { cls: 'bg-slate-100 text-slate-600 border-slate-200', label: 'SIN DETERMINAR' },
+  };
+  const m = map[type] || map.unclear!;
+  return <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1 inline-block', m.cls)}>{m.label}</span>;
+}
+
+// ════════════════════════════════════════════
+// Discarded Signals Footer
+// ════════════════════════════════════════════
+function DiscardedSignalsFooter({ orgId }: { orgId: string }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [sample, setSample] = useState<any[]>([]);
+
+  const { data: discardedCount } = useQuery({
+    queryKey: ['spider-discarded-count', orgId],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count, error } = await fromTable('spider_discarded_signals')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+        .gte('discarded_at', since);
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const loadSample = async () => {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await fromTable('spider_discarded_signals')
+      .select('source_code, signal_text, signal_url, discard_reason, commercial_intent_score')
+      .eq('organization_id', orgId)
+      .gte('discarded_at', since)
+      .limit(10);
+    setSample(data || []);
+    setModalOpen(true);
+  };
+
+  if (!discardedCount || discardedCount === 0) return null;
+
+  return (
+    <>
+      <div className="rounded-lg p-3 bg-slate-50 border border-slate-200 flex items-center gap-2">
+        <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <span className="text-xs text-muted-foreground flex-1">
+          Hoy se filtraron <strong>{discardedCount}</strong> señales sin intención comercial
+        </span>
+        <button onClick={loadSample} className="text-xs text-primary hover:underline whitespace-nowrap">
+          Ver muestra →
+        </button>
+      </div>
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Señales filtradas (últimas 24h)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {sample.map((s, i) => (
+              <div key={i} className="rounded border border-border p-2 text-xs space-y-1">
+                <div className="flex items-center gap-2">
+                  <SocialPlatformIcon platform={s.source_code} />
+                  <span className="text-foreground line-clamp-1 flex-1">{s.signal_text || s.signal_url || '—'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {s.discard_reason && (
+                    <Badge variant="secondary" className="text-[10px]">{s.discard_reason}</Badge>
+                  )}
+                  {s.commercial_intent_score != null && (
+                    <span className="text-[10px] text-muted-foreground">Intent: {s.commercial_intent_score}%</span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {sample.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Sin datos</p>}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
