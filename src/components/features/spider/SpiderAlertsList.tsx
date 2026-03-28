@@ -578,8 +578,6 @@ function AlertCard({
                 </div>
               </div>
             )}
-              </div>
-            </div>
 
             {/* AI Analysis */}
             {alert.ai_analysis && (
