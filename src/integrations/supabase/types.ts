@@ -27547,6 +27547,7 @@ export type Database = {
           alert_count: number | null
           alert_ids: string[] | null
           created_at: string | null
+          digital_score: number | null
           entity_name: string | null
           entity_name_normalized: string | null
           first_detected_at: string | null
@@ -27555,15 +27556,22 @@ export type Database = {
           last_updated_at: string | null
           organization_id: string
           platforms: string[] | null
+          registral_score: number | null
+          resolution_notes: string | null
+          resolution_outcome: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           risk_score_unified: number | null
           severity: string | null
           sources: string[] | null
           status: string | null
+          visual_score: number | null
         }
         Insert: {
           alert_count?: number | null
           alert_ids?: string[] | null
           created_at?: string | null
+          digital_score?: number | null
           entity_name?: string | null
           entity_name_normalized?: string | null
           first_detected_at?: string | null
@@ -27572,15 +27580,22 @@ export type Database = {
           last_updated_at?: string | null
           organization_id: string
           platforms?: string[] | null
+          registral_score?: number | null
+          resolution_notes?: string | null
+          resolution_outcome?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           risk_score_unified?: number | null
           severity?: string | null
           sources?: string[] | null
           status?: string | null
+          visual_score?: number | null
         }
         Update: {
           alert_count?: number | null
           alert_ids?: string[] | null
           created_at?: string | null
+          digital_score?: number | null
           entity_name?: string | null
           entity_name_normalized?: string | null
           first_detected_at?: string | null
@@ -27589,10 +27604,16 @@ export type Database = {
           last_updated_at?: string | null
           organization_id?: string
           platforms?: string[] | null
+          registral_score?: number | null
+          resolution_notes?: string | null
+          resolution_outcome?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           risk_score_unified?: number | null
           severity?: string | null
           sources?: string[] | null
           status?: string | null
+          visual_score?: number | null
         }
         Relationships: []
       }
