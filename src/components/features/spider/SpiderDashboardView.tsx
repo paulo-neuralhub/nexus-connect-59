@@ -12,6 +12,7 @@ import { useOrganization } from '@/contexts/organization-context';
 import { useQuery } from '@tanstack/react-query';
 import { fromTable } from '@/lib/supabase';
 import { SpiderAlertsList } from './SpiderAlertsList';
+import { SpiderWatchesPanel } from './SpiderWatchesPanel';
 
 const SPIDER_VIOLET = '#8B5CF6';
 
