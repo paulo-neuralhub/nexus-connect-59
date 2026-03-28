@@ -116,6 +116,21 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
       if (!matters || matters.length === 0) {
         return [];
       }
+
+      // Fetch client names from contacts table for matters with client_id
+      const clientIds = [...new Set(matters.map((m: any) => m.client_id).filter(Boolean))];
+      let clientMap = new Map<string, string>();
+      if (clientIds.length > 0) {
+        const { data: clients } = await (supabase as any)
+          .from('contacts')
+          .select('id, name')
+          .in('id', clientIds);
+        if (clients) {
+          for (const c of clients) {
+            clientMap.set(c.id, c.name);
+          }
+        }
+      }
       
       // Fetch next deadlines for all matters
       const matterIds = matters.map(m => m.id);
