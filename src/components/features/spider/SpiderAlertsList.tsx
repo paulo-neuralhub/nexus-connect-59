@@ -25,7 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
-  Image as ImageIcon,
+  Image as ImageIcon, Globe, Camera,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -71,7 +71,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ai_disclaimer, status, snoozed_until,
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
-          incident_group_id,
+          incident_group_id, detected_at, source_url,
           spider_watches!watch_id (
             watch_name, nice_classes,
             weight_phonetic, weight_semantic, weight_visual,
@@ -214,8 +214,11 @@ function AlertCard({
 
   const isSnoozed = effectiveSnoozed && new Date(effectiveSnoozed) > now;
   const isResolved = ['actioned', 'resolved'].includes(effectiveStatus);
-  const isDomain = alert.source_code === 'domain' || alert.alert_category === 'online';
+  const isDomain = alert.alert_category === 'domain' || alert.source_code === 'domain';
   const watch = alert.spider_watches;
+
+  // Evidence capture state (domain alerts)
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
 
   let style = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
   let cardBorder = style.border;
@@ -355,6 +358,27 @@ function AlertCard({
     }
   };
 
+  // ── Evidence capture handler (domain) ──
+  const handleEvidenceCapture = async () => {
+    setEvidenceLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('spider-evidence-capture', {
+        body: {
+          url: alert.source_url ?? `https://${alert.detected_mark_name}`,
+          alert_id: alert.id,
+          organization_id: orgId,
+          evidence_type: 'domain_scan',
+        },
+      });
+      if (error) throw error;
+      toast.success('Evidencia capturada y guardada');
+    } catch {
+      toast.error('No se pudo capturar. El dominio puede estar inactivo.');
+    } finally {
+      setEvidenceLoading(false);
+    }
+  };
+
   // ── Action buttons (shared between collapsed row 4 and expanded section 4) ──
   const renderActions = () => {
     if (isSnoozed) {
@@ -376,6 +400,64 @@ function AlertCard({
         </Button>
       );
     }
+
+    // Domain-specific actions
+    if (isDomain) {
+      return (
+        <>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-teal-300 text-teal-700"
+            onClick={() => navigate('/app/marketplace?jurisdiction=domain&practice=udrp')}
+          >
+            <Globe className="w-3 h-3" /> UDRP
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-blue-300 text-blue-700"
+            onClick={handleCnD}
+            disabled={cndLoading}
+          >
+            {cndLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+            {cndLoading ? 'Generando...' : 'C&D'}
+          </Button>
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 border-green-300 text-green-700"
+            onClick={() => navigate(`/app/marketplace?jurisdiction=${alert.detected_jurisdiction || ''}`)}
+          >
+            <Users className="w-3 h-3" /> Agente
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                <MoreHorizontal className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Posponer</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {[3, 7, 14, 30].map(d => (
+                    <DropdownMenuItem
+                      key={d}
+                      onClick={() => snoozeMutation.mutate(d)}
+                      disabled={snoozeMutation.isPending}
+                    >
+                      {d} días
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuItem onClick={() => setDismissOpen(true)}>Descartar</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPortalEditing(true)}>Portal cliente</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      );
+    }
+
+    // Standard trademark actions
     return (
       <>
         {alert.opposition_deadline && (
@@ -442,19 +524,36 @@ function AlertCard({
           {/* ROW 1 */}
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
+              {isDomain && <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />}
               <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
-              {!isResolved && !isSnoozed && style.label && (
-                <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
-                  {style.label}
-                </span>
-              )}
-              {alert.detected_jurisdiction && (
-                <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
-              )}
-              {watch?.mark_image_url && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
-                  👁 Visual
-                </span>
+              {isDomain ? (
+                <>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
+                    DOMINIO
+                  </span>
+                  {!isResolved && !isSnoozed && alert.combined_score >= 85 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">ALTO</span>
+                  )}
+                  {!isResolved && !isSnoozed && alert.combined_score >= 70 && alert.combined_score < 85 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">MEDIO</span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {!isResolved && !isSnoozed && style.label && (
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
+                      {style.label}
+                    </span>
+                  )}
+                  {alert.detected_jurisdiction && (
+                    <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
+                  )}
+                  {watch?.mark_image_url && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                      👁 Visual
+                    </span>
+                  )}
+                </>
               )}
               {isSnoozed && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
@@ -462,7 +561,7 @@ function AlertCard({
                 </span>
               )}
             </div>
-            {daysUrgent != null && !isResolved && (
+            {!isDomain && daysUrgent != null && !isResolved && (
               <span className={cn(
                 'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
                 daysUrgent < 7 && 'animate-pulse'
@@ -476,9 +575,7 @@ function AlertCard({
           <div className="flex items-center gap-4">
             <div className="flex-1 space-y-1">
               {isDomain ? (
-                alert.weight_semantic_used > 0 && (
-                  <SimilarityBar label="Similitud conceptual" score={alert.semantic_score} color="bg-teal-500" />
-                )
+                <SimilarityBar label="Similitud con tu marca" score={alert.combined_score} color="bg-teal-500" />
               ) : (
                 <>
                   {alert.weight_phonetic_used > 0 && <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />}
@@ -525,58 +622,94 @@ function AlertCard({
         {/* EXPANDED */}
         {expanded && (
           <div className="border-t border-border bg-card/80 p-4 space-y-4">
-            {/* Comparison */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
-                {watch?.mark_image_url ? (
-                  <img src={watch.mark_image_url} alt="Tu logo" className="w-10 h-10 object-contain rounded border border-border bg-background" />
-                ) : (
-                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
-                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
-                  </div>
-                )}
-                <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
-                {watch?.nice_classes && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {(Array.isArray(watch.nice_classes) ? watch.nice_classes : []).map((c: any) => (
-                      <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
-                {alert.detected_mark_image_url ? (
-                  <img src={alert.detected_mark_image_url} alt="Logo detectado" className="w-10 h-10 object-contain rounded border border-border bg-background" />
-                ) : (
-                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
-                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
-                  </div>
-                )}
-                <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
-                {alert.detected_application_number && (
-                  <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
-                )}
-                {alert.detected_nice_classes && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {(Array.isArray(alert.detected_nice_classes) ? alert.detected_nice_classes : []).map((c: any) => (
-                      <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
-                    ))}
-                  </div>
-                )}
-                {alert.detected_mark_status && <Badge variant="outline" className="text-[10px] mt-1">{alert.detected_mark_status}</Badge>}
-                {alert.detected_applicant && <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>}
-              </div>
-            </div>
-            {/* Visual similarity bar (both logos + score > 0) */}
-            {watch?.mark_image_url && alert.detected_mark_image_url && alert.visual_score > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-purple-700">Similitud visual: {Math.round(alert.visual_score)}%</p>
-                <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
-                  <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${Math.round(alert.visual_score)}%` }} />
+            {/* Comparison — domain vs trademark */}
+            {isDomain ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca vigilada</p>
+                  <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
+                  {watch?.nice_classes && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(Array.isArray(watch.nice_classes) ? watch.nice_classes : []).map((c: any) => (
+                        <Badge key={c} variant="secondary" className="text-[10px] h-5">Cl. {c}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Dominio detectado</p>
+                  <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
+                  {alert.detected_applicant && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Registrado por: {alert.detected_applicant}
+                      {alert.detected_applicant_country && ` (${alert.detected_applicant_country})`}
+                    </p>
+                  )}
+                  {alert.source_url && (
+                    <a href={alert.source_url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-teal-600 hover:underline">
+                      Ver dominio →
+                    </a>
+                  )}
+                  <p className="text-[10px] text-muted-foreground">
+                    Fuente: WHOIS · {alert.detected_at ? format(new Date(alert.detected_at), 'dd/MM/yyyy') : '—'}
+                  </p>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
+                    {watch?.mark_image_url ? (
+                      <img src={watch.mark_image_url} alt="Tu logo" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                    ) : (
+                      <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
+                    {watch?.nice_classes && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {(Array.isArray(watch.nice_classes) ? watch.nice_classes : []).map((c: any) => (
+                          <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
+                    {alert.detected_mark_image_url ? (
+                      <img src={alert.detected_mark_image_url} alt="Logo detectado" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                    ) : (
+                      <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
+                    {alert.detected_application_number && (
+                      <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
+                    )}
+                    {alert.detected_nice_classes && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {(Array.isArray(alert.detected_nice_classes) ? alert.detected_nice_classes : []).map((c: any) => (
+                          <Badge key={c} variant="secondary" className="text-[10px] h-5">{c}</Badge>
+                        ))}
+                      </div>
+                    )}
+                    {alert.detected_mark_status && <Badge variant="outline" className="text-[10px] mt-1">{alert.detected_mark_status}</Badge>}
+                    {alert.detected_applicant && <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>}
+                  </div>
+                </div>
+                {/* Visual similarity bar (both logos + score > 0) */}
+                {watch?.mark_image_url && alert.detected_mark_image_url && alert.visual_score > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-purple-700">Similitud visual: {Math.round(alert.visual_score)}%</p>
+                    <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
+                      <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${Math.round(alert.visual_score)}%` }} />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* AI Analysis */}
@@ -592,21 +725,67 @@ function AlertCard({
               </div>
             )}
 
-            {/* Deadline */}
-            {alert.opposition_deadline && (
-              <div className={cn(
-                'rounded-lg p-3 text-xs',
-                daysUrgent != null && daysUrgent < 7 ? 'bg-red-50 border border-red-200' : 'bg-muted/50'
-              )}>
-                <span className="font-semibold text-foreground">
-                  Vence {format(new Date(alert.opposition_deadline), "dd 'de' MMMM yyyy", { locale: es })}
-                </span>
-                {daysUrgent != null && <span className="ml-2 text-muted-foreground">· Quedan {daysUrgent} días</span>}
+            {/* Deadline / UDRP info */}
+            {isDomain ? (
+              <div className="rounded-lg p-3 text-xs bg-teal-50 border border-teal-200">
+                <div className="flex items-start gap-2">
+                  <Globe className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-teal-800">Este dominio puede ser objeto de procedimiento UDRP</p>
+                    <p className="text-teal-700">ante la OMPI si existe registro de marca válido.</p>
+                    <p className="text-teal-600/70">Tiempo estimado: 60 días · Coste: ~$1.500</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              alert.opposition_deadline && (
+                <div className={cn(
+                  'rounded-lg p-3 text-xs',
+                  daysUrgent != null && daysUrgent < 7 ? 'bg-red-50 border border-red-200' : 'bg-muted/50'
+                )}>
+                  <span className="font-semibold text-foreground">
+                    Vence {format(new Date(alert.opposition_deadline), "dd 'de' MMMM yyyy", { locale: es })}
+                  </span>
+                  {daysUrgent != null && <span className="ml-2 text-muted-foreground">· Quedan {daysUrgent} días</span>}
+                </div>
+              )
+            )}
+
+            {/* Domain-specific actions */}
+            {isDomain && !isResolved && !isSnoozed && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline" size="sm"
+                  className="h-7 text-xs gap-1 border-teal-300 text-teal-700"
+                  onClick={() => navigate('/app/marketplace?practice=udrp')}
+                >
+                  <Globe className="w-3 h-3" /> Iniciar UDRP
+                </Button>
+                <Button
+                  variant="outline" size="sm"
+                  className="h-7 text-xs gap-1 border-blue-300 text-blue-700"
+                  onClick={handleCnD}
+                  disabled={cndLoading}
+                >
+                  {cndLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                  {cndLoading ? 'Generando...' : 'Generar C&D'}
+                </Button>
+                <Button
+                  variant="outline" size="sm"
+                  className="h-7 text-xs gap-1 border-purple-300 text-purple-700"
+                  onClick={handleEvidenceCapture}
+                  disabled={evidenceLoading}
+                >
+                  {evidenceLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                  {evidenceLoading ? 'Capturando...' : 'Capturar evidencia'}
+                </Button>
               </div>
             )}
 
-            {/* Expanded actions */}
-            <div className="flex flex-wrap gap-2">{renderActions()}</div>
+            {/* Standard expanded actions (non-domain) */}
+            {!isDomain && (
+              <div className="flex flex-wrap gap-2">{renderActions()}</div>
+            )}
 
             {/* Portal toggle (in expanded only) */}
             {!isResolved && (

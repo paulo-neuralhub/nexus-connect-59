@@ -11,10 +11,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Eye, Plus, Settings, Pause, Play } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Eye, Plus, Settings, Pause, Play, Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 import { SpiderWatchSheet } from './SpiderWatchSheet';
 
 const SPIDER_VIOLET = '#8B5CF6';
@@ -125,6 +129,7 @@ export function SpiderWatchesPanel() {
               <WatchCard
                 key={w.id}
                 watch={w}
+                orgId={orgId!}
                 onEdit={() => openEdit(w)}
                 onToggle={() => toggleActive.mutate({ id: w.id, is_active: w.is_active })}
                 toggling={toggleActive.isPending}
@@ -164,15 +169,18 @@ export function SpiderWatchesPanel() {
 
 function WatchCard({
   watch,
+  orgId,
   onEdit,
   onToggle,
   toggling,
 }: {
   watch: any;
+  orgId: string;
   onEdit: () => void;
   onToggle: () => void;
   toggling: boolean;
 }) {
+  const [domainScanning, setDomainScanning] = useState(false);
   const jurisdictions: string[] = Array.isArray(watch.jurisdictions) ? watch.jurisdictions : [];
   const niceClasses: number[] = Array.isArray(watch.nice_classes) ? watch.nice_classes : [];
   const visibleJurisdictions = jurisdictions.slice(0, 4);
@@ -195,9 +203,39 @@ function WatchCard({
           <span className="text-sm font-bold text-foreground truncate">{watch.watch_name}</span>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onEdit}>
-            <Settings className="w-3 h-3" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <Settings className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onEdit}>Editar vigilancia</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  setDomainScanning(true);
+                  try {
+                    const { error } = await supabase.functions.invoke('spider-domain-scan', {
+                      body: { organization_id: orgId },
+                    });
+                    if (error) throw error;
+                    toast.success('Escaneando dominios... Los resultados aparecerán en breve');
+                  } catch {
+                    toast.error('No se pudo iniciar el escaneo de dominios');
+                  } finally {
+                    setTimeout(() => setDomainScanning(false), 60000);
+                  }
+                }}
+                disabled={domainScanning}
+              >
+                {domainScanning ? (
+                  <><Loader2 className="w-3 h-3 animate-spin mr-1" /> Escaneando...</>
+                ) : (
+                  <><Globe className="w-3 h-3 mr-1" /> Escanear dominios ahora</>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant="ghost"
             size="icon"
