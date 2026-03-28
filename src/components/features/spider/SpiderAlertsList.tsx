@@ -762,11 +762,18 @@ function AlertCard({
 }
 
 // ════════════════════════════════════════════
-function SimilarityBar({ label, score, color }: { label: string; score: number | null; color: string }) {
+function SimilarityBar({ label, score, color, pending }: { label: string; score: number | null; color: string; pending?: boolean }) {
   const pct = score != null ? Math.round(score) : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-[90px] truncate">{label}</span>
+      <span className="text-[10px] text-muted-foreground w-[90px] truncate flex items-center gap-1">
+        {label}
+        {pending && (
+          <span className="text-[8px] px-1 py-0.5 rounded bg-slate-200 text-slate-500 font-medium" title="El análisis visual se ejecuta en el siguiente scan">
+            Pendiente
+          </span>
+        )}
+      </span>
       <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
         <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
