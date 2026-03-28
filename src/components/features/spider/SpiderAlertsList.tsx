@@ -200,11 +200,13 @@ function AlertCard({
   orgId,
   expanded,
   onToggle,
+  onFilterByIncident,
 }: {
   alert: any;
   orgId: string;
   expanded: boolean;
   onToggle: () => void;
+  onFilterByIncident?: (ids: string[], title: string) => void;
 }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
