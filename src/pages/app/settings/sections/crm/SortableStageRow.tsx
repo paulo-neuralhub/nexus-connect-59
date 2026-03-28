@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, AlertTriangle, Lock, UserCheck, Unlock, Zap } from 'lucide-react';
-import { StageAutomationSheet } from './StageAutomationSheet';
+import { GripVertical, Trash2, AlertTriangle, Lock, UserCheck, Unlock } from 'lucide-react';
+import { StageAutomationPanel } from './StageAutomationPanel';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +77,7 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
   const [prob, setProb] = useState<number>(Number(stage.probability ?? 50));
   const [showMessage, setShowMessage] = useState(false);
   const [lockMsg, setLockMsg] = useState(stage.lock_message || '');
-  const [automationSheetOpen, setAutomationSheetOpen] = useState(false);
+  
 
   const isDefaultPipeline = pipelineId ? DEFAULT_PIPELINE_IDS.includes(pipelineId) : false;
   const lockType = stage.lock_type || 'free';
@@ -249,17 +249,6 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
                 ✎
               </Button>
             )}
-            {organizationId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-amber-500 hover:text-amber-600"
-                onClick={() => setAutomationSheetOpen(true)}
-                title="Gestionar automaciones de esta etapa"
-              >
-                <Zap className="h-3.5 w-3.5" />
-              </Button>
-            )}
           </div>
 
           <div className="col-span-12 md:col-span-3 flex items-start md:items-center justify-between gap-3">
@@ -308,14 +297,14 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
         </div>
       )}
       {organizationId && (
-        <StageAutomationSheet
-          open={automationSheetOpen}
-          onClose={() => setAutomationSheetOpen(false)}
-          stageId={id}
-          stageName={stage.name}
-          pipelineId={pipelineId ?? ''}
-          organizationId={organizationId}
-        />
+        <div className="pl-10">
+          <StageAutomationPanel
+            stageId={id}
+            stageName={stage.name}
+            pipelineId={pipelineId ?? ''}
+            organizationId={organizationId}
+          />
+        </div>
       )}
     </div>
   );

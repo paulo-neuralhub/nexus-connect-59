@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, CheckSquare, Square, Pencil, Trash2, Zap } from 'lucide-react'
+import { Plus, CheckSquare, Square, Pencil, Trash2, Zap, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -22,8 +21,6 @@ import {
 } from './automationConstants'
 
 interface Props {
-  open: boolean
-  onClose: () => void
   stageId: string
   stageName: string
   pipelineId: string
@@ -111,12 +108,13 @@ function DynamicField({
   return null
 }
 
-export function StageAutomationSheet({
-  open, onClose, stageId, stageName,
-  pipelineId, organizationId,
+export function StageAutomationPanel({
+  stageId, stageName, pipelineId, organizationId,
 }: Props) {
+  const [isOpen, setIsOpen] = useState(false)
   const [rules, setRules] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false)
   const [isAddingFor, setIsAddingFor] = useState<string | null>(null)
   const [editingRule, setEditingRule] = useState<any | null>(null)
   const [formData, setFormData] = useState<Record<string, any>>({})
@@ -130,9 +128,9 @@ export function StageAutomationSheet({
   }, [])
 
   useEffect(() => {
-    if (!open || !stageId || !organizationId) return
+    if (!isOpen || hasFetched || !stageId || !organizationId) return
     loadRules()
-  }, [open, stageId, organizationId])
+  }, [isOpen, hasFetched, stageId, organizationId])
 
   async function loadRules() {
     setIsLoading(true)
@@ -151,6 +149,7 @@ export function StageAutomationSheet({
       toast.error('Error al cargar automaciones')
     } else {
       setRules((data as any[]) ?? [])
+      setHasFetched(true)
     }
     setIsLoading(false)
   }
@@ -186,7 +185,7 @@ export function StageAutomationSheet({
       toast.error('Error al eliminar')
     } else {
       toast.success('Automación eliminada')
-      await loadRules()
+      setHasFetched(false)
     }
   }
 
@@ -268,7 +267,7 @@ export function StageAutomationSheet({
       setIsAddingFor(null)
       setEditingRule(null)
       setFormData({})
-      await loadRules()
+      setHasFetched(false)
 
     } catch (err: any) {
       toast.error(
@@ -284,34 +283,41 @@ export function StageAutomationSheet({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-        <SheetContent className="w-[440px] sm:max-w-[440px] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
-              Automaciones · {stageName}
-            </SheetTitle>
-            {activeCount > 0 && (
-              <Badge variant="secondary" className="w-fit text-xs">
-                {activeCount} activa(s)
-              </Badge>
-            )}
-          </SheetHeader>
+      {/* Toggle button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/40 hover:bg-muted/30 transition-colors text-left"
+      >
+        <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+        <span className="text-xs font-medium text-foreground flex-1">
+          Automaciones
+        </span>
+        {activeCount > 0 && (
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            {activeCount}
+          </Badge>
+        )}
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
 
+      {/* Collapsible content */}
+      {isOpen && (
+        <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
           {isLoading ? (
-            <div className="space-y-3 mt-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-12 bg-muted/50 rounded-lg animate-pulse" />
+            <div className="space-y-2">
+              {[1, 2].map(i => (
+                <div key={i} className="h-10 bg-muted/50 rounded-lg animate-pulse" />
               ))}
             </div>
           ) : isAddingFor ? (
             /* ── FORMULARIO ────────────────────────────── */
-            <div className="space-y-4 mt-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground">
+                <h4 className="text-xs font-medium text-foreground">
                   {editingRule ? 'Editar automación' : 'Nueva automación'}
                 </h4>
-                <Button variant="ghost" size="sm" onClick={() => {
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => {
                   setIsAddingFor(null)
                   setEditingRule(null)
                   setFormData({})
@@ -320,109 +326,101 @@ export function StageAutomationSheet({
                 </Button>
               </div>
 
-              {/* Nombre */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">
-                  Nombre *
-                </label>
-                <Input
-                  value={formData.name ?? ''}
-                  onChange={(e) => setFormData(p => ({...p, name: e.target.value}))}
-                  placeholder="Ej: Notificar al cliente al entrar"
-                  className="h-8 text-sm"
-                />
-              </div>
-
-              {/* Trigger */}
-              {editingRule ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Nombre */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Cuándo
-                  </label>
+                  <label className="text-xs font-medium text-foreground">Nombre *</label>
+                  <Input
+                    value={formData.name ?? ''}
+                    onChange={(e) => setFormData(p => ({...p, name: e.target.value}))}
+                    placeholder="Ej: Notificar al cliente al entrar"
+                    className="h-8 text-sm"
+                  />
+                </div>
+
+                {/* Trigger */}
+                {editingRule ? (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Cuándo</label>
+                    <Select
+                      value={formData.trigger_type ?? ''}
+                      onValueChange={(v) => setFormData(p => ({...p, trigger_type: v}))}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TRIGGER_DEFS.map(t => (
+                          <SelectItem key={t.value} value={t.value} className="text-xs">
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Cuándo</label>
+                    {(() => {
+                      const tDef = TRIGGER_DEFS.find(t => t.value === isAddingFor)
+                      if (!tDef) return null
+                      const Icon = tDef.icon
+                      return (
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-md border ${tDef.bgClass} ${tDef.textClass} ${tDef.borderClass}`}>
+                          <Icon className={`w-3 h-3 ${tDef.iconClass}`} />
+                          {tDef.label}
+                        </span>
+                      )
+                    })()}
+                  </div>
+                )}
+
+                {/* Campos del trigger */}
+                {TRIGGER_DEFS.find(
+                  t => t.value === (formData.trigger_type ?? isAddingFor)
+                )?.config_fields.map(field => (
+                  <DynamicField
+                    key={field.key}
+                    field={field}
+                    value={formData[field.key]}
+                    onChange={(v) => setFormData(p => ({...p, [field.key]: v}))}
+                  />
+                ))}
+
+                {/* Acción */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Qué ocurre *</label>
                   <Select
-                    value={formData.trigger_type ?? ''}
-                    onValueChange={(v) => setFormData(p => ({...p, trigger_type: v}))}
+                    value={formData.action_type ?? ''}
+                    onValueChange={(v) => setFormData(p => ({...p, action_type: v}))}
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="Seleccionar acción..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {TRIGGER_DEFS.map(t => (
-                        <SelectItem key={t.value} value={t.value} className="text-xs">
-                          {t.label}
+                      {ACTION_DEFS.map(a => (
+                        <SelectItem key={a.value} value={a.value} className="text-xs">
+                          {a.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              ) : (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Cuándo
-                  </label>
-                  {(() => {
-                    const tDef = TRIGGER_DEFS.find(
-                      t => t.value === isAddingFor
-                    )
-                    if (!tDef) return null
-                    const Icon = tDef.icon
-                    return (
-                      <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${tDef.bgClass} ${tDef.textClass} ${tDef.borderClass}`}>
-                        <Icon className={`w-3 h-3 ${tDef.iconClass}`} />
-                        {tDef.label}
-                      </span>
-                    )
-                  })()}
-                </div>
-              )}
 
-              {/* Campos del trigger */}
-              {TRIGGER_DEFS.find(
-                t => t.value === (formData.trigger_type ?? isAddingFor)
-              )?.config_fields.map(field => (
-                <DynamicField
-                  key={field.key}
-                  field={field}
-                  value={formData[field.key]}
-                  onChange={(v) => setFormData(p => ({...p, [field.key]: v}))}
-                />
-              ))}
-
-              {/* Acción */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">
-                  Qué ocurre *
-                </label>
-                <Select
-                  value={formData.action_type ?? ''}
-                  onValueChange={(v) => setFormData(p => ({...p, action_type: v}))}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Seleccionar acción..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTION_DEFS.map(a => (
-                      <SelectItem key={a.value} value={a.value} className="text-xs">
-                        {a.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Campos del action */}
+                {formData.action_type && ACTION_DEFS.find(
+                  a => a.value === formData.action_type
+                )?.config_fields.map(field => (
+                  <DynamicField
+                    key={field.key}
+                    field={field}
+                    value={formData[field.key]}
+                    onChange={(v) => setFormData(p => ({...p, [field.key]: v}))}
+                  />
+                ))}
               </div>
 
-              {/* Campos del action */}
-              {formData.action_type && ACTION_DEFS.find(
-                a => a.value === formData.action_type
-              )?.config_fields.map(field => (
-                <DynamicField
-                  key={field.key}
-                  field={field}
-                  value={formData[field.key]}
-                  onChange={(v) => setFormData(p => ({...p, [field.key]: v}))}
-                />
-              ))}
-
-              <Button onClick={handleSave} disabled={isSaving} className="w-full">
+              <Button onClick={handleSave} disabled={isSaving} size="sm" className="w-full">
                 {isSaving ? 'Guardando...' : (
                   editingRule ? 'Guardar cambios' : 'Crear automación'
                 )}
@@ -430,119 +428,97 @@ export function StageAutomationSheet({
             </div>
           ) : (
             /* ── LISTA POR SECCIONES ──────────────────── */
-            <div className="space-y-5 mt-4">
+            <div className="space-y-3">
               {TRIGGER_DEFS.map(tDef => {
-                const sectionRules = rules.filter(
-                  r => r.trigger_type === tDef.value
-                )
+                const sectionRules = rules.filter(r => r.trigger_type === tDef.value)
                 const Icon = tDef.icon
 
                 return (
-                  <div key={tDef.value} className="space-y-2">
-                    {/* Header sección */}
-                    <div className="flex items-center gap-2">
-                      <Icon className={`w-3.5 h-3.5 ${tDef.iconClass}`} />
-                      <span className={`text-xs font-medium ${tDef.textClass}`}>
+                  <div key={tDef.value} className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Icon className={`w-3 h-3 ${tDef.iconClass}`} />
+                      <span className={`text-[11px] font-medium ${tDef.textClass}`}>
                         {tDef.label}
                       </span>
                     </div>
 
-                    {/* Reglas */}
-                    <div className="space-y-1.5">
-                      {sectionRules.map(rule => {
-                        const aDef = ACTION_DEFS.find(
-                          a => a.value === rule.action_type
-                        )
-                        const ActionIcon = aDef?.icon ?? Zap
+                    {sectionRules.map(rule => {
+                      const aDef = ACTION_DEFS.find(a => a.value === rule.action_type)
+                      const ActionIcon = aDef?.icon ?? Zap
 
-                        return (
-                          <div
-                            key={rule.id}
-                            className="flex items-center gap-2 px-2.5 py-2 rounded-lg border bg-background hover:bg-muted/30 transition-colors"
-                          >
-                            {/* Dot estado */}
-                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                              rule.is_active ? 'bg-green-500' : 'bg-slate-300'
-                            }`} />
-                            <ActionIcon className={`w-3.5 h-3.5 shrink-0 ${aDef?.iconClass ?? 'text-muted-foreground'}`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">
-                                {rule.name}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground truncate">
-                                {summarizeConfig(rule.action_config)}
-                                {(rule.execution_count ?? 0) > 0 &&
-                                  ` · ${rule.execution_count}x`}
-                              </p>
-                            </div>
-                            {/* Botones */}
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => toggleActive(rule)}
-                                className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
-                                  rule.is_active
-                                    ? 'text-green-600 hover:bg-green-50'
-                                    : 'text-muted-foreground hover:bg-muted'
-                                }`}
-                                title={rule.is_active ? 'Desactivar' : 'Activar'}
-                              >
-                                {rule.is_active
-                                  ? <CheckSquare className="w-3.5 h-3.5" />
-                                  : <Square className="w-3.5 h-3.5" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => startEdit(rule)}
-                                className="w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
-                                title="Editar"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeleteTarget(rule)}
-                                className="w-6 h-6 rounded flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors"
-                                title="Eliminar"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                      return (
+                        <div
+                          key={rule.id}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md border bg-background hover:bg-muted/30 transition-colors"
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            rule.is_active ? 'bg-green-500' : 'bg-muted-foreground/30'
+                          }`} />
+                          <ActionIcon className={`w-3 h-3 shrink-0 ${aDef?.iconClass ?? 'text-muted-foreground'}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-medium text-foreground truncate">{rule.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {summarizeConfig(rule.action_config)}
+                              {(rule.execution_count ?? 0) > 0 && ` · ${rule.execution_count}x`}
+                            </p>
                           </div>
-                        )
-                      })}
-                    </div>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => toggleActive(rule)}
+                              className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                                rule.is_active ? 'text-green-600 hover:bg-green-50' : 'text-muted-foreground hover:bg-muted'
+                              }`}
+                              title={rule.is_active ? 'Desactivar' : 'Activar'}
+                            >
+                              {rule.is_active
+                                ? <CheckSquare className="w-3 h-3" />
+                                : <Square className="w-3 h-3" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => startEdit(rule)}
+                              className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                              title="Editar"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget(rule)}
+                              className="w-5 h-5 rounded flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
 
-                    {/* Botón añadir */}
                     <button
                       type="button"
                       onClick={() => startAdd(tDef.value)}
-                      className="w-full mt-1.5 py-1.5 text-xs text-muted-foreground border border-dashed border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors flex items-center justify-center gap-1"
+                      className="w-full py-1 text-[11px] text-muted-foreground border border-dashed border-border rounded-md hover:border-primary/50 hover:text-primary transition-colors flex items-center justify-center gap-1"
                     >
                       <Plus className="w-3 h-3" />
-                      Añadir automación
+                      Añadir
                     </button>
                   </div>
                 )
               })}
 
-              {rules.length === 0 && (
-                <div className="text-center py-8">
-                  <Zap className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Sin automaciones todavía
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Añade la primera usando los botones de arriba
-                  </p>
+              {rules.length === 0 && !isLoading && (
+                <div className="text-center py-4">
+                  <Zap className="w-6 h-6 text-muted-foreground/20 mx-auto mb-1" />
+                  <p className="text-xs text-muted-foreground">Sin automaciones</p>
                 </div>
               )}
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
 
-      {/* AlertDialog para confirmar eliminación */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
