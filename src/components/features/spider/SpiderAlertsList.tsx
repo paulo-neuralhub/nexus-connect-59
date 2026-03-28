@@ -482,7 +482,11 @@ function AlertCard({
               ) : (
                 <>
                   {alert.weight_phonetic_used > 0 && <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />}
-                  {alert.weight_visual_used > 0 && <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />}
+                  {(alert.weight_visual_used > 0 || alert.visual_score > 0) ? (
+                    <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />
+                  ) : (alert.visual_score === 0 || alert.visual_score == null) && watch?.mark_image_url ? (
+                    <SimilarityBar label="Visual" score={0} color="bg-slate-200" pending />
+                  ) : null}
                   {alert.weight_semantic_used > 0 && <SimilarityBar label="Semántica" score={alert.semantic_score} color="bg-teal-500" />}
                 </>
               )}
@@ -525,6 +529,13 @@ function AlertCard({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
+                {watch?.mark_image_url ? (
+                  <img src={watch.mark_image_url} alt="Tu logo" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                ) : (
+                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                  </div>
+                )}
                 <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
                 {watch?.nice_classes && (
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -536,6 +547,13 @@ function AlertCard({
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
+                {alert.detected_mark_image_url ? (
+                  <img src={alert.detected_mark_image_url} alt="Logo detectado" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                ) : (
+                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                  </div>
+                )}
                 <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
                 {alert.detected_application_number && (
                   <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
@@ -549,6 +567,17 @@ function AlertCard({
                 )}
                 {alert.detected_mark_status && <Badge variant="outline" className="text-[10px] mt-1">{alert.detected_mark_status}</Badge>}
                 {alert.detected_applicant && <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>}
+              </div>
+            </div>
+            {/* Visual similarity bar (both logos + score > 0) */}
+            {watch?.mark_image_url && alert.detected_mark_image_url && alert.visual_score > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-purple-700">Similitud visual: {Math.round(alert.visual_score)}%</p>
+                <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
+                  <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${Math.round(alert.visual_score)}%` }} />
+                </div>
+              </div>
+            )}
               </div>
             </div>
 
