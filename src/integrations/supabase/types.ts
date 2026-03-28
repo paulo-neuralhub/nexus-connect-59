@@ -27116,6 +27116,7 @@ export type Database = {
           ai_key_factors: string[] | null
           ai_recommendation: string | null
           ai_risk_level: string | null
+          alert_category: string | null
           combined_score: number
           created_at: string | null
           crm_deal_id: string | null
@@ -27132,7 +27133,10 @@ export type Database = {
           detected_mark_status: string | null
           detected_nice_classes: number[] | null
           detected_publication_date: string | null
+          evidence_type: string | null
           id: string
+          incident_group_id: string | null
+          incident_group_size: number | null
           matter_id: string | null
           opposition_days_remaining: number | null
           opposition_deadline: string | null
@@ -27169,6 +27173,7 @@ export type Database = {
           ai_key_factors?: string[] | null
           ai_recommendation?: string | null
           ai_risk_level?: string | null
+          alert_category?: string | null
           combined_score: number
           created_at?: string | null
           crm_deal_id?: string | null
@@ -27185,7 +27190,10 @@ export type Database = {
           detected_mark_status?: string | null
           detected_nice_classes?: number[] | null
           detected_publication_date?: string | null
+          evidence_type?: string | null
           id?: string
+          incident_group_id?: string | null
+          incident_group_size?: number | null
           matter_id?: string | null
           opposition_days_remaining?: number | null
           opposition_deadline?: string | null
@@ -27222,6 +27230,7 @@ export type Database = {
           ai_key_factors?: string[] | null
           ai_recommendation?: string | null
           ai_risk_level?: string | null
+          alert_category?: string | null
           combined_score?: number
           created_at?: string | null
           crm_deal_id?: string | null
@@ -27238,7 +27247,10 @@ export type Database = {
           detected_mark_status?: string | null
           detected_nice_classes?: number[] | null
           detected_publication_date?: string | null
+          evidence_type?: string | null
           id?: string
+          incident_group_id?: string | null
+          incident_group_size?: number | null
           matter_id?: string | null
           opposition_days_remaining?: number | null
           opposition_deadline?: string | null
@@ -27589,44 +27601,62 @@ export type Database = {
         Row: {
           api_type: string
           base_url: string | null
+          capture_method: string | null
           code: string
+          confidence_decay_per_day: number | null
           created_at: string | null
+          freshness_sla_hours: number | null
           id: string
           is_active: boolean | null
           jurisdictions_covered: string[] | null
+          last_verified_at: string | null
           name: string
           notes: string | null
+          parser_version: string | null
           rate_limit_per_minute: number | null
           reliability_level: string | null
           requires_credentials: boolean | null
+          source_type: string | null
         }
         Insert: {
           api_type: string
           base_url?: string | null
+          capture_method?: string | null
           code: string
+          confidence_decay_per_day?: number | null
           created_at?: string | null
+          freshness_sla_hours?: number | null
           id?: string
           is_active?: boolean | null
           jurisdictions_covered?: string[] | null
+          last_verified_at?: string | null
           name: string
           notes?: string | null
+          parser_version?: string | null
           rate_limit_per_minute?: number | null
           reliability_level?: string | null
           requires_credentials?: boolean | null
+          source_type?: string | null
         }
         Update: {
           api_type?: string
           base_url?: string | null
+          capture_method?: string | null
           code?: string
+          confidence_decay_per_day?: number | null
           created_at?: string | null
+          freshness_sla_hours?: number | null
           id?: string
           is_active?: boolean | null
           jurisdictions_covered?: string[] | null
+          last_verified_at?: string | null
           name?: string
           notes?: string | null
+          parser_version?: string | null
           rate_limit_per_minute?: number | null
           reliability_level?: string | null
           requires_credentials?: boolean | null
+          source_type?: string | null
         }
         Relationships: []
       }
@@ -27759,6 +27789,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           false_positives_count: number | null
+          goods_services_description: string | null
           id: string
           is_active: boolean | null
           jurisdictions: string[]
@@ -27791,6 +27822,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           false_positives_count?: number | null
+          goods_services_description?: string | null
           id?: string
           is_active?: boolean | null
           jurisdictions?: string[]
@@ -27823,6 +27855,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           false_positives_count?: number | null
+          goods_services_description?: string | null
           id?: string
           is_active?: boolean | null
           jurisdictions?: string[]
