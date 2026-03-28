@@ -415,31 +415,31 @@ export function DynamicSidebar({
             {!collapsed && <span className="flex-1">Dashboard</span>}
           </Link>
 
-          {/* Agentes — always visible right below Dashboard */}
+          {/* GENIUS IP — always visible right below Dashboard */}
           {(() => {
-            const isOpsActive = isPathActive("/app/genius/studio");
+            const isGeniusActive = isPathActive("/app/genius");
             return (
               <Link
-                to="/app/genius/studio"
+                to="/app/genius"
                 onClick={onNavigate}
-                title={collapsed ? "Agentes" : undefined}
+                title={collapsed ? "GENIUS IP" : undefined}
                 className={cn(
                   "flex items-center gap-3 text-[13px] transition-colors relative",
                   collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
-                  isOpsActive
+                  isGeniusActive
                     ? "silk-menu-active text-[#0a2540] font-bold"
                     : "text-white/[0.48] font-normal hover:text-white/70 rounded-xl mr-4 z-[1]"
                 )}
               >
-                {isOpsActive && <TongueCurves />}
+                {isGeniusActive && <TongueCurves />}
                 <Cpu 
                   className="h-3 w-3 shrink-0" 
-                  style={isOpsActive ? { 
+                  style={isGeniusActive ? { 
                     color: '#F59E0B',
                     filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.30))'
                   } : { color: '#F59E0B', opacity: 0.5 }} 
                 />
-                {!collapsed && <span className="flex-1">Agentes</span>}
+                {!collapsed && <span className="flex-1">GENIUS IP</span>}
               </Link>
             );
           })()}
