@@ -451,6 +451,11 @@ function AlertCard({
               {alert.detected_jurisdiction && (
                 <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
               )}
+              {watch?.mark_image_url && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                  👁 Visual
+                </span>
+              )}
               {isSnoozed && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
                   POSPUESTA hasta {format(new Date(effectiveSnoozed), 'dd/MM/yy')}
