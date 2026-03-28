@@ -388,7 +388,7 @@ export default function SpiderBrandDashboard() {
             <p className="text-xs text-muted-foreground text-center py-8">Sin alertas registradas</p>
           ) : (
             <>
-              <div style={{ position: 'relative', height: '200px', width: '200px', margin: '0 auto' }}>
+              <div style={{ position: 'relative', height: '160px', width: '160px', margin: '0 auto' }}>
                 <canvas ref={donutChartRef} />
               </div>
               <div className="space-y-1 mt-3">
