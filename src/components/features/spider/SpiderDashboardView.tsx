@@ -514,4 +514,5 @@ function KPICard({
         )}
       </div>
     </div>
+  );
 }
