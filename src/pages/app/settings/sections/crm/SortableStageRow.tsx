@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, AlertTriangle, Lock, UserCheck, Unlock } from 'lucide-react';
+import { GripVertical, Trash2, AlertTriangle, Lock, UserCheck, Unlock, Zap } from 'lucide-react';
+import { StageAutomationSheet } from './StageAutomationSheet';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ type SortableStageRowProps = {
   onUpdate: (updates: Record<string, any>) => void;
   onDelete: () => void;
   pipelineId?: string;
+  organizationId?: string;
 };
 
 const LOCK_OPTIONS = [
@@ -52,7 +54,7 @@ const MATTER_STATUS_OPTIONS = [
 ];
 
 export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRowProps>(function SortableStageRow(
-  { id, stage, onUpdate, onDelete, pipelineId },
+  { id, stage, onUpdate, onDelete, pipelineId, organizationId },
   ref
 ) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -75,6 +77,7 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
   const [prob, setProb] = useState<number>(Number(stage.probability ?? 50));
   const [showMessage, setShowMessage] = useState(false);
   const [lockMsg, setLockMsg] = useState(stage.lock_message || '');
+  const [automationSheetOpen, setAutomationSheetOpen] = useState(false);
 
   const isDefaultPipeline = pipelineId ? DEFAULT_PIPELINE_IDS.includes(pipelineId) : false;
   const lockType = stage.lock_type || 'free';
@@ -234,8 +237,8 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
             </div>
           )}
 
-          {/* Message edit button */}
-          <div className="col-span-12 md:col-span-1">
+          {/* Message edit + automations buttons */}
+          <div className="col-span-12 md:col-span-1 flex items-center gap-1">
             {lockType !== 'free' && (
               <Button
                 variant="ghost"
@@ -244,6 +247,17 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
                 onClick={() => setShowMessage(!showMessage)}
               >
                 ✎
+              </Button>
+            )}
+            {organizationId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-amber-500 hover:text-amber-600"
+                onClick={() => setAutomationSheetOpen(true)}
+                title="Gestionar automaciones de esta etapa"
+              >
+                <Zap className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
@@ -292,6 +306,16 @@ export const SortableStageRow = React.forwardRef<HTMLDivElement, SortableStageRo
           />
           <p className="text-[10px] text-muted-foreground mt-1">{lockMsg.length}/300</p>
         </div>
+      )}
+      {organizationId && (
+        <StageAutomationSheet
+          open={automationSheetOpen}
+          onClose={() => setAutomationSheetOpen(false)}
+          stageId={id}
+          stageName={stage.name}
+          pipelineId={pipelineId ?? ''}
+          organizationId={organizationId}
+        />
       )}
     </div>
   );
