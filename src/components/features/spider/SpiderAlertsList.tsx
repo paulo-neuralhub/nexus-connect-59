@@ -97,6 +97,13 @@ export function SpiderAlertsList({ activeFilter, incidentFilterIds, onFilterByIn
   const filtered = useMemo(() => {
     if (!alerts) return [];
     let list = [...alerts];
+
+    // Incident filter takes priority
+    if (incidentFilterIds && incidentFilterIds.length > 0) {
+      list = list.filter(a => incidentFilterIds.includes(a.id));
+      return list;
+    }
+
     if (activeFilter === 'critical') {
       list = list.filter(a => a.severity === 'critical' && !['resolved', 'actioned'].includes(a.status));
     } else if (activeFilter === 'high') {
@@ -113,7 +120,7 @@ export function SpiderAlertsList({ activeFilter, incidentFilterIds, onFilterByIn
       list = list.filter(a => a.severity === severityDropdown);
     }
     return list;
-  }, [alerts, activeFilter, statusTab, severityDropdown]);
+  }, [alerts, activeFilter, statusTab, severityDropdown, incidentFilterIds]);
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
