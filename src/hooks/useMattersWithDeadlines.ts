@@ -66,7 +66,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
     queryKey: ['matters-with-deadlines', currentOrganization?.id, filters],
     queryFn: async () => {
       // Fetch matters with client info
-      let query = supabase
+      let query = (supabase as any)
         .from('matters')
         .select(`
           id,
@@ -84,7 +84,6 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           mark_type,
           created_at,
           updated_at,
-          client:contacts!matters_client_id_fkey(id, name),
           crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)
         `)
         .eq('organization_id', currentOrganization!.id)
@@ -116,6 +115,21 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
       
       if (!matters || matters.length === 0) {
         return [];
+      }
+
+      // Fetch client names from contacts table for matters with client_id
+      const clientIds = [...new Set(matters.map((m: any) => m.client_id).filter(Boolean))];
+      let clientMap = new Map<string, string>();
+      if (clientIds.length > 0) {
+        const { data: clients } = await (supabase as any)
+          .from('contacts')
+          .select('id, name')
+          .in('id', clientIds);
+        if (clients) {
+          for (const c of clients) {
+            clientMap.set(c.id, c.name);
+          }
+        }
       }
       
       // Fetch next deadlines for all matters
@@ -178,7 +192,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           status: m.status || 'active',
           current_phase: m.current_phase || 'F0',
           client_id: m.client_id,
-          client_name: m.crm_account?.name || m.client?.name || null,
+          client_name: m.crm_account?.name || (m.client_id ? clientMap.get(m.client_id) : null) || null,
           jurisdiction_code: m.jurisdiction_code || m.jurisdiction || null,
           application_number: m.application_number,
           registration_number: m.registration_number,
