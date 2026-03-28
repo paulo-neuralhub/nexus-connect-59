@@ -86,6 +86,7 @@ import WatchlistDetailPage from "./pages/app/spider/watchlists/[id]";
 import AnalyzePage from "./pages/app/spider/analyze";
 import SpiderAlertDetailPage from "./pages/app/spider/alerts/[id]";
 import SpiderIncidentView from "./pages/app/spider/incident";
+import SpiderBrandDashboard from "./pages/app/spider/dashboard";
 import SpiderLandingPage from "./pages/landing/SpiderLanding";
 import DocketLandingPage from "./pages/landing/DocketLanding";
 import NexusLandingPage from "./pages/landing/NexusLanding";
@@ -467,6 +468,7 @@ const App = () => (
                   <Route index element={<SpiderDashboard />} />
                   <Route path="alerts/:id" element={<SpiderAlertDetailPage />} />
                   <Route path="incidents/:incidentId" element={<SpiderIncidentView />} />
+                  <Route path="dashboard" element={<SpiderBrandDashboard />} />
                   <Route path="results" element={<WatchResultList />} />
                   <Route path="watchlists/new" element={<NewWatchlistPage />} />
                   <Route path="watchlists/:id" element={<WatchlistDetailPage />} />

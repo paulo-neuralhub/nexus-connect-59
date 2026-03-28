@@ -528,6 +528,13 @@ export function SpiderIncidentsView({
         >
           {scanDisabled ? 'Escaneando...' : 'Escanear ahora'}
         </button>
+        <span>·</span>
+        <button
+          onClick={() => navigate('/app/spider/dashboard')}
+          className="text-xs font-medium text-violet-600 hover:underline"
+        >
+          Ver dashboard →
+        </button>
       </div>
 
       {/* ── Filters ── */}
