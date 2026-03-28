@@ -1,5 +1,5 @@
 /**
- * DealsKanbanBoard — DnD board with lock_type enforcement
+ * DealsKanbanBoard — DnD board with lock_type enforcement via canMoveToStage
  */
 import { useMemo, useState, useCallback } from "react";
 import {
@@ -20,13 +20,28 @@ import { useNavigate } from "react-router-dom";
 import type { CRMPipeline, CRMPipelineStage } from "@/hooks/crm/v2/pipelines";
 import type { CRMDeal } from "@/hooks/crm/v2/types";
 import { useMoveDealStage } from "@/hooks/crm/v2/deals";
-import { fromTable } from "@/lib/supabase";
+import { fromTable, supabase } from "@/lib/supabase";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useAuth } from "@/contexts/auth-context";
+import { useOrganization as useOrgContext } from "@/contexts/organization-context";
 import { KanbanColumn } from "./kanban-column";
 import { DealKanbanCard } from "./deal-kanban-card";
 import { WonDealMatterModal } from "./WonDealMatterModal";
 import { StageConfirmModal } from "./StageConfirmModal";
 import { Lock } from "lucide-react";
 import type React from "react";
+
+import {
+  canMoveToStage,
+  executeStageMove,
+  logBlockedMove,
+  type KanbanStage,
+  type KanbanDeal,
+  type KanbanDeadline,
+  type ChecklistItem,
+  type MoveValidationResult,
+} from "@/lib/kanban-utils";
+import { useKanbanDeadlines } from "@/hooks/useKanbanDeadlines";
 
 function SortableDeal({ deal, stageColor, onClick }: { deal: CRMDeal; stageColor?: string; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deal.id });
@@ -60,8 +75,51 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
   const [wonDeal, setWonDeal] = useState<CRMDeal | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
   const [shakeCardId, setShakeCardId] = useState<string | null>(null);
+  const [isExecutingMove, setIsExecutingMove] = useState(false);
+
+  // Lock/confirm modal states for canMoveToStage integration
+  const [lockModal, setLockModal] = useState<{
+    open: boolean;
+    type: string;
+    message: string;
+    matterId?: string;
+    deadlines?: KanbanDeadline[];
+  }>({ open: false, type: '', message: '' });
+
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    message: string;
+    lockType: string;
+    checklist?: ChecklistItem[];
+    onConfirm: (() => void) | null;
+  }>({ open: false, message: '', lockType: '', onConfirm: null });
+
   const moveDeal = useMoveDealStage();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { organizationId } = useOrganization();
+  const { userRole } = useOrgContext();
+
+  // Deadlines hook — maps deals to KanbanDeal shape for the hook
+  const kanbanDeals: KanbanDeal[] = useMemo(
+    () =>
+      deals.map((d) => ({
+        id: d.id,
+        name: d.name,
+        pipeline_stage_id: d.pipeline_stage_id ?? '',
+        matter_id: d.matter_id ?? null,
+        organization_id: d.organization_id,
+        stage_history: (d as any).stage_history ?? [],
+        stage_entered_at: (d as any).stage_entered_at ?? null,
+      })),
+    [deals]
+  );
+
+  const {
+    deadlinesByMatter,
+    isLoadingDeadlines,
+    refreshDeadlines,
+  } = useKanbanDeadlines(kanbanDeals, organizationId, supabase);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -127,10 +185,12 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
           // Don't block on activity logging
         }
       }
+
+      refreshDeadlines();
     } catch {
       toast.error("No se pudo mover el deal");
     }
-  }, [moveDeal]);
+  }, [moveDeal, refreshDeadlines]);
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -147,36 +207,118 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     const newStage = stages.find((s) => s.id === newStageId);
     if (!newStage) return;
 
-    const lockType = newStage.lock_type ?? "free";
+    // --- canMoveToStage validation ---
+    const currentStage = stages.find((s) => s.id === deal.pipeline_stage_id);
+    if (!currentStage) return;
 
-    switch (lockType) {
-      case "free":
-        await executeDealMove(dealId, deal, newStage);
-        break;
+    if (isExecutingMove) return;
 
-      case "confirm":
-        setPendingConfirm({ dealId, deal, stage: newStage });
-        break;
+    const kanbanDeal: KanbanDeal = {
+      id: deal.id,
+      name: deal.name,
+      pipeline_stage_id: deal.pipeline_stage_id ?? '',
+      matter_id: deal.matter_id ?? null,
+      organization_id: deal.organization_id,
+      stage_history: (deal as any).stage_history ?? [],
+      stage_entered_at: (deal as any).stage_entered_at ?? null,
+    };
 
-      case "matter_driven":
-        // Shake animation
-        setShakeCardId(dealId);
-        setTimeout(() => setShakeCardId(null), 400);
-        toast.error("Etapa controlada por el expediente", {
-          description: newStage.lock_message ?? "Esta etapa se actualiza automáticamente según el estado del expediente vinculado.",
-          icon: <Lock className="w-4 h-4" />,
-          duration: 6000,
-          action: deal.matter_id ? {
-            label: "Ver expediente →",
-            onClick: () => navigate(`/app/matters/${deal.matter_id}`),
-          } : undefined,
+    const targetAsKanbanStage: KanbanStage = {
+      id: newStage.id,
+      name: newStage.name,
+      position: newStage.position ?? 0,
+      lock_type: (newStage.lock_type as KanbanStage['lock_type']) ?? 'free',
+      lock_direction: ((newStage as any).lock_direction as KanbanStage['lock_direction']) ?? 'bidirectional',
+      lock_message: newStage.lock_message ?? null,
+      requires_matter: (newStage as any).requires_matter ?? false,
+      entry_checklist: (newStage as any).entry_checklist ?? [],
+      allowed_roles: (newStage as any).allowed_roles ?? [],
+      is_won_stage: newStage.is_won_stage ?? false,
+      is_lost_stage: newStage.is_lost_stage ?? false,
+      matter_status_trigger: (newStage as any).matter_status_trigger ?? null,
+    };
+
+    const currentAsKanbanStage: KanbanStage = {
+      id: currentStage.id,
+      name: currentStage.name,
+      position: currentStage.position ?? 0,
+      lock_type: (currentStage.lock_type as KanbanStage['lock_type']) ?? 'free',
+      lock_direction: ((currentStage as any).lock_direction as KanbanStage['lock_direction']) ?? 'bidirectional',
+      lock_message: currentStage.lock_message ?? null,
+      requires_matter: (currentStage as any).requires_matter ?? false,
+      entry_checklist: (currentStage as any).entry_checklist ?? [],
+      allowed_roles: (currentStage as any).allowed_roles ?? [],
+      is_won_stage: currentStage.is_won_stage ?? false,
+      is_lost_stage: currentStage.is_lost_stage ?? false,
+      matter_status_trigger: (currentStage as any).matter_status_trigger ?? null,
+    };
+
+    const validation = canMoveToStage(kanbanDeal, currentAsKanbanStage, targetAsKanbanStage, {
+      userRole: userRole ?? null,
+      deadlinesByMatter,
+      isLoadingDeadlines,
+    });
+
+    if (!validation.allowed) {
+      // Log blocked move (fire-and-forget)
+      logBlockedMove(kanbanDeal, targetAsKanbanStage, validation, {
+        supabase,
+        organizationId: organizationId ?? '',
+        userId: user?.id ?? '',
+      });
+
+      // Shake animation
+      setShakeCardId(dealId);
+      setTimeout(() => setShakeCardId(null), 400);
+
+      if (['matter_driven', 'forward_only', 'requires_matter'].includes(validation.lockType ?? '')) {
+        setLockModal({
+          open: true,
+          type: validation.lockType ?? '',
+          message: validation.reason ?? '',
+          matterId: deal.matter_id ?? undefined,
         });
-        break;
-
-      case "admin_only":
-        toast.error("Solo administradores pueden mover deals a esta etapa");
-        break;
+      } else if (validation.lockType === 'deadline_blocked') {
+        setLockModal({
+          open: true,
+          type: 'deadline_blocked',
+          message: validation.reason ?? '',
+          matterId: deal.matter_id ?? undefined,
+          deadlines: validation.deadlines,
+        });
+      } else if (validation.lockType === 'admin_only' || validation.lockType === 'role_restricted') {
+        toast.error(validation.reason ?? 'Movimiento no permitido');
+      } else {
+        toast.error(validation.reason ?? 'Movimiento no permitido');
+      }
+      return;
     }
+
+    if (validation.requiresConfirmation) {
+      // Use existing StageConfirmModal for 'confirm' type, set confirmModal for others
+      if (validation.lockType === 'confirm') {
+        setPendingConfirm({ dealId, deal, stage: newStage });
+      } else {
+        setConfirmModal({
+          open: true,
+          message: validation.confirmMessage ?? '¿Confirmar?',
+          lockType: validation.lockType ?? 'confirm',
+          checklist: validation.checklist,
+          onConfirm: async () => {
+            setConfirmModal((m) => ({ ...m, open: false }));
+            setIsExecutingMove(true);
+            await executeDealMove(dealId, deal, newStage);
+            setIsExecutingMove(false);
+          },
+        });
+      }
+      return;
+    }
+
+    // Free move — execute directly
+    setIsExecutingMove(true);
+    await executeDealMove(dealId, deal, newStage);
+    setIsExecutingMove(false);
   }
 
   async function handleConfirmMove(note: string) {
@@ -184,7 +326,9 @@ export function DealsKanbanBoard({ pipeline, deals, onDealClick, onAddDeal }: Pr
     const { dealId, deal, stage } = pendingConfirm;
     setPendingConfirm(null);
 
+    setIsExecutingMove(true);
     await executeDealMove(dealId, deal, stage);
+    setIsExecutingMove(false);
 
     // Log confirmation activity
     try {
