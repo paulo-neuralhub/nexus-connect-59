@@ -25,6 +25,7 @@ import {
 import {
   Clock, Lightbulb, ChevronDown, ChevronUp, ShieldCheck,
   Gavel, Mail, Users, MoreHorizontal, RotateCcw, History, Loader2,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -62,6 +63,7 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           detected_application_number, detected_applicant,
           detected_applicant_country, detected_nice_classes,
           detected_mark_status, detected_goods_services,
+          detected_mark_image_url,
           phonetic_score, visual_score, semantic_score, combined_score,
           weight_phonetic_used, weight_visual_used, weight_semantic_used,
           severity, opposition_deadline, opposition_days_remaining,
@@ -69,9 +71,11 @@ export function SpiderAlertsList({ activeFilter }: SpiderAlertsListProps) {
           ai_disclaimer, status, snoozed_until,
           action_taken, action_notes, actioned_at,
           portal_visible, source_code, alert_category,
+          incident_group_id,
           spider_watches!watch_id (
             watch_name, nice_classes,
-            weight_phonetic, weight_semantic, weight_visual
+            weight_phonetic, weight_semantic, weight_visual,
+            mark_image_url
           )
         `)
         .eq('organization_id', orgId!)
@@ -447,6 +451,11 @@ function AlertCard({
               {alert.detected_jurisdiction && (
                 <Badge variant="outline" className="text-[10px] font-mono">{alert.detected_jurisdiction}</Badge>
               )}
+              {watch?.mark_image_url && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                  👁 Visual
+                </span>
+              )}
               {isSnoozed && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300">
                   POSPUESTA hasta {format(new Date(effectiveSnoozed), 'dd/MM/yy')}
@@ -473,7 +482,11 @@ function AlertCard({
               ) : (
                 <>
                   {alert.weight_phonetic_used > 0 && <SimilarityBar label="Fonética" score={alert.phonetic_score} color="bg-blue-500" />}
-                  {alert.weight_visual_used > 0 && <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />}
+                  {(alert.weight_visual_used > 0 || alert.visual_score > 0) ? (
+                    <SimilarityBar label="Visual" score={alert.visual_score} color="bg-purple-500" />
+                  ) : (alert.visual_score === 0 || alert.visual_score == null) && watch?.mark_image_url ? (
+                    <SimilarityBar label="Visual" score={0} color="bg-slate-200" pending />
+                  ) : null}
                   {alert.weight_semantic_used > 0 && <SimilarityBar label="Semántica" score={alert.semantic_score} color="bg-teal-500" />}
                 </>
               )}
@@ -516,6 +529,13 @@ function AlertCard({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Tu marca</p>
+                {watch?.mark_image_url ? (
+                  <img src={watch.mark_image_url} alt="Tu logo" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                ) : (
+                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                  </div>
+                )}
                 <p className="text-sm font-bold text-foreground">{watch?.watch_name || '—'}</p>
                 {watch?.nice_classes && (
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -527,6 +547,13 @@ function AlertCard({
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Marca detectada</p>
+                {alert.detected_mark_image_url ? (
+                  <img src={alert.detected_mark_image_url} alt="Logo detectado" className="w-10 h-10 object-contain rounded border border-border bg-background" />
+                ) : (
+                  <div className="w-10 h-10 rounded border border-border bg-muted/40 flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                  </div>
+                )}
                 <p className="text-sm font-bold text-foreground">{alert.detected_mark_name}</p>
                 {alert.detected_application_number && (
                   <p className="text-[11px] text-muted-foreground font-mono">{alert.detected_application_number}</p>
@@ -542,6 +569,15 @@ function AlertCard({
                 {alert.detected_applicant && <p className="text-[11px] text-muted-foreground">{alert.detected_applicant}</p>}
               </div>
             </div>
+            {/* Visual similarity bar (both logos + score > 0) */}
+            {watch?.mark_image_url && alert.detected_mark_image_url && alert.visual_score > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-purple-700">Similitud visual: {Math.round(alert.visual_score)}%</p>
+                <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
+                  <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${Math.round(alert.visual_score)}%` }} />
+                </div>
+              </div>
+            )}
 
             {/* AI Analysis */}
             {alert.ai_analysis && (
@@ -726,11 +762,18 @@ function AlertCard({
 }
 
 // ════════════════════════════════════════════
-function SimilarityBar({ label, score, color }: { label: string; score: number | null; color: string }) {
+function SimilarityBar({ label, score, color, pending }: { label: string; score: number | null; color: string; pending?: boolean }) {
   const pct = score != null ? Math.round(score) : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-[90px] truncate">{label}</span>
+      <span className="text-[10px] text-muted-foreground w-[90px] truncate flex items-center gap-1">
+        {label}
+        {pending && (
+          <span className="text-[8px] px-1 py-0.5 rounded bg-slate-200 text-slate-500 font-medium" title="El análisis visual se ejecuta en el siguiente scan">
+            Pendiente
+          </span>
+        )}
+      </span>
       <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
         <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
