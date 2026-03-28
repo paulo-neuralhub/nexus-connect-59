@@ -464,6 +464,7 @@ const App = () => (
                 <Route path="data-hub/import-export" element={<ImportExportPage />} />
                 <Route path="spider" element={<SpiderLayout />}>
                   <Route index element={<SpiderDashboard />} />
+                  <Route path="alerts/:id" element={<SpiderAlertDetailPage />} />
                   <Route path="results" element={<WatchResultList />} />
                   <Route path="watchlists/new" element={<NewWatchlistPage />} />
                   <Route path="watchlists/:id" element={<WatchlistDetailPage />} />
