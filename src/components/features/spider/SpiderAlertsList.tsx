@@ -622,8 +622,21 @@ function AlertCard({
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               {isDomain && <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />}
+              {isSocial && <SocialPlatformIcon platform={alert.social_platform} />}
               <span className="text-base font-bold text-foreground">{alert.detected_mark_name || '—'}</span>
-              {isDomain ? (
+              {isSocial ? (
+                <>
+                  <SocialPlatformBadge platform={alert.social_platform} />
+                  {alert.social_followers > 0 && (
+                    <span className="text-[10px] text-muted-foreground">{formatFollowers(alert.social_followers)} seguidores</span>
+                  )}
+                  {!isResolved && !isSnoozed && style.label && (
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', style.badgeColor)}>
+                      {style.label}
+                    </span>
+                  )}
+                </>
+              ) : isDomain ? (
                 <>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
                     DOMINIO
@@ -658,7 +671,7 @@ function AlertCard({
                 </span>
               )}
             </div>
-            {!isDomain && daysUrgent != null && !isResolved && (
+            {!isDomain && !isSocial && daysUrgent != null && !isResolved && (
               <span className={cn(
                 'inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200',
                 daysUrgent < 7 && 'animate-pulse'
@@ -671,7 +684,21 @@ function AlertCard({
           {/* ROW 2 */}
           <div className="flex items-center gap-4">
             <div className="flex-1 space-y-1">
-              {isDomain ? (
+              {isSocial ? (
+                <>
+                  <SimilarityBar label="Similitud de nombre" score={alert.semantic_score} color="bg-pink-500" />
+                  <SimilarityBar
+                    label="Intención comercial"
+                    score={alert.commercial_intent_score}
+                    color={
+                      (alert.commercial_intent_score ?? 0) >= 70 ? 'bg-red-500'
+                      : (alert.commercial_intent_score ?? 0) >= 50 ? 'bg-amber-500'
+                      : 'bg-slate-300'
+                    }
+                    placeholder={!alert.commercial_intent_score && alert.commercial_intent_score !== 0}
+                  />
+                </>
+              ) : isDomain ? (
                 <SimilarityBar label="Similitud con tu marca" score={alert.combined_score} color="bg-teal-500" />
               ) : (
                 <>
