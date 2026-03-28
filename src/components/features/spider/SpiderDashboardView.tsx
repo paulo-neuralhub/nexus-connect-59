@@ -516,9 +516,6 @@ function KPICard({
     </div>
   );
 }
-  subtitle?: string;
-  color: string;
-}) {
   return (
     <div className="rounded-[14px] border border-border bg-card p-4 flex items-center gap-3">
       <NeoBadge value={value} color={color} size="md" />
