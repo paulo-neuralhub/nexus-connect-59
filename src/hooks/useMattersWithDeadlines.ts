@@ -192,7 +192,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           status: m.status || 'active',
           current_phase: m.current_phase || 'F0',
           client_id: m.client_id,
-          client_name: m.crm_account?.name || m.client?.name || null,
+          client_name: m.crm_account?.name || (m.client_id ? clientMap.get(m.client_id) : null) || null,
           jurisdiction_code: m.jurisdiction_code || m.jurisdiction || null,
           application_number: m.application_number,
           registration_number: m.registration_number,
