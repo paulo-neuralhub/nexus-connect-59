@@ -66,7 +66,7 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
     queryKey: ['matters-with-deadlines', currentOrganization?.id, filters],
     queryFn: async () => {
       // Fetch matters with client info
-      let query = supabase
+      let query = (supabase as any)
         .from('matters')
         .select(`
           id,
@@ -84,7 +84,6 @@ export function useMattersWithDeadlines(filters?: MattersWithDeadlinesFilters) {
           mark_type,
           created_at,
           updated_at,
-          client:contacts!matters_client_id_fkey(id, name),
           crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)
         `)
         .eq('organization_id', currentOrganization!.id)
