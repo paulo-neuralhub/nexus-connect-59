@@ -1065,11 +1065,11 @@ function AlertCard({
 }
 
 // ════════════════════════════════════════════
-function SimilarityBar({ label, score, color, pending }: { label: string; score: number | null; color: string; pending?: boolean }) {
-  const pct = score != null ? Math.round(score) : 0;
+function SimilarityBar({ label, score, color, pending, placeholder }: { label: string; score: number | null; color: string; pending?: boolean; placeholder?: boolean }) {
+  const pct = placeholder ? 0 : (score != null ? Math.round(score) : 0);
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-[90px] truncate flex items-center gap-1">
+      <span className="text-[10px] text-muted-foreground w-[120px] truncate flex items-center gap-1">
         {label}
         {pending && (
           <span className="text-[8px] px-1 py-0.5 rounded bg-slate-200 text-slate-500 font-medium" title="El análisis visual se ejecuta en el siguiente scan">
@@ -1080,7 +1080,51 @@ function SimilarityBar({ label, score, color, pending }: { label: string; score:
       <div className="flex-1 h-2 rounded-full bg-muted/60 overflow-hidden">
         <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-bold tabular-nums w-8 text-right text-foreground">{pct}%</span>
+      <span className="text-[10px] font-bold tabular-nums w-8 text-right text-foreground">{placeholder ? '—' : `${pct}%`}</span>
     </div>
   );
+}
+
+// ════════════════════════════════════════════
+// Social helper components
+// ════════════════════════════════════════════
+function formatFollowers(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function SocialPlatformIcon({ platform }: { platform?: string }) {
+  switch (platform) {
+    case 'instagram': return <Square className="w-4 h-4 text-pink-600 flex-shrink-0" />;
+    case 'tiktok': return <Music className="w-4 h-4 text-slate-900 flex-shrink-0" />;
+    case 'youtube': return <Youtube className="w-4 h-4 text-red-600 flex-shrink-0" />;
+    default: return <Globe className="w-4 h-4 text-teal-600 flex-shrink-0" />;
+  }
+}
+
+function SocialPlatformBadge({ platform }: { platform?: string }) {
+  const styles: Record<string, string> = {
+    instagram: 'bg-pink-100 text-pink-700 border-pink-200',
+    tiktok: 'bg-slate-900 text-white border-slate-700',
+    youtube: 'bg-red-100 text-red-700 border-red-200',
+  };
+  const labels: Record<string, string> = {
+    instagram: 'INSTAGRAM', tiktok: 'TIKTOK', youtube: 'YOUTUBE',
+  };
+  const s = styles[platform || ''] || 'bg-teal-100 text-teal-700 border-teal-200';
+  const l = labels[platform || ''] || (platform || 'SOCIAL').toUpperCase();
+  return <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', s)}>{l}</span>;
+}
+
+function CommercialIntentBadge({ type }: { type?: string }) {
+  if (!type) return null;
+  const map: Record<string, { cls: string; label: string }> = {
+    sale: { cls: 'bg-red-100 text-red-700 border-red-200', label: 'VENTA DETECTADA' },
+    impersonation: { cls: 'bg-amber-100 text-amber-700 border-amber-200', label: 'SUPLANTACIÓN' },
+    legitimate_use: { cls: 'bg-green-100 text-green-700 border-green-200', label: 'USO LEGÍTIMO' },
+    unclear: { cls: 'bg-slate-100 text-slate-600 border-slate-200', label: 'SIN DETERMINAR' },
+  };
+  const m = map[type] || map.unclear!;
+  return <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1 inline-block', m.cls)}>{m.label}</span>;
 }

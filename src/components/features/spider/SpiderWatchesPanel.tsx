@@ -55,7 +55,7 @@ export function SpiderWatchesPanel() {
     queryKey: ['spider-watch-config', orgId],
     queryFn: async () => {
       const { data, error } = await fromTable('spider_tenant_config')
-        .select('max_watches, plan_code, domain_watch_enabled, realtime_scan_enabled')
+        .select('max_watches, plan_code, domain_watch_enabled, realtime_scan_enabled, social_watch_enabled')
         .eq('organization_id', orgId!)
         .maybeSingle();
       if (error) throw error;
@@ -176,6 +176,7 @@ function WatchCard({
 }: {
   watch: any;
   orgId: string;
+  config: any;
   onEdit: () => void;
   onToggle: () => void;
   toggling: boolean;
