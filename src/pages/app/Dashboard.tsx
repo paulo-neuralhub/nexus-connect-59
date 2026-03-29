@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Dashboard() {
   const { data, isLoading } = useDashboardHome();
   const { metrics } = useDashboardMetrics();
+  const { data: countsData } = useApprovalsCount();
 
   // Derive values from data
   const totalMatters = data?.totalMatters ?? 0;
@@ -122,18 +123,13 @@ export default function Dashboard() {
       {/* ── HEADER ─────────────────────────────── */}
       <DashboardWelcomeHeader plazosEstaSemana={plazosEstaSemana} />
 
-      {/* ── PENDING APPROVALS + BRIEFING (side by side) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PendingApprovalsWidget />
-        <BriefingCard criticalAlertsCount={criticalAlerts + highAlerts} />
-      </div>
-
       {/* ── URGENT BADGES ──────────────────────── */}
       <UrgentBadges
         plazosHoy={upcomingDeadlines}
         expedientesUrgentes={expedientesUrgentes}
         alertasSpider={criticalAlerts + highAlerts}
         plazosUrgentes={plazosEstaSemana}
+        aprobacionesPendientes={countsData?.total ?? 0}
       />
 
       {/* ── OPERATIONAL KPIs ───────────────────── */}
