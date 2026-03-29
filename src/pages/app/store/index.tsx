@@ -113,7 +113,7 @@ const SILK_SHADOW_SM = "2px 2px 6px #cdd1dc, -2px -2px 6px #ffffff";
 // ── Component ───────────────────────────────────────────
 export default function AddonStorePage() {
   const navigate = useNavigate();
-  const { addons, orgPlan, activeAddons, isLoading, error } = useAddonStore();
+  const { addons, orgPlan, activeAddons, isLoading, error, getAddonState } = useAddonStore();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [cart, setCart] = useState<BillingAddon[]>([]);
@@ -126,6 +126,7 @@ export default function AddonStorePage() {
 
   // Cart helpers
   const addToCart = (addon: BillingAddon) => {
+    if (getAddonState(addon) !== "available") return;
     setCart((prev) => prev.some((a) => a.code === addon.code) ? prev : [...prev, addon]);
   };
   const removeFromCart = (code: string) => {
@@ -137,19 +138,28 @@ export default function AddonStorePage() {
     [cart, billingCycle]
   );
 
-  // Addon filtering
-  const availableAddons = addons.filter((a) => !a.is_contracted);
-  const filteredAddons = addonTab === "all"
-    ? availableAddons
-    : availableAddons.filter((a) => a.category === addonTab);
+  // Addon filtering — use getAddonState for counts
+  const availableCount = (category: string) =>
+    addons.filter((a) =>
+      (category === "all" || a.category === category) &&
+      getAddonState(a) === "available"
+    ).length;
+
+  const filteredAddons = addons.filter((a) => {
+    const state = getAddonState(a);
+    if (state === "active") return false; // shown in active section
+    return addonTab === "all" || a.category === addonTab;
+  });
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    availableAddons.forEach((a) => {
+    addons.forEach((a) => {
+      const state = getAddonState(a);
+      if (state === "active") return;
       counts[a.category] = (counts[a.category] || 0) + 1;
     });
     return counts;
-  }, [availableAddons]);
+  }, [addons, getAddonState]);
 
   const currentPlanTier = PLAN_ORDER.indexOf(planCode as any);
 
@@ -432,7 +442,7 @@ export default function AddonStorePage() {
               {/* Category tabs */}
               <Tabs value={addonTab} onValueChange={setAddonTab}>
                 <TabsList className="flex flex-wrap h-auto">
-                  <TabsTrigger value="all">Todos({availableAddons.length})</TabsTrigger>
+                  <TabsTrigger value="all">Todos({availableCount("all")})</TabsTrigger>
                   {Object.entries(categoryCounts).map(([cat, count]) => (
                     ADDON_CATEGORY_LABELS[cat] ? (
                       <TabsTrigger key={cat} value={cat}>
@@ -446,12 +456,33 @@ export default function AddonStorePage() {
               {/* Addon grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 {filteredAddons.map((addon) => {
-                  const isCompatible = addon.min_plan_tier <= currentPlanTier + 1;
+                  const state = getAddonState(addon);
                   const inCart = cartCodes.has(addon.code);
                   const displayPrice = billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur;
                   const annualSaving = (addon.price_monthly_eur - addon.price_annual_eur) * 12;
 
-                  if (!isCompatible) {
+                  if (state === "redundant") {
+                    return (
+                      <div
+                        key={addon.code}
+                        id={addon.code}
+                        className="bg-white rounded-[14px] p-4 flex flex-col opacity-70 cursor-default"
+                        style={{ boxShadow: SILK_SHADOW_SM }}
+                      >
+                        <Badge className="bg-slate-100 text-slate-500 border border-slate-200 text-xs w-fit mb-2 px-2 py-0.5 rounded-full">
+                          Ya incluido
+                        </Badge>
+                        <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" className="mb-2" />
+                        <p className="text-sm font-semibold text-slate-400 mt-1">{addon.name_es}</p>
+                        <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
+                        <p className="text-xs text-slate-400 mt-3 italic">
+                          Cubierto por tu plan o por otro add-on activo.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  if (state === "incompatible") {
                     return (
                       <div
                         key={addon.code}
@@ -472,6 +503,7 @@ export default function AddonStorePage() {
                     );
                   }
 
+                  // state === "available"
                   return (
                     <div
                       key={addon.code}
