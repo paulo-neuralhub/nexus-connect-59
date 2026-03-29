@@ -437,6 +437,8 @@ const App = () => (
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/spider-pro" element={<SpiderLandingPage />} />
                 <Route path="/products/:slug" element={<ProductLanding />} />
+                <Route path="/documents/generator" element={<Navigate to="/app/documents/generator" replace />} />
+                <Route path="/documents/new" element={<Navigate to="/app/documents/new" replace />} />
               
               {/* Auth - Public */}
               <Route path="/login" element={<Login />} />
