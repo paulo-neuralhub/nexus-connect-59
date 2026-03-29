@@ -120,7 +120,7 @@ export function UrgentBadges({
         }
       `}</style>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
         {activeBadges.map((badge) => (
           <UrgentBadgeCard key={badge.id} badge={badge} />
         ))}
@@ -133,7 +133,7 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
   const content = (
     <div 
       className={cn(
-        "rounded-[14px] p-4 transition-all duration-300",
+        "rounded-xl p-2.5 transition-all duration-300",
         "border hover:scale-[1.01] cursor-pointer"
       )}
       style={{
@@ -141,13 +141,13 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
         borderColor: '#e2e8f0',
       }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-base">{badge.icon}</span>
+            <span className="text-sm">{badge.icon}</span>
             <span 
-              className="text-[13px] font-bold tracking-[0.15px]"
+              className="text-[11px] font-bold tracking-[0.15px]"
               style={{ color: '#0a2540' }}
             >
               {badge.label}
