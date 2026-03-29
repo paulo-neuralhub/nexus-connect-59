@@ -122,8 +122,8 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
         "border hover:scale-[1.01] cursor-pointer"
       )}
       style={{
-        background: '#f1f4f9',
-        borderColor: 'rgba(0, 0, 0, 0.06)',
+        background: '#ffffff',
+        borderColor: '#e2e8f0',
       }}
     >
       <div className="flex items-center gap-3">

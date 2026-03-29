@@ -62,8 +62,7 @@
  
    return (
      <div 
-       className="rounded-[14px] border border-black/[0.06] p-[18px]"
-       style={{ background: '#f1f4f9' }}
+        className="rounded-[14px] border border-slate-200 p-[18px] bg-white"
      >
        {/* Header */}
        <div className="flex items-center justify-between mb-4">

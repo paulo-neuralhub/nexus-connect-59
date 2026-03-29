@@ -68,9 +68,10 @@
    return (
      <div 
        className="p-3 rounded-2xl mb-4"
-       style={{
-         background: 'linear-gradient(135deg, #eceef6, #f1f4f9)',
-       }}
+        style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+        }}
      >
        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px]">
          {kpis.map((kpi) => (
@@ -85,7 +86,7 @@
    const content = (
      <div 
        className="flex items-center gap-3 py-[13px] px-3 rounded-[14px] border border-black/[0.06] cursor-pointer transition-colors hover:border-[rgba(0,180,216,0.15)]"
-       style={{ background: '#f1f4f9' }}
+       style={{ background: '#f8fafc' }}
      >
        <NeoBadge
          value={kpi.value}
