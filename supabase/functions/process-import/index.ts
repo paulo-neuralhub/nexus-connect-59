@@ -319,23 +319,7 @@ async function importData(params: {
         }
       }
 
-      if (entity_type === 'matters' && mapped.reference) {
-        const { data: existing } = await supabaseAdmin
-          .from('matters').select('id')
-          .eq('organization_id', organization_id)
-          .eq('reference', mapped.reference)
-          .maybeSingle()
-
-        if (existing) {
-          await supabaseAdmin.from('import_review_queue').insert({
-            organization_id, import_job_id: job_id,
-            entity_type, proposed_data: mapped,
-            conflict_type: 'duplicate', status: 'pending',
-          })
-          duplicates++
-          continue
-        }
-      }
+      // UPSERT handles duplicates below — no separate review_queue block needed
 
       const table = entity_type === 'matters' ? 'matters'
         : entity_type === 'contacts' ? 'contacts' : 'crm_accounts'
