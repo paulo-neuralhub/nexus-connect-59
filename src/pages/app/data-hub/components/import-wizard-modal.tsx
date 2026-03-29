@@ -1,458 +1,717 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Upload, FileSpreadsheet, ArrowRight, 
-  Check, AlertCircle, Loader2, Download, CheckCircle
-} from 'lucide-react';
-import { useCreateImport, useImport, useValidateImport, useExecuteImport } from '@/hooks/use-data-hub';
-import { IMPORT_TYPES, MATTER_FIELD_OPTIONS, CONTACT_FIELD_OPTIONS } from '@/lib/constants/data-hub';
-import type { ImportType } from '@/types/data-hub';
-import { cn } from '@/lib/utils';
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select, SelectContent, SelectItem,
+  SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import { Progress } from '@/components/ui/progress'
+import {
+  Upload, Sparkles, CheckCircle, AlertTriangle,
+  ChevronRight, FileSpreadsheet, FileText,
+  ArrowRight, RotateCcw, Eye,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  useImportProcessor,
+  useImportJob,
+  AVAILABLE_FIELDS,
+  type EntityType,
+  type ParseResult,
+  type MappingResult,
+  type ImportResult,
+} from '@/hooks/use-import-processor'
 
-interface ImportWizardModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+// ── TIPOS INTERNOS ───────────────────────────────────────
+
+type WizardStep = 1 | 2 | 3 | 4
+
+interface WizardState {
+  step: WizardStep
+  file: File | null
+  entityType: EntityType
+  jobId: string | null
+  columns: string[]
+  preview: any[][]
+  aiMapping: MappingResult | null
+  confirmedMapping: Record<string, string>
+  result: ImportResult | null
 }
 
-type WizardStep = 'upload' | 'mapping' | 'preview' | 'importing' | 'complete';
+const INITIAL_STATE: WizardState = {
+  step: 1,
+  file: null,
+  entityType: 'matters',
+  jobId: null,
+  columns: [],
+  preview: [],
+  aiMapping: null,
+  confirmedMapping: {},
+  result: null,
+}
 
-export function ImportWizardModal({ open, onOpenChange }: ImportWizardModalProps) {
-  const [step, setStep] = useState<WizardStep>('upload');
-  const [file, setFile] = useState<File | null>(null);
-  const [importType, setImportType] = useState<ImportType>('matters');
-  const [importId, setImportId] = useState<string | null>(null);
-  const [mapping, setMapping] = useState<Record<string, string>>({});
-  const [config, setConfig] = useState({
-    skip_header: true,
-    date_format: 'DD/MM/YYYY',
-    update_existing: false,
-  });
-  
-  const { mutateAsync: createImport, isPending: isCreating } = useCreateImport();
-  const { data: importData } = useImport(importId || '');
-  const { mutateAsync: validateImport, isPending: isValidating } = useValidateImport();
-  const { mutateAsync: executeImport, isPending: isExecuting } = useExecuteImport();
-  
-  // Get target columns based on import type
-  const targetColumns = importType === 'matters' ? MATTER_FIELD_OPTIONS : 
-                        importType === 'contacts' ? CONTACT_FIELD_OPTIONS : 
-                        MATTER_FIELD_OPTIONS;
-  
-  // Demo source columns (in production, these come from parsing the file)
-  const sourceColumns = ['Columna A', 'Columna B', 'Columna C', 'Columna D', 'Columna E'];
-  
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
-  }, []);
-  
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
-  }, []);
-  
-  const handleUpload = async () => {
-    if (!file) return;
-    
-    try {
-      const result = await createImport({ 
-        file, 
-        import_type: importType,
-        source_type: file.name.endsWith('.csv') ? 'csv' : 
-                     file.name.endsWith('.json') ? 'json' : 'excel',
-        options: config,
-      });
-      setImportId(result.id);
-      setStep('mapping');
-    } catch (error) {
-      console.error('Upload error:', error);
-    }
-  };
-  
-  const handleMappingChange = (sourceCol: string, targetCol: string) => {
-    setMapping(prev => ({
-      ...prev,
-      [sourceCol]: targetCol,
-    }));
-  };
-  
-  const handleValidate = async () => {
-    if (!importId) return;
-    
-    try {
-      await validateImport({ importId, mapping });
-      setStep('preview');
-    } catch (error) {
-      console.error('Validation error:', error);
-    }
-  };
-  
-  const handleExecute = async () => {
-    if (!importId) return;
-    
-    setStep('importing');
-    try {
-      await executeImport(importId);
-      setStep('complete');
-    } catch (error) {
-      console.error('Execute error:', error);
-    }
-  };
-  
+const ENTITY_LABELS: Record<EntityType, string> = {
+  matters: 'Expedientes de PI',
+  contacts: 'Contactos',
+  crm_accounts: 'Cuentas / Clientes',
+}
+
+const SOURCE_SYSTEMS = [
+  'Anaqua', 'PatSnap', 'CPA Global', 'Dennemeyer',
+  'IPAN', 'Thomson CompuMark', 'Corsearch',
+  'Questel Orbit', 'Excel propio', 'Otro',
+]
+
+// ── COMPONENTE PRINCIPAL ─────────────────────────────────
+
+interface ImportWizardModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function ImportWizardModal({
+  open, onOpenChange,
+}: ImportWizardModalProps) {
+  const navigate = useNavigate()
+  const { parseFile, mapFields, importData } = useImportProcessor()
+  const [state, setState] = useState<WizardState>(INITIAL_STATE)
+  const [isDragging, setIsDragging] = useState(false)
+  const [sourceSystem, setSourceSystem] = useState('')
+
+  const { data: jobStatus } = useImportJob(
+    state.step === 3 || state.step === 4 ? state.jobId : null
+  )
+
+  const updateState = (patch: Partial<WizardState>) =>
+    setState(prev => ({ ...prev, ...patch }))
+
   const handleClose = () => {
-    setStep('upload');
-    setFile(null);
-    setImportId(null);
-    setMapping({});
-    onOpenChange(false);
-  };
-  
-  const progress = importData 
-    ? Math.round((importData.processed_rows / Math.max(importData.total_rows, 1)) * 100) 
-    : 0;
-  
+    setState(INITIAL_STATE)
+    setSourceSystem('')
+    onOpenChange(false)
+  }
+
+  const handleFileSelected = useCallback(async (file: File) => {
+    updateState({ file })
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFileSelected(file)
+  }, [handleFileSelected])
+
+  const handleProceedToMapping = async () => {
+    if (!state.file) return
+
+    try {
+      updateState({ step: 2 })
+      const parseResult: ParseResult = await parseFile.mutateAsync(state.file)
+      updateState({
+        jobId: parseResult.jobId,
+        columns: parseResult.columns,
+        preview: parseResult.preview,
+      })
+
+      const mappingResult: MappingResult = await mapFields.mutateAsync({
+        jobId: parseResult.jobId,
+        detectedColumns: parseResult.columns,
+        entityType: state.entityType,
+      })
+
+      const initial: Record<string, string> = {}
+      for (const [col, field] of Object.entries(mappingResult.mapping)) {
+        if (field && field !== 'null') initial[col] = field
+      }
+
+      updateState({
+        aiMapping: mappingResult,
+        confirmedMapping: initial,
+      })
+    } catch {
+      updateState({ step: 1 })
+    }
+  }
+
+  const handleStartImport = async () => {
+    if (!state.jobId) return
+
+    try {
+      updateState({ step: 3 })
+      const result = await importData.mutateAsync({
+        jobId: state.jobId,
+        confirmedMapping: state.confirmedMapping,
+        entityType: state.entityType,
+      })
+      updateState({ step: 4, result })
+    } catch {
+      updateState({ step: 2 })
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Importar Datos</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Importar datos
+          </DialogTitle>
         </DialogHeader>
-        
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-6">
-          {[
-            { key: 'upload', label: 'Subir' },
-            { key: 'mapping', label: 'Mapeo' },
-            { key: 'preview', label: 'Preview' },
-            { key: 'complete', label: 'Completo' },
-          ].map((s, i, arr) => (
-            <div key={s.key} className="flex items-center">
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
-                step === s.key ? "bg-primary text-primary-foreground" :
-                arr.findIndex(x => x.key === step) > i
-                  ? "bg-green-500 text-white" 
-                  : "bg-muted text-muted-foreground"
-              )}>
-                {arr.findIndex(x => x.key === step) > i ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  i + 1
+
+        <StepIndicator current={state.step} />
+
+        {state.step === 1 && (
+          <Step1
+            file={state.file}
+            entityType={state.entityType}
+            sourceSystem={sourceSystem}
+            isDragging={isDragging}
+            onFileSelect={(f) => updateState({ file: f })}
+            onEntityChange={(v) => updateState({ entityType: v })}
+            onSourceChange={setSourceSystem}
+            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+            onDragLeave={() => setIsDragging(false)}
+            onNext={handleProceedToMapping}
+            isLoading={parseFile.isPending || mapFields.isPending}
+          />
+        )}
+
+        {state.step === 2 && (
+          <Step2
+            columns={state.columns}
+            preview={state.preview}
+            aiMapping={state.aiMapping}
+            confirmedMapping={state.confirmedMapping}
+            entityType={state.entityType}
+            isLoadingAI={parseFile.isPending || mapFields.isPending}
+            onMappingChange={(col, field) =>
+              updateState({
+                confirmedMapping: {
+                  ...state.confirmedMapping,
+                  [col]: field,
+                },
+              })
+            }
+            onBack={() => updateState({ step: 1 })}
+            onNext={handleStartImport}
+          />
+        )}
+
+        {state.step === 3 && (
+          <Step3
+            jobStatus={jobStatus}
+            total={jobStatus?.records_total || 0}
+            processed={jobStatus?.records_processed || 0}
+          />
+        )}
+
+        {state.step === 4 && (
+          <Step4
+            result={state.result}
+            entityType={state.entityType}
+            onClose={handleClose}
+            onNavigate={(path) => {
+              handleClose()
+              navigate(path)
+            }}
+            onNewImport={() => setState(INITIAL_STATE)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── STEP INDICATOR ───────────────────────────────────────
+
+function StepIndicator({ current }: { current: WizardStep }) {
+  const steps = ['Archivo', 'Mapeo', 'Importando', 'Resultado']
+  return (
+    <div className="flex items-center justify-center gap-1 py-4">
+      {steps.map((label, i) => {
+        const step = (i + 1) as WizardStep
+        const isActive = step === current
+        const isDone = step < current
+        return (
+          <div key={label} className="flex items-center gap-1">
+            <div className="flex flex-col items-center gap-1">
+              <div
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all',
+                  isActive && 'bg-primary text-primary-foreground shadow-md',
+                  isDone && 'bg-primary/20 text-primary',
+                  !isActive && !isDone && 'bg-muted text-muted-foreground'
                 )}
-              </div>
-              {i < arr.length - 1 && (
-                <div className={cn(
-                  "w-12 md:w-20 h-1 mx-2 transition-colors",
-                  arr.findIndex(x => x.key === step) > i
-                    ? "bg-green-500" 
-                    : "bg-muted"
-                )} />
-              )}
-            </div>
-          ))}
-        </div>
-        
-        {/* Step Content */}
-        {step === 'upload' && (
-          <div className="space-y-6">
-            <div>
-              <Label>Tipo de datos a importar</Label>
-              <Select value={importType} onValueChange={(v) => setImportType(v as ImportType)}>
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(IMPORT_TYPES).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      <span className="flex items-center gap-2">
-                        {config.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label>Archivo</Label>
-              <div 
-                className="mt-2 border-2 border-dashed rounded-lg p-8 text-center transition-colors hover:border-primary/50 cursor-pointer"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
               >
-                {file ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <FileSpreadsheet className="h-8 w-8 text-green-600" />
-                    <div className="text-left">
-                      <p className="font-medium">{file.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(file.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => setFile(null)}>
-                      Cambiar
-                    </Button>
-                  </div>
-                ) : (
-                  <label className="cursor-pointer">
-                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-lg font-medium">Arrastra un archivo o haz clic</p>
-                    <p className="text-sm text-muted-foreground">
-                      Soporta Excel (.xlsx), CSV y JSON
-                    </p>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".xlsx,.xls,.csv,.json"
-                      onChange={handleFileSelect}
-                    />
-                  </label>
-                )}
+                {isDone ? '✓' : step}
               </div>
+              <span className={cn(
+                'text-[10px]',
+                isActive ? 'text-primary font-medium' : 'text-muted-foreground'
+              )}>
+                {label}
+              </span>
             </div>
-            
-            {/* Download template */}
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">¿Necesitas una plantilla?</p>
-                <p className="text-sm text-muted-foreground">
-                  Descarga una plantilla con las columnas correctas
+            {i < steps.length - 1 && (
+              <ChevronRight className="h-3 w-3 text-muted-foreground mb-4" />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── STEP 1 — Selección de archivo y tipo ─────────────────
+
+function Step1({
+  file, entityType, sourceSystem, isDragging,
+  onFileSelect, onEntityChange, onSourceChange,
+  onDrop, onDragOver, onDragLeave, onNext, isLoading,
+}: {
+  file: File | null
+  entityType: EntityType
+  sourceSystem: string
+  isDragging: boolean
+  onFileSelect: (f: File) => void
+  onEntityChange: (v: EntityType) => void
+  onSourceChange: (v: string) => void
+  onDrop: (e: React.DragEvent) => void
+  onDragOver: (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onNext: () => void
+  isLoading: boolean
+}) {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">
+          ¿Qué quieres importar?
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {(Object.entries(ENTITY_LABELS) as [EntityType, string][])
+            .map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => onEntityChange(value)}
+                className={cn(
+                  'p-3 rounded-xl border-2 text-left text-sm',
+                  'transition-all duration-200',
+                  entityType === value
+                    ? 'border-primary bg-primary/5 text-primary font-semibold'
+                    : 'border-border text-muted-foreground hover:border-muted-foreground/50'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">
+          Sistema de origen
+        </label>
+        <Select value={sourceSystem} onValueChange={onSourceChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Seleccionar sistema..." />
+          </SelectTrigger>
+          <SelectContent>
+            {SOURCE_SYSTEMS.map(s => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">
+          Archivo
+        </label>
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          className={cn(
+            'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all',
+            isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
+            file && 'border-primary/30 bg-primary/5'
+          )}
+          onClick={() => document.getElementById('import-file-input')?.click()}
+        >
+          <input
+            id="import-file-input"
+            type="file"
+            className="hidden"
+            accept=".csv,.xlsx,.xls"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) onFileSelect(f)
+            }}
+          />
+          {file ? (
+            <div className="flex items-center gap-3 justify-center">
+              {file.name.endsWith('.csv')
+                ? <FileText className="h-8 w-8 text-primary" />
+                : <FileSpreadsheet className="h-8 w-8 text-primary" />
+              }
+              <div className="text-left">
+                <p className="text-sm font-medium text-foreground">
+                  {file.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Descargar
-              </Button>
+              <CheckCircle className="h-5 w-5 text-primary ml-2" />
             </div>
-            
-            <div className="flex justify-end">
-              <Button onClick={handleUpload} disabled={!file || isCreating}>
-                {isCreating ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <ArrowRight className="h-4 w-4 mr-2" />
-                )}
-                Continuar
-              </Button>
-            </div>
-          </div>
+          ) : (
+            <>
+              <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm font-medium text-foreground">
+                Arrastra tu archivo aquí
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                CSV, Excel (.xlsx, .xls)
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Button
+        className="w-full"
+        disabled={!file || isLoading}
+        onClick={onNext}
+      >
+        {isLoading ? (
+          <>
+            <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+            Analizando con IA...
+          </>
+        ) : (
+          <>
+            Analizar archivo
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </>
         )}
-        
-        {step === 'mapping' && (
-          <div className="space-y-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Mapea las columnas de tu archivo a los campos de IP-NEXUS
-              </AlertDescription>
-            </Alert>
-            
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {sourceColumns.map(sourceCol => (
-                <div key={sourceCol} className="flex items-center gap-4">
-                  <div className="flex-1 p-2 bg-muted rounded text-sm font-mono">
-                    {sourceCol}
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      </Button>
+    </div>
+  )
+}
+
+// ── STEP 2 — Mapeo de campos ─────────────────────────────
+
+function Step2({
+  columns, preview, aiMapping, confirmedMapping,
+  entityType, isLoadingAI,
+  onMappingChange, onBack, onNext,
+}: {
+  columns: string[]
+  preview: any[][]
+  aiMapping: MappingResult | null
+  confirmedMapping: Record<string, string>
+  entityType: EntityType
+  isLoadingAI: boolean
+  onMappingChange: (col: string, field: string) => void
+  onBack: () => void
+  onNext: () => void
+}) {
+  const availableFields = AVAILABLE_FIELDS[entityType]
+  const confidence = aiMapping ? Math.round(aiMapping.confidence * 100) : 0
+  const mappedCount = Object.values(confirmedMapping)
+    .filter(v => v && v !== 'null').length
+
+  if (isLoadingAI) {
+    return (
+      <div className="py-12 text-center space-y-4">
+        <div className="flex justify-center">
+          <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+        </div>
+        <p className="text-lg font-medium text-foreground">
+          Analizando estructura con IA...
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Claude está mapeando tus columnas automáticamente
+        </p>
+        <Progress value={45} className="max-w-xs mx-auto" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {aiMapping && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-sm text-foreground flex-1">
+            IA mapeó{' '}
+            <span className="font-semibold">
+              {mappedCount} de {columns.length}
+            </span>{' '}
+            columnas con{' '}
+            <span className={cn(
+              'font-semibold',
+              confidence >= 80 ? 'text-emerald-600'
+                : confidence >= 60 ? 'text-amber-600'
+                : 'text-red-600'
+            )}>
+              {confidence}% de confianza
+            </span>
+          </p>
+          <Badge variant={
+            confidence >= 80 ? 'default'
+              : confidence >= 60 ? 'secondary'
+              : 'destructive'
+          }>
+            {confidence >= 80 ? 'Alto'
+              : confidence >= 60 ? 'Medio'
+              : 'Bajo'}
+          </Badge>
+        </div>
+      )}
+
+      <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-2 text-xs font-medium text-muted-foreground px-1">
+          <span>Columna del archivo</span>
+          <span>Campo en IP-NEXUS</span>
+        </div>
+        <div className="space-y-1.5">
+          {columns.map((col) => {
+            const mapped = confirmedMapping[col]
+            const isMapped = mapped && mapped !== 'null'
+            return (
+              <div key={col} className="grid grid-cols-2 gap-2 items-center">
+                <div className="flex items-center gap-2 px-2 py-1.5 bg-muted/30 rounded text-sm truncate">
+                  <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="truncate text-foreground">{col}</span>
+                </div>
+                <div>
                   <Select
-                    value={mapping[sourceCol] ? mapping[sourceCol] : '__skip__'}
-                    onValueChange={(v) => handleMappingChange(sourceCol, v === '__skip__' ? '' : v)}
+                    value={isMapped ? mapped : 'skip'}
+                    onValueChange={(v) =>
+                      onMappingChange(col, v === 'skip' ? '' : v)
+                    }
                   >
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Seleccionar campo" />
+                    <SelectTrigger className={cn(
+                      'text-sm h-9',
+                      isMapped ? 'border-primary/30' : ''
+                    )}>
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__skip__">-- No importar --</SelectItem>
-                      {targetColumns.map(col => (
-                        <SelectItem key={col.value} value={col.value}>
-                          {col.label}
-                          {col.required && (
-                            <Badge className="ml-2" variant="secondary">Requerido</Badge>
-                          )}
+                      <SelectItem value="skip">
+                        — No importar —
+                      </SelectItem>
+                      {availableFields.map(f => (
+                        <SelectItem key={f.value} value={f.value}>
+                          {f.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              ))}
-            </div>
-            
-            <div className="space-y-4 pt-4 border-t">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="skipHeader"
-                  checked={config.skip_header}
-                  onCheckedChange={(v) => setConfig(prev => ({ ...prev, skip_header: !!v }))}
-                />
-                <Label htmlFor="skipHeader">Primera fila es encabezado</Label>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Formato de fecha</Label>
-                  <Select 
-                    value={config.date_format} 
-                    onValueChange={(v) => setConfig(prev => ({ ...prev, date_format: v }))}
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                      <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                      <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-end">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="updateExisting"
-                      checked={config.update_existing}
-                      onCheckedChange={(v) => setConfig(prev => ({ ...prev, update_existing: !!v }))}
-                    />
-                    <Label htmlFor="updateExisting">Actualizar existentes</Label>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep('upload')}>
-                Atrás
-              </Button>
-              <Button onClick={handleValidate} disabled={isValidating}>
-                {isValidating ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <ArrowRight className="h-4 w-4 mr-2" />
-                )}
-                Validar
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {step === 'preview' && importData && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg text-center">
-                <p className="text-2xl font-bold text-blue-600">{importData.total_rows}</p>
-                <p className="text-sm text-blue-700">Total filas</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg text-center">
-                <p className="text-2xl font-bold text-green-600">{importData.success_rows || importData.total_rows - (importData.errors?.length || 0)}</p>
-                <p className="text-sm text-green-700">Válidas</p>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg text-center">
-                <p className="text-2xl font-bold text-red-600">{importData.errors?.length || 0}</p>
-                <p className="text-sm text-red-700">Con errores</p>
-              </div>
-              <div className="p-4 bg-yellow-50 rounded-lg text-center">
-                <p className="text-2xl font-bold text-yellow-600">{importData.skipped_rows || 0}</p>
-                <p className="text-sm text-yellow-700">Omitidas</p>
-              </div>
-            </div>
-            
-            {importData.errors && importData.errors.length > 0 && (
-              <div className="border rounded-lg p-4">
-                <h4 className="font-medium mb-2">Errores encontrados:</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {importData.errors.slice(0, 5).map((err, i) => (
-                    <div key={i} className="text-sm flex gap-2 text-red-600">
-                      <span className="font-mono">Fila {err.row}:</span>
-                      <span>{err.error}</span>
-                    </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {preview.length > 0 && (
+        <details className="rounded-lg border border-border">
+          <summary className="px-3 py-2 text-sm font-medium text-foreground cursor-pointer flex items-center gap-2">
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            Ver preview de datos ({preview.length} filas)
+          </summary>
+          <div className="overflow-x-auto p-2">
+            <table className="w-full text-xs">
+              <thead>
+                <tr>
+                  {columns.map(c => (
+                    <th key={c} className="px-2 py-1 text-left text-muted-foreground font-medium whitespace-nowrap">
+                      {c}
+                    </th>
                   ))}
-                  {importData.errors.length > 5 && (
-                    <p className="text-sm text-muted-foreground">
-                      Y {importData.errors.length - 5} errores más...
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep('mapping')}>
-                Atrás
-              </Button>
-              <Button onClick={handleExecute} disabled={isExecuting}>
-                {isExecuting ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4 mr-2" />
-                )}
-                Importar
-              </Button>
-            </div>
+                </tr>
+              </thead>
+              <tbody>
+                {preview.slice(0, 3).map((row, i) => (
+                  <tr key={i} className="border-t border-border">
+                    {columns.map((_, ci) => (
+                      <td key={ci} className="px-2 py-1 whitespace-nowrap text-foreground">
+                        {String(row[ci] ?? '')}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-        
-        {step === 'importing' && (
-          <div className="space-y-6 text-center py-8">
-            <Loader2 className="h-16 w-16 mx-auto text-primary animate-spin" />
-            <div>
-              <p className="text-lg font-medium">Importando datos...</p>
-              <p className="text-muted-foreground">
-                {importData?.processed_rows || 0} de {importData?.total_rows || 0} registros
+        </details>
+      )}
+
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={onBack}>
+          ← Atrás
+        </Button>
+        <Button className="flex-1" onClick={onNext} disabled={mappedCount === 0}>
+          Importar {mappedCount} campos mapeados
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ── STEP 3 — Progreso de importación ─────────────────────
+
+function Step3({
+  jobStatus, total, processed,
+}: {
+  jobStatus: any
+  total: number
+  processed: number
+}) {
+  const progress = total > 0
+    ? Math.round((processed / total) * 100)
+    : 0
+
+  return (
+    <div className="py-12 text-center space-y-6">
+      <div className="flex justify-center">
+        <Sparkles className="h-12 w-12 text-primary animate-pulse" />
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-lg font-semibold text-foreground">
+          Importando registros...
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {processed} de {total || '?'} procesados
+        </p>
+      </div>
+
+      <div className="max-w-sm mx-auto space-y-2">
+        <Progress value={progress} />
+        <p className="text-xs text-muted-foreground">
+          {progress}% completado
+        </p>
+      </div>
+
+      <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+        Este proceso puede tardar unos minutos según
+        el tamaño del archivo. No cierres esta ventana.
+      </p>
+    </div>
+  )
+}
+
+// ── STEP 4 — Resultado ───────────────────────────────────
+
+function Step4({
+  result, entityType, onClose, onNavigate, onNewImport,
+}: {
+  result: ImportResult | null
+  entityType: EntityType
+  onClose: () => void
+  onNavigate: (path: string) => void
+  onNewImport: () => void
+}) {
+  if (!result) return null
+
+  const { total, processed, failed, duplicates } = result
+  const successRate = total > 0
+    ? Math.round((processed / total) * 100)
+    : 0
+  const isSuccess = failed === 0
+  const entityPath = entityType === 'matters'
+    ? '/app/expedientes'
+    : entityType === 'contacts'
+      ? '/app/contacts'
+      : '/app/crm'
+
+  return (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center">
+          {isSuccess
+            ? <CheckCircle className="h-14 w-14 text-emerald-500" />
+            : <AlertTriangle className="h-14 w-14 text-amber-500" />
+          }
+        </div>
+        <p className="text-lg font-semibold text-foreground">
+          {isSuccess ? 'Importación completada' : 'Completado con avisos'}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {successRate}% de éxito
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+          <p className="text-2xl font-bold text-emerald-600">
+            {processed}
+          </p>
+          <p className="text-xs text-muted-foreground">Importados</p>
+        </div>
+        <div className="text-center p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30">
+          <p className="text-2xl font-bold text-amber-600">
+            {duplicates}
+          </p>
+          <p className="text-xs text-muted-foreground">En revisión</p>
+        </div>
+        <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
+          <p className="text-2xl font-bold text-red-600">
+            {failed}
+          </p>
+          <p className="text-xs text-muted-foreground">Con error</p>
+        </div>
+      </div>
+
+      {result.errors && result.errors.length > 0 && (
+        <details className="rounded-lg border border-destructive/30">
+          <summary className="px-3 py-2 text-sm font-medium text-destructive cursor-pointer">
+            Ver errores ({result.errors.length})
+          </summary>
+          <div className="px-3 pb-3 space-y-1">
+            {result.errors.slice(0, 10).map((e, i) => (
+              <p key={i} className="text-xs text-muted-foreground">
+                Fila {e.row}: {e.error}
               </p>
-            </div>
-            <Progress value={progress} className="max-w-md mx-auto" />
+            ))}
           </div>
+        </details>
+      )}
+
+      <div className="space-y-2">
+        <Button
+          onClick={() => onNavigate(entityPath)}
+          className="w-full"
+        >
+          Ver {ENTITY_LABELS[entityType]} importados
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+        {duplicates > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => onNavigate('/app/data-hub?tab=imports')}
+            className="w-full"
+          >
+            Revisar {duplicates} duplicados
+          </Button>
         )}
-        
-        {step === 'complete' && importData && (
-          <div className="space-y-6 text-center py-8">
-            <CheckCircle className="h-16 w-16 mx-auto text-green-500" />
-            <div>
-              <p className="text-lg font-medium">¡Importación completada!</p>
-              <p className="text-muted-foreground">
-                Se han procesado {importData.total_rows} registros
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-3xl font-bold text-green-600">{importData.success_rows}</p>
-                <p className="text-sm text-green-700">Exitosos</p>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg">
-                <p className="text-3xl font-bold text-red-600">{importData.error_rows}</p>
-                <p className="text-sm text-red-700">Errores</p>
-              </div>
-              <div className="p-4 bg-yellow-50 rounded-lg">
-                <p className="text-3xl font-bold text-yellow-600">{importData.skipped_rows}</p>
-                <p className="text-sm text-yellow-700">Omitidos</p>
-              </div>
-            </div>
-            
-            <div className="flex justify-center">
-              <Button onClick={handleClose}>
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+        <Button variant="ghost" onClick={onNewImport} className="w-full">
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Nueva importación
+        </Button>
+      </div>
+    </div>
+  )
 }
