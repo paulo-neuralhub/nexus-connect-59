@@ -304,10 +304,19 @@ async function importData(params: {
         mapped[targetField] = value
       }
 
-      if (entity_type === 'matters' && !mapped.mark_name && !mapped.reference) {
-        errors.push({ row: processed + failed, error: 'Falta mark_name o reference' })
-        failed++
-        continue
+      // Sincronizar title con mark_name para matters
+      if (entity_type === 'matters') {
+        if (mapped.mark_name && !mapped.title) {
+          mapped.title = mapped.mark_name
+        }
+        if (mapped.title && !mapped.mark_name) {
+          mapped.mark_name = mapped.title
+        }
+        if (!mapped.title && !mapped.mark_name) {
+          errors.push({ row: processed + failed, error: 'Falta nombre de marca (mark_name/title)' })
+          failed++
+          continue
+        }
       }
 
       if (entity_type === 'matters' && mapped.reference) {
