@@ -168,6 +168,9 @@ export function useImportProcessor() {
         if (data?.error) throw new Error(data.error)
 
         queryClient.invalidateQueries({ queryKey: ['matters'] })
+        queryClient.invalidateQueries({ queryKey: ['docket'] })
+        queryClient.invalidateQueries({ queryKey: ['expedientes'] })
+        queryClient.invalidateQueries({ queryKey: ['portfolio'] })
         queryClient.invalidateQueries({ queryKey: ['contacts'] })
         queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
         queryClient.invalidateQueries({ queryKey: ['imports'] })
