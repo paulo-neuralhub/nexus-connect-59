@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Package, Check, X, CheckCircle2, Minus, Users,
-  ShoppingBag, Monitor,
+  ShoppingBag, Monitor, Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -532,86 +532,116 @@ export default function AddonStorePage() {
             {/* ── CART PANEL ────────────────────────── */}
             {cart.length > 0 && (
               <aside className="w-80 flex-shrink-0 sticky top-6 self-start">
-                <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: SILK_SHADOW }}>
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm font-semibold text-slate-700">Tu selección</p>
+                <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: SILK_SHADOW }}>
+                  {/* Header */}
+                  <div className="flex justify-between items-center px-5 pt-5 pb-3">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag className="h-4 w-4 text-slate-500" />
+                      <p className="text-sm font-semibold text-slate-700">Tu selección</p>
+                    </div>
                     <Badge className="bg-blue-100 text-blue-700 text-xs">{cart.length}</Badge>
                   </div>
 
-                  <div className="space-y-3">
-                    {cart.map((addon) => (
-                      <div key={addon.code} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <LucideDynamicIcon
-                            name={addon.icon_name}
-                            fallback={<Package className="h-3 w-3" />}
-                            size={14}
-                            color={addon.color_hex ?? "#64748B"}
-                          />
-                          <span className="text-sm text-slate-700 truncate">{addon.name_es}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-sm font-semibold text-slate-800">
-                            €{billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur}
-                          </span>
-                          <button
-                            onClick={() => removeFromCart(addon.code)}
-                            className="text-slate-300 hover:text-red-400 transition-colors"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  {/* Plan actual section */}
+                  <div className="mx-5 px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Plan actual</p>
+                    <div className="flex justify-between items-baseline">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {orgPlan?.plan_name ?? "Free"} · {billingCycle === "annual" ? "Anual" : "Mensual"}
+                      </p>
+                      <span className="text-sm font-bold text-slate-800">€{planMonthly}/mes</span>
+                    </div>
                   </div>
 
-                  <Separator className="my-4" />
+                  {/* Add-ons seleccionados */}
+                  <div className="px-5 pt-4 pb-2">
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
+                      Add-ons seleccionados
+                    </p>
+                    <div className="space-y-2.5">
+                      {cart.map((addon) => {
+                        const addonPrice = billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur;
+                        return (
+                          <div key={addon.code} className="flex items-center justify-between group">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <LucideDynamicIcon
+                                name={addon.icon_name}
+                                fallback={<Package className="h-3.5 w-3.5" />}
+                                size={14}
+                                color={addon.color_hex ?? "#64748B"}
+                              />
+                              <span className="text-sm text-slate-700 truncate">{addon.name_es}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="text-sm text-slate-600">€{addonPrice}/mes</span>
+                              <button
+                                onClick={() => removeFromCart(addon.code)}
+                                className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                aria-label={`Quitar ${addon.name_es}`}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                  <div className="space-y-2 text-sm">
+                  {/* Resumen financiero */}
+                  <div className="mx-5 mt-3 mb-4 pt-3 border-t border-slate-100 space-y-1.5 text-sm">
                     <div className="flex justify-between text-slate-500">
-                      <span>Plan {orgPlan?.plan_name}</span>
+                      <span>Plan:</span>
                       <span>€{planMonthly}/mes</span>
                     </div>
                     <div className="flex justify-between text-slate-500">
-                      <span>Add-ons ({cart.length})</span>
+                      <span>Add-ons (+{cart.length}):</span>
                       <span>+€{cartTotal}/mes</span>
                     </div>
-                    <Separator />
-                    <div className="flex justify-between font-bold text-slate-800">
-                      <span>Total estimado</span>
-                      <span>€{planMonthly + cartTotal}/mes</span>
+                    <Separator className="!my-2" />
+                    <div className="flex justify-between font-bold text-slate-800 text-base">
+                      <span>TOTAL</span>
+                      <span>€{(planMonthly + cartTotal).toLocaleString("es-ES")}/mes</span>
                     </div>
                     {billingCycle === "annual" && (
-                      <p className="text-xs text-slate-400 text-center">
-                        €{(planMonthly + cartTotal) * 12}/año facturado anualmente
+                      <p className="text-xs text-slate-400 text-right">
+                        €{((planMonthly + cartTotal) * 12).toLocaleString("es-ES")}/año
                       </p>
                     )}
                   </div>
 
-                  <Button
-                    className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-4"
-                    size="sm"
-                    onClick={() => {
-                      const subject = encodeURIComponent("Solicitud Add-ons IP-NEXUS");
-                      const body = encodeURIComponent(
-                        "Plan actual: " + (orgPlan?.plan_name ?? "Free") + "\n" +
-                        "Ciclo: " + (billingCycle === "annual" ? "Anual" : "Mensual") + "\n\n" +
-                        "Add-ons solicitados:\n" +
-                        cart.map((a) =>
-                          "- " + a.name_es + ": €" +
-                          (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur) + "/mes"
-                        ).join("\n") + "\n\n" +
-                        "Total adicional: €" + cartTotal + "/mes"
-                      );
-                      window.open("mailto:ventas@ip-nexus.com?subject=" + subject + "&body=" + body, "_blank");
-                    }}
-                  >
-                    Solicitar selección ({cart.length})
-                  </Button>
-
-                  <p className="text-[11px] text-center text-slate-400 mt-2">
-                    Nuestro equipo te contactará en menos de 24h
-                  </p>
+                  {/* CTA */}
+                  <div className="px-5 pb-5">
+                    <Button
+                      className="w-full bg-slate-900 text-white hover:bg-slate-800"
+                      size="sm"
+                      onClick={() => {
+                        const subject = encodeURIComponent("Solicitud Add-ons IP-NEXUS");
+                        const body = encodeURIComponent(
+                          "Plan actual: " + (orgPlan?.plan_name ?? "Free") + "\n" +
+                          "Ciclo: " + (billingCycle === "annual" ? "Anual" : "Mensual") + "\n\n" +
+                          "Add-ons solicitados:\n" +
+                          cart.map((a) =>
+                            "- " + a.name_es + ": €" +
+                            (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur) + "/mes"
+                          ).join("\n") + "\n\n" +
+                          "Total adicional: €" + cartTotal + "/mes"
+                        );
+                        window.open("mailto:ventas@ip-nexus.com?subject=" + subject + "&body=" + body, "_blank");
+                      }}
+                    >
+                      Proceder al pago →
+                    </Button>
+                    <div className="flex items-center justify-center gap-1.5 mt-3">
+                      <Lock className="h-3 w-3 text-slate-400" />
+                      <p className="text-[11px] text-slate-400">
+                        Pago seguro con Stripe
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-center text-slate-400 mt-0.5">
+                      Cancela cuando quieras
+                    </p>
+                  </div>
                 </div>
               </aside>
             )}
