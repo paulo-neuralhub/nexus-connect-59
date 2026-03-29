@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Package, Check, X, CheckCircle2, Minus, Users,
-  ShoppingBag, Monitor,
+  ShoppingBag, Monitor, Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
