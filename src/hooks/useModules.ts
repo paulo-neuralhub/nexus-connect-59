@@ -74,8 +74,26 @@ interface DBModuleLicense {
 
 export function useModules() {
   const { currentOrganization } = useOrganizationContext();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const tenantId = currentOrganization?.id;
+
+  // SuperAdmin bypass — acceso total sin restricciones
+  const { data: isSuperAdmin = false } = useQuery({
+    queryKey: ['is-superadmin-modules', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('superadmins')
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error) return false;
+      return !!data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
 
   // -----------------------------------------
   // Query: Módulos de la plataforma
