@@ -142,7 +142,7 @@ export type AlertType =
   | 'infringement';
 
 export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
-export type AlertStatus = 'unread' | 'read' | 'actioned' | 'dismissed';
+export type AlertStatus = 'new' | 'reviewing' | 'read' | 'actioned' | 'dismissed';
 
 export interface SpiderAlert {
   id: string;

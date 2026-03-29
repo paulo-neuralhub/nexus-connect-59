@@ -25,7 +25,7 @@ const SEVERITY_BORDER_COLORS: Record<AlertSeverity, string> = {
 };
 
 export function SilkAlertsPanel({ limit = 10, showMarkAll = true }: Props) {
-  const { data: alerts, isLoading } = useSpiderAlerts({ status: 'unread' });
+  const { data: alerts, isLoading } = useSpiderAlerts({ status: 'new' });
   const markRead = useMarkAlertRead();
   const markAllRead = useMarkAllAlertsRead();
   

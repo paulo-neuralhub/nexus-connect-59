@@ -276,7 +276,7 @@ export function useUnreadAlertsCount() {
         .from('spider_alerts')
         .select('*', { count: 'exact', head: true })
         .eq('organization_id', currentOrganization!.id)
-        .eq('status', 'unread');
+        .eq('status', 'new');
       if (error) throw error;
       return count || 0;
     },

@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function AlertsPanel({ limit = 10, showMarkAll = true }: Props) {
-  const { data: alerts, isLoading } = useSpiderAlerts({ status: 'unread' });
+  const { data: alerts, isLoading } = useSpiderAlerts({ status: 'new' });
   const markRead = useMarkAlertRead();
   const markAllRead = useMarkAllAlertsRead();
   
