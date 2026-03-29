@@ -14019,6 +14019,8 @@ export type Database = {
           records_failed: number | null
           records_processed: number | null
           records_total: number | null
+          shadow_comparison: Json | null
+          shadow_data: Json | null
           source_file_url: string | null
           source_type: string | null
           started_at: string | null
@@ -14039,6 +14041,8 @@ export type Database = {
           records_failed?: number | null
           records_processed?: number | null
           records_total?: number | null
+          shadow_comparison?: Json | null
+          shadow_data?: Json | null
           source_file_url?: string | null
           source_type?: string | null
           started_at?: string | null
@@ -14059,6 +14063,8 @@ export type Database = {
           records_failed?: number | null
           records_processed?: number | null
           records_total?: number | null
+          shadow_comparison?: Json | null
+          shadow_data?: Json | null
           source_file_url?: string | null
           source_type?: string | null
           started_at?: string | null

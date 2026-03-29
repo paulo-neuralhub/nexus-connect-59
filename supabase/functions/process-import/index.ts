@@ -340,7 +340,32 @@ async function importData(params: {
       const table = entity_type === 'matters' ? 'matters'
         : entity_type === 'contacts' ? 'contacts' : 'crm_accounts'
 
-      const { error: insertError } = await supabaseAdmin.from(table).insert(mapped)
+      // F1: UPSERT — si tiene reference existente → UPDATE, si no → INSERT
+      let insertError = null
+      if (entity_type === 'matters' && mapped.reference) {
+        const { data: existing } = await supabaseAdmin
+          .from('matters')
+          .select('id')
+          .eq('organization_id', organization_id)
+          .eq('reference', mapped.reference)
+          .maybeSingle()
+
+        if (existing) {
+          const { id, organization_id: _org, ...updateData } = mapped
+          const { error } = await supabaseAdmin
+            .from('matters')
+            .update({ ...updateData, updated_at: new Date().toISOString() })
+            .eq('id', existing.id)
+          insertError = error
+        } else {
+          const { error } = await supabaseAdmin.from(table).insert(mapped)
+          insertError = error
+        }
+      } else {
+        const { error } = await supabaseAdmin.from(table).insert(mapped)
+        insertError = error
+      }
+
       if (insertError) {
         errors.push({ row: processed + failed, error: insertError.message })
         failed++

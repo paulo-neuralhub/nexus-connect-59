@@ -212,7 +212,7 @@ export function useImportJob(jobId: string | null) {
     enabled: !!jobId,
     refetchInterval: (query) => {
       const status = query.state.data?.status
-      return status === 'importing' || status === 'mapping' ? 2000 : false
+      return ['importing', 'mapping', 'validating'].includes(status) ? 2000 : false
     },
   })
 }
