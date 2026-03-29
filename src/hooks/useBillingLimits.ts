@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/organization-context';
+import { useAuth } from '@/contexts/auth-context';
 import type { TenantFlags } from './useBillingData';
 
 export function useBillingLimits() {
   const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
 
   const { data: flags, isLoading } = useQuery({
     queryKey: ['tenant-flags', currentOrganization?.id],
@@ -20,7 +22,25 @@ export function useBillingLimits() {
     enabled: !!currentOrganization?.id,
   });
 
+  // SuperAdmin bypass
+  const { data: isSuperAdmin = false } = useQuery({
+    queryKey: ['is-superadmin-billing', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('superadmins')
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error) return false;
+      return !!data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
+
   const hasModule = (moduleCode: string): boolean => {
+    if (isSuperAdmin) return true;
     if (!flags) return false;
     const key = `has_${moduleCode}` as keyof TenantFlags;
     return flags[key] === true;
