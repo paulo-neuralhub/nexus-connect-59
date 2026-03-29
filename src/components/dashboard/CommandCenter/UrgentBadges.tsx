@@ -24,13 +24,15 @@ interface UrgentBadgesProps {
   expedientesUrgentes: number;
   alertasSpider: number;
   plazosUrgentes?: number;
+  aprobacionesPendientes?: number;
 }
 
 export function UrgentBadges({ 
   plazosHoy, 
   expedientesUrgentes, 
   alertasSpider,
-  plazosUrgentes = 0 
+  plazosUrgentes = 0,
+  aprobacionesPendientes = 0,
 }: UrgentBadgesProps) {
   // Calcular plazos urgentes (próximos 7 días) si no se proporciona
   const plazosUrgentesValue = plazosUrgentes || plazosHoy;
@@ -67,6 +69,19 @@ export function UrgentBadges({
       footerText: 'Próximos a vencer',
     },
   ];
+
+  if (aprobacionesPendientes > 0) {
+    badges.push({
+      id: 'aprobaciones',
+      icon: '✅',
+      label: 'Aprobaciones',
+      sublabel: 'Pendientes de revisión',
+      value: aprobacionesPendientes,
+      href: '/app/approvals',
+      ledColor: '#F97316',
+      footerText: 'Requieren tu aprobación',
+    });
+  }
 
   // Solo mostrar badges que tienen valores > 0
   const activeBadges = badges.filter(b => b.value > 0);
