@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization as useOrganizationContext } from '@/contexts/organization-context';
+import { useAuth } from '@/contexts/auth-context';
 import { useCallback, useMemo, useContext } from 'react';
 import { toast } from 'sonner';
 import type {
@@ -73,8 +74,26 @@ interface DBModuleLicense {
 
 export function useModules() {
   const { currentOrganization } = useOrganizationContext();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const tenantId = currentOrganization?.id;
+
+  // SuperAdmin bypass — acceso total sin restricciones
+  const { data: isSuperAdmin = false } = useQuery({
+    queryKey: ['is-superadmin-modules', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('superadmins')
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error) return false;
+      return !!data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
 
   // -----------------------------------------
   // Query: Módulos de la plataforma
@@ -254,10 +273,12 @@ export function useModules() {
   // Verificar si tiene módulo
   // -----------------------------------------
   const hasModule = useCallback((moduleCode: string): boolean => {
+    // SuperAdmin tiene acceso a TODOS los módulos sin restricciones
+    if (isSuperAdmin) return true;
     return tenantModules.some(
       tm => tm.module_code === moduleCode && ['active', 'trialing'].includes(tm.status)
     );
-  }, [tenantModules]);
+  }, [tenantModules, isSuperAdmin]);
 
   // -----------------------------------------
   // Obtener módulo del tenant
