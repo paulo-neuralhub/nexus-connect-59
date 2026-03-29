@@ -4,7 +4,7 @@ import { useOrganization } from '@/contexts/organization-context'
 import { supabase } from '@/integrations/supabase/client'
 import {
   FolderOpen, Clock, TrendingUp, Radar, Activity,
-  Sparkles, CheckCircle, ChevronRight, AlertTriangle
+  Sparkles, CheckCircle, ChevronRight, AlertTriangle, Bell
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
