@@ -61,15 +61,14 @@ export default function Dashboard() {
   }));
 
   // Map activities for RecentActivityFeed
+  // Map activities for RecentActivityFeed
   const activityItems = recentActivity.map(a => ({
     id: a.id,
-    tipo: a.type as 'deadline' | 'task' | 'document' | 'email' | 'note' | 'stage_change' | 'crm',
-    descripcion: a.title,
-    detalle: a.description || undefined,
-    timestamp: a.timestamp,
-    modulo: a.module,
-    link: a.link,
+    type: a.type,
+    titulo: a.title,
     usuario: a.userName,
+    tiempo: new Date(a.timestamp),
+    link: a.link,
   }));
 
   // Facturacion chart data (placeholder since no real monthly data in hook)
@@ -87,7 +86,7 @@ export default function Dashboard() {
     .filter(p => p.count > 0)
     .map(p => ({
       tipo: p.nombre,
-      cantidad: p.count,
+      count: p.count,
       color: p.color,
     }));
 
