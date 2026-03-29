@@ -24,14 +24,23 @@ export interface BillingAddon {
   max_per_org: number;
   is_contracted: boolean;
   annual_saving_eur: number;
+  adds_jurisdictions: number;
+  adds_matters: number;
+  adds_users: number;
 }
+
+export type AddonState = "active" | "available" | "incompatible" | "redundant";
 
 export interface OrgPlan {
   plan_code: string;
   plan_name: string;
   monthly_price_eur: number;
+  annual_price_eur: number;
   billing_cycle: string;
   is_in_trial: boolean;
+  max_jurisdictions: number;
+  max_matters: number;
+  max_users: number;
 }
 
 interface AddonStoreResult {
