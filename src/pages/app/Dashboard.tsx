@@ -6,8 +6,7 @@
 import { useDashboardHome } from '@/hooks/use-dashboard-home';
 import { useDashboardMetrics } from '@/components/dashboard/MetricsBar';
 import { DashboardWelcomeHeader } from '@/components/dashboard/DashboardWelcomeHeader';
-import { PendingApprovalsWidget } from '@/components/dashboard/PendingApprovalsWidget';
-import { BriefingCard } from '@/components/copilot/BriefingCard';
+import { useApprovalsCount } from '@/hooks/use-approvals';
 
 import {
   UrgentBadges,
