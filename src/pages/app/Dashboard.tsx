@@ -526,7 +526,7 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-[100px] bg-white rounded-2xl animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]" />
+              <div key={i} className="h-[100px] bg-white rounded-2xl animate-pulse shadow-neu" />
             ))}
           </div>
         ) : (
@@ -534,7 +534,7 @@ export default function Dashboard() {
             {/* KPI 1 — Expedientes */}
             <button
               onClick={() => navigate('/app/expedientes')}
-              className="bg-white rounded-2xl p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:translate-y-[-2px] transition-all duration-200"
+              className="bg-white rounded-2xl p-5 text-left shadow-neu hover:shadow-neu-shell hover:translate-y-[-2px] transition-all duration-200"
             >
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Portfolio</p>
               <p className="text-[40px] font-bold text-slate-800 leading-none tracking-tight">
@@ -546,7 +546,7 @@ export default function Dashboard() {
             {/* KPI 2 — En riesgo */}
             <button
               onClick={() => navigate('/app/deadlines')}
-              className="bg-white rounded-2xl p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:translate-y-[-2px] transition-all duration-200"
+              className="bg-white rounded-2xl p-5 text-left shadow-neu hover:shadow-neu-shell hover:translate-y-[-2px] transition-all duration-200"
             >
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">En riesgo</p>
               <p className="text-[40px] font-bold leading-none tracking-tight text-red-500">
@@ -558,7 +558,7 @@ export default function Dashboard() {
             {/* KPI 3 — Pipeline */}
             <button
               onClick={() => navigate('/app/crm/kanban')}
-              className="bg-white rounded-2xl p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:translate-y-[-2px] transition-all duration-200"
+              className="bg-white rounded-2xl p-5 text-left shadow-neu hover:shadow-neu-shell hover:translate-y-[-2px] transition-all duration-200"
             >
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Pipeline</p>
               <p className="text-[40px] font-bold text-slate-800 leading-none tracking-tight">
@@ -572,7 +572,7 @@ export default function Dashboard() {
             {/* KPI 4 — Vigilancias */}
             <button
               onClick={() => navigate('/app/spider')}
-              className="bg-white rounded-2xl p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:translate-y-[-2px] transition-all duration-200"
+              className="bg-white rounded-2xl p-5 text-left shadow-neu hover:shadow-neu-shell hover:translate-y-[-2px] transition-all duration-200"
             >
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Vigilancias</p>
               <div className="flex items-end gap-2">
@@ -594,13 +594,13 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             <div className="lg:col-span-5">
-              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]" />
+              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-neu" />
             </div>
             <div className="lg:col-span-4">
-              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]" />
+              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-neu" />
             </div>
             <div className="lg:col-span-3">
-              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]" />
+              <div className="h-96 bg-white rounded-2xl animate-pulse shadow-neu" />
             </div>
           </div>
         ) : !focusMode && (
@@ -609,7 +609,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
               {/* Plazos — 5/12 */}
-              <div className="lg:col-span-5 bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] overflow-hidden">
+              <div className="lg:col-span-5 bg-white rounded-2xl shadow-neu overflow-hidden">
                 <div className="px-6 pt-5 pb-4 border-b border-slate-50">
                   <div className="flex items-center justify-between">
                     <h2 className="text-[13px] font-semibold text-slate-800">Plazos próximos</h2>
@@ -702,7 +702,7 @@ export default function Dashboard() {
 
               {/* IP-GENIUS — 4/12 */}
               <div className="lg:col-span-4 flex flex-col">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] flex-1 flex flex-col">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-neu flex-1 flex flex-col">
                   <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] px-6 py-5">
                     <div className="flex items-center gap-2 mb-1">
                       <Sparkles className="w-4 h-4 text-amber-400" />
@@ -771,7 +771,7 @@ export default function Dashboard() {
               {/* Health — 3/12 */}
               <div className="lg:col-span-3 flex flex-col gap-5">
                 {/* Health Score */}
-                <div className="bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+                <div className="bg-white rounded-2xl p-5 shadow-neu">
                   <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-4">Salud portfolio</p>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="relative">
@@ -827,7 +827,7 @@ export default function Dashboard() {
 
                 {/* Top deals */}
                 {(data?.deals ?? []).length > 0 && (
-                  <div className="bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+                  <div className="bg-white rounded-2xl p-5 shadow-neu">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Top deals</p>
                       <button
@@ -857,7 +857,7 @@ export default function Dashboard() {
 
             {/* FILA INFERIOR — Actividad */}
             {(data?.activities ?? []).length > 0 && (
-              <div className="bg-white rounded-2xl px-6 py-5 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+              <div className="bg-white rounded-2xl px-6 py-5 shadow-neu">
                 <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-4">Actividad reciente</p>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   {(data?.activities ?? []).slice(0, 5).map(a => (
