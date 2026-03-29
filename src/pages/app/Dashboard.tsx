@@ -54,14 +54,10 @@ export default function Dashboard() {
   const upcomingDeadlineItems = deadlines.map(d => ({
     id: d.id,
     titulo: d.title,
-    fecha: d.dueDate,
-    tipo: d.type as 'plazo' | 'renovacion' | 'oposicion' | 'otro',
-    estado: d.priority === 'critical' ? 'urgente' as const 
-          : d.priority === 'high' ? 'proximo' as const 
-          : 'normal' as const,
-    expedienteRef: d.matterRef,
+    expediente: d.matterRef || '',
+    fecha: new Date(d.dueDate),
+    oficina: d.office || '',
     matterId: d.matterId,
-    oficina: d.office,
   }));
 
   // Map activities for RecentActivityFeed
