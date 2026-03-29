@@ -273,10 +273,12 @@ export function useModules() {
   // Verificar si tiene módulo
   // -----------------------------------------
   const hasModule = useCallback((moduleCode: string): boolean => {
+    // SuperAdmin tiene acceso a TODOS los módulos sin restricciones
+    if (isSuperAdmin) return true;
     return tenantModules.some(
       tm => tm.module_code === moduleCode && ['active', 'trialing'].includes(tm.status)
     );
-  }, [tenantModules]);
+  }, [tenantModules, isSuperAdmin]);
 
   // -----------------------------------------
   // Obtener módulo del tenant
