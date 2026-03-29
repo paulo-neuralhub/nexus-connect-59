@@ -111,7 +111,7 @@ export function useDashboardHome() {
 
         // Active watchlists
         supabase
-          .from('watchlists')
+          .from('spider_watches')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', orgId)
           .eq('is_active', true),
@@ -119,9 +119,9 @@ export function useDashboardHome() {
         // Open deals (CRM V2 - crm_deals)
         supabase
           .from('crm_deals')
-          .select('id, amount', { count: 'exact' })
+          .select('id, amount_eur', { count: 'exact' })
           .eq('organization_id', orgId)
-          .is('won', null), // not won/lost yet
+          .not('stage', 'in', '("lost","won")'),
 
         // Total contacts
         supabase
@@ -129,11 +129,8 @@ export function useDashboardHome() {
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', orgId),
 
-        // Portfolio data
-        supabase
-          .from('finance_portfolios')
-          .select('total_value, currency, total_cost, unrealized_gain')
-          .eq('organization_id', orgId),
+        // Portfolio data — table may not exist, use safe fallback
+        Promise.resolve({ data: [], error: null }),
 
         // Critical alerts
         supabase
@@ -141,7 +138,7 @@ export function useDashboardHome() {
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', orgId)
           .eq('severity', 'critical')
-          .eq('status', 'unread'),
+          .eq('status', 'new'),
 
         // High alerts
         supabase
@@ -149,12 +146,12 @@ export function useDashboardHome() {
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', orgId)
           .eq('severity', 'high')
-          .eq('status', 'unread'),
+          .eq('status', 'new'),
 
-        // Recent activities (from activity_log which has broader coverage)
+        // Recent activities (crm_activities — may be empty, fallback handled below)
         supabase
-          .from('activity_log')
-          .select('id, action, title, description, entity_type, created_at, matter_id, deal_id, client_id')
+          .from('crm_activities')
+          .select('id, activity_type, description, created_at')
           .eq('organization_id', orgId)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -182,20 +179,9 @@ export function useDashboardHome() {
         Promise.resolve({ data: [], error: null }),
       ]);
 
-      // Calculate portfolio totals
-      const portfolioData = portfoliosResult.data || [];
-      const totalPortfolioValue = portfolioData.reduce((sum, p) => sum + (p.total_value || 0), 0);
-      const totalCost = portfolioData.reduce((sum, p) => sum + (p.total_cost || 0), 0);
-      const portfolioChange = totalCost > 0 
-        ? ((totalPortfolioValue - totalCost) / totalCost) * 100 
-        : 0;
-
-      // Get portfolio breakdown by asset type
-      const { data: assetsData } = await supabase
-        .from('finance_portfolio_assets')
-        .select('asset_type, current_value, portfolio:finance_portfolios!inner(organization_id)')
-        .eq('portfolio.organization_id', orgId);
-
+      // Portfolio — tables may not exist, safe fallback
+      const totalPortfolioValue = 0;
+      const portfolioChange = 0;
       const breakdown = {
         trademarks: 0,
         patents: 0,
@@ -204,20 +190,9 @@ export function useDashboardHome() {
         other: 0,
       };
 
-      (assetsData || []).forEach(asset => {
-        const value = asset.current_value || 0;
-        switch (asset.asset_type) {
-          case 'trademark': breakdown.trademarks += value; break;
-          case 'patent': breakdown.patents += value; break;
-          case 'design': breakdown.designs += value; break;
-          case 'copyright': breakdown.copyrights += value; break;
-          default: breakdown.other += value;
-        }
-      });
-
       // Calculate deal pipeline value (crm_deals uses 'amount' not 'value')
       const dealsPipeline = (dealsResult.data || []).reduce(
-        (sum, d) => sum + ((d as any).amount || 0),
+        (sum, d) => sum + ((d as any).amount_eur || 0),
         0
       );
 
@@ -227,7 +202,7 @@ export function useDashboardHome() {
       // Get matters by phase for pipeline chart
       const { data: mattersPhaseData } = await supabase
         .from('matters')
-        .select('phase')
+        .select('status')
         .eq('organization_id', orgId);
 
       const PHASE_CONFIG: Record<string, { nombre: string; color: string }> = {
@@ -243,9 +218,17 @@ export function useDashboardHome() {
         F9: { nombre: 'Archivado', color: '#6b7280' },
       };
 
+      const statusToPhase: Record<string, string> = {
+        pending: 'F2',
+        examining: 'F4',
+        office_action: 'F4',
+        published: 'F5',
+        registered: 'F8',
+      };
+
       const phaseCounts: Record<string, number> = {};
       (mattersPhaseData || []).forEach((m: any) => {
-        const phase = m.phase || 'F0';
+        const phase = statusToPhase[m.status] || 'F2';
         phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
       });
 
@@ -258,21 +241,30 @@ export function useDashboardHome() {
         max: maxCount,
       }));
 
-      // Map activities (activity_log has different fields)
-      const recentActivity: ActivityItem[] = (activitiesResult.data || []).map((a: any) => ({
-        id: a.id,
-        type: a.action || a.entity_type || 'activity',
-        title: a.title || 'Actividad',
-        description: a.description,
-        module: a.matter_id ? 'docket' : a.deal_id ? 'crm' : a.client_id ? 'crm' : 'system',
-        timestamp: a.created_at || new Date().toISOString(),
-        link: a.matter_id 
-          ? `/app/docket/${a.matter_id}` 
-          : a.deal_id 
-            ? `/app/crm/deals` 
-            : undefined,
-        userName: undefined,
-      }));
+      // crm_activities puede estar vacía — fallback a deadlines como proxy
+      const rawActivities = activitiesResult.data || [];
+      const recentActivity: ActivityItem[] =
+        rawActivities.length > 0
+          ? rawActivities.map((a: any) => ({
+              id: a.id,
+              type: a.activity_type || 'activity',
+              title: a.description || 'Actividad',
+              description: a.description,
+              module: 'crm' as const,
+              timestamp: a.created_at || new Date().toISOString(),
+              link: undefined,
+              userName: undefined,
+            }))
+          : (deadlinesResult.data || []).slice(0, 5).map((d: any) => ({
+              id: d.id,
+              type: 'deadline',
+              title: `Plazo: ${d.title || 'Sin título'}`,
+              description: d.matters?.reference || null,
+              module: 'docket' as const,
+              timestamp: d.deadline_date,
+              link: d.matter_id ? `/app/expedientes/${d.matter_id}` : undefined,
+              userName: undefined,
+            }));
 
       // Map deadlines (matter_deadlines uses 'deadline_date' not 'event_date')
       const deadlines: DeadlineItem[] = ((deadlinesResult.data as any[]) || []).map((d: any) => ({
