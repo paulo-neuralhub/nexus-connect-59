@@ -538,7 +538,7 @@ export default function Dashboard() {
               {/* KPI 2 — En riesgo */}
               <button
                 onClick={() => navigate('/app/deadlines')}
-                className="bg-white rounded-[14px] p-4 text-left shadow-[4px_4px_10px_#cdd1dc,-4px_-4px_10px_#ffffff] hover:shadow-[6px_6px(14px_#cdd1dc,-6px_-6px_14px_#ffffff] transition-all col-span-1"
+                className="bg-white rounded-[14px] p-4 text-left shadow-[4px_4px_10px_#cdd1dc,-4px_-4px_10px_#ffffff] hover:shadow-[6px_6px_14px_#cdd1dc,-6px_-6px_14px_#ffffff] transition-all col-span-1"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">En riesgo</span>
