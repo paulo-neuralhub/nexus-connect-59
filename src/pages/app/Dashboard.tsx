@@ -157,7 +157,7 @@ export default function Dashboard() {
 
         {/* Mini Calendar — 5/12 */}
         <div className="lg:col-span-5">
-          <MiniCalendar eventos={[]} />
+          <MiniCalendar deadlines={[]} />
         </div>
 
         {/* Plazos Próximos — 3/12 */}
@@ -174,7 +174,7 @@ export default function Dashboard() {
         {/* Facturación */}
         <FacturacionEvolucionChart
           data={facturacionData}
-          metricas={{ total: data?.dealsPipeline ?? 0, currency: 'EUR' }}
+          metricas={{ mes: '0€', trimestre: '0€', año: '0€' }}
         />
 
         {/* Pipeline por Fase */}
@@ -182,7 +182,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── RECENT ACTIVITY ────────────────────── */}
-      <RecentActivityFeed items={activityItems} />
+      <RecentActivityFeed actividades={activityItems} />
     </div>
   );
 }
