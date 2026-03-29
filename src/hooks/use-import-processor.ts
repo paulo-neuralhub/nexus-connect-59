@@ -66,7 +66,6 @@ export function useImportProcessor() {
           .insert({
             organization_id: orgId,
             source_type: fileExt === 'csv' ? 'csv' : 'excel',
-            entity_type: 'matters',
             status: 'pending',
             source_file_url: filePath,
             created_by: userId,

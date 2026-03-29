@@ -171,6 +171,18 @@ ${detected_columns.map(c => `- "${c}"`).join('\n')}
 
 Mapéalas a los campos de IP-NEXUS para la entidad "${entity_type}".
 
+Columnas típicas de sistemas PI como Anaqua, PatSnap o CPA Global suelen llamarse:
+- 'Mark Name', 'Brand', 'Trademark' → mark_name
+- 'App. Number', 'Application No', 'File No' → reference
+- 'Filing Date', 'Application Date' → filing_date
+- 'Reg. Date', 'Registration Date' → registration_date
+- 'Renewal Date', 'Expiry Date', 'Expiration' → expiry_date
+- 'Country', 'Territory', 'Jurisdiction' → jurisdiction
+- 'Class', 'Classes', 'Nice Classes', 'Goods' → nice_classes
+- 'Owner', 'Applicant', 'Holder' → applicant_name
+- 'Status', 'State', 'Stage' → status
+- 'Agent Ref', 'Our Ref', 'File Ref' → agent_reference
+
 Campos disponibles:
 ${fieldsList}
 
