@@ -330,9 +330,9 @@ export function ImportWizardModal({
             result={state.result}
             entityType={state.entityType}
             onClose={handleClose}
-            onNavigate={(path) => {
+             onNavigate={(path) => {
               handleClose()
-              navigate(path)
+              setTimeout(() => navigate(path), 100)
             }}
             onNewImport={() => setState(INITIAL_STATE)}
           />
