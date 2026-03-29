@@ -17,6 +17,7 @@ interface UrgentBadgeData {
   href?: string;
   ledColor: string;
   footerText: string;
+  footerColor: string;
 }
 
 interface UrgentBadgesProps {
@@ -47,6 +48,7 @@ export function UrgentBadges({
       href: '/app/expedientes?filter=urgent',
       ledColor: '#ef4444', // red-400
       footerText: 'Requieren atención inmediata',
+      footerColor: '#dc2626',
     },
     {
       id: 'alertas-spider',
@@ -55,8 +57,9 @@ export function UrgentBadges({
       sublabel: 'Conflictos detectados',
       value: alertasSpider,
       href: '/app/spider',
-      ledColor: '#fb923c', // orange-400
+      ledColor: '#fb923c',
       footerText: 'Similitudes críticas',
+      footerColor: '#fdba74',
     },
     {
       id: 'plazos-urgentes',
@@ -65,8 +68,9 @@ export function UrgentBadges({
       sublabel: 'Vencen en 7 días o menos',
       value: plazosUrgentesValue,
       href: '/app/expedientes?tab=plazos&filter=urgent',
-      ledColor: '#fbbf24', // amber-400
+      ledColor: '#fbbf24',
       footerText: 'Próximos a vencer',
+      footerColor: '#b45309',
     },
   ];
 
@@ -80,6 +84,7 @@ export function UrgentBadges({
       href: '/app/approvals',
       ledColor: '#F97316',
       footerText: 'Requieren tu aprobación',
+      footerColor: '#2563eb',
     });
   }
 
@@ -241,8 +246,8 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
         style={{ borderColor: 'rgba(0,0,0,0.04)' }}
       >
         <p 
-          className="text-[10px]"
-          style={{ color: '#94a3b8' }}
+          className="text-[10px] font-medium"
+          style={{ color: badge.footerColor }}
         >
           {badge.footerText}
         </p>
