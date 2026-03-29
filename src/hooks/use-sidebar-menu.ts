@@ -576,7 +576,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleIcon: "Wrench",
         moduleIconLucide: "Wrench",
         moduleColor: "#64748B",
-        moduleOrder: 6,
+        moduleOrder: 7,
         moduleCategory: "core",
         moduleExpanded: false,
         moduleMenuItems: [
