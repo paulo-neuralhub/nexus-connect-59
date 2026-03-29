@@ -24,14 +24,23 @@ export interface BillingAddon {
   max_per_org: number;
   is_contracted: boolean;
   annual_saving_eur: number;
+  adds_jurisdictions: number;
+  adds_matters: number;
+  adds_users: number;
 }
+
+export type AddonState = "active" | "available" | "incompatible" | "redundant";
 
 export interface OrgPlan {
   plan_code: string;
   plan_name: string;
   monthly_price_eur: number;
+  annual_price_eur: number;
   billing_cycle: string;
   is_in_trial: boolean;
+  max_jurisdictions: number;
+  max_matters: number;
+  max_users: number;
 }
 
 interface AddonStoreResult {
@@ -41,6 +50,7 @@ interface AddonStoreResult {
   isLoading: boolean;
   error: Error | null;
   getAddonsByCategory: (category: string) => BillingAddon[];
+  getAddonState: (addon: BillingAddon) => AddonState;
 }
 
 export function useAddonStore(): AddonStoreResult {
@@ -86,6 +96,41 @@ export function useAddonStore(): AddonStoreResult {
   const getAddonsByCategory = (category: string) =>
     addons.filter((a) => a.category === category);
 
+  const getAddonState = (addon: BillingAddon): AddonState => {
+    if (addon.is_contracted) return "active";
+    if (!addon.compatible_plan_codes.includes(orgPlan?.plan_code ?? "free")) return "incompatible";
+
+    // Jurisdictions redundant
+    if (addon.category === "jurisdiction_pack") {
+      const planHasUnlimitedJur = (orgPlan?.max_jurisdictions ?? 0) === -1;
+      const hasGlobalPack = activeAddons.some((a) => a.adds_jurisdictions === -1);
+      if (planHasUnlimitedJur || hasGlobalPack) return "redundant";
+    }
+
+    // Matters redundant
+    if (addon.adds_matters > 0) {
+      if ((orgPlan?.max_matters ?? 0) >= 999999) return "redundant";
+    }
+
+    // Users redundant
+    if (addon.adds_users > 0) {
+      if ((orgPlan?.max_users ?? 0) >= 999999) return "redundant";
+    }
+
+    // Intelligence hierarchy
+    const INTEL_RANK: Record<string, number> = {
+      iparadar_starter: 1,
+      iparadar_pro: 2,
+      iparadar_enterprise: 3,
+    };
+    if (INTEL_RANK[addon.code] !== undefined) {
+      const currentLevel = Math.max(0, ...activeAddons.map((a) => INTEL_RANK[a.code] ?? 0));
+      if (INTEL_RANK[addon.code] <= currentLevel) return "redundant";
+    }
+
+    return "available";
+  };
+
   return {
     addons,
     orgPlan,
@@ -93,6 +138,7 @@ export function useAddonStore(): AddonStoreResult {
     isLoading: query.isLoading,
     error: query.error as Error | null,
     getAddonsByCategory,
+    getAddonState,
   };
 }
 
@@ -109,10 +155,10 @@ async function fetchStoreData(
       .order("category")
       .order("sort_order"),
 
-    // B) Active addons for this org
+    // B) Active addons for this org (with billing_addons join)
     supabase
       .from("organization_addons")
-      .select("addon_code, status")
+      .select(`addon_code, status, billing_addons!inner(adds_jurisdictions, adds_matters, adds_users, category, code)`)
       .eq("organization_id", organizationId)
       .eq("status", "active"),
 
@@ -126,11 +172,17 @@ async function fetchStoreData(
       ? catalogResult.value.data
       : [];
 
-  // Parse active addon codes (safe fallback)
-  const activeAddonCodes: string[] =
+  // Parse active addon codes + enrichment data
+  const activeAddonRows: Array<{ addon_code: string; adds_jurisdictions: number; adds_matters: number; adds_users: number }> =
     activeResult.status === "fulfilled" && activeResult.value.data
-      ? activeResult.value.data.map((a: any) => a.addon_code)
+      ? activeResult.value.data.map((a: any) => ({
+          addon_code: a.addon_code,
+          adds_jurisdictions: (a.billing_addons as any)?.adds_jurisdictions ?? 0,
+          adds_matters: (a.billing_addons as any)?.adds_matters ?? 0,
+          adds_users: (a.billing_addons as any)?.adds_users ?? 0,
+        }))
       : [];
+  const activeAddonCodes = activeAddonRows.map((a) => a.addon_code);
 
   // Parse plan
   const orgPlan: OrgPlan | null =
@@ -142,6 +194,7 @@ async function fetchStoreData(
     const monthlyPrice = Number(row.price_monthly_eur) || 0;
     const annualPrice = Number(row.price_annual_eur) || 0;
     const annualSaving = (monthlyPrice - annualPrice) * 12;
+    const activeRow = activeAddonRows.find((a) => a.addon_code === row.code);
 
     return {
       code: row.code,
@@ -159,6 +212,9 @@ async function fetchStoreData(
       max_per_org: row.max_per_org ?? 1,
       is_contracted: isContracted,
       annual_saving_eur: annualSaving > 0 ? annualSaving : 0,
+      adds_jurisdictions: activeRow?.adds_jurisdictions ?? Number(row.adds_jurisdictions) ?? 0,
+      adds_matters: activeRow?.adds_matters ?? Number(row.adds_matters) ?? 0,
+      adds_users: activeRow?.adds_users ?? Number(row.adds_users) ?? 0,
     };
   });
 
@@ -180,7 +236,7 @@ async function fetchPlanInfo(organizationId: string): Promise<OrgPlan | null> {
     // Fetch plan details
     const { data: planDef } = await supabase
       .from("plan_definitions")
-      .select("code, name, monthly_price_eur, annual_price_eur")
+      .select("code, name, monthly_price_eur, annual_price_eur, max_jurisdictions, max_matters, max_users")
       .eq("code", planCode)
       .single();
 
@@ -188,16 +244,24 @@ async function fetchPlanInfo(organizationId: string): Promise<OrgPlan | null> {
       plan_code: planCode,
       plan_name: planDef?.name ?? planCode,
       monthly_price_eur: Number(planDef?.monthly_price_eur) ?? 0,
+      annual_price_eur: Number(planDef?.annual_price_eur) ?? 0,
       billing_cycle: billingCycle,
       is_in_trial: isInTrial,
+      max_jurisdictions: Number(planDef?.max_jurisdictions) ?? 0,
+      max_matters: Number(planDef?.max_matters) ?? 0,
+      max_users: Number(planDef?.max_users) ?? 0,
     };
   } catch {
     return {
       plan_code: "free",
       plan_name: "Free",
       monthly_price_eur: 0,
+      annual_price_eur: 0,
       billing_cycle: "monthly",
       is_in_trial: false,
+      max_jurisdictions: 1,
+      max_matters: 25,
+      max_users: 2,
     };
   }
 }
