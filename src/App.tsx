@@ -205,6 +205,7 @@ import ToolsPage from "./pages/app/tools";
 import BrandingSettingsPage from "./pages/app/settings/branding";
 import SSOSettingsPage from "./pages/app/settings/sso";
 import InstructionsPage from "./pages/app/instructions";
+import AddonStorePage from "./pages/app/store";
 import NotFound from "./pages/NotFound";
 import ServiceCatalogPage from "./pages/app/settings/ServiceCatalogPage";
 import ServicesPage from "./pages/app/settings/services";
@@ -670,6 +671,7 @@ const App = () => (
                 <Route path="ip-chain" element={<IPChainPage />} />
                 {/* DB Audit — Temporary admin page */}
                 <Route path="admin/audit" element={<RequireOwnerOrAdmin><DatabaseAuditPage /></RequireOwnerOrAdmin>} />
+                <Route path="store" element={<AddonStorePage />} />
                 <Route path="tools" element={<ToolsPage />} />
                 <Route path="tools/ocr" element={<Navigate to="/app/tools" replace />} />
                 <Route path="tools/comparador" element={<Navigate to="/app/tools" replace />} />
