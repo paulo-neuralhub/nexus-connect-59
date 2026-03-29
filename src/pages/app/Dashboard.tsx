@@ -123,11 +123,11 @@ export default function Dashboard() {
       {/* ── HEADER ─────────────────────────────── */}
       <DashboardWelcomeHeader plazosEstaSemana={plazosEstaSemana} />
 
-      {/* ── PENDING APPROVALS (compact) ─────────── */}
-      <PendingApprovalsWidget />
-
-      {/* ── BRIEFING CARD (includes critical alerts) ── */}
-      <BriefingCard criticalAlertsCount={criticalAlerts + highAlerts} />
+      {/* ── PENDING APPROVALS + BRIEFING (side by side) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <PendingApprovalsWidget />
+        <BriefingCard criticalAlertsCount={criticalAlerts + highAlerts} />
+      </div>
 
       {/* ── URGENT BADGES ──────────────────────── */}
       <UrgentBadges
