@@ -2,6 +2,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/organization-context'
 import { supabase } from '@/integrations/supabase/client'
+import {
+  FolderOpen, Clock, TrendingUp, Radar, Activity,
+  Sparkles, CheckCircle, ChevronRight, AlertTriangle
+} from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // ── Interfaces ────────────────────────────────────────
 
@@ -154,6 +159,43 @@ function groupDeadlines(deadlines: DashboardDeadline[]) {
   ]
 
   return groups.filter(g => g.items.length > 0)
+}
+
+// Saludo según hora del día
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Buenos días'
+  if (h < 20) return 'Buenas tardes'
+  return 'Buenas noches'
+}
+
+// Labels legibles para tipos de actividad
+const ACTIVITY_LABELS: Record<string, string> = {
+  deadline: 'Plazo actualizado',
+  task: 'Tarea creada',
+  document: 'Documento subido',
+  email: 'Email recibido',
+  note: 'Nota añadida',
+  stage_change: 'Cambio de etapa',
+  crm: 'Actividad CRM',
+}
+
+// Componente de número animado
+function AnimatedNumber({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    if (value === 0) { setDisplay(0); return }
+    const duration = 600
+    const start = performance.now()
+    const animate = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(eased * value))
+      if (progress < 1) requestAnimationFrame(animate)
+    }
+    requestAnimationFrame(animate)
+  }, [value])
+  return <>{display}</>
 }
 
 // ── Componente principal ──────────────────────────────
