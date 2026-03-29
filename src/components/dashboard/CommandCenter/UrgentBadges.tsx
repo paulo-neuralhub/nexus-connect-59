@@ -120,7 +120,7 @@ export function UrgentBadges({
         }
       `}</style>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
         {activeBadges.map((badge) => (
           <UrgentBadgeCard key={badge.id} badge={badge} />
         ))}
@@ -133,7 +133,7 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
   const content = (
     <div 
       className={cn(
-        "rounded-[14px] p-4 transition-all duration-300",
+        "rounded-xl p-2.5 transition-all duration-300",
         "border hover:scale-[1.01] cursor-pointer"
       )}
       style={{
@@ -141,20 +141,20 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
         borderColor: '#e2e8f0',
       }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-base">{badge.icon}</span>
+            <span className="text-sm">{badge.icon}</span>
             <span 
-              className="text-[13px] font-bold tracking-[0.15px]"
+              className="text-[11px] font-bold tracking-[0.15px]"
               style={{ color: '#0a2540' }}
             >
               {badge.label}
             </span>
           </div>
           <p 
-            className="text-[11px] mt-0.5"
+            className="text-[10px] mt-0.5"
             style={{ color: '#64748b' }}
           >
             {badge.sublabel}
@@ -182,9 +182,9 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
           <div
             className="relative flex items-center justify-center"
             style={{
-              width: 46,
-              height: 46,
-              borderRadius: 12,
+              width: 36,
+              height: 36,
+              borderRadius: 10,
               background: '#f1f4f9',
               boxShadow: `0 0 0 1px ${badge.ledColor}25, 6px 6px 14px #b5b9c4, -6px -6px 14px #ffffff, inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(0,0,0,0.06)`,
               border: `2px solid ${badge.ledColor}70`,
@@ -221,7 +221,7 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
             {/* Valor - más legible */}
             <span
               style={{
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: 700,
                 color: badge.ledColor,
                 position: 'relative',
@@ -237,7 +237,7 @@ function UrgentBadgeCard({ badge }: { badge: UrgentBadgeData }) {
       
       {/* Footer text */}
       <div 
-        className="mt-2 pt-2 border-t"
+        className="mt-1.5 pt-1.5 border-t"
         style={{ borderColor: 'rgba(0,0,0,0.04)' }}
       >
         <p 
