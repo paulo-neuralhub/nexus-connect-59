@@ -14103,12 +14103,15 @@ export type Database = {
       import_review_queue: {
         Row: {
           action: string | null
+          conflict_type: string | null
           created_at: string | null
           entity_type: string | null
           id: string
           import_id: string | null
+          import_job_id: string | null
           matched_record_id: string | null
           organization_id: string | null
+          proposed_data: Json | null
           raw_data: Json | null
           resolved_at: string | null
           resolved_by: string | null
@@ -14117,12 +14120,15 @@ export type Database = {
         }
         Insert: {
           action?: string | null
+          conflict_type?: string | null
           created_at?: string | null
           entity_type?: string | null
           id?: string
           import_id?: string | null
+          import_job_id?: string | null
           matched_record_id?: string | null
           organization_id?: string | null
+          proposed_data?: Json | null
           raw_data?: Json | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -14131,19 +14137,30 @@ export type Database = {
         }
         Update: {
           action?: string | null
+          conflict_type?: string | null
           created_at?: string | null
           entity_type?: string | null
           id?: string
           import_id?: string | null
+          import_job_id?: string | null
           matched_record_id?: string | null
           organization_id?: string | null
+          proposed_data?: Json | null
           raw_data?: Json | null
           resolved_at?: string | null
           resolved_by?: string | null
           review_reason?: string | null
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "import_review_queue_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       import_scraping_rules: {
         Row: {
