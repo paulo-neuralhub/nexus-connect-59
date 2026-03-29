@@ -4900,6 +4900,7 @@ export type Database = {
         Row: {
           adds_genius_queries_monthly: number | null
           adds_jurisdictions: number | null
+          adds_matters: number
           adds_spider_alerts_monthly: number | null
           adds_storage_gb: number | null
           adds_users: number | null
@@ -4908,23 +4909,33 @@ export type Database = {
           color_hex: string | null
           compatible_plan_codes: string[] | null
           created_at: string | null
+          description_en: string | null
           description_es: string | null
+          feature_flags_granted: Json
           icon_name: string | null
           id: string
           is_active: boolean | null
           is_standalone: boolean | null
           jurisdiction_codes: string[] | null
+          max_per_org: number
+          min_plan_tier: number
           module_code: string | null
           name_en: string
           name_es: string
+          price_annual_discount_pct: number
           price_annual_eur: number
           price_monthly_eur: number
+          region_code: string | null
           sort_order: number | null
+          stripe_price_id_annual: string | null
+          stripe_price_id_monthly: string | null
+          supports_annual: boolean
           updated_at: string | null
         }
         Insert: {
           adds_genius_queries_monthly?: number | null
           adds_jurisdictions?: number | null
+          adds_matters?: number
           adds_spider_alerts_monthly?: number | null
           adds_storage_gb?: number | null
           adds_users?: number | null
@@ -4933,23 +4944,33 @@ export type Database = {
           color_hex?: string | null
           compatible_plan_codes?: string[] | null
           created_at?: string | null
+          description_en?: string | null
           description_es?: string | null
+          feature_flags_granted?: Json
           icon_name?: string | null
           id?: string
           is_active?: boolean | null
           is_standalone?: boolean | null
           jurisdiction_codes?: string[] | null
+          max_per_org?: number
+          min_plan_tier?: number
           module_code?: string | null
           name_en: string
           name_es: string
+          price_annual_discount_pct?: number
           price_annual_eur?: number
           price_monthly_eur?: number
+          region_code?: string | null
           sort_order?: number | null
+          stripe_price_id_annual?: string | null
+          stripe_price_id_monthly?: string | null
+          supports_annual?: boolean
           updated_at?: string | null
         }
         Update: {
           adds_genius_queries_monthly?: number | null
           adds_jurisdictions?: number | null
+          adds_matters?: number
           adds_spider_alerts_monthly?: number | null
           adds_storage_gb?: number | null
           adds_users?: number | null
@@ -4958,18 +4979,27 @@ export type Database = {
           color_hex?: string | null
           compatible_plan_codes?: string[] | null
           created_at?: string | null
+          description_en?: string | null
           description_es?: string | null
+          feature_flags_granted?: Json
           icon_name?: string | null
           id?: string
           is_active?: boolean | null
           is_standalone?: boolean | null
           jurisdiction_codes?: string[] | null
+          max_per_org?: number
+          min_plan_tier?: number
           module_code?: string | null
           name_en?: string
           name_es?: string
+          price_annual_discount_pct?: number
           price_annual_eur?: number
           price_monthly_eur?: number
+          region_code?: string | null
           sort_order?: number | null
+          stripe_price_id_annual?: string | null
+          stripe_price_id_monthly?: string | null
+          supports_annual?: boolean
           updated_at?: string | null
         }
         Relationships: []
@@ -16087,6 +16117,112 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_permissions: {
+        Row: {
+          action: string
+          created_at: string
+          description_en: string | null
+          description_es: string | null
+          id: string
+          is_active: boolean
+          label_en: string
+          label_es: string
+          module: string
+          organization_id: string | null
+          risk_level: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          id?: string
+          is_active?: boolean
+          label_en: string
+          label_es: string
+          module: string
+          organization_id?: string | null
+          risk_level?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          id?: string
+          is_active?: boolean
+          label_en?: string
+          label_es?: string
+          module?: string
+          organization_id?: string | null
+          risk_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_roles: {
+        Row: {
+          code: string
+          color_hex: string | null
+          created_at: string
+          description_es: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          is_system: boolean
+          label_en: string
+          label_es: string
+          organization_id: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color_hex?: string | null
+          created_at?: string
+          description_es?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label_en: string
+          label_es: string
+          organization_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color_hex?: string | null
+          created_at?: string
+          description_es?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label_en?: string
+          label_es?: string
+          organization_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ip_trademark_searches: {
         Row: {
           created_at: string | null
@@ -21750,30 +21886,61 @@ export type Database = {
       }
       memberships: {
         Row: {
+          accepted_at: string | null
           created_at: string
+          custom_permissions: Json | null
           id: string
+          invited_at: string | null
+          invited_by: string | null
+          ip_role_id: string | null
+          is_primary_org: boolean | null
+          last_active_at: string | null
           organization_id: string
           role: string
+          status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
+          custom_permissions?: Json | null
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          ip_role_id?: string | null
+          is_primary_org?: boolean | null
+          last_active_at?: string | null
           organization_id: string
           role?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
+          custom_permissions?: Json | null
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          ip_role_id?: string | null
+          is_primary_org?: boolean | null
+          last_active_at?: string | null
           organization_id?: string
           role?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "memberships_ip_role_id_fkey"
+            columns: ["ip_role_id"]
+            isOneToOne: false
+            referencedRelation: "ip_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "memberships_organization_id_fkey"
             columns: ["organization_id"]
@@ -22913,6 +23080,78 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_addons: {
+        Row: {
+          addon_code: string
+          billing_cycle: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          id: string
+          metadata: Json
+          organization_id: string
+          price_eur_effective: number
+          quantity: number
+          status: string
+          stripe_subscription_item_id: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          addon_code: string
+          billing_cycle?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          price_eur_effective?: number
+          quantity?: number
+          status?: string
+          stripe_subscription_item_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          addon_code?: string
+          billing_cycle?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          price_eur_effective?: number
+          quantity?: number
+          status?: string
+          stripe_subscription_item_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_addons_addon_code_fkey"
+            columns: ["addon_code"]
+            isOneToOne: false
+            referencedRelation: "billing_addons"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "organization_addons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_routing_rules: {
         Row: {
           auto_assign_leads: boolean | null
@@ -23373,6 +23612,7 @@ export type Database = {
           included_modules: string[] | null
           is_active: boolean | null
           is_public: boolean | null
+          max_addons: number
           max_contacts: number | null
           max_genius_queries_monthly: number | null
           max_jurisdictions: number | null
@@ -23384,7 +23624,11 @@ export type Database = {
           name: string
           portal_clients_limit: number | null
           sort_order: number | null
+          stripe_price_id_annual: string | null
+          stripe_price_id_monthly: string | null
+          target_segment: string | null
           tier: number | null
+          trial_days: number
           updated_at: string | null
         }
         Insert: {
@@ -23411,6 +23655,7 @@ export type Database = {
           included_modules?: string[] | null
           is_active?: boolean | null
           is_public?: boolean | null
+          max_addons?: number
           max_contacts?: number | null
           max_genius_queries_monthly?: number | null
           max_jurisdictions?: number | null
@@ -23422,7 +23667,11 @@ export type Database = {
           name: string
           portal_clients_limit?: number | null
           sort_order?: number | null
+          stripe_price_id_annual?: string | null
+          stripe_price_id_monthly?: string | null
+          target_segment?: string | null
           tier?: number | null
+          trial_days?: number
           updated_at?: string | null
         }
         Update: {
@@ -23449,6 +23698,7 @@ export type Database = {
           included_modules?: string[] | null
           is_active?: boolean | null
           is_public?: boolean | null
+          max_addons?: number
           max_contacts?: number | null
           max_genius_queries_monthly?: number | null
           max_jurisdictions?: number | null
@@ -23460,7 +23710,11 @@ export type Database = {
           name?: string
           portal_clients_limit?: number | null
           sort_order?: number | null
+          stripe_price_id_annual?: string | null
+          stripe_price_id_monthly?: string | null
+          target_segment?: string | null
           tier?: number | null
+          trial_days?: number
           updated_at?: string | null
         }
         Relationships: []
@@ -26194,30 +26448,60 @@ export type Database = {
           actions: string[] | null
           conditions: Json | null
           created_at: string
+          granted_by: string | null
           id: string
+          ip_role_id: string | null
+          is_custom: boolean | null
+          organization_id: string | null
           resource: string
           role_id: string | null
           scope: string
+          updated_at: string | null
         }
         Insert: {
           actions?: string[] | null
           conditions?: Json | null
           created_at?: string
+          granted_by?: string | null
           id?: string
+          ip_role_id?: string | null
+          is_custom?: boolean | null
+          organization_id?: string | null
           resource: string
           role_id?: string | null
           scope: string
+          updated_at?: string | null
         }
         Update: {
           actions?: string[] | null
           conditions?: Json | null
           created_at?: string
+          granted_by?: string | null
           id?: string
+          ip_role_id?: string | null
+          is_custom?: boolean | null
+          organization_id?: string | null
           resource?: string
           role_id?: string | null
           scope?: string
+          updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_ip_role_id_fkey"
+            columns: ["ip_role_id"]
+            isOneToOne: false
+            referencedRelation: "ip_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_reports: {
         Row: {
@@ -28991,6 +29275,27 @@ export type Database = {
           },
         ]
       }
+      system_config: {
+        Row: {
+          created_at: string | null
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           created_at: string | null
@@ -30829,6 +31134,10 @@ export type Database = {
         Args: { p_approval_id: string; p_notes?: string; p_user_id: string }
         Returns: Json
       }
+      assign_role_permissions: {
+        Args: { p_actions: string[]; p_module: string; p_role_code: string }
+        Returns: undefined
+      }
       calculate_daily_metrics: {
         Args: { p_date?: string; p_org_id: string }
         Returns: undefined
@@ -30859,8 +31168,18 @@ export type Database = {
         }
         Returns: Json
       }
+      check_permission: {
+        Args: {
+          p_action: string
+          p_module: string
+          p_org_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       cleanup_expired_memories: { Args: never; Returns: undefined }
       delete_user_ai_data: { Args: { p_user_id: string }; Returns: undefined }
+      expire_overdue_addons: { Args: never; Returns: number }
       expire_pending_approvals: { Args: never; Returns: number }
       generate_journal_entry_for_invoice: {
         Args: { p_invoice_id: string }
@@ -30931,8 +31250,13 @@ export type Database = {
         }
         Returns: string
       }
+      get_org_entitlements: { Args: { p_org_id: string }; Returns: Json }
       get_user_account_ids: { Args: never; Returns: string[] }
       get_user_org_id: { Args: never; Returns: string }
+      get_user_permissions: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: Json
+      }
       get_user_role: { Args: never; Returns: string }
       has_role: {
         Args: {
