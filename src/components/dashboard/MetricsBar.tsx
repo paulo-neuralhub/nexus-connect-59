@@ -164,7 +164,7 @@ export function useDashboardMetrics() {
         fromTable('matters')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', organizationId)
-          .eq('status', 'active'),
+          .not('status', 'in', '("archived","cancelled")'),
         
         // Deadlines today
         fromTable('matter_deadlines')
@@ -186,7 +186,7 @@ export function useDashboardMetrics() {
           .eq('organization_id', organizationId),
         
         // Active watchlists
-        fromTable('watchlists')
+        fromTable('spider_watches')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', organizationId)
           .eq('is_active', true),
@@ -195,7 +195,7 @@ export function useDashboardMetrics() {
         fromTable('spider_alerts')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', organizationId)
-          .eq('status', 'unread'),
+          .eq('status', 'new'),
         
         // Month invoices total
         fromTable('invoices')
