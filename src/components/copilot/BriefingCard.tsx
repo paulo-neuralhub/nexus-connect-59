@@ -34,7 +34,13 @@ export function BriefingCard({ criticalAlertsCount = 0 }: BriefingCardProps) {
   if (!hasBriefing || dismissed || !briefing?.content_json) return null;
 
   const items = briefing.content_json.items || [];
-  const displayItems = items.slice(0, 3);
+  const displayItems = items
+    .filter((item: any) =>
+      item.type !== 'invoice' &&
+      item.type !== 'finance' &&
+      item.category !== 'finance'
+    )
+    .slice(0, 3);
   const firstName = profile?.full_name?.split(' ')[0] || 'usuario';
 
   // Determine greeting
