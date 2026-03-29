@@ -40,14 +40,13 @@ import { cn } from '@/lib/utils';
  
    return (
      <div 
-       className="rounded-[14px] border border-black/[0.06] p-[18px] h-full"
-       style={{ background: '#f1f4f9' }}
-     >
-       <h3 
-         className="text-[13px] font-bold tracking-[0.15px] mb-4"
-         style={{ color: '#0a2540' }}
-       >
-         Expedientes por Tipo
+        className="rounded-[14px] border border-slate-200 p-[18px] h-full bg-white"
+      >
+        <h3 
+          className="text-[13px] font-bold tracking-[0.15px] mb-4"
+          style={{ color: '#0a2540' }}
+        >
+          Expedientes por Tipo
        </h3>
  
        {hasData ? (
@@ -138,14 +137,13 @@ import { cn } from '@/lib/utils';
  
    return (
      <div 
-       className="rounded-[14px] border border-black/[0.06] p-[18px] h-full"
-       style={{ background: '#f1f4f9' }}
-     >
-       <h3 
-         className="text-[13px] font-bold tracking-[0.15px] mb-4"
-         style={{ color: '#0a2540' }}
-       >
-         Facturación 2026
+        className="rounded-[14px] border border-slate-200 p-[18px] h-full bg-white"
+      >
+        <h3 
+          className="text-[13px] font-bold tracking-[0.15px] mb-4"
+          style={{ color: '#0a2540' }}
+        >
+          Facturación 2026
        </h3>
  
        {hasData ? (
@@ -250,8 +248,7 @@ export function PipelineChart({ data }: PipelineChartProps) {
 
   return (
     <div 
-      className="rounded-[14px] border border-black/[0.06] p-[18px] h-full"
-      style={{ background: '#f1f4f9' }}
+       className="rounded-[14px] border border-slate-200 p-[18px] h-full bg-white"
     >
       <h3 
         className="text-[13px] font-bold tracking-[0.15px] mb-4"

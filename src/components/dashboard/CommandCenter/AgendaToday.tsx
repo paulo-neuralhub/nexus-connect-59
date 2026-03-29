@@ -32,8 +32,7 @@
  export function AgendaToday({ eventos }: AgendaTodayProps) {
    return (
      <div 
-       className="rounded-[14px] border border-black/[0.06] h-full flex flex-col"
-       style={{ background: '#f1f4f9' }}
+        className="rounded-[14px] border border-slate-200 h-full flex flex-col bg-white"
      >
        {/* Header */}
        <div className="flex items-center justify-between px-[18px] pt-[18px] pb-3">

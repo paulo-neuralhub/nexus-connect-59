@@ -2,7 +2,7 @@
 // BriefingCard — Dashboard card showing today's CoPilot briefing
 // ============================================================
 
-import { X, ChevronRight, Compass, Sparkles } from 'lucide-react';
+import { X, ChevronRight, Compass, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,11 @@ function PriorityIcon({ type, priority }: { type: string; priority: string }) {
   return <span className="text-sm">{iconMap[priority] || iconMap[type] || '📋'}</span>;
 }
 
-export function BriefingCard() {
+interface BriefingCardProps {
+  criticalAlertsCount?: number;
+}
+
+export function BriefingCard({ criticalAlertsCount = 0 }: BriefingCardProps) {
   const {
     briefing, hasBriefing, isPro, name, urgentCount,
     markBriefingRead, dismissBriefing, setPanelState,
@@ -83,6 +87,20 @@ export function BriefingCard() {
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+
+        {/* Critical alerts inline */}
+        {criticalAlertsCount > 0 && (
+          <button
+            onClick={() => navigate('/app/spider?severity=critical')}
+            className="flex items-center gap-2 w-full text-left text-sm py-1.5 px-2 rounded-md bg-destructive/10 hover:bg-destructive/15 transition-colors mb-2"
+          >
+            <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+            <span className="text-destructive font-medium text-xs">
+              {criticalAlertsCount} alerta{criticalAlertsCount > 1 ? 's' : ''} crítica{criticalAlertsCount > 1 ? 's' : ''} en vigilancias
+            </span>
+            <ChevronRight className="h-3 w-3 text-destructive ml-auto" />
+          </button>
+        )}
 
         {/* Items */}
         <div className="space-y-1.5 mb-3">

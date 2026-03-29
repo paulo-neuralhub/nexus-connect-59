@@ -8,7 +8,7 @@ import { useDashboardMetrics } from '@/components/dashboard/MetricsBar';
 import { DashboardWelcomeHeader } from '@/components/dashboard/DashboardWelcomeHeader';
 import { PendingApprovalsWidget } from '@/components/dashboard/PendingApprovalsWidget';
 import { BriefingCard } from '@/components/copilot/BriefingCard';
-import { CriticalAlertsBanner } from '@/components/dashboard/critical-alerts-banner';
+
 import {
   UrgentBadges,
   OperationalKPIs,
@@ -123,14 +123,11 @@ export default function Dashboard() {
       {/* ── HEADER ─────────────────────────────── */}
       <DashboardWelcomeHeader plazosEstaSemana={plazosEstaSemana} />
 
-      {/* ── PENDING APPROVALS ──────────────────── */}
+      {/* ── PENDING APPROVALS (compact) ─────────── */}
       <PendingApprovalsWidget />
 
-      {/* ── BRIEFING CARD ──────────────────────── */}
-      <BriefingCard />
-
-      {/* ── CRITICAL ALERTS ────────────────────── */}
-      <CriticalAlertsBanner count={criticalAlerts + highAlerts} />
+      {/* ── BRIEFING CARD (includes critical alerts) ── */}
+      <BriefingCard criticalAlertsCount={criticalAlerts + highAlerts} />
 
       {/* ── URGENT BADGES ──────────────────────── */}
       <UrgentBadges

@@ -23,7 +23,7 @@ export function PendingApprovalsWidget() {
 
   return (
     <div
-      className="rounded-xl p-4 space-y-3"
+      className="rounded-xl py-2 px-3 space-y-1.5"
       style={{
         background: '#FFF7ED',
         border: '1px solid #FED7AA',
@@ -32,11 +32,11 @@ export function PendingApprovalsWidget() {
       }}
     >
       <div className="flex items-center gap-2">
-        <Zap className="h-5 w-5 text-orange-600" />
-        <h3 className="font-semibold text-sm">Pendiente de aprobación</h3>
+        <Zap className="h-4 w-4 text-orange-600" />
+        <h3 className="font-semibold text-xs">Pendiente de aprobación</h3>
       </div>
 
-      <div className="flex items-center gap-3 text-xs flex-wrap">
+      <div className="flex items-center gap-3 text-[10px] flex-wrap">
         {countsData.critical > 0 && (
           <span className="text-red-600 font-medium">🚨 {countsData.critical} crítico{countsData.critical > 1 ? 's' : ''}</span>
         )}
@@ -49,7 +49,7 @@ export function PendingApprovalsWidget() {
       </div>
 
       {topItem && (
-        <div className="rounded-lg bg-white/60 p-3 text-sm">
+        <div className="rounded-lg bg-white/60 p-2 text-xs">
           <p className="font-medium truncate">{topItem.title}</p>
           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
             {topItem.created_at && (
