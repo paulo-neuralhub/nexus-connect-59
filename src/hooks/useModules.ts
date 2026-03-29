@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization as useOrganizationContext } from '@/contexts/organization-context';
+import { useAuth } from '@/contexts/auth-context';
 import { useCallback, useMemo, useContext } from 'react';
 import { toast } from 'sonner';
 import type {
