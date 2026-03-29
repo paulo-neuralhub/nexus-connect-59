@@ -141,7 +141,7 @@ export function DynamicSidebar({
   const { data: briefingUrgent = 0 } = useBriefingBadge();
 
   // Expandir/contraer secciones
-  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "gestion", "operaciones"]));
+  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "hoy", "expedientes", "negocio", "operaciones"]));
   // Expandir/contraer módulos con sub-items
   const [expandedModules, setExpandedModules] = React.useState<Set<string>>(new Set(["docket"]));
 
