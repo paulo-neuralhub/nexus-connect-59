@@ -4,7 +4,7 @@ import { Globe, Shield, Eye, AlertTriangle } from 'lucide-react';
 
 export default function SpiderGlobalPage() {
   return (
-    <PageContainer title="Vigilancia Global" subtitle="Monitoreo global de marcas y propiedad intelectual">
+    <PageContainer>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="bg-white border border-slate-200">
           <CardContent className="pt-6 flex items-center gap-3">
