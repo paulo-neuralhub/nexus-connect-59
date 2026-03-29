@@ -186,7 +186,7 @@ export function useMattersV2(filters?: MatterV2Filters) {
       // Map legacy fields to V2 interface
       let query = supabase
         .from('matters')
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
+        .select('*')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
       
@@ -322,7 +322,7 @@ export function useMatterV2(id: string) {
       // Include client data via join
       const { data: m, error } = await supabase
         .from('matters')
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
+        .select('*')
         .eq('id', id)
         .eq('organization_id', currentOrganization!.id)
         .maybeSingle();
@@ -633,7 +633,7 @@ export function useCreateMatterV2() {
       const { data: matter, error } = await supabase
         .from('matters')
         .insert(insertData as any)
-        .select('*, client:contacts!matters_client_id_fkey(id, name, email, phone, mobile), crm_account:crm_accounts!matters_crm_account_id_fkey(id, name)')
+        .select('*')
         .single();
       
       if (error) {

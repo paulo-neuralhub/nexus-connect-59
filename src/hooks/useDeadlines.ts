@@ -87,8 +87,7 @@ export function useDeadlines(options: UseDeadlinesOptions = {}) {
             reference, 
             title, 
             type, 
-            jurisdiction,
-            client:contacts!matters_client_id_fkey(id, name)
+            jurisdiction
           )
         `)
         .eq('organization_id', currentOrganization.id)
