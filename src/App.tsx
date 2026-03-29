@@ -88,6 +88,7 @@ import SpiderAlertDetailPage from "./pages/app/spider/alerts/[id]";
 import SpiderIncidentView from "./pages/app/spider/incident";
 import SpiderBrandDashboard from "./pages/app/spider/dashboard";
 import SpiderLandingPage from "./pages/landing/SpiderLanding";
+import SpiderGlobalPage from "./pages/app/SpiderGlobalPage";
 import DocketLandingPage from "./pages/landing/DocketLanding";
 import NexusLandingPage from "./pages/landing/NexusLanding";
 import PricingPage from "./pages/pricing";
@@ -474,6 +475,7 @@ const App = () => (
                   <Route path="watchlists/:id" element={<WatchlistDetailPage />} />
                   <Route path="analyze" element={<AnalyzePage />} />
                 </Route>
+                <Route path="spider-global" element={<SpiderGlobalPage />} />
                 <Route path="crm" element={<CRMLayout />}>
                   <Route index element={<CRMDashboardNew />} />
                   <Route path="kanban" element={<CRMKanbanPageV2 />} />
