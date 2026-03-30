@@ -314,7 +314,7 @@ export function useInvoices(filters?: InvoiceFilters) {
         .from('invoices')
         .select(`
           *,
-          billing_client:billing_clients(id, legal_name)
+          billing_client:crm_accounts(id, name, legal_name)
         `)
         .eq('organization_id', currentOrganization!.id)
         .order('invoice_date', { ascending: false });
