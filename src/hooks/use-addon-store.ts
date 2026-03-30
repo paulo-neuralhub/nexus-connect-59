@@ -8,6 +8,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 
 // ── Types ──────────────────────────────────────────────
+export interface ModuleCatalog {
+  id: string;
+  module_code: string;
+  name_es: string;
+  name_en: string;
+  tagline_es: string | null;
+  tagline_en: string | null;
+  description_es: string | null;
+  description_en: string | null;
+  features_es: string[];
+  features_en: string[];
+  icon_name: string;
+  color_hex: string;
+  included_in_plans: string[];
+  is_featured: boolean;
+  sort_order: number;
+  price_from_eur: number | null;
+}
+
 export interface BillingAddon {
   code: string;
   name_es: string;
@@ -47,10 +66,14 @@ interface AddonStoreResult {
   addons: BillingAddon[];
   orgPlan: OrgPlan | null;
   activeAddons: BillingAddon[];
+  modules: ModuleCatalog[];
   isLoading: boolean;
   error: Error | null;
   getAddonsByCategory: (category: string) => BillingAddon[];
   getAddonState: (addon: BillingAddon) => AddonState;
+  getRedundancyReason: (addon: BillingAddon) => string | null;
+  isModuleIncluded: (moduleCode: string) => boolean;
+  getModuleAddons: (moduleCode: string) => BillingAddon[];
 }
 
 export function useAddonStore(): AddonStoreResult {
@@ -58,8 +81,8 @@ export function useAddonStore(): AddonStoreResult {
 
   const query = useQuery({
     queryKey: ["addon-store", user?.id],
-    queryFn: async (): Promise<{ addons: BillingAddon[]; orgPlan: OrgPlan | null }> => {
-      if (!user?.id) return { addons: [], orgPlan: null };
+    queryFn: async (): Promise<{ addons: BillingAddon[]; orgPlan: OrgPlan | null; modules: ModuleCatalog[] }> => {
+      if (!user?.id) return { addons: [], orgPlan: null, modules: [] };
 
       // 1. Get organizationId from memberships
       const { data: membership, error: memErr } = await supabase
@@ -78,7 +101,7 @@ export function useAddonStore(): AddonStoreResult {
           .single();
 
         if (!profile?.organization_id) {
-          return { addons: [], orgPlan: null };
+          return { addons: [], orgPlan: null, modules: [] };
         }
         return fetchStoreData(profile.organization_id);
       }
