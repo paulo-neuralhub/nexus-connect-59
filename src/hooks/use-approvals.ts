@@ -28,7 +28,7 @@ export interface PendingApproval {
   account_id: string | null;
   matter_id: string | null;
   account?: { id: string; name: string } | null;
-  matter?: { id: string; reference_number?: string; title?: string; type?: string } | null;
+  matter?: { id: string; reference?: string; title?: string; type?: string } | null;
 }
 
 export function usePendingApprovalsList(urgencyFilter?: string | null) {
