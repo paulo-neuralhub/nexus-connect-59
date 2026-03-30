@@ -788,11 +788,27 @@ export default function AddonStorePage() {
                                     onClick={() => { if (isAvailable && !isInCart) addToCart(addon); }}
                                   >
                                     {/* Badge estado top-right */}
-                                    <div className="absolute top-1.5 right-1.5">
+                                    <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
                                       {isActive && (
-                                        <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
-                                          <LucideDynamicIcon name="Check" size={8} color="white" />
-                                        </div>
+                                        <>
+                                          <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
+                                            <LucideDynamicIcon name="Check" size={8} color="white" />
+                                          </div>
+                                          <button
+                                            className="w-4 h-4 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors"
+                                            title="Cancelar add-on"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setCancelTarget({
+                                                code: addon.code,
+                                                name: addon.name_es,
+                                                periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                                              });
+                                            }}
+                                          >
+                                            <LucideDynamicIcon name="X" size={8} color="#EF4444" />
+                                          </button>
+                                        </>
                                       )}
                                       {isAvailable && !isInCart && (
                                         <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center hover:bg-green-100">
