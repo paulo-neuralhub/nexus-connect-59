@@ -474,6 +474,8 @@ export function DynamicSidebar({
       );
     }
 
+    // Sección colapsable con módulos
+    return (
       <div key={section.sectionCode} className="mb-1">
         {!collapsed && (
           <Collapsible open={isExpanded} onOpenChange={() => toggleSection(section.sectionCode)} className="silk-sidebar-collapsible">
