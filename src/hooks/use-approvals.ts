@@ -3,13 +3,14 @@
 // ============================================================
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fromTable, rpcFn } from '@/lib/supabase';
+import { fromTable } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/hooks/useOrganization';
 import { toast } from 'sonner';
 
 export interface PendingApproval {
   id: string;
+  organization_id: string;
   source_type: string;
   source_id: string | null;
   title: string;
@@ -86,18 +87,100 @@ export function useApprovalsCount() {
 export function useApproveItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ approvalId, userId, notes }: { approvalId: string; userId: string; notes?: string }) => {
-      const { data, error } = await rpcFn('approve_pending_item', {
-        p_approval_id: approvalId,
-        p_user_id: userId,
-        p_notes: notes || null,
-      });
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.error || 'Error al aprobar');
-      return data;
+    mutationFn: async ({ approval, userId }: { approval: PendingApproval; userId: string }) => {
+      // PASO 1 — Actualizar estado
+      const { error: updateError } = await fromTable('pending_approvals')
+        .update({
+          status: 'approved',
+          reviewed_by: userId,
+          reviewed_at: new Date().toISOString(),
+          review_notes: 'Aprobado desde panel de aprobaciones',
+        })
+        .eq('id', approval.id);
+      if (updateError) throw updateError;
+
+      // PASOS 2, 3, 4 — en paralelo
+      const cascadePromises: Promise<any>[] = [];
+
+      // PASO 2 — Crear tarea en expediente
+      if (approval.matter_id) {
+        cascadePromises.push(
+          fromTable('matter_tasks').insert({
+            organization_id: approval.organization_id,
+            matter_id: approval.matter_id,
+            title: approval.proposed_action ?? approval.title,
+            description: approval.ai_analysis ?? approval.summary,
+            status: 'pending',
+            priority: approval.urgency_level === 'critical' ? 'critical'
+              : approval.urgency_level === 'urgent' ? 'high' : 'medium',
+            assigned_to: userId,
+            due_date: approval.expires_at,
+            created_by: userId,
+          })
+        );
+      }
+
+      // PASO 3 — Timeline del expediente
+      if (approval.matter_id) {
+        cascadePromises.push(
+          fromTable('matter_timeline_events').insert({
+            organization_id: approval.organization_id,
+            matter_id: approval.matter_id,
+            event_type: 'approval',
+            title: 'Aprobado: ' + approval.title,
+            description: approval.proposed_action,
+            source_table: 'pending_approvals',
+            source_id: approval.id,
+            actor_id: userId,
+            actor_type: 'staff',
+            is_visible_in_portal: false,
+            created_by: userId,
+          })
+        );
+      }
+
+      // PASO 4 — Actividad del cliente
+      if (approval.account_id) {
+        cascadePromises.push(
+          (async () => {
+            // Obtener nombre de la cuenta
+            const { data: accountData } = await fromTable('crm_accounts')
+              .select('name')
+              .eq('id', approval.account_id)
+              .single();
+
+            let contactId: string | null = null;
+            if (accountData?.name) {
+              const { data: contact } = await fromTable('contacts')
+                .select('id')
+                .eq('organization_id', approval.organization_id)
+                .eq('company_name', accountData.name)
+                .limit(1)
+                .single();
+              contactId = contact?.id ?? null;
+            }
+
+            return fromTable('activities').insert({
+              organization_id: approval.organization_id,
+              type: 'task',
+              subject: 'Acción requerida: ' + approval.title,
+              content: approval.proposed_action,
+              contact_id: contactId,
+              is_completed: false,
+              created_by: userId,
+            });
+          })()
+        );
+      }
+
+      if (cascadePromises.length > 0) {
+        await Promise.allSettled(cascadePromises);
+      }
+
+      return { success: true };
     },
     onSuccess: () => {
-      toast.success('✅ Aprobado correctamente');
+      toast.success('Aprobado. Tarea creada en el expediente.');
       qc.invalidateQueries({ queryKey: ['pending-approvals-list'] });
       qc.invalidateQueries({ queryKey: ['approvals-count'] });
     },
@@ -110,19 +193,37 @@ export function useApproveItem() {
 export function useRejectItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ approvalId, userId, reason }: { approvalId: string; userId: string; reason?: string }) => {
+    mutationFn: async ({ approval, userId, reason }: { approval: PendingApproval; userId: string; reason: string }) => {
+      // PASO 1 — Actualizar estado
       const { error } = await fromTable('pending_approvals')
         .update({
           status: 'rejected',
           reviewed_by: userId,
           reviewed_at: new Date().toISOString(),
-          review_notes: reason || null,
+          review_notes: reason,
         })
-        .eq('id', approvalId);
+        .eq('id', approval.id);
       if (error) throw error;
+
+      // PASO 2 — Timeline del expediente
+      if (approval.matter_id) {
+        await fromTable('matter_timeline_events').insert({
+          organization_id: approval.organization_id,
+          matter_id: approval.matter_id,
+          event_type: 'rejection',
+          title: 'Rechazado: ' + approval.title,
+          description: reason,
+          source_table: 'pending_approvals',
+          source_id: approval.id,
+          actor_id: userId,
+          actor_type: 'staff',
+          is_visible_in_portal: false,
+          created_by: userId,
+        });
+      }
     },
     onSuccess: () => {
-      toast.success('Rechazado');
+      toast.error('Solicitud rechazada.');
       qc.invalidateQueries({ queryKey: ['pending-approvals-list'] });
       qc.invalidateQueries({ queryKey: ['approvals-count'] });
     },
