@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { LucideDynamicIcon } from "@/components/ui/lucide-dynamic-icon";
 import { useAddonStore, type BillingAddon } from "@/hooks/use-addon-store";
+import { useOrganization } from "@/contexts/organization-context";
 import { cn } from "@/lib/utils";
 
 // ── Static Data ─────────────────────────────────────────
