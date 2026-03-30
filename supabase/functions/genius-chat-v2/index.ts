@@ -229,6 +229,14 @@ Deno.serve(async (req) => {
       orgRegion, orgCountryCodes = [],
     } = await req.json()
 
+    // Validate message is not empty
+    if (!message || typeof message !== 'string' || message.trim() === '') {
+      return new Response(
+        JSON.stringify({ error: 'Message is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...CORS } },
+      )
+    }
+
     // 3. Classify query type
     const queryType = await classifyQuery(message)
 
