@@ -391,7 +391,7 @@ Deno.serve(async (req) => {
     const llmMessages = [
       ...history
         .slice(-20)
-        .filter((h: any) => h.content && typeof h.content === 'string' && h.content.trim() !== '')
+        .filter((h: any) => h && h.role && h.content && typeof h.content === 'string' && h.content.trim() !== '')
         .map((h: any) => ({
           role: h.role as 'user' | 'assistant',
           content: h.content,
