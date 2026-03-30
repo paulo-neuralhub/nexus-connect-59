@@ -132,7 +132,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         trialEndsAt: null,
       },
       {
-        moduleCode: "plazos",
+        moduleCode: "deadlines",
         moduleName: "Plazos",
         moduleShortName: "Plazos",
         moduleIcon: "CalendarClock",
@@ -141,9 +141,7 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleOrder: 2,
         moduleCategory: "core",
         moduleExpanded: false,
-        moduleMenuItems: [
-          { label: "Plazos", path: "/app/deadlines", icon: "CalendarClock" },
-        ],
+        moduleMenuItems: [],
         moduleRequires: [],
         modulePopular: false,
         moduleComingSoon: false,
