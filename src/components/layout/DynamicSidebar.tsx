@@ -151,8 +151,9 @@ export function DynamicSidebar({
     if (!sections) return;
     sections.forEach(section => {
       section.modules.forEach(mod => {
-        if (mod.moduleMenuItems.length > 0) {
-          const isModActive = mod.moduleMenuItems.some(item => isPathActive(item.path));
+        const modMainPath = ({ docket: '/app/expedientes', deadlines: '/app/deadlines' } as Record<string,string>)[mod.moduleCode] || mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
+        if (mod.moduleMenuItems.length > 0 || modMainPath) {
+          const isModActive = isPathActive(modMainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
           if (isModActive) {
             setExpandedModules(prev => {
               if (prev.has(mod.moduleCode)) return prev;
