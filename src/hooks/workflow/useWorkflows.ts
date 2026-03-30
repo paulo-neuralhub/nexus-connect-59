@@ -18,7 +18,7 @@ export function useWorkflowTemplates(options?: { category?: string; isActive?: b
       if (!currentOrganization?.id) return [];
       
       let query = supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .select('*')
         .or(`organization_id.eq.${currentOrganization.id},organization_id.is.null`)
         .order('created_at', { ascending: false });
@@ -47,7 +47,7 @@ export function useWorkflowTemplate(id: string | undefined) {
       if (!id) return null;
       
       const { data, error } = await supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .select('*')
         .eq('id', id)
         .single();
@@ -69,7 +69,7 @@ export function useCreateWorkflowTemplate() {
       if (!currentOrganization?.id) throw new Error('No organization selected');
       
       const { data, error } = await supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .insert({
           ...template,
           organization_id: currentOrganization.id,
@@ -97,7 +97,7 @@ export function useUpdateWorkflowTemplate() {
   return useMutation({
     mutationFn: async ({ id, ...updates }: any) => {
       const { data, error } = await supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .update(updates)
         .eq('id', id)
         .select()
@@ -123,7 +123,7 @@ export function useDeleteWorkflowTemplate() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .delete()
         .eq('id', id);
       
@@ -145,7 +145,7 @@ export function useToggleWorkflowActive() {
   return useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
       const { error } = await supabase
-        .from('workflow_templates')
+        .from('workflow_definitions')
         .update({ is_active: isActive })
         .eq('id', id);
       
@@ -178,7 +178,7 @@ export function useWorkflowExecutions(options?: {
         .from('workflow_executions')
         .select(`
           *,
-          workflow:workflow_templates(id, name, code, category)
+          workflow:workflow_definitions(id, name, code, category)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false });
@@ -215,7 +215,7 @@ export function useWorkflowExecution(id: string | undefined) {
         .from('workflow_executions')
         .select(`
           *,
-          workflow:workflow_templates(*)
+          workflow:workflow_definitions(*)
         `)
         .eq('id', id)
         .single();
@@ -263,7 +263,7 @@ export function useWorkflowQueue(options?: { status?: string }) {
         .from('workflow_queue')
         .select(`
           *,
-          workflow:workflow_templates(id, name, code)
+          workflow:workflow_definitions(id, name, code)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('priority', { ascending: true })
