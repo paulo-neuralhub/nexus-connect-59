@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
 import { useOrganization } from "@/contexts/organization-context";
 import { useSidebarMenu, type SidebarModule, type SidebarSection } from "@/hooks/use-sidebar-menu";
@@ -129,6 +129,7 @@ export function DynamicSidebar({
   onNavigate,
 }: DynamicSidebarProps) {
   const location = useLocation();
+  const navTo = useNavigate();
   const { profile, signOut } = useAuth();
   const { currentOrganization, memberships, setCurrentOrganization } = useOrganization();
   const { data: sections, isLoading } = useSidebarMenu();
@@ -303,6 +304,12 @@ export function DynamicSidebar({
           <CollapsibleTrigger asChild>
             <button
               type="button"
+              onClick={(e) => {
+                if (mainPath) {
+                  navTo(mainPath);
+                  onNavigate?.();
+                }
+              }}
               className={cn(
                 // SILK: Item con tongue connector si activo
                 "w-full flex items-center gap-3 text-[13px] transition-colors relative",

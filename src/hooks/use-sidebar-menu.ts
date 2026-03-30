@@ -122,10 +122,6 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleCategory: "core",
         moduleExpanded: false,
         moduleMenuItems: [
-          { label: "Todos", path: "/app/expedientes", icon: "List" },
-          { label: "Marcas", path: "/app/expedientes?tipo=marca", icon: "Tag" },
-          { label: "Patentes", path: "/app/expedientes?tipo=patente", icon: "Lightbulb" },
-          { label: "Diseños", path: "/app/expedientes?tipo=diseno", icon: "Palette" },
           { label: "Nuevo expediente", path: "/app/expedientes/nuevo", icon: "Plus" },
         ],
         moduleRequires: [],
