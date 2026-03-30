@@ -741,8 +741,11 @@ export default function AddonStorePage() {
                       ))}
                     </div>
 
+                    {/* Spacer flexible */}
+                    <div className="flex-1" />
+
                     {/* Límites de tu plan */}
-                    <div className="border-t border-gray-100 mt-auto pt-3">
+                    <div className="border-t border-gray-100 pt-4 mt-4">
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Límites de tu plan</p>
                       <div className="flex flex-col gap-0.5">
                         {[
@@ -751,7 +754,7 @@ export default function AddonStorePage() {
                           { icon: "Globe", label: "Jurisdicciones", value: (orgPlan?.max_jurisdictions ?? 0) === -1 || (orgPlan?.max_jurisdictions ?? 0) >= 999999 ? "Ilimitadas" : String(orgPlan?.max_jurisdictions ?? "—") },
                           { icon: "HardDrive", label: "Almacenamiento", value: "500 GB" },
                           { icon: "Bot", label: "Consultas IA/mes", value: "Ilimitadas" },
-                          { icon: "Calendar", label: "Próxima facturación", value: (orgPlan as any)?.current_period_end ? new Date((orgPlan as any).current_period_end).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "—" },
+                          { icon: "Calendar", label: "Próxima facturación", value: nextBillingDate },
                         ].map((item) => (
                           <div key={item.label} className="flex justify-between items-center py-1">
                             <div className="flex items-center gap-1.5">
