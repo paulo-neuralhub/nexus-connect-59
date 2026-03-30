@@ -113,8 +113,8 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
     modules: [
       {
         moduleCode: "docket",
-        moduleName: "Portfolio",
-        moduleShortName: "Portfolio",
+        moduleName: "Expedientes",
+        moduleShortName: "Expedientes",
         moduleIcon: "FolderOpen",
         moduleIconLucide: "FolderOpen",
         moduleColor: "#0EA5E9",
