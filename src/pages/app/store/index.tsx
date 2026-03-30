@@ -201,11 +201,98 @@ export default function AddonStorePage() {
   const removeFromCart = (code: string) => {
     setCart((prev) => prev.filter((a) => a.code !== code));
   };
+  const clearCart = () => setCart([]);
   const cartCodes = useMemo(() => new Set(cart.map((a) => a.code)), [cart]);
   const cartTotal = useMemo(
     () => cart.reduce((sum, a) => sum + (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur), 0),
     [cart, billingCycle]
   );
+
+  // ── Stripe return detection ──────────────────────────
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (!payment) return;
+
+    if (payment === "success") {
+      toast.success("¡Pago completado! Tus add-ons ya están activos.", { duration: 5000 });
+      clearCart();
+    } else if (payment === "cancelled") {
+      toast.info("Pago cancelado. Tu carrito sigue disponible.", { duration: 4000 });
+    }
+
+    const timer = setTimeout(() => {
+      navigate("/app/store", { replace: true });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [searchParams]);
+
+  // ── Checkout handler ─────────────────────────────────
+  const handleCheckout = async () => {
+    if (!cart.length || isCheckingOut) return;
+    setCheckoutConfirmOpen(false);
+    setIsCheckingOut(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error("Sesión expirada. Inicia sesión de nuevo.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("stripe-checkout", {
+        body: {
+          organization_id: orgPlan?.organization_id,
+          addon_codes: cart.map((a) => a.code),
+          billing_cycle: billingCycle,
+          success_url: `${window.location.origin}/app/store?payment=success`,
+          cancel_url: `${window.location.origin}/app/store?payment=cancelled`,
+        },
+      });
+
+      if (error || !data?.checkout_url) {
+        toast.error("Error al procesar el pago. Inténtalo de nuevo.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      toast.error("Error al procesar el pago. Inténtalo de nuevo.");
+      setIsCheckingOut(false);
+    }
+  };
+
+  // ── Cancel addon handler ─────────────────────────────
+  const handleCancelAddon = async () => {
+    if (!cancelTarget || isCancelling) return;
+    setIsCancelling(true);
+
+    try {
+      const { error } = await supabase.rpc("schedule_addon_cancellation" as any, {
+        p_org_id: orgPlan?.organization_id,
+        p_addon_code: cancelTarget.code,
+        p_user_id: (await supabase.auth.getUser()).data.user?.id,
+      });
+
+      if (error) {
+        toast.error("Error al cancelar el add-on.");
+        setIsCancelling(false);
+        return;
+      }
+
+      toast.success(
+        `${cancelTarget.name} se cancelará el ${new Date(cancelTarget.periodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}.`
+      );
+      setCancelTarget(null);
+    } catch (err) {
+      toast.error("Error al cancelar el add-on.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Addon filtering — use getAddonState for counts
   const availableCount = (category: string) =>
