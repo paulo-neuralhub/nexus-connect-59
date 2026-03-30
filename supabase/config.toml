@@ -146,3 +146,6 @@ verify_jwt = false
 
 [functions.generate-morning-briefing]
 verify_jwt = false
+
+[functions.genius-chat-v2]
+verify_jwt = false
