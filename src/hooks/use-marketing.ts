@@ -276,13 +276,13 @@ export function useCampaigns(status?: string) {
       
       return (data || []).map(c => ({
         ...c,
-        json_content: parseJsonContent(c.json_content),
-        segment_conditions: parseFilterConditions(c.segment_conditions),
-        ab_test_config: c.ab_test_config as unknown as EmailCampaign['ab_test_config'],
-        owner_type: c.owner_type as 'tenant' | 'backoffice',
-        campaign_type: c.campaign_type as EmailCampaign['campaign_type'],
-        status: c.status as EmailCampaign['status'],
-      })) as EmailCampaign[];
+        // Map actual DB columns to interface fields used in UI
+        total_sent: c.sent_count || 0,
+        total_opened: c.open_count || 0,
+        total_clicked: c.click_count || 0,
+        campaign_type: c.campaign_type || c.campaign_subtype || 'regular',
+        subject: c.name,
+      })) as any[];
     },
     enabled: !!currentOrganization?.id,
   });
