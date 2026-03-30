@@ -1110,6 +1110,36 @@ export default function AddonStorePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ── CANCEL ADDON DIALOG ──────────────────────── */}
+      <AlertDialog open={cancelTarget !== null} onOpenChange={(open) => { if (!open) setCancelTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar add-on</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{cancelTarget?.name}</strong> permanecerá activo hasta el{" "}
+              <strong>
+                {cancelTarget?.periodEnd
+                  ? new Date(cancelTarget.periodEnd).toLocaleDateString("es-ES", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "—"}
+              </strong>
+              . Después se cancelará automáticamente y no se renovará.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCancelTarget(null)}>
+              Mantener add-on
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelAddon} disabled={isCancelling}>
+              {isCancelling ? "Procesando..." : "Sí, cancelar al fin del período"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
