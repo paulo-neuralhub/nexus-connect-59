@@ -60,16 +60,24 @@ async function classifyQuery(message: string): Promise<string> {
         messages: [
           {
             role: 'system',
-            content: `Classify the IP law query into exactly one type. Reply with only the type name, nothing else. Types: ${types.join(', ')}`,
+            content: `Classify into one: trademark_similarity, document_drafting, fee_lookup, jurisdiction_query, patent_analysis, quick_question, budget_estimate, prior_art_search. Reply with type only.`,
           },
-          { role: 'user', content: message.slice(0, 500) },
+          { role: 'user', content: message.slice(0, 200) },
         ],
       }),
     })
+    console.log('Groq classifier status:', res.status)
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error('Groq classifier error:', errText)
+      return 'trademark_similarity'
+    }
     const data = await res.json()
     const classified = data.choices?.[0]?.message?.content?.trim().toLowerCase()
+    console.log('Groq classified as:', classified)
     return types.includes(classified!) ? classified! : 'trademark_similarity'
-  } catch {
+  } catch (err) {
+    console.error('Groq classifier exception:', (err as Error).message)
     return 'trademark_similarity'
   }
 }
