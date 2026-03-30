@@ -134,9 +134,9 @@ export function useGeniusChat(agentType: AgentType) {
         id: `temp-assistant-${Date.now()}`,
         conversation_id: conversationId,
         role: 'assistant',
-        content: data.content,
-        actions_taken: data.actions,
-        sources: data.sources,
+        content: data.message ?? data.content ?? '',
+        actions_taken: data.actions ?? [],
+        sources: data.sources ?? [],
         response_time_ms: data.responseTimeMs,
         created_at: new Date().toISOString(),
       };
