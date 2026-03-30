@@ -37,6 +37,21 @@ console.log('OPENAI:', !!Deno.env.get('OPENAI_API_KEY'))
 
 // ── CLASIFICADOR DE TIPO DE CONSULTA ────────────────────────
 async function classifyQuery(message: string): Promise<string> {
+  // Detección rápida de mensajes cortos (saludos, preguntas simples)
+  const wordCount = message.trim().split(/\s+/).length
+  if (wordCount <= 5) return 'quick_question'
+
+  // Detección de keywords PI para bypass rápido
+  const msgLower = message.toLowerCase()
+  if (msgLower.includes('similar') || msgLower.includes('marca') || msgLower.includes('trademark') || msgLower.includes('confus')) return 'trademark_similarity'
+  if (msgLower.includes('redact') || msgLower.includes('escrit') || msgLower.includes('oposic') || msgLower.includes('draft') || msgLower.includes('carta') || msgLower.includes('letter')) return 'document_drafting'
+  if (msgLower.includes('tasa') || msgLower.includes('fee') || msgLower.includes('cost') || msgLower.includes('precio') || msgLower.includes('cuánto') || msgLower.includes('cuanto')) return 'fee_lookup'
+  if (msgLower.includes('patent') || msgLower.includes('patente') || msgLower.includes('invencion') || msgLower.includes('invención')) return 'patent_analysis'
+  if (msgLower.includes('anteriorid') || msgLower.includes('prior art') || msgLower.includes('búsqueda') || msgLower.includes('busqueda')) return 'prior_art_search'
+  if (msgLower.includes('presupuest') || msgLower.includes('budget') || msgLower.includes('cotizac')) return 'budget_estimate'
+  if (msgLower.includes('jurisdicc') || msgLower.includes('requisit') || msgLower.includes('plazo') || msgLower.includes('oficina')) return 'jurisdiction_query'
+
+  // Solo llama a Groq si no hay match rápido
   const apiKey = getApiKey('groq')
   if (!apiKey) return 'trademark_similarity'
 
