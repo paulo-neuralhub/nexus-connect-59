@@ -29,11 +29,11 @@ function getApiKey(provider: string): string | null {
   return Deno.env.get(secretName) || null
 }
 
-console.log('Available providers:', Object.entries(SECRET_MAP)
-  .filter(([_, secretName]) => !!Deno.env.get(secretName))
-  .map(([provider]) => provider)
-  .join(', ')
-)
+console.log('=== genius-chat-v2 boot ===')
+console.log('ANTHROPIC:', !!Deno.env.get('ANTHROPIC_API_KEY'))
+console.log('GROQ:', !!Deno.env.get('GROQ_API_KEY'))
+console.log('GEMINI:', !!Deno.env.get('GEMINI_API_KEY'))
+console.log('OPENAI:', !!Deno.env.get('OPENAI_API_KEY'))
 
 // ── CLASIFICADOR DE TIPO DE CONSULTA ────────────────────────
 async function classifyQuery(message: string): Promise<string> {
