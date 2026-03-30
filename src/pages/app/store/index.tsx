@@ -594,7 +594,7 @@ export default function AddonStorePage() {
                               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
                               <span className="text-xs text-slate-400">({groupAddons.filter((a) => getAddonState(a) === "active").length} activos)</span>
                             </div>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 gap-1.5">
                               {groupAddons.map((addon) => {
                                 const state = getAddonState(addon);
                                 const isActive = state === "active";
@@ -606,7 +606,7 @@ export default function AddonStorePage() {
                                   <div
                                     key={addon.code}
                                     className={cn(
-                                      "relative flex flex-col items-start gap-1.5 p-2.5 rounded-xl border transition-all duration-150",
+                                      "relative flex flex-col items-start gap-1.5 p-2 rounded-xl border transition-all duration-150",
                                       isAvailable && !isInCart ? "cursor-pointer hover:scale-[1.02]" : "cursor-default"
                                     )}
                                     style={{
