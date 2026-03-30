@@ -431,6 +431,8 @@ Deno.serve(async (req) => {
     let source = 'ai_brain'
     const startTime = Date.now()
 
+    console.log('queryType:', queryType, '| chain:', uniqueChain.map(p => p.provider + '/' + p.model).join(' → '))
+
     for (const candidate of uniqueChain) {
       const apiKey = getApiKey(candidate.provider)
       if (!apiKey) {
