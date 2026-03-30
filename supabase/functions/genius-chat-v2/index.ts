@@ -229,6 +229,14 @@ Deno.serve(async (req) => {
       orgRegion, orgCountryCodes = [],
     } = await req.json()
 
+    // Validate message is not empty
+    if (!message || typeof message !== 'string' || message.trim() === '') {
+      return new Response(
+        JSON.stringify({ error: 'Message is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...CORS } },
+      )
+    }
+
     // 3. Classify query type
     const queryType = await classifyQuery(message)
 
@@ -383,7 +391,7 @@ Deno.serve(async (req) => {
     const llmMessages = [
       ...history
         .slice(-20)
-        .filter((h: any) => h.content && typeof h.content === 'string' && h.content.trim() !== '')
+        .filter((h: any) => h && h.role && h.content && typeof h.content === 'string' && h.content.trim() !== '')
         .map((h: any) => ({
           role: h.role as 'user' | 'assistant',
           content: h.content,
