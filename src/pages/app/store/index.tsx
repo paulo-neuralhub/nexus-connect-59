@@ -588,7 +588,7 @@ export default function AddonStorePage() {
 
         {/* ═══ TAB 2: Módulos ═══════════════════════ */}
         <TabsContent value="modules">
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 flex flex-col gap-4">
             <p className="text-xs text-slate-500 mb-4">
               Módulos avanzados disponibles para tu plan. Haz clic en un add-on para añadirlo al carrito.
             </p>
@@ -612,7 +612,7 @@ export default function AddonStorePage() {
               return (
                 <div
                   key={module.module_code}
-                  className="bg-white rounded-[14px] p-5 border"
+                  className="w-full bg-white rounded-[14px] p-5 border"
                   style={{ boxShadow: SILK_SHADOW, borderColor: included ? color + "40" : "#E2E8F0" }}
                 >
                   <div className="flex items-start gap-4 flex-col md:flex-row">
