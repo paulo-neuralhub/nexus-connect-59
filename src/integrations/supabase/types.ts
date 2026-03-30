@@ -23150,8 +23150,11 @@ export type Database = {
         Row: {
           addon_code: string
           billing_cycle: string
+          cancel_at_period_end: boolean
           cancellation_reason: string | null
+          cancellation_scheduled_at: string | null
           cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string
@@ -23161,6 +23164,7 @@ export type Database = {
           price_eur_effective: number
           quantity: number
           status: string
+          stripe_subscription_id: string | null
           stripe_subscription_item_id: string | null
           trial_ends_at: string | null
           updated_at: string
@@ -23168,8 +23172,11 @@ export type Database = {
         Insert: {
           addon_code: string
           billing_cycle?: string
+          cancel_at_period_end?: boolean
           cancellation_reason?: string | null
+          cancellation_scheduled_at?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
@@ -23179,6 +23186,7 @@ export type Database = {
           price_eur_effective?: number
           quantity?: number
           status?: string
+          stripe_subscription_id?: string | null
           stripe_subscription_item_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
@@ -23186,8 +23194,11 @@ export type Database = {
         Update: {
           addon_code?: string
           billing_cycle?: string
+          cancel_at_period_end?: boolean
           cancellation_reason?: string | null
+          cancellation_scheduled_at?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string
@@ -23197,6 +23208,7 @@ export type Database = {
           price_eur_effective?: number
           quantity?: number
           status?: string
+          stripe_subscription_id?: string | null
           stripe_subscription_item_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
@@ -23318,6 +23330,8 @@ export type Database = {
           settings: Json | null
           slug: string | null
           status: string | null
+          stripe_customer_id: string | null
+          stripe_default_payment_method: string | null
           timezone: string | null
           updated_at: string | null
         }
@@ -23353,6 +23367,8 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           status?: string | null
+          stripe_customer_id?: string | null
+          stripe_default_payment_method?: string | null
           timezone?: string | null
           updated_at?: string | null
         }
@@ -23388,6 +23404,8 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           status?: string | null
+          stripe_customer_id?: string | null
+          stripe_default_payment_method?: string | null
           timezone?: string | null
           updated_at?: string | null
         }
@@ -28901,9 +28919,39 @@ export type Database = {
           },
         ]
       }
+      stripe_events: {
+        Row: {
+          created_at: string
+          data: Json | null
+          error: string | null
+          id: string
+          processed_at: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          error?: string | null
+          id: string
+          processed_at?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          error?: string | null
+          id?: string
+          processed_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           billing_cycle: string | null
+          cancel_at_period_end: boolean
+          cancellation_scheduled_at: string | null
+          cancelled_by: string | null
           created_at: string | null
           current_period_end: string
           current_period_start: string
@@ -28911,6 +28959,7 @@ export type Database = {
           organization_id: string
           plan_id: string
           status: string
+          stripe_customer_id: string | null
           stripe_subscription_id: string | null
           trial_end: string | null
           trial_start: string | null
@@ -28918,6 +28967,9 @@ export type Database = {
         }
         Insert: {
           billing_cycle?: string | null
+          cancel_at_period_end?: boolean
+          cancellation_scheduled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string | null
           current_period_end?: string
           current_period_start?: string
@@ -28925,6 +28977,7 @@ export type Database = {
           organization_id: string
           plan_id: string
           status?: string
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           trial_end?: string | null
           trial_start?: string | null
@@ -28932,6 +28985,9 @@ export type Database = {
         }
         Update: {
           billing_cycle?: string | null
+          cancel_at_period_end?: boolean
+          cancellation_scheduled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string | null
           current_period_end?: string
           current_period_start?: string
@@ -28939,6 +28995,7 @@ export type Database = {
           organization_id?: string
           plan_id?: string
           status?: string
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           trial_end?: string | null
           trial_start?: string | null
@@ -31191,6 +31248,19 @@ export type Database = {
       }
     }
     Functions: {
+      activate_addon_after_payment: {
+        Args: {
+          p_addon_code: string
+          p_billing_cycle: string
+          p_org_id: string
+          p_period_end: string
+          p_period_start: string
+          p_price_eur: number
+          p_stripe_subscription_id: string
+          p_stripe_subscription_item_id: string
+        }
+        Returns: undefined
+      }
       activate_spider_for_tenant: {
         Args: { p_activated_by?: string; p_org_id: string; p_plan?: string }
         Returns: string
@@ -31316,6 +31386,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_org_by_stripe_customer: {
+        Args: { p_customer_id: string }
+        Returns: string
+      }
       get_org_entitlements: { Args: { p_org_id: string }; Returns: Json }
       get_user_account_ids: { Args: never; Returns: string[] }
       get_user_org_id: { Args: never; Returns: string }
@@ -31355,6 +31429,10 @@ export type Database = {
       }
       refresh_agent_portfolio_analytics: { Args: never; Returns: undefined }
       reset_monthly_plan_counters: { Args: never; Returns: undefined }
+      schedule_addon_cancellation: {
+        Args: { p_addon_code: string; p_org_id: string; p_user_id: string }
+        Returns: Json
+      }
       slugify: { Args: { input_text: string }; Returns: string }
       sync_plan_to_genius_config: {
         Args: { p_plan_code: string }
