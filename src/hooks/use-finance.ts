@@ -343,7 +343,7 @@ export function useInvoice(id: string) {
         .from('invoices')
         .select(`
           *,
-          billing_client:billing_clients(*),
+          billing_client:crm_accounts(*),
           items:invoice_items(
             *,
             matter:matters(id, reference, title)
