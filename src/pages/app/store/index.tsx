@@ -518,23 +518,22 @@ export default function AddonStorePage() {
                 <div className="grid grid-cols-1 md:grid-cols-[22%_1fr] gap-4 items-start">
                   {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
                   <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200" style={{ boxShadow: SILK_SHADOW }}>
-                    {/* Header compacto */}
+                    {/* Header compacto con precio integrado */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center flex-shrink-0">
                           <LucideDynamicIcon name="Shield" size={11} color="white" />
                         </div>
-                        <p className="text-xs font-bold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan"}</p>
+                        <div>
+                          <p className="text-xs font-bold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan"}</p>
+                          <p className="text-xs font-semibold text-slate-600 leading-tight">
+                            {(orgPlan?.monthly_price_eur ?? 0) === 0
+                              ? "Gratis"
+                              : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}/mes`}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium leading-tight">Activo</span>
-                    </div>
-
-                    {/* Precio compacto */}
-                    <div className="flex items-baseline gap-0.5 mb-2">
-                      <span className="text-base font-bold text-slate-800">
-                        {(orgPlan?.monthly_price_eur ?? 0) === 0 ? "Gratis" : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}`}
-                      </span>
-                      {(orgPlan?.monthly_price_eur ?? 0) > 0 && <span className="text-xs text-slate-400">/mes</span>}
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium leading-tight flex-shrink-0">Activo</span>
                     </div>
 
                     {/* Métricas en fila compacta */}
@@ -577,7 +576,13 @@ export default function AddonStorePage() {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-800 leading-tight">Add-ons</p>
-                          <p className="text-xs text-slate-400">Contratados y disponibles</p>
+                          {activeAddons.length > 0 ? (
+                            <p className="text-xs font-semibold text-green-600 leading-tight">
+                              €{activeAddonsTotalPrice}/mes contratados
+                            </p>
+                          ) : (
+                            <p className="text-xs text-slate-400">Contratados y disponibles</p>
+                          )}
                         </div>
                       </div>
                       {activeAddons.length > 0 && (
@@ -601,7 +606,7 @@ export default function AddonStorePage() {
                               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
                               <span className="text-xs text-slate-400">({groupAddons.filter((a) => getAddonState(a) === "active").length} activos)</span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5">
                               {groupAddons.map((addon) => {
                                 const state = getAddonState(addon);
                                 const isActive = state === "active";
