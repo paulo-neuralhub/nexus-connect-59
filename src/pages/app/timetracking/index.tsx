@@ -5,17 +5,21 @@
  * PHASE 3: IP Activity types, integrated timer, list view
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   format,
   startOfWeek,
   endOfWeek,
   addWeeks,
   subWeeks,
+  subMonths,
+  subYears,
   eachDayOfInterval,
   isSameDay,
   startOfMonth,
   endOfMonth,
+  startOfYear,
+  endOfYear,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
@@ -107,6 +111,15 @@ const TIME_COLORS: Record<string, string> = {
 };
 
 type ViewMode = 'week' | 'list';
+type DatePreset = 'this_week' | 'this_month' | 'this_year' | 'last_year' | 'custom';
+
+const PRESET_LABELS: Record<DatePreset, string> = {
+  this_week: 'semana',
+  this_month: 'mes',
+  this_year: 'año',
+  last_year: 'año anterior',
+  custom: 'rango',
+};
 
 export default function TimesheetPage() {
   const navigate = useNavigate();
@@ -116,19 +129,43 @@ export default function TimesheetPage() {
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [datePreset, setDatePreset] = useState<DatePreset>('this_week');
+  const [customRange, setCustomRange] = useState<{ from: Date; to: Date }>({
+    from: startOfWeek(new Date(), { weekStartsOn: 1 }),
+    to: endOfWeek(new Date(), { weekStartsOn: 1 }),
+  });
 
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Weekly entries for calendar
+  // Compute the active date range for KPIs based on preset
+  const kpiRange = useMemo(() => {
+    const now = new Date();
+    switch (datePreset) {
+      case 'this_week':
+        return { start: weekStart, end: weekEnd };
+      case 'this_month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'this_year':
+        return { start: startOfYear(now), end: endOfYear(now) };
+      case 'last_year': {
+        const lastYear = subYears(now, 1);
+        return { start: startOfYear(lastYear), end: endOfYear(lastYear) };
+      }
+      case 'custom':
+        return { start: customRange.from, end: customRange.to };
+      default:
+        return { start: weekStart, end: weekEnd };
+    }
+  }, [datePreset, weekStart, weekEnd, customRange]);
+
+  // Weekly entries for calendar view
   const { data: weekEntries = [], isLoading: weekLoading } = useWeeklyTimeEntries(weekStart);
 
-  // Monthly entries for KPIs
-  const monthStart = startOfMonth(new Date());
-  const monthEnd = endOfMonth(new Date());
-  const { data: monthEntries = [] } = useTimeEntries({
-    startDate: monthStart,
-    endDate: monthEnd,
+  // Range entries for KPIs (based on preset)
+  const { data: rangeEntries = [] } = useTimeEntries({
+    startDate: kpiRange.start,
+    endDate: kpiRange.end,
   });
 
   // Group entries by day for weekly view
@@ -137,13 +174,13 @@ export default function TimesheetPage() {
     entries: weekEntries.filter(e => isSameDay(new Date(e.date), day)),
   }));
 
-  // Monthly KPIs
-  const totalMinutesMonth = monthEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
-  const billableMinutesMonth = monthEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
-  const billedMinutesMonth = monthEntries.filter(e => e.billing_status === 'billed').reduce((sum, e) => sum + e.duration_minutes, 0);
-  const pendingMinutesMonth = billableMinutesMonth - billedMinutesMonth;
+  // KPIs from range
+  const totalMinutesRange = rangeEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
+  const billableMinutesRange = rangeEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
+  const billedMinutesRange = rangeEntries.filter(e => e.billing_status === 'billed').reduce((sum, e) => sum + e.duration_minutes, 0);
+  const pendingMinutesRange = billableMinutesRange - billedMinutesRange;
 
-  // Weekly totals
+  // Weekly totals for the badge
   const totalMinutes = weekEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
   const billableMinutes = weekEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
 
@@ -227,12 +264,56 @@ export default function TimesheetPage() {
         </div>
       </div>
 
-      {/* Monthly KPIs with NeoBadge */}
+      {/* KPIs + Period Selector */}
+      <div className="flex items-center gap-3 mb-1">
+        <span className="text-sm font-medium text-muted-foreground">Período:</span>
+        <div className="flex gap-1">
+          {([
+            { key: 'this_week', label: 'Semana' },
+            { key: 'this_month', label: 'Mes' },
+            { key: 'this_year', label: 'Año' },
+            { key: 'last_year', label: 'Año anterior' },
+            { key: 'custom', label: 'Personalizar' },
+          ] as { key: DatePreset; label: string }[]).map(p => (
+            <Button
+              key={p.key}
+              variant={datePreset === p.key ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setDatePreset(p.key)}
+              className="text-xs h-7"
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+        {datePreset === 'custom' && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs h-7 gap-1">
+                <Calendar className="h-3 w-3" />
+                {format(customRange.from, 'd MMM', { locale: es })} – {format(customRange.to, 'd MMM yy', { locale: es })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <DayPickerCalendar
+                mode="range"
+                selected={{ from: customRange.from, to: customRange.to }}
+                onSelect={(range: any) => {
+                  if (range?.from) setCustomRange({ from: range.from, to: range.to || range.from });
+                }}
+                numberOfMonths={2}
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Horas este mes" value={formatDurationShort(totalMinutesMonth)} color={TIME_COLORS.total} />
-        <StatCard label="Facturables" value={formatDurationShort(billableMinutesMonth)} color={TIME_COLORS.billable} />
-        <StatCard label="Facturadas" value={formatDurationShort(billedMinutesMonth)} color={TIME_COLORS.billed} />
-        <StatCard label="Pendientes" value={formatDurationShort(pendingMinutesMonth)} color={pendingMinutesMonth > 0 ? TIME_COLORS.pending : '#94a3b8'} />
+        <StatCard label={`Horas (${PRESET_LABELS[datePreset]})`} value={formatDurationShort(totalMinutesRange)} color={TIME_COLORS.total} />
+        <StatCard label="Facturables" value={formatDurationShort(billableMinutesRange)} color={TIME_COLORS.billable} />
+        <StatCard label="Facturadas" value={formatDurationShort(billedMinutesRange)} color={TIME_COLORS.billed} />
+        <StatCard label="Pendientes" value={formatDurationShort(pendingMinutesRange)} color={pendingMinutesRange > 0 ? TIME_COLORS.pending : '#94a3b8'} />
       </div>
 
       {/* View Toggle + Week Navigation */}
