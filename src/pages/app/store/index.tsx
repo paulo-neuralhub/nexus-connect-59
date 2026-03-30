@@ -507,26 +507,26 @@ export default function AddonStorePage() {
           <div className={cn("mt-4", cart.length > 0 ? "flex gap-6" : "")}>
             <div className="flex-1 min-w-0">
               {/* Included in subscription */}
-              <div className="mb-8 bg-white rounded-[14px] p-5" style={{ boxShadow: SILK_SHADOW }}>
-                <p className="text-sm font-semibold text-slate-700 mb-5">Incluido en tu suscripción</p>
+              <div className="mb-8 space-y-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                {/* Plan base */}
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-slate-900 flex-shrink-0">
-                      <LucideDynamicIcon name="Shield" size={12} color="white" />
+                {/* ── CAJA 1: PLAN BASE ── */}
+                <div className="bg-white rounded-[14px] p-5 border border-slate-100" style={{ boxShadow: SILK_SHADOW }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 flex-shrink-0">
+                      <LucideDynamicIcon name="Shield" size={13} color="white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-slate-700">Plan {orgPlan?.plan_name ?? "actual"}</p>
+                      <p className="text-sm font-semibold text-slate-800">Plan {orgPlan?.plan_name ?? "actual"}</p>
                       <p className="text-xs text-slate-400">Funcionalidades incluidas sin coste adicional</p>
                     </div>
-                    <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white font-medium">Base</span>
+                    <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-slate-900 text-white font-semibold tracking-wide">Base</span>
                   </div>
-                  <div className="flex flex-wrap gap-2 pl-8">
+                  <div className="flex flex-wrap gap-2">
                     {Object.entries(PLAN_INCLUDED_MODULES[orgPlan?.plan_code ?? "free"] ?? {})
                       .filter(([, included]) => included)
                       .map(([mod]) => (
-                        <div key={mod} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200">
+                        <div key={mod} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors duration-150">
                           <LucideDynamicIcon name={MODULE_ICONS[mod] ?? "Check"} size={11} color="#64748B" />
                           {mod}
                         </div>
@@ -534,25 +534,22 @@ export default function AddonStorePage() {
                   </div>
                 </div>
 
-                {/* Separator */}
-                {activeAddons.length > 0 && <div className="border-t border-slate-100 my-4" />}
-
-                {/* Active add-ons */}
+                {/* ── CAJA 2: ADD-ONS CONTRATADOS ── */}
                 {activeAddons.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center justify-center w-6 h-6 rounded-md bg-green-500 flex-shrink-0">
-                        <LucideDynamicIcon name="Plus" size={12} color="white" />
+                  <div className="bg-white rounded-[14px] p-5 border border-green-100" style={{ boxShadow: SILK_SHADOW }}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-green-500 flex-shrink-0">
+                        <LucideDynamicIcon name="Plus" size={13} color="white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-slate-700">Add-ons contratados</p>
+                        <p className="text-sm font-semibold text-slate-800">Add-ons contratados</p>
                         <p className="text-xs text-slate-400">Módulos extra añadidos a tu plan</p>
                       </div>
-                      <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium border border-green-200">
+                      <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-700 font-semibold border border-green-200">
                         {activeAddons.length} activo{activeAddons.length > 1 ? "s" : ""}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2 pl-8">
+                    <div className="flex flex-wrap gap-2">
                       {activeAddons.map((activeAddon) => {
                         const addonData = addons.find((a) => a.code === activeAddon.code);
                         if (!addonData) return null;
@@ -560,12 +557,12 @@ export default function AddonStorePage() {
                         return (
                           <div
                             key={activeAddon.code}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-150"
                             style={{ backgroundColor: color + "15", color, borderColor: color + "35" }}
                           >
                             <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={11} color={color} />
                             {addonData.name_es}
-                            <span className="ml-0.5 px-1.5 py-0.5 rounded text-white text-xs font-bold leading-none" style={{ backgroundColor: color }}>+</span>
+                            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: color }}>+</span>
                           </div>
                         );
                       })}
@@ -573,15 +570,13 @@ export default function AddonStorePage() {
                   </div>
                 )}
 
-                {/* Info note */}
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-start gap-2">
-                    <LucideDynamicIcon name="Info" size={13} color="#94A3B8" />
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      <span className="font-semibold text-slate-500">Plan base</span> son las funcionalidades incluidas en tu suscripción sin coste adicional.{" "}
-                      <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que amplían tu plan y se facturan adicionalmente.
-                    </p>
-                  </div>
+                {/* ── NOTA EXPLICATIVA ── */}
+                <div className="flex items-start gap-2 px-1 pt-1">
+                  <LucideDynamicIcon name="Info" size={12} color="#94A3B8" />
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <span className="font-semibold text-slate-500">Plan base</span> incluye las funcionalidades de tu suscripción sin coste adicional.{" "}
+                    <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que amplían tu plan y se facturan adicionalmente.
+                  </p>
                 </div>
               </div>
 
