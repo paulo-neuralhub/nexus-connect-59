@@ -741,9 +741,9 @@ export default function AddonStorePage() {
               <div className="mb-8">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                <div className="grid grid-cols-[280px_1fr] gap-4">
                   {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
-                  <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200 h-full md:w-[22%] flex-shrink-0 flex flex-col" style={{ boxShadow: SILK_SHADOW }}>
+                  <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200 flex flex-col self-stretch" style={{ boxShadow: SILK_SHADOW }}>
                     {/* Header compacto con precio integrado */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
@@ -823,7 +823,7 @@ export default function AddonStorePage() {
                   </div>
 
                   {/* ══ COLUMNA DERECHA: ADD-ONS ══ */}
-                  <div className="bg-white rounded-[14px] p-4 border border-green-200 h-full flex-1" style={{ boxShadow: SILK_SHADOW }}>
+                  <div className="bg-white rounded-[14px] p-4 border border-green-200 flex flex-col self-stretch" style={{ boxShadow: SILK_SHADOW }}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
