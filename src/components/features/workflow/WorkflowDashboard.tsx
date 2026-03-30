@@ -319,7 +319,7 @@ export function WorkflowDashboard() {
                               color: '#94a3b8'
                             }}
                           >
-                            {workflow.category}
+                            {workflow.trigger_type || 'custom'}
                           </span>
                           <span style={{ fontSize: '11px', color: '#94a3b8' }}>
                             {workflow.actions?.length || 0} acciones
