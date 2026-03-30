@@ -22027,6 +22027,72 @@ export type Database = {
         }
         Relationships: []
       }
+      module_catalog: {
+        Row: {
+          color_hex: string
+          created_at: string
+          description_en: string | null
+          description_es: string | null
+          features_en: Json
+          features_es: Json
+          icon_name: string
+          id: string
+          included_in_plans: Json
+          is_active: boolean
+          is_featured: boolean
+          module_code: string
+          name_en: string
+          name_es: string
+          price_from_eur: number | null
+          sort_order: number
+          tagline_en: string | null
+          tagline_es: string | null
+          updated_at: string
+        }
+        Insert: {
+          color_hex?: string
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          features_en?: Json
+          features_es?: Json
+          icon_name?: string
+          id?: string
+          included_in_plans?: Json
+          is_active?: boolean
+          is_featured?: boolean
+          module_code: string
+          name_en: string
+          name_es: string
+          price_from_eur?: number | null
+          sort_order?: number
+          tagline_en?: string | null
+          tagline_es?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color_hex?: string
+          created_at?: string
+          description_en?: string | null
+          description_es?: string | null
+          features_en?: Json
+          features_es?: Json
+          icon_name?: string
+          id?: string
+          included_in_plans?: Json
+          is_active?: boolean
+          is_featured?: boolean
+          module_code?: string
+          name_en?: string
+          name_es?: string
+          price_from_eur?: number | null
+          sort_order?: number
+          tagline_en?: string | null
+          tagline_es?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       monitored_deadlines: {
         Row: {
           assigned_to: string | null
