@@ -3234,6 +3234,10 @@ export type Database = {
           category: string | null
           created_at: string | null
           description: string | null
+          fallback_model_1: string | null
+          fallback_model_2: string | null
+          fallback_provider_1: string | null
+          fallback_provider_2: string | null
           icon: string | null
           id: string
           is_active: boolean | null
@@ -3253,6 +3257,10 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          fallback_model_1?: string | null
+          fallback_model_2?: string | null
+          fallback_provider_1?: string | null
+          fallback_provider_2?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
@@ -3272,6 +3280,10 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          fallback_model_1?: string | null
+          fallback_model_2?: string | null
+          fallback_provider_1?: string | null
+          fallback_provider_2?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
