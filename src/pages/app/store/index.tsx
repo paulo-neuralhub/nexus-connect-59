@@ -263,7 +263,21 @@ export default function AddonStorePage() {
   // Cart helpers
   const addToCart = (addon: BillingAddon) => {
     if (getAddonState(addon) !== "available") return;
-    setCart((prev) => prev.some((a) => a.code === addon.code) ? prev : [...prev, addon]);
+    setCart((prev) => {
+      if (prev.some((a) => a.code === addon.code)) return prev;
+      const newCart = [...prev, addon];
+      const newCodes = newCart.map(a => a.code);
+      const toRemove = new Set<string>();
+      for (const family of Object.values(ADDON_TIER_HIERARCHY)) {
+        for (let i = 0; i < family.length; i++) {
+          if (newCodes.includes(family[i])) {
+            family.slice(i + 1).forEach(code => toRemove.add(code));
+            break;
+          }
+        }
+      }
+      return newCart.filter(a => !toRemove.has(a.code));
+    });
   };
   const removeFromCart = (code: string) => {
     setCart((prev) => prev.filter((a) => a.code !== code));
