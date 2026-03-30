@@ -129,6 +129,19 @@ const PLAN_INCLUDED_MODULES: Record<string, Record<string, boolean>> = {
   enterprise: { "Docketing IP": true, "Gestión de Plazos": true, Documentos: true, "CRM Completo": true, "IP-SPIDER Vigilancia": true, "Finanzas y Facturación": true, "IP-GENIUS IA": true, "Portal Clientes": true, "Acceso API": true, "SSO Enterprise": true },
 };
 
+const MODULE_ICONS: Record<string, string> = {
+  "Docketing IP": "FileText",
+  "Gestión de Plazos": "Clock",
+  Documentos: "FolderOpen",
+  "CRM Completo": "Users",
+  "IP-SPIDER Vigilancia": "Eye",
+  "Finanzas y Facturación": "DollarSign",
+  "IP-GENIUS IA": "Sparkles",
+  "Portal Clientes": "Globe",
+  "Acceso API": "Code",
+  "SSO Enterprise": "Shield",
+};
+
 // ── Silk shadow constants ───────────────────────────────
 const SILK_SHADOW = "4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff";
 const SILK_SHADOW_SM = "2px 2px 6px #cdd1dc, -2px -2px 6px #ffffff";
@@ -494,52 +507,52 @@ export default function AddonStorePage() {
           <div className={cn("mt-4", cart.length > 0 ? "flex gap-6" : "")}>
             <div className="flex-1 min-w-0">
               {/* Included in subscription */}
-              <div className="mb-6">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
-                  Incluido en tu suscripción
-                </p>
+              <div className="mb-8 bg-white rounded-[14px] p-5" style={{ boxShadow: SILK_SHADOW }}>
+                <p className="text-sm font-semibold text-slate-700 mb-5">Incluido en tu suscripción</p>
 
-                {/* Plan modules */}
-                <div className="mb-3">
+                {/* Plan base */}
+                <div className="mb-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                    <p className="text-xs font-medium text-slate-500">
-                      Tu plan {orgPlan?.plan_name ?? "actual"} incluye
-                    </p>
+                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-slate-900 flex-shrink-0">
+                      <LucideDynamicIcon name="Shield" size={12} color="white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-slate-700">Plan {orgPlan?.plan_name ?? "actual"}</p>
+                      <p className="text-xs text-slate-400">Funcionalidades incluidas sin coste adicional</p>
+                    </div>
+                    <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white font-medium">Base</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 pl-8">
                     {Object.entries(PLAN_INCLUDED_MODULES[orgPlan?.plan_code ?? "free"] ?? {})
                       .filter(([, included]) => included)
                       .map(([mod]) => (
-                        <div key={mod} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                          <Check size={10} className="text-green-500 flex-shrink-0" />
+                        <div key={mod} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200">
+                          <LucideDynamicIcon name={MODULE_ICONS[mod] ?? "Check"} size={11} color="#64748B" />
                           {mod}
                         </div>
                       ))}
                   </div>
                 </div>
 
-                {/* Separator + active add-ons */}
-                {activeAddons.length > 0 && (
-                  <div className="flex items-center gap-2 my-4">
-                    <div className="h-px flex-1 bg-slate-100" />
-                    <span className="text-xs text-slate-400 px-1">más add-ons contratados</span>
-                    <div className="h-px flex-1 bg-slate-100" />
-                  </div>
-                )}
+                {/* Separator */}
+                {activeAddons.length > 0 && <div className="border-t border-slate-100 my-4" />}
 
+                {/* Active add-ons */}
                 {activeAddons.length > 0 && (
-                  <div>
+                  <div className="mb-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                      <p className="text-xs font-medium text-slate-500">
-                        Add-ons contratados
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                          {activeAddons.length}
-                        </span>
-                      </p>
+                      <div className="flex items-center justify-center w-6 h-6 rounded-md bg-green-500 flex-shrink-0">
+                        <LucideDynamicIcon name="Plus" size={12} color="white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-700">Add-ons contratados</p>
+                        <p className="text-xs text-slate-400">Módulos extra añadidos a tu plan</p>
+                      </div>
+                      <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium border border-green-200">
+                        {activeAddons.length} activo{activeAddons.length > 1 ? "s" : ""}
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 pl-8">
                       {activeAddons.map((activeAddon) => {
                         const addonData = addons.find((a) => a.code === activeAddon.code);
                         if (!addonData) return null;
@@ -547,18 +560,29 @@ export default function AddonStorePage() {
                         return (
                           <div
                             key={activeAddon.code}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-                            style={{ backgroundColor: color + "20", color, border: `1px solid ${color}40` }}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border"
+                            style={{ backgroundColor: color + "15", color, borderColor: color + "35" }}
                           >
-                            <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={10} color={color} />
+                            <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={11} color={color} />
                             {addonData.name_es}
-                            <span className="opacity-60">· ✓</span>
+                            <span className="ml-0.5 px-1.5 py-0.5 rounded text-white text-xs font-bold leading-none" style={{ backgroundColor: color }}>+</span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
                 )}
+
+                {/* Info note */}
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-start gap-2">
+                    <LucideDynamicIcon name="Info" size={13} color="#94A3B8" />
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      <span className="font-semibold text-slate-500">Plan base</span> son las funcionalidades incluidas en tu suscripción sin coste adicional.{" "}
+                      <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que amplían tu plan y se facturan adicionalmente.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Category tabs */}
