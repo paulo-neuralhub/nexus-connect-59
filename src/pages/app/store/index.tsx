@@ -98,6 +98,22 @@ const ADDON_CATEGORY_LABELS: Record<string, string> = {
   accounting: "Contabilidad",
 };
 
+const CATEGORY_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
+  intelligence: { label: "Inteligencia IP", icon: "BarChart3", color: "#8B5CF6" },
+  jurisdiction_pack: { label: "Jurisdicciones", icon: "Globe", color: "#3B82F6" },
+  module_standalone: { label: "Módulos", icon: "Package", color: "#0EA5E9" },
+  automation: { label: "Automatización", icon: "RefreshCw", color: "#F59E0B" },
+  capacity: { label: "Capacidad", icon: "FolderPlus", color: "#64748B" },
+  storage: { label: "Almacenamiento", icon: "HardDrive", color: "#64748B" },
+  users: { label: "Usuarios", icon: "UserPlus", color: "#6366F1" },
+  accounting: { label: "Contabilidad", icon: "Calculator", color: "#14B8A6" },
+};
+
+const CATEGORY_ORDER = [
+  "intelligence", "jurisdiction_pack", "module_standalone", "automation",
+  "capacity", "storage", "users", "accounting",
+];
+
 // Plan static prices (fallback if plan_definitions not loaded)
 const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
   free: { monthly: 0, annual: 0 },
@@ -453,112 +469,57 @@ export default function AddonStorePage() {
                 </TabsList>
               </Tabs>
 
-              {/* Addon grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {filteredAddons.map((addon) => {
-                  const state = getAddonState(addon);
-                  const inCart = cartCodes.has(addon.code);
-                  const displayPrice = billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur;
-                  const annualSaving = (addon.price_monthly_eur - addon.price_annual_eur) * 12;
+              {/* Addon grid — grouped when "all", flat otherwise */}
+              <div className="mt-4">
+                {addonTab === "all" ? (
+                  <div className="space-y-10">
+                    {CATEGORY_ORDER.map((category) => {
+                      const categoryAddons = addons.filter((a) => a.category === category);
+                      if (categoryAddons.length === 0) return null;
 
-                  if (state === "redundant") {
-                    return (
-                      <div
-                        key={addon.code}
-                        id={addon.code}
-                        className="bg-white rounded-[14px] p-4 flex flex-col opacity-70 cursor-default"
-                        style={{ boxShadow: SILK_SHADOW_SM }}
-                      >
-                        <Badge className="bg-slate-100 text-slate-500 border border-slate-200 text-xs w-fit mb-2 px-2 py-0.5 rounded-full">
-                          Ya incluido
-                        </Badge>
-                        <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" className="mb-2" />
-                        <p className="text-sm font-semibold text-slate-400 mt-1">{addon.name_es}</p>
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
-                        <p className="text-xs text-slate-400 mt-3 italic">
-                          Cubierto por tu plan o por otro add-on activo.
-                        </p>
-                      </div>
-                    );
-                  }
+                      const config = CATEGORY_CONFIG[category];
+                      const activeCount = categoryAddons.filter((a) => getAddonState(a) === "active").length;
+                      const avail = categoryAddons.filter((a) => getAddonState(a) === "available").length;
+                      const redundant = categoryAddons.filter((a) => getAddonState(a) === "redundant").length;
 
-                  if (state === "incompatible") {
-                    return (
-                      <div
-                        key={addon.code}
-                        id={addon.code}
-                        className="bg-white rounded-[14px] p-4 flex flex-col opacity-50 cursor-not-allowed"
-                        style={{ boxShadow: SILK_SHADOW_SM }}
-                      >
-                        <Badge className="bg-amber-50 text-amber-700 border border-amber-200 text-xs w-fit mb-2">
-                          Requiere plan superior
-                        </Badge>
-                        <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" />
-                        <p className="text-sm font-semibold text-slate-400 mt-2">{addon.name_es}</p>
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
-                        <Button variant="outline" size="sm" className="mt-3 w-full text-xs" onClick={() => setMainTab("plan")}>
-                          Ver planes
-                        </Button>
-                      </div>
-                    );
-                  }
+                      const parts: string[] = [];
+                      if (activeCount > 0) parts.push(`${activeCount} activo${activeCount > 1 ? "s" : ""}`);
+                      if (redundant > 0) parts.push(`${redundant} incluido${redundant > 1 ? "s" : ""}`);
+                      if (avail > 0) parts.push(`${avail} disponible${avail > 1 ? "s" : ""}`);
 
-                  // state === "available"
-                  return (
-                    <div
-                      key={addon.code}
-                      id={addon.code}
-                      className="bg-white rounded-[14px] p-4 flex flex-col hover:-translate-y-0.5 duration-200 cursor-pointer"
-                      style={{ boxShadow: SILK_SHADOW }}
-                    >
-                      <div className="flex justify-between items-start">
-                        <LucideDynamicIcon
-                          name={addon.icon_name}
-                          fallback={<Package className="h-[18px] w-[18px]" />}
-                          size={18}
-                          color={addon.color_hex ?? "#64748B"}
-                        />
-                        {inCart && <Badge className="bg-blue-100 text-blue-700 text-xs">En carrito</Badge>}
-                      </div>
-                      <p className="text-sm font-semibold text-slate-800 mt-2">{addon.name_es}</p>
-                      <p className="text-xs text-slate-500 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
-                      <div className="mt-3 flex justify-between items-end">
-                        <div>
-                          <p className="text-base font-bold text-slate-800">
-                            €{displayPrice}
-                            <span className="text-xs font-normal text-slate-500">
-                              /mes{billingCycle === "annual" ? " anual" : ""}
-                            </span>
-                          </p>
-                          {billingCycle === "annual" && annualSaving > 0 && (
-                            <p className="text-xs text-green-600">Ahorra €{annualSaving}/año</p>
-                          )}
+                      return (
+                        <div key={category}>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div
+                              className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+                              style={{ backgroundColor: config.color + "20" }}
+                            >
+                              <LucideDynamicIcon name={config.icon} fallback={<Package className="h-4 w-4" />} size={16} color={config.color} />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-semibold text-slate-700 leading-tight">{config.label}</h3>
+                              <p className="text-xs text-slate-400 mt-0.5">{parts.join(" · ") || "Sin add-ons"}</p>
+                            </div>
+                            <div className="h-px flex-1 bg-slate-200 ml-2 hidden sm:block" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            {categoryAddons.map((addon) => renderAddonCard(addon))}
+                          </div>
                         </div>
-                        {inCart ? (
-                          <Button variant="outline" size="sm" className="text-red-500 border-red-200 text-xs" onClick={() => removeFromCart(addon.code)}>
-                            Quitar
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            className="text-xs text-white"
-                            style={{ backgroundColor: addon.color_hex ?? "#64748B" }}
-                            onClick={() => addToCart(addon)}
-                          >
-                            Añadir
-                          </Button>
-                        )}
-                      </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {addons.filter((a) => a.category === addonTab).map((addon) => renderAddonCard(addon))}
                     </div>
-                  );
-                })}
+                    {addons.filter((a) => a.category === addonTab).length === 0 && (
+                      <p className="text-center py-12 text-slate-400 text-sm">No hay add-ons en esta categoría.</p>
+                    )}
+                  </>
+                )}
               </div>
-
-              {filteredAddons.length === 0 && (
-                <p className="text-center py-12 text-slate-400 text-sm">
-                  No hay add-ons en esta categoría.
-                </p>
-              )}
             </div>
 
             {/* ── CART PANEL ────────────────────────── */}
