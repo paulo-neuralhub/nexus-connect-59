@@ -305,9 +305,8 @@ export function DynamicSidebar({
             <button
               type="button"
               onClick={(e) => {
-                // Navigate to main path on click (in addition to toggling)
-                if (mainPath && navigate) {
-                  navigate(mainPath);
+                if (mainPath) {
+                  navTo(mainPath);
                   onNavigate?.();
                 }
               }}
