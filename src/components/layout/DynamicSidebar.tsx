@@ -465,7 +465,15 @@ export function DynamicSidebar({
       );
     }
 
-    return (
+    // Clientes section — no header, modules render directly
+    if (section.sectionCode === "negocio") {
+      return (
+        <div key={section.sectionCode} className="mb-1 mt-2 border-t border-white/[0.06] pt-2">
+          {hasModules && section.modules.map(renderModule)}
+        </div>
+      );
+    }
+
       <div key={section.sectionCode} className="mb-1">
         {!collapsed && (
           <Collapsible open={isExpanded} onOpenChange={() => toggleSection(section.sectionCode)} className="silk-sidebar-collapsible">
