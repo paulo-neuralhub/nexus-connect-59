@@ -29,11 +29,11 @@ function getApiKey(provider: string): string | null {
   return Deno.env.get(secretName) || null
 }
 
-console.log('Available providers:', Object.entries(SECRET_MAP)
-  .filter(([_, secretName]) => !!Deno.env.get(secretName))
-  .map(([provider]) => provider)
-  .join(', ')
-)
+console.log('=== genius-chat-v2 boot ===')
+console.log('ANTHROPIC:', !!Deno.env.get('ANTHROPIC_API_KEY'))
+console.log('GROQ:', !!Deno.env.get('GROQ_API_KEY'))
+console.log('GEMINI:', !!Deno.env.get('GEMINI_API_KEY'))
+console.log('OPENAI:', !!Deno.env.get('OPENAI_API_KEY'))
 
 // ── CLASIFICADOR DE TIPO DE CONSULTA ────────────────────────
 async function classifyQuery(message: string): Promise<string> {
@@ -60,16 +60,24 @@ async function classifyQuery(message: string): Promise<string> {
         messages: [
           {
             role: 'system',
-            content: `Classify the IP law query into exactly one type. Reply with only the type name, nothing else. Types: ${types.join(', ')}`,
+            content: `Classify into one: trademark_similarity, document_drafting, fee_lookup, jurisdiction_query, patent_analysis, quick_question, budget_estimate, prior_art_search. Reply with type only.`,
           },
-          { role: 'user', content: message.slice(0, 500) },
+          { role: 'user', content: message.slice(0, 200) },
         ],
       }),
     })
+    console.log('Groq classifier status:', res.status)
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error('Groq classifier error:', errText)
+      return 'trademark_similarity'
+    }
     const data = await res.json()
     const classified = data.choices?.[0]?.message?.content?.trim().toLowerCase()
+    console.log('Groq classified as:', classified)
     return types.includes(classified!) ? classified! : 'trademark_similarity'
-  } catch {
+  } catch (err) {
+    console.error('Groq classifier exception:', (err as Error).message)
     return 'trademark_similarity'
   }
 }
