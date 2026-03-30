@@ -426,6 +426,19 @@ Deno.serve(async (req) => {
       systemPrompt += `\nDESPACHO: ${org?.name ?? 'Despacho IP'}`
     }
 
+    // Instrucción de brevedad según tipo de consulta
+    systemPrompt += `\n\nLONGITUD DE RESPUESTA:
+- quick_question: máximo 3 párrafos cortos
+- fee_lookup: tabla concisa + nota de fuente
+- budget_estimate: lista de items + total
+- jurisdiction_query: puntos clave únicamente
+- trademark_similarity: análisis estructurado, máx 400 palabras
+- patent_analysis: análisis estructurado, máx 500 palabras
+- document_drafting: documento completo (sin límite)
+- prior_art_search: listado + resumen, máx 400 palabras
+Tipo de consulta actual: ${queryType}
+Responde siempre de forma concisa y directa. Evita introducciones largas y repeticiones. Ve directo al punto.`
+
     // 11. Build messages (limit history to 20, filter empty content)
     const llmMessages = [
       ...history
