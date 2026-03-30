@@ -29,6 +29,12 @@ function getApiKey(provider: string): string | null {
   return Deno.env.get(secretName) || null
 }
 
+console.log('Available providers:', Object.entries(SECRET_MAP)
+  .filter(([_, secretName]) => !!Deno.env.get(secretName))
+  .map(([provider]) => provider)
+  .join(', ')
+)
+
 // ── CLASIFICADOR DE TIPO DE CONSULTA ────────────────────────
 async function classifyQuery(message: string): Promise<string> {
   const apiKey = getApiKey('groq')
