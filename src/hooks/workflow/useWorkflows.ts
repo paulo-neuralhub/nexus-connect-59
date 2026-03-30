@@ -178,7 +178,7 @@ export function useWorkflowExecutions(options?: {
         .from('workflow_executions')
         .select(`
           *,
-          workflow:workflow_definitions(id, name, code, category)
+          workflow:workflow_definitions(id, name)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('created_at', { ascending: false });
