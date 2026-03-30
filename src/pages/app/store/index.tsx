@@ -606,7 +606,7 @@ export default function AddonStorePage() {
                                   <div
                                     key={addon.code}
                                     className={cn(
-                                      "relative flex flex-col items-start gap-1.5 p-2.5 rounded-xl border transition-all duration-150",
+                                      "relative flex flex-col items-start gap-1.5 p-2 rounded-xl border transition-all duration-150",
                                       isAvailable && !isInCart ? "cursor-pointer hover:scale-[1.02]" : "cursor-default"
                                     )}
                                     style={{
