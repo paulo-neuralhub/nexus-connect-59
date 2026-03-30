@@ -25,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { NeoBadge } from '@/components/ui/neo-badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as DayPickerCalendar } from '@/components/ui/calendar';
 import {
   Table,
   TableBody,
@@ -243,15 +245,30 @@ export default function TimesheetPage() {
           <Button variant="outline" size="icon" onClick={goToNextWeek}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-2 ml-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-foreground">
-              {format(weekStart, "d MMM", { locale: es })} – {format(weekEnd, "d MMM yyyy", { locale: es })}
-            </span>
-            <Badge variant="secondary" className="ml-1 text-xs">
-              {formatDuration(totalMinutes)}
-            </Badge>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="ml-2 gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium text-foreground">
+                  {format(weekStart, "d MMM", { locale: es })} – {format(weekEnd, "d MMM yyyy", { locale: es })}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <DayPickerCalendar
+                mode="single"
+                selected={weekStart}
+                onSelect={(date) => {
+                  if (date) setWeekStart(startOfWeek(date, { weekStartsOn: 1 }));
+                }}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          <Badge variant="secondary" className="text-xs">
+            {formatDuration(totalMinutes)}
+          </Badge>
         </div>
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
           <TabsList>

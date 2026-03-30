@@ -79,8 +79,8 @@ export function WorkflowDashboard() {
   const filteredWorkflows = workflows.filter(w => {
     const matchesSearch = !search || 
       w.name.toLowerCase().includes(search.toLowerCase()) ||
-      w.code.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || w.category === categoryFilter;
+      (w.description || '').toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || (w.trigger_type || '') === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -319,14 +319,14 @@ export function WorkflowDashboard() {
                               color: '#94a3b8'
                             }}
                           >
-                            {workflow.category}
+                            {workflow.trigger_type || 'custom'}
                           </span>
                           <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                            {workflow.actions?.length || 0} acciones
+                            {Array.isArray(workflow.job_types) ? workflow.job_types.length : 0} acciones
                           </span>
-                          {workflow.execution_count > 0 && (
+                          {workflow.config?.execution_count > 0 && (
                             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                              • {workflow.execution_count} ejecuciones
+                              • {workflow.config.execution_count} ejecuciones
                             </span>
                           )}
                         </div>

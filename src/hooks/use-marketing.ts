@@ -30,7 +30,7 @@ export function useTemplates(category?: string) {
     queryKey: ['email-templates', currentOrganization?.id, category],
     queryFn: async () => {
       let query = supabase
-        .from('email_templates')
+        .from('comm_templates')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
         .eq('is_active', true)
@@ -59,7 +59,7 @@ export function useTemplate(id: string | undefined) {
     queryKey: ['email-template', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .select('*')
         .eq('id', id!)
         .single();
@@ -97,7 +97,7 @@ export function useCreateTemplate() {
       };
       
       const { data: template, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .insert(insertData)
         .select()
         .single();
@@ -128,7 +128,7 @@ export function useUpdateTemplate() {
       if (data.available_variables !== undefined) updateData.available_variables = data.available_variables;
       
       const { data: template, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .update(updateData)
         .eq('id', id)
         .select()
@@ -149,7 +149,7 @@ export function useDeleteTemplate() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -262,7 +262,7 @@ export function useCampaigns(status?: string) {
     queryKey: ['email-campaigns', currentOrganization?.id, status],
     queryFn: async () => {
       let query = supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
@@ -276,13 +276,13 @@ export function useCampaigns(status?: string) {
       
       return (data || []).map(c => ({
         ...c,
-        json_content: parseJsonContent(c.json_content),
-        segment_conditions: parseFilterConditions(c.segment_conditions),
-        ab_test_config: c.ab_test_config as unknown as EmailCampaign['ab_test_config'],
-        owner_type: c.owner_type as 'tenant' | 'backoffice',
-        campaign_type: c.campaign_type as EmailCampaign['campaign_type'],
-        status: c.status as EmailCampaign['status'],
-      })) as EmailCampaign[];
+        // Map actual DB columns to interface fields used in UI
+        total_sent: c.sent_count || 0,
+        total_opened: c.open_count || 0,
+        total_clicked: c.click_count || 0,
+        campaign_type: c.campaign_type || c.campaign_subtype || 'regular',
+        subject: c.name,
+      })) as any[];
     },
     enabled: !!currentOrganization?.id,
   });
@@ -293,7 +293,7 @@ export function useCampaign(id: string | undefined) {
     queryKey: ['email-campaign', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('id', id!)
         .single();
@@ -339,7 +339,7 @@ export function useCreateCampaign() {
       };
       
       const { data: campaign, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .insert(insertData)
         .select()
         .single();
@@ -370,7 +370,7 @@ export function useUpdateCampaign() {
       if (data.scheduled_at !== undefined) updateData.scheduled_at = data.scheduled_at;
       
       const { data: campaign, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .update(updateData)
         .eq('id', id)
         .select()
@@ -391,7 +391,7 @@ export function useDeleteCampaign() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .delete()
         .eq('id', id);
       if (error) throw error;
