@@ -690,9 +690,9 @@ export default function AddonStorePage() {
               <div className="mb-8">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-[22%_1fr] gap-4 items-start">
+                <div className="flex flex-col md:flex-row gap-4 items-stretch">
                   {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
-                  <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200" style={{ boxShadow: SILK_SHADOW }}>
+                  <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200 h-full md:w-[22%] flex-shrink-0" style={{ boxShadow: SILK_SHADOW }}>
                     {/* Header compacto con precio integrado */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
@@ -700,8 +700,8 @@ export default function AddonStorePage() {
                           <LucideDynamicIcon name="Shield" size={11} color="white" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan"}</p>
-                          <p className="text-xs font-semibold text-slate-600 leading-tight">
+                          <p className="text-sm font-semibold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan"}</p>
+                          <p className="text-sm font-medium text-slate-600 leading-tight">
                             {(orgPlan?.monthly_price_eur ?? 0) === 0
                               ? "Gratis"
                               : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}/mes`}
@@ -743,7 +743,7 @@ export default function AddonStorePage() {
                   </div>
 
                   {/* ══ COLUMNA DERECHA: ADD-ONS ══ */}
-                  <div className="bg-white rounded-[14px] p-4 border border-green-200" style={{ boxShadow: SILK_SHADOW }}>
+                  <div className="bg-white rounded-[14px] p-4 border border-green-200 h-full flex-1" style={{ boxShadow: SILK_SHADOW }}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
@@ -781,7 +781,7 @@ export default function AddonStorePage() {
                               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
                               <span className="text-xs text-slate-400">({groupAddons.filter((a) => getAddonState(a) === "active").length} activos)</span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5">
+                            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                               {groupAddons.map((addon) => {
                                 const state = getAddonState(addon);
                                 const isActive = state === "active";
@@ -838,8 +838,8 @@ export default function AddonStorePage() {
                                       )}
                                     </div>
 
-                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: isActive ? color + "25" : "#E2E8F0" }}>
-                                      <LucideDynamicIcon name={addon.icon_name ?? "Package"} size={12} color={isActive ? color : "#94A3B8"} />
+                                    <div className="w-5 h-5 rounded-lg flex items-center justify-center" style={{ backgroundColor: isActive ? color + "25" : "#E2E8F0" }}>
+                                      <LucideDynamicIcon name={addon.icon_name ?? "Package"} size={10} color={isActive ? color : "#94A3B8"} />
                                     </div>
                                     <p className={cn("text-xs font-medium leading-tight pr-4", isActive ? "text-slate-700" : isInCart ? "text-blue-700" : "text-slate-400")}>
                                       {addon.name_es}
