@@ -429,6 +429,19 @@ export default function AddonStorePage() {
       );
     }
 
+    // Blocked by a higher-tier addon in the same family
+    const isBlocked = blockedAddonCodes.has(addon.code);
+    if (isBlocked) {
+      return (
+        <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col opacity-60 cursor-default" style={{ boxShadow: SILK_SHADOW_SM }}>
+          <span className="bg-gray-100 text-gray-400 text-xs px-2 py-1 rounded-md border border-gray-200 w-fit mb-2">Incluido en tier superior</span>
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" className="mb-2" />
+          <p className="text-sm font-semibold text-slate-400 mt-1">{addon.name_es}</p>
+          <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
+        </div>
+      );
+    }
+
     // state === "available"
     return (
       <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col hover:-translate-y-0.5 duration-200 cursor-pointer" style={{ boxShadow: SILK_SHADOW }}>
