@@ -22,6 +22,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useGeniusChat, useGeniusFeedback } from '@/hooks/use-genius-chat';
