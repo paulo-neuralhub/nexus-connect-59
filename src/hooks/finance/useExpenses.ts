@@ -106,7 +106,6 @@ export function useExpenses(filters: ExpenseFilters = {}) {
         .select(`
           *,
           matter:matters(id, reference, title),
-          contact:contacts(id, name),
           user:profiles!expenses_user_id_fkey(id, full_name)
         `)
         .eq('organization_id', currentOrganization.id)
