@@ -5,17 +5,21 @@
  * PHASE 3: IP Activity types, integrated timer, list view
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   format,
   startOfWeek,
   endOfWeek,
   addWeeks,
   subWeeks,
+  subMonths,
+  subYears,
   eachDayOfInterval,
   isSameDay,
   startOfMonth,
   endOfMonth,
+  startOfYear,
+  endOfYear,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
