@@ -700,7 +700,7 @@ export default function AddonStorePage() {
 
                   {/* Footer: acción de compra */}
                   {!included && (() => {
-                    const standaloneAddon = addons.find(a => a.module_code === module.module_code && a.category === 'module_standalone');
+                    const standaloneAddon = moduleAddons.find(a => a.category === 'module_standalone');
                     if (!standaloneAddon) return null;
                     const isInCart = cart.some(c => c.code === standaloneAddon.code);
                     return (
