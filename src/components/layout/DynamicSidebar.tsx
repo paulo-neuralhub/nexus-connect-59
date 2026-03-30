@@ -303,6 +303,13 @@ export function DynamicSidebar({
           <CollapsibleTrigger asChild>
             <button
               type="button"
+              onClick={(e) => {
+                // Navigate to main path on click (in addition to toggling)
+                if (mainPath && navigate) {
+                  navigate(mainPath);
+                  onNavigate?.();
+                }
+              }}
               className={cn(
                 // SILK: Item con tongue connector si activo
                 "w-full flex items-center gap-3 text-[13px] transition-colors relative",
