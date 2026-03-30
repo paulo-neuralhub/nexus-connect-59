@@ -42,7 +42,7 @@ export function usePendingApprovalsList(urgencyFilter?: string | null) {
         .select(`
           *,
           account:crm_accounts(id, name),
-          matter:matters(id, reference_number, title, type)
+          matter:matters(id, reference, title, type)
         `)
         .eq('organization_id', organizationId)
         .eq('status', 'pending')
