@@ -114,6 +114,11 @@ const CATEGORY_ORDER = [
   "capacity", "storage", "users", "accounting",
 ];
 
+const ADDON_GROUPS: { label: string; categories: string[]; icon: string; color: string }[] = [
+  { label: "Módulos y servicios", categories: ["module_standalone", "automation", "intelligence"], icon: "Package", color: "#0EA5E9" },
+  { label: "Capacidad y cobertura", categories: ["jurisdiction_pack", "capacity", "storage", "users", "accounting"], icon: "Layers", color: "#10B981" },
+];
+
 // Plan static prices (fallback if plan_definitions not loaded)
 const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
   free: { monthly: 0, annual: 0 },
@@ -511,7 +516,7 @@ export default function AddonStorePage() {
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
                 {/* LAYOUT SIDE-BY-SIDE */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-[38%_1fr] gap-4 items-stretch">
                   {/* ── COLUMNA IZQUIERDA: PLAN ── */}
                   <div className="bg-slate-50 rounded-[14px] p-5 border border-slate-200 flex flex-col" style={{ boxShadow: SILK_SHADOW }}>
                     {/* Header plan */}
@@ -591,28 +596,42 @@ export default function AddonStorePage() {
                       )}
                     </div>
 
-                    {/* Lista add-ons */}
+                    {/* Lista add-ons por grupos */}
                     {activeAddons.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center">
+                      <div className="flex-1 flex items-center justify-center py-8">
                         <p className="text-xs text-slate-400 text-center italic">No tienes add-ons contratados todavía.</p>
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-2 flex-1">
-                        {activeAddons.map((activeAddon) => {
-                          const addonData = addons.find((a) => a.code === activeAddon.code);
-                          if (!addonData) return null;
-                          const color = addonData.color_hex ?? "#64748B";
+                      <div className="flex flex-col gap-4 flex-1">
+                        {ADDON_GROUPS.map((group) => {
+                          const groupAddons = activeAddons.filter((activeAddon) => {
+                            const addonData = addons.find((a) => a.code === activeAddon.code);
+                            return addonData && group.categories.includes(addonData.category);
+                          });
+                          if (groupAddons.length === 0) return null;
                           return (
-                            <div
-                              key={activeAddon.code}
-                              className="flex items-center gap-2.5 p-2.5 rounded-lg border"
-                              style={{ backgroundColor: color + "0D", borderColor: color + "30" }}
-                            >
-                              <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + "20" }}>
-                                <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={12} color={color} />
+                            <div key={group.label}>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <LucideDynamicIcon name={group.icon} size={11} color={group.color} />
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
+                                <span className="text-xs text-slate-400">({groupAddons.length})</span>
                               </div>
-                              <p className="text-xs font-medium text-slate-700 flex-1 min-w-0 truncate">{addonData.name_es}</p>
-                              <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: color }}>+</span>
+                              <div className="flex flex-col gap-1.5">
+                                {groupAddons.map((activeAddon) => {
+                                  const addonData = addons.find((a) => a.code === activeAddon.code);
+                                  if (!addonData) return null;
+                                  const color = addonData.color_hex ?? "#64748B";
+                                  return (
+                                    <div key={activeAddon.code} className="flex items-center gap-2 p-2 rounded-lg border" style={{ backgroundColor: color + "0D", borderColor: color + "25" }}>
+                                      <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + "20" }}>
+                                        <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={11} color={color} />
+                                      </div>
+                                      <p className="text-xs font-medium text-slate-700 flex-1 min-w-0 truncate">{addonData.name_es}</p>
+                                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 leading-none" style={{ backgroundColor: color }}>+</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           );
                         })}
