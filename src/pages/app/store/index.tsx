@@ -177,6 +177,78 @@ export default function AddonStorePage() {
     return counts;
   }, [addons, getAddonState]);
 
+  // Render a single addon card based on state
+  const renderAddonCard = (addon: BillingAddon) => {
+    const state = getAddonState(addon);
+    const inCart = cartCodes.has(addon.code);
+    const displayPrice = billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur;
+    const annualSaving = (addon.price_monthly_eur - addon.price_annual_eur) * 12;
+
+    if (state === "active") {
+      return (
+        <div
+          key={addon.code}
+          className="flex items-center gap-3 p-3 rounded-[14px] bg-white border-l-4"
+          style={{ borderLeftColor: addon.color_hex ?? "#64748B", backgroundColor: (addon.color_hex ?? "#64748B") + "0D" }}
+        >
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-4 w-4" />} size={16} color={addon.color_hex ?? "#64748B"} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-700 truncate">{addon.name_es}</p>
+            <p className="text-xs text-green-600">✓ Activo · Incluido</p>
+          </div>
+          <Badge variant="secondary" className="text-xs flex-shrink-0">Incluido</Badge>
+        </div>
+      );
+    }
+
+    if (state === "redundant") {
+      return (
+        <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col opacity-70 cursor-default" style={{ boxShadow: SILK_SHADOW_SM }}>
+          <Badge className="bg-slate-100 text-slate-500 border border-slate-200 text-xs w-fit mb-2 px-2 py-0.5 rounded-full">Ya incluido</Badge>
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" className="mb-2" />
+          <p className="text-sm font-semibold text-slate-400 mt-1">{addon.name_es}</p>
+          <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
+          <p className="text-xs text-slate-400 mt-3 italic">Cubierto por tu plan o por otro add-on activo.</p>
+        </div>
+      );
+    }
+
+    if (state === "incompatible") {
+      return (
+        <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col opacity-50 cursor-not-allowed" style={{ boxShadow: SILK_SHADOW_SM }}>
+          <Badge className="bg-amber-50 text-amber-700 border border-amber-200 text-xs w-fit mb-2">Requiere plan superior</Badge>
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" />
+          <p className="text-sm font-semibold text-slate-400 mt-2">{addon.name_es}</p>
+          <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
+          <Button variant="outline" size="sm" className="mt-3 w-full text-xs" onClick={() => setMainTab("plan")}>Ver planes</Button>
+        </div>
+      );
+    }
+
+    // state === "available"
+    return (
+      <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col hover:-translate-y-0.5 duration-200 cursor-pointer" style={{ boxShadow: SILK_SHADOW }}>
+        <div className="flex justify-between items-start">
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color={addon.color_hex ?? "#64748B"} />
+          {inCart && <Badge className="bg-blue-100 text-blue-700 text-xs">En carrito</Badge>}
+        </div>
+        <p className="text-sm font-semibold text-slate-800 mt-2">{addon.name_es}</p>
+        <p className="text-xs text-slate-500 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
+        <div className="mt-3 flex justify-between items-end">
+          <div>
+            <p className="text-base font-bold text-slate-800">€{displayPrice}<span className="text-xs font-normal text-slate-500">/mes{billingCycle === "annual" ? " anual" : ""}</span></p>
+            {billingCycle === "annual" && annualSaving > 0 && <p className="text-xs text-green-600">Ahorra €{annualSaving}/año</p>}
+          </div>
+          {inCart ? (
+            <Button variant="outline" size="sm" className="text-red-500 border-red-200 text-xs" onClick={() => removeFromCart(addon.code)}>Quitar</Button>
+          ) : (
+            <Button size="sm" className="text-xs text-white" style={{ backgroundColor: addon.color_hex ?? "#64748B" }} onClick={() => addToCart(addon)}>Añadir</Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const currentPlanTier = PLAN_ORDER.indexOf(planCode as any);
 
   // ── Loading ─────────────────────────────────────────
