@@ -246,7 +246,7 @@ export default function AddonStorePage() {
 
       const { data, error } = await supabase.functions.invoke("stripe-checkout", {
         body: {
-          organization_id: orgPlan?.organization_id,
+          organization_id: currentOrganization?.id,
           addon_codes: cart.map((a) => a.code),
           billing_cycle: billingCycle,
           success_url: `${window.location.origin}/app/store?payment=success`,
@@ -274,7 +274,7 @@ export default function AddonStorePage() {
 
     try {
       const { error } = await supabase.rpc("schedule_addon_cancellation" as any, {
-        p_org_id: orgPlan?.organization_id,
+        p_org_id: currentOrganization?.id,
         p_addon_code: cancelTarget.code,
         p_user_id: (await supabase.auth.getUser()).data.user?.id,
       });
