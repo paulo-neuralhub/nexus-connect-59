@@ -30,7 +30,7 @@ export function useTemplates(category?: string) {
     queryKey: ['email-templates', currentOrganization?.id, category],
     queryFn: async () => {
       let query = supabase
-        .from('email_templates')
+        .from('comm_templates')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
         .eq('is_active', true)
