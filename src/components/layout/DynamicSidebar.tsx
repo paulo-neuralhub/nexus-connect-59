@@ -262,7 +262,7 @@ export function DynamicSidebar({
     const Icon = getIcon(mod.moduleIconLucide || mod.moduleIcon);
     const hasSubItems = mod.moduleMenuItems.length > 0;
     const isExpanded = expandedModules.has(mod.moduleCode);
-    const mainPath = mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
+    const mainPath = `/app/${mod.moduleCode === 'docket' ? 'expedientes' : mod.moduleCode}`;
     const isActive = isPathActive(mainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
 
     // Si está bloqueado
