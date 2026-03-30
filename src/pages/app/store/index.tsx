@@ -122,6 +122,13 @@ const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
   enterprise: { monthly: 399, annual: 319 },
 };
 
+const PLAN_INCLUDED_MODULES: Record<string, Record<string, boolean>> = {
+  free: { "Docketing IP": true, "Gestión de Plazos": true, Documentos: false, "CRM Completo": false, "IP-SPIDER Vigilancia": false, "Finanzas y Facturación": false, "IP-GENIUS IA": false, "Portal Clientes": false, "Acceso API": false, "SSO Enterprise": false },
+  starter: { "Docketing IP": true, "Gestión de Plazos": true, Documentos: true, "CRM Completo": false, "IP-SPIDER Vigilancia": false, "Finanzas y Facturación": false, "IP-GENIUS IA": true, "Portal Clientes": true, "Acceso API": false, "SSO Enterprise": false },
+  professional: { "Docketing IP": true, "Gestión de Plazos": true, Documentos: true, "CRM Completo": true, "IP-SPIDER Vigilancia": true, "Finanzas y Facturación": true, "IP-GENIUS IA": true, "Portal Clientes": true, "Acceso API": false, "SSO Enterprise": false },
+  enterprise: { "Docketing IP": true, "Gestión de Plazos": true, Documentos: true, "CRM Completo": true, "IP-SPIDER Vigilancia": true, "Finanzas y Facturación": true, "IP-GENIUS IA": true, "Portal Clientes": true, "Acceso API": true, "SSO Enterprise": true },
+};
+
 // ── Silk shadow constants ───────────────────────────────
 const SILK_SHADOW = "4px 4px 10px #cdd1dc, -4px -4px 10px #ffffff";
 const SILK_SHADOW_SM = "2px 2px 6px #cdd1dc, -2px -2px 6px #ffffff";
@@ -486,45 +493,72 @@ export default function AddonStorePage() {
 
           <div className={cn("mt-4", cart.length > 0 ? "flex gap-6" : "")}>
             <div className="flex-1 min-w-0">
-              {/* Active addons */}
-              {activeAddons.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                    Incluido en tu suscripción
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {activeAddons.map((addon) => (
-                      <div
-                        key={addon.code}
-                        className="flex items-center gap-3 p-3 rounded-[14px] bg-white border-l-4"
-                        style={{
-                          borderLeftColor: addon.color_hex ?? "#64748B",
-                          backgroundColor: (addon.color_hex ?? "#64748B") + "0D",
-                        }}
-                      >
-                        <LucideDynamicIcon
-                          name={addon.icon_name}
-                          fallback={<Package className="h-4 w-4" />}
-                          size={16}
-                          color={addon.color_hex ?? "#64748B"}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-700 truncate">{addon.name_es}</p>
-                          <p className="text-xs text-green-600">✓ Activo · Incluido</p>
+              {/* Included in subscription */}
+              <div className="mb-6">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
+                  Incluido en tu suscripción
+                </p>
+
+                {/* Plan modules */}
+                <div className="mb-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
+                    <p className="text-xs font-medium text-slate-500">
+                      Tu plan {orgPlan?.plan_name ?? "actual"} incluye
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(PLAN_INCLUDED_MODULES[orgPlan?.plan_code ?? "free"] ?? {})
+                      .filter(([, included]) => included)
+                      .map(([mod]) => (
+                        <div key={mod} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                          <Check size={10} className="text-green-500 flex-shrink-0" />
+                          {mod}
                         </div>
-                        <Badge variant="secondary" className="text-xs flex-shrink-0">Incluido</Badge>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
-              )}
 
-              {/* Separator */}
-              <div className="relative my-6">
-                <Separator />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#EEF2F7] px-3 text-xs text-slate-400 font-medium">
-                  Disponibles para añadir
-                </span>
+                {/* Separator + active add-ons */}
+                {activeAddons.length > 0 && (
+                  <div className="flex items-center gap-2 my-4">
+                    <div className="h-px flex-1 bg-slate-100" />
+                    <span className="text-xs text-slate-400 px-1">más add-ons contratados</span>
+                    <div className="h-px flex-1 bg-slate-100" />
+                  </div>
+                )}
+
+                {activeAddons.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                      <p className="text-xs font-medium text-slate-500">
+                        Add-ons contratados
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                          {activeAddons.length}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {activeAddons.map((activeAddon) => {
+                        const addonData = addons.find((a) => a.code === activeAddon.code);
+                        if (!addonData) return null;
+                        const color = addonData.color_hex ?? "#64748B";
+                        return (
+                          <div
+                            key={activeAddon.code}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: color + "20", color, border: `1px solid ${color}40` }}
+                          >
+                            <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={10} color={color} />
+                            {addonData.name_es}
+                            <span className="opacity-60">· ✓</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Category tabs */}
