@@ -242,20 +242,23 @@ export default function AddonStorePage() {
     return total + (billingCycle === "monthly" ? (addonData.price_monthly_eur ?? 0) : (addonData.price_annual_eur ?? 0));
   }, 0);
 
-  // Block lower-tier addons when a higher tier in the same family is active
+  // Block lower-tier addons when a higher tier in the same family is active or in cart
   const blockedAddonCodes = useMemo(() => {
     const blocked = new Set<string>();
-    const activeCodes = activeAddons.map(a => a.code);
+    const currentCodes = [
+      ...activeAddons.map(a => a.code),
+      ...cart.map(a => a.code),
+    ];
     for (const family of Object.values(ADDON_TIER_HIERARCHY)) {
       for (let i = 0; i < family.length; i++) {
-        if (activeCodes.includes(family[i])) {
+        if (currentCodes.includes(family[i])) {
           family.slice(i + 1).forEach(code => blocked.add(code));
           break;
         }
       }
     }
     return blocked;
-  }, [activeAddons]);
+  }, [activeAddons, cart]);
 
   // Cart helpers
   const addToCart = (addon: BillingAddon) => {
