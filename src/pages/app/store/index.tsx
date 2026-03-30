@@ -133,6 +133,14 @@ const ADDON_GROUPS: { label: string; categories: string[]; icon: string; color: 
   { label: "Capacidad y cobertura", categories: ["jurisdiction_pack", "capacity", "storage", "users", "accounting"], icon: "Layers", color: "#10B981" },
 ];
 
+// Tier hierarchy per addon family — index 0 = highest tier
+const ADDON_TIER_HIERARCHY: Record<string, string[]> = {
+  spider:       ['spider_full', 'spider_pro', 'spider_lite'],
+  genius:       ['genius_full', 'genius_pro', 'genius_starter'],
+  contabilidad: ['accounting_advanced', 'accounting_basic'],
+  storage:      ['storage_200gb', 'storage_50gb', 'storage_10gb'],
+};
+
 // Plan static prices (fallback if billing_plans not loaded)
 const PLAN_PRICES_FALLBACK: Record<string, { monthly: number; annual: number }> = {
   free: { monthly: 0, annual: 0 },
