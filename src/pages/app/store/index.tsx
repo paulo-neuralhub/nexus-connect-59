@@ -653,6 +653,7 @@ export default function AddonStorePage() {
                       })}
                     </div>
                   </div>
+                </div>
 
                 {/* NOTA EXPLICATIVA */}
                 <div className="flex items-start gap-2 mt-3 px-1">
