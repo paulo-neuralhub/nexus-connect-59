@@ -2889,6 +2889,7 @@ export type Database = {
           consecutive_failures: number | null
           created_at: string
           description: string | null
+          gdpr_tier: number | null
           health_latency_ms: number | null
           health_status: string | null
           id: string
@@ -2896,6 +2897,7 @@ export type Database = {
           last_health_check_at: string | null
           logo_url: string | null
           name: string
+          requires_consent: boolean | null
           status: string
           supports_chat: boolean | null
           supports_embeddings: boolean | null
@@ -2914,6 +2916,7 @@ export type Database = {
           consecutive_failures?: number | null
           created_at?: string
           description?: string | null
+          gdpr_tier?: number | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
@@ -2921,6 +2924,7 @@ export type Database = {
           last_health_check_at?: string | null
           logo_url?: string | null
           name: string
+          requires_consent?: boolean | null
           status?: string
           supports_chat?: boolean | null
           supports_embeddings?: boolean | null
@@ -2939,6 +2943,7 @@ export type Database = {
           consecutive_failures?: number | null
           created_at?: string
           description?: string | null
+          gdpr_tier?: number | null
           health_latency_ms?: number | null
           health_status?: string | null
           id?: string
@@ -2946,6 +2951,7 @@ export type Database = {
           last_health_check_at?: string | null
           logo_url?: string | null
           name?: string
+          requires_consent?: boolean | null
           status?: string
           supports_chat?: boolean | null
           supports_embeddings?: boolean | null
@@ -2986,6 +2992,57 @@ export type Database = {
           id?: string
           overall_score?: number | null
           prompt_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_query_type_routing: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          fallback_model_1: string | null
+          fallback_model_2: string | null
+          fallback_provider_1: string | null
+          fallback_provider_2: string | null
+          id: string
+          is_active: boolean | null
+          max_tokens: number | null
+          primary_model: string
+          primary_provider: string
+          query_type: string
+          temperature: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          fallback_model_1?: string | null
+          fallback_model_2?: string | null
+          fallback_provider_1?: string | null
+          fallback_provider_2?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          primary_model: string
+          primary_provider: string
+          query_type: string
+          temperature?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          fallback_model_1?: string | null
+          fallback_model_2?: string | null
+          fallback_provider_1?: string | null
+          fallback_provider_2?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          primary_model?: string
+          primary_provider?: string
+          query_type?: string
+          temperature?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3236,8 +3293,10 @@ export type Database = {
           description: string | null
           fallback_model_1: string | null
           fallback_model_2: string | null
+          fallback_model_3: string | null
           fallback_provider_1: string | null
           fallback_provider_2: string | null
+          fallback_provider_3: string | null
           icon: string | null
           id: string
           is_active: boolean | null
@@ -3259,8 +3318,10 @@ export type Database = {
           description?: string | null
           fallback_model_1?: string | null
           fallback_model_2?: string | null
+          fallback_model_3?: string | null
           fallback_provider_1?: string | null
           fallback_provider_2?: string | null
+          fallback_provider_3?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
@@ -3282,8 +3343,10 @@ export type Database = {
           description?: string | null
           fallback_model_1?: string | null
           fallback_model_2?: string | null
+          fallback_model_3?: string | null
           fallback_provider_1?: string | null
           fallback_provider_2?: string | null
+          fallback_provider_3?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
@@ -26249,7 +26312,10 @@ export type Database = {
           jurisdictions_with_data: number | null
           last_batch_run: string | null
           last_batch_success_rate: number | null
+          max_gdpr_tier: number | null
           model_id: string | null
+          pi_primary_model: string | null
+          pi_primary_provider: string | null
           region_code: string
           region_emoji: string
           region_name: string
@@ -26272,7 +26338,10 @@ export type Database = {
           jurisdictions_with_data?: number | null
           last_batch_run?: string | null
           last_batch_success_rate?: number | null
+          max_gdpr_tier?: number | null
           model_id?: string | null
+          pi_primary_model?: string | null
+          pi_primary_provider?: string | null
           region_code: string
           region_emoji: string
           region_name: string
@@ -26295,7 +26364,10 @@ export type Database = {
           jurisdictions_with_data?: number | null
           last_batch_run?: string | null
           last_batch_success_rate?: number | null
+          max_gdpr_tier?: number | null
           model_id?: string | null
+          pi_primary_model?: string | null
+          pi_primary_provider?: string | null
           region_code?: string
           region_emoji?: string
           region_name?: string
