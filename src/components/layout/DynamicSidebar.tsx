@@ -151,8 +151,9 @@ export function DynamicSidebar({
     if (!sections) return;
     sections.forEach(section => {
       section.modules.forEach(mod => {
-        if (mod.moduleMenuItems.length > 0) {
-          const isModActive = mod.moduleMenuItems.some(item => isPathActive(item.path));
+        const modMainPath = ({ docket: '/app/expedientes', deadlines: '/app/deadlines' } as Record<string,string>)[mod.moduleCode] || mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
+        if (mod.moduleMenuItems.length > 0 || modMainPath) {
+          const isModActive = isPathActive(modMainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
           if (isModActive) {
             setExpandedModules(prev => {
               if (prev.has(mod.moduleCode)) return prev;
@@ -262,7 +263,8 @@ export function DynamicSidebar({
     const Icon = getIcon(mod.moduleIconLucide || mod.moduleIcon);
     const hasSubItems = mod.moduleMenuItems.length > 0;
     const isExpanded = expandedModules.has(mod.moduleCode);
-    const mainPath = mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
+    const MODULE_PATHS: Record<string, string> = { docket: '/app/expedientes', deadlines: '/app/deadlines' };
+    const mainPath = MODULE_PATHS[mod.moduleCode] || mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
     const isActive = isPathActive(mainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
 
     // Si está bloqueado
