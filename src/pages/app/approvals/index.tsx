@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import { usePageTitle } from '@/contexts/page-context';
 import { useAuth } from '@/contexts/auth-context';
-import { useNavigate } from 'react-router-dom';
 import {
   usePendingApprovalsList,
   useApprovalsCount,
@@ -13,17 +12,23 @@ import {
   useRejectItem,
   type PendingApproval,
 } from '@/hooks/use-approvals';
-import { format, formatDistanceToNow, differenceInMinutes } from 'date-fns';
+import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CheckCircle2, X, ChevronDown, ChevronUp, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 
 function urgencyColor(level: string | null) {
@@ -44,7 +49,7 @@ function urgencyLabel(level: string | null) {
 
 function ExpirationTimer({ expiresAt }: { expiresAt: string }) {
   const mins = differenceInMinutes(new Date(expiresAt), new Date());
-  if (mins > 240) return null; // Only show if < 4 hours
+  if (mins > 240) return null;
   const hours = Math.floor(mins / 60);
   const remainder = mins % 60;
   const isUrgent = mins < 60;
@@ -62,8 +67,8 @@ function ApprovalCard({
   onReject,
 }: {
   approval: PendingApproval;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove: (approval: PendingApproval) => void;
+  onReject: (approval: PendingApproval) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const urg = urgencyLabel(approval.urgency_level);
@@ -131,10 +136,10 @@ function ApprovalCard({
           {expanded ? 'Ocultar' : 'Ver detalle'}
         </Button>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs text-red-600" onClick={() => onReject(approval.id)}>
+          <Button variant="outline" size="sm" className="text-xs text-red-600" onClick={() => onReject(approval)}>
             <X className="h-3 w-3 mr-1" /> Rechazar
           </Button>
-          <Button size="sm" className="text-xs" onClick={() => onApprove(approval.id)}>
+          <Button size="sm" className="text-xs" onClick={() => onApprove(approval)}>
             <CheckCircle2 className="h-3 w-3 mr-1" /> Aprobar
           </Button>
         </div>
@@ -158,11 +163,15 @@ function ApprovalCard({
 export default function ApprovalsPage() {
   usePageTitle('Aprobaciones');
   const { session } = useAuth();
-  const navigate = useNavigate();
   const userId = session?.user?.id;
 
   const [urgencyFilter, setUrgencyFilter] = useState<string | null>(null);
-  const [rejectId, setRejectId] = useState<string | null>(null);
+
+  // Approve dialog state
+  const [approveTarget, setApproveTarget] = useState<PendingApproval | null>(null);
+
+  // Reject dialog state
+  const [rejectTarget, setRejectTarget] = useState<PendingApproval | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
   const { data: approvals = [], isLoading } = usePendingApprovalsList(urgencyFilter);
@@ -170,26 +179,25 @@ export default function ApprovalsPage() {
   const approveItem = useApproveItem();
   const rejectItem = useRejectItem();
 
-  const handleApprove = (id: string) => {
-    if (!userId) return;
-    approveItem.mutate({ approvalId: id, userId }, {
-      onSuccess: (data: any) => {
-        const approval = approvals.find(a => a.id === id);
-        if (approval?.source_type === 'ai_instruction') {
-          navigate('/app/instructions');
-        }
-      },
-    });
+  const handleApproveConfirm = () => {
+    if (!approveTarget || !userId) return;
+    approveItem.mutate(
+      { approval: approveTarget, userId },
+      { onSuccess: () => setApproveTarget(null) },
+    );
   };
 
-  const handleReject = () => {
-    if (!rejectId || !userId) return;
-    rejectItem.mutate({ approvalId: rejectId, userId, reason: rejectReason }, {
-      onSuccess: () => {
-        setRejectId(null);
-        setRejectReason('');
+  const handleRejectConfirm = () => {
+    if (!rejectTarget || !userId || !rejectReason.trim()) return;
+    rejectItem.mutate(
+      { approval: rejectTarget, userId, reason: rejectReason.trim() },
+      {
+        onSuccess: () => {
+          setRejectTarget(null);
+          setRejectReason('');
+        },
       },
-    });
+    );
   };
 
   const filters = [
@@ -249,33 +257,64 @@ export default function ApprovalsPage() {
             <ApprovalCard
               key={a.id}
               approval={a}
-              onApprove={handleApprove}
-              onReject={id => setRejectId(id)}
+              onApprove={setApproveTarget}
+              onReject={setRejectTarget}
             />
           ))}
         </div>
       )}
 
-      {/* Reject dialog */}
-      <Dialog open={!!rejectId} onOpenChange={v => !v && setRejectId(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Rechazar aprobación</DialogTitle>
-          </DialogHeader>
-          <Textarea
-            value={rejectReason}
-            onChange={e => setRejectReason(e.target.value)}
-            placeholder="Motivo del rechazo (opcional)"
-            rows={3}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectId(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={rejectItem.isPending}>
-              Confirmar rechazo
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Approve AlertDialog */}
+      <AlertDialog open={!!approveTarget} onOpenChange={v => !v && setApproveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar aprobación</AlertDialogTitle>
+            <AlertDialogDescription>
+              {approveTarget?.proposed_action || approveTarget?.title || 'Se aprobará esta solicitud.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleApproveConfirm}
+              disabled={approveItem.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Aprobar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject AlertDialog */}
+      <AlertDialog open={!!rejectTarget} onOpenChange={v => { if (!v) { setRejectTarget(null); setRejectReason(''); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Rechazar solicitud</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Confirmas el rechazo? Esta acción quedará registrada en el expediente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              placeholder="Motivo del rechazo (obligatorio)"
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejectConfirm}
+              disabled={rejectItem.isPending || !rejectReason.trim()}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Rechazar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
