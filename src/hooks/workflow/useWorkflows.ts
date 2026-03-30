@@ -263,7 +263,7 @@ export function useWorkflowQueue(options?: { status?: string }) {
         .from('workflow_queue')
         .select(`
           *,
-          workflow:workflow_definitions(id, name, code)
+          workflow:workflow_definitions(id, name)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('priority', { ascending: true })
