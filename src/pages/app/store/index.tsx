@@ -133,6 +133,14 @@ const ADDON_GROUPS: { label: string; categories: string[]; icon: string; color: 
   { label: "Capacidad y cobertura", categories: ["jurisdiction_pack", "capacity", "storage", "users", "accounting"], icon: "Layers", color: "#10B981" },
 ];
 
+// Tier hierarchy per addon family — index 0 = highest tier
+const ADDON_TIER_HIERARCHY: Record<string, string[]> = {
+  spider:       ['spider_full', 'spider_pro', 'spider_lite'],
+  genius:       ['genius_full', 'genius_pro', 'genius_starter'],
+  contabilidad: ['accounting_advanced', 'accounting_basic'],
+  storage:      ['storage_200gb', 'storage_50gb', 'storage_10gb'],
+};
+
 // Plan static prices (fallback if billing_plans not loaded)
 const PLAN_PRICES_FALLBACK: Record<string, { monthly: number; annual: number }> = {
   free: { monthly: 0, annual: 0 },
@@ -233,6 +241,21 @@ export default function AddonStorePage() {
     if (!addonData) return total;
     return total + (billingCycle === "monthly" ? (addonData.price_monthly_eur ?? 0) : (addonData.price_annual_eur ?? 0));
   }, 0);
+
+  // Block lower-tier addons when a higher tier in the same family is active
+  const blockedAddonCodes = useMemo(() => {
+    const blocked = new Set<string>();
+    const activeCodes = activeAddons.map(a => a.code);
+    for (const family of Object.values(ADDON_TIER_HIERARCHY)) {
+      for (let i = 0; i < family.length; i++) {
+        if (activeCodes.includes(family[i])) {
+          family.slice(i + 1).forEach(code => blocked.add(code));
+          break;
+        }
+      }
+    }
+    return blocked;
+  }, [activeAddons]);
 
   // Cart helpers
   const addToCart = (addon: BillingAddon) => {
@@ -402,6 +425,19 @@ export default function AddonStorePage() {
           <p className="text-sm font-semibold text-slate-400 mt-2">{addon.name_es}</p>
           <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
           <Button variant="outline" size="sm" className="mt-3 w-full text-xs" onClick={() => setMainTab("plan")}>Ver planes</Button>
+        </div>
+      );
+    }
+
+    // Blocked by a higher-tier addon in the same family
+    const isBlocked = blockedAddonCodes.has(addon.code);
+    if (isBlocked) {
+      return (
+        <div key={addon.code} id={addon.code} className="bg-white rounded-[14px] p-4 flex flex-col opacity-60 cursor-default" style={{ boxShadow: SILK_SHADOW_SM }}>
+          <span className="bg-gray-100 text-gray-400 text-xs px-2 py-1 rounded-md border border-gray-200 w-fit mb-2">Incluido en tier superior</span>
+          <LucideDynamicIcon name={addon.icon_name} fallback={<Package className="h-[18px] w-[18px]" />} size={18} color="#94A3B8" className="mb-2" />
+          <p className="text-sm font-semibold text-slate-400 mt-1">{addon.name_es}</p>
+          <p className="text-xs text-slate-400 line-clamp-2 mt-1 flex-1">{addon.description_es}</p>
         </div>
       );
     }
