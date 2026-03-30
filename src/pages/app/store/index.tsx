@@ -986,26 +986,51 @@ export default function AddonStorePage() {
 
                   {/* CTA */}
                   <div className="px-5 pb-5">
-                    <Button
-                      className="w-full bg-slate-900 text-white hover:bg-slate-800"
-                      size="sm"
-                      onClick={() => {
-                        const subject = encodeURIComponent("Solicitud Add-ons IP-NEXUS");
-                        const body = encodeURIComponent(
-                          "Plan actual: " + (orgPlan?.plan_name ?? "Free") + "\n" +
-                          "Ciclo: " + (billingCycle === "annual" ? "Anual" : "Mensual") + "\n\n" +
-                          "Add-ons solicitados:\n" +
-                          cart.map((a) =>
-                            "- " + a.name_es + ": €" +
-                            (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur) + "/mes"
-                          ).join("\n") + "\n\n" +
-                          "Total adicional: €" + cartTotal + "/mes"
-                        );
-                        window.open("mailto:ventas@ip-nexus.com?subject=" + subject + "&body=" + body, "_blank");
-                      }}
+                    <AlertDialog open={checkoutConfirmOpen} onOpenChange={setCheckoutConfirmOpen}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar compra</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Vas a contratar{" "}
+                            <strong>{cart.length} add-on{cart.length > 1 ? "s" : ""}</strong>
+                            {" "}por{" "}
+                            <strong>
+                              €{cart.reduce((sum, a) => {
+                                const addon = addons.find((ad) => ad.code === a.code);
+                                return sum + (billingCycle === "monthly"
+                                  ? (addon?.price_monthly_eur ?? 0)
+                                  : (addon?.price_annual_eur ?? 0));
+                              }, 0)}/mes
+                            </strong>
+                            . Serás redirigido a Stripe para completar el pago de forma segura.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleCheckout} disabled={isCheckingOut}>
+                            {isCheckingOut ? "Redirigiendo..." : "Ir a pagar con Stripe →"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <button
+                      onClick={() => setCheckoutConfirmOpen(true)}
+                      disabled={!cart.length || isCheckingOut}
+                      className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-2"
                     >
-                      Proceder al pago →
-                    </Button>
+                      {isCheckingOut ? (
+                        <>
+                          <LucideDynamicIcon name="Loader2" size={14} color="white" className="animate-spin" />
+                          Redirigiendo...
+                        </>
+                      ) : (
+                        <>
+                          <LucideDynamicIcon name="CreditCard" size={14} color="white" />
+                          Proceder al pago
+                        </>
+                      )}
+                    </button>
                     <div className="flex items-center justify-center gap-1.5 mt-3">
                       <Lock className="h-3 w-3 text-slate-400" />
                       <p className="text-[11px] text-slate-400">
