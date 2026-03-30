@@ -154,7 +154,7 @@ const SILK_SHADOW_SM = "2px 2px 6px #cdd1dc, -2px -2px 6px #ffffff";
 // ── Component ───────────────────────────────────────────
 export default function AddonStorePage() {
   const navigate = useNavigate();
-  const { addons, orgPlan, activeAddons, isLoading, error, getAddonState } = useAddonStore();
+  const { addons, orgPlan, activeAddons, modules, isLoading, error, getAddonState, getRedundancyReason, isModuleIncluded, getModuleAddons } = useAddonStore();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [cart, setCart] = useState<BillingAddon[]>([]);
