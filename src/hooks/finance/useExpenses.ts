@@ -107,8 +107,7 @@ export function useExpenses(filters: ExpenseFilters = {}) {
           *,
           matter:matters(id, reference, title),
           contact:contacts(id, name),
-          user:users!expenses_user_id_fkey(id, full_name),
-          approver:users!expenses_approved_by_fkey(id, full_name)
+          user:profiles!expenses_user_id_fkey(id, full_name)
         `)
         .eq('organization_id', currentOrganization.id)
         .order('date', { ascending: false });
@@ -122,20 +121,11 @@ export function useExpenses(filters: ExpenseFilters = {}) {
       if (filters.matterId) {
         query = query.eq('matter_id', filters.matterId);
       }
-      if (filters.contactId) {
-        query = query.eq('contact_id', filters.contactId);
-      }
       if (filters.userId) {
         query = query.eq('user_id', filters.userId);
       }
       if (filters.category) {
         query = query.eq('category', filters.category);
-      }
-      if (filters.status) {
-        query = query.eq('status', filters.status);
-      }
-      if (filters.billingStatus) {
-        query = query.eq('billing_status', filters.billingStatus);
       }
       if (filters.isBillable !== undefined) {
         query = query.eq('is_billable', filters.isBillable);
