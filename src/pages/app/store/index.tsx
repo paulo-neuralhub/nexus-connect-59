@@ -515,49 +515,56 @@ export default function AddonStorePage() {
               <div className="mb-8">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-[30%_1fr] gap-4 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-[22%_1fr] gap-4 items-start">
                   {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
-                  <div className="bg-slate-50 rounded-[14px] p-4 border border-slate-200" style={{ boxShadow: SILK_SHADOW }}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
-                        <LucideDynamicIcon name="Shield" size={13} color="white" />
+                  <div className="bg-slate-50 rounded-[14px] p-3 border border-slate-200" style={{ boxShadow: SILK_SHADOW }}>
+                    {/* Header compacto */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center flex-shrink-0">
+                          <LucideDynamicIcon name="Shield" size={11} color="white" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan"}</p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-800 leading-tight truncate">{orgPlan?.plan_name ?? "Plan"}</p>
-                        <p className="text-xs text-slate-400">Plan base</p>
-                      </div>
-                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium flex-shrink-0">Activo</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium leading-tight">Activo</span>
                     </div>
 
-                    <div className="flex items-baseline gap-1 mb-3">
-                      <span className="text-xl font-bold text-slate-800">
+                    {/* Precio compacto */}
+                    <div className="flex items-baseline gap-0.5 mb-2">
+                      <span className="text-base font-bold text-slate-800">
                         {(orgPlan?.monthly_price_eur ?? 0) === 0 ? "Gratis" : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}`}
                       </span>
                       {(orgPlan?.monthly_price_eur ?? 0) > 0 && <span className="text-xs text-slate-400">/mes</span>}
                     </div>
 
-                    <div className="flex gap-2 pb-3 mb-3 border-b border-slate-200">
+                    {/* Métricas en fila compacta */}
+                    <div className="flex gap-2 pb-2 mb-2 border-b border-slate-200">
                       {[
-                        { label: "Exp.", value: (orgPlan?.max_matters ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_matters ?? "—") },
-                        { label: "Us.", value: (orgPlan?.max_users ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_users ?? "—") },
-                        { label: "Jur.", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : String(orgPlan?.max_jurisdictions ?? "—") },
+                        { label: "Exp", value: (orgPlan?.max_matters ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_matters ?? "—") },
+                        { label: "Us", value: (orgPlan?.max_users ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_users ?? "—") },
+                        { label: "Jur", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : String(orgPlan?.max_jurisdictions ?? "—") },
                       ].map((m) => (
-                        <div key={m.label} className="flex-1 text-center">
-                          <p className="text-sm font-bold text-slate-800">{m.value}</p>
-                          <p className="text-xs text-slate-400">{m.label}</p>
+                        <div key={m.label} className="flex items-center gap-0.5">
+                          <span className="text-xs font-bold text-slate-700">{m.value}</span>
+                          <span className="text-xs text-slate-400">{m.label}</span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(PLAN_INCLUDED_MODULES[planCode] ?? {})
-                        .filter(([, inc]) => inc)
-                        .map(([mod]) => (
-                          <span key={mod} className="inline-flex items-center gap-0.5 text-xs text-slate-600 bg-white border border-slate-200 rounded px-1.5 py-0.5 leading-tight">
-                            <LucideDynamicIcon name={MODULE_ICONS[mod] ?? "Check"} size={8} color="#16a34a" />
+                    {/* Módulos en lista vertical compacta */}
+                    <div className="flex flex-col gap-0.5">
+                      {Object.entries(PLAN_INCLUDED_MODULES[planCode] ?? {}).map(([mod, included]) => (
+                        <div key={mod} className="flex items-center gap-1.5">
+                          {included ? (
+                            <LucideDynamicIcon name="Check" size={9} color="#16a34a" className="flex-shrink-0" />
+                          ) : (
+                            <LucideDynamicIcon name="Minus" size={9} color="#CBD5E1" className="flex-shrink-0" />
+                          )}
+                          <span className={cn("text-xs leading-tight whitespace-nowrap", included ? "text-slate-600 font-medium" : "text-slate-300")}>
                             {mod}
                           </span>
-                        ))}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -594,7 +601,7 @@ export default function AddonStorePage() {
                               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
                               <span className="text-xs text-slate-400">({groupAddons.filter((a) => getAddonState(a) === "active").length} activos)</span>
                             </div>
-                            <div className="grid grid-cols-3 gap-1.5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                               {groupAddons.map((addon) => {
                                 const state = getAddonState(addon);
                                 const isActive = state === "active";
