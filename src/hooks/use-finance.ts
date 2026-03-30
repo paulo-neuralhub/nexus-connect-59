@@ -703,8 +703,8 @@ export function useRenewalSchedule(filters?: RenewalFilters) {
         const statuses = Array.isArray(filters.status) ? filters.status : [filters.status];
         query = query.in('status', statuses);
       }
-      if (filters?.due_before) query = query.lte('due_date', filters.due_before);
-      if (filters?.due_after) query = query.gte('due_date', filters.due_after);
+      if (filters?.due_before) query = query.lte('next_renewal_date', filters.due_before);
+      if (filters?.due_after) query = query.gte('next_renewal_date', filters.due_after);
       
       const { data, error } = await query;
       if (error) throw error;
