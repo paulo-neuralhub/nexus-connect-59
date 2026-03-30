@@ -731,7 +731,7 @@ export default function AddonStorePage() {
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium leading-tight flex-shrink-0">Activo</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 font-medium leading-tight flex-shrink-0">Activo</span>
                     </div>
 
                     {/* Métricas en fila compacta */}
@@ -769,7 +769,10 @@ export default function AddonStorePage() {
 
                     {/* Límites de tu plan */}
                     <div className="border-t border-gray-100 pt-4 mt-4">
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Límites de tu plan</p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <LucideDynamicIcon name="BarChart2" size={14} color="#3B82F6" className="flex-shrink-0" />
+                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Límites de tu plan</p>
+                      </div>
                       <div className="flex flex-col gap-0.5">
                         {[
                           { icon: "FolderOpen", label: "Expedientes", value: (orgPlan?.max_matters ?? 0) >= 999999 ? "Ilimitados" : String(orgPlan?.max_matters ?? "—") },
