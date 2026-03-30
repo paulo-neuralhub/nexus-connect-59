@@ -111,6 +111,7 @@ const TIME_COLORS: Record<string, string> = {
 };
 
 type ViewMode = 'week' | 'list';
+type DatePreset = 'this_week' | 'this_month' | 'this_year' | 'last_year' | 'custom';
 
 export default function TimesheetPage() {
   const navigate = useNavigate();
@@ -120,19 +121,43 @@ export default function TimesheetPage() {
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [datePreset, setDatePreset] = useState<DatePreset>('this_week');
+  const [customRange, setCustomRange] = useState<{ from: Date; to: Date }>({
+    from: startOfWeek(new Date(), { weekStartsOn: 1 }),
+    to: endOfWeek(new Date(), { weekStartsOn: 1 }),
+  });
 
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Weekly entries for calendar
+  // Compute the active date range for KPIs based on preset
+  const kpiRange = useMemo(() => {
+    const now = new Date();
+    switch (datePreset) {
+      case 'this_week':
+        return { start: weekStart, end: weekEnd };
+      case 'this_month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'this_year':
+        return { start: startOfYear(now), end: endOfYear(now) };
+      case 'last_year': {
+        const lastYear = subYears(now, 1);
+        return { start: startOfYear(lastYear), end: endOfYear(lastYear) };
+      }
+      case 'custom':
+        return { start: customRange.from, end: customRange.to };
+      default:
+        return { start: weekStart, end: weekEnd };
+    }
+  }, [datePreset, weekStart, weekEnd, customRange]);
+
+  // Weekly entries for calendar view
   const { data: weekEntries = [], isLoading: weekLoading } = useWeeklyTimeEntries(weekStart);
 
-  // Monthly entries for KPIs
-  const monthStart = startOfMonth(new Date());
-  const monthEnd = endOfMonth(new Date());
-  const { data: monthEntries = [] } = useTimeEntries({
-    startDate: monthStart,
-    endDate: monthEnd,
+  // Range entries for KPIs (based on preset)
+  const { data: rangeEntries = [] } = useTimeEntries({
+    startDate: kpiRange.start,
+    endDate: kpiRange.end,
   });
 
   // Group entries by day for weekly view
@@ -141,13 +166,13 @@ export default function TimesheetPage() {
     entries: weekEntries.filter(e => isSameDay(new Date(e.date), day)),
   }));
 
-  // Monthly KPIs
-  const totalMinutesMonth = monthEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
-  const billableMinutesMonth = monthEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
-  const billedMinutesMonth = monthEntries.filter(e => e.billing_status === 'billed').reduce((sum, e) => sum + e.duration_minutes, 0);
-  const pendingMinutesMonth = billableMinutesMonth - billedMinutesMonth;
+  // KPIs from range
+  const totalMinutesRange = rangeEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
+  const billableMinutesRange = rangeEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
+  const billedMinutesRange = rangeEntries.filter(e => e.billing_status === 'billed').reduce((sum, e) => sum + e.duration_minutes, 0);
+  const pendingMinutesRange = billableMinutesRange - billedMinutesRange;
 
-  // Weekly totals
+  // Weekly totals for the badge
   const totalMinutes = weekEntries.reduce((sum, e) => sum + e.duration_minutes, 0);
   const billableMinutes = weekEntries.filter(e => e.is_billable).reduce((sum, e) => sum + e.duration_minutes, 0);
 
