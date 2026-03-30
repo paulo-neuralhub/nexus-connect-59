@@ -129,6 +129,7 @@ export function DynamicSidebar({
   onNavigate,
 }: DynamicSidebarProps) {
   const location = useLocation();
+  const navTo = useNavigate();
   const { profile, signOut } = useAuth();
   const { currentOrganization, memberships, setCurrentOrganization } = useOrganization();
   const { data: sections, isLoading } = useSidebarMenu();
