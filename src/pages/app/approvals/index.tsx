@@ -89,8 +89,8 @@ function ApprovalCard({
         {approval.account?.name && (
           <p className="text-xs text-muted-foreground mt-0.5">{approval.account.name}</p>
         )}
-        {approval.matter?.reference_number && (
-          <p className="text-xs text-muted-foreground">Exp: {approval.matter.reference_number}</p>
+        {approval.matter?.reference && (
+          <p className="text-xs text-muted-foreground">Exp: {approval.matter.reference}</p>
         )}
       </div>
 
