@@ -230,6 +230,36 @@ export default function AddonStorePage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [cart, setCart] = useState<BillingAddon[]>([]);
   const [mainTab, setMainTab] = useState("plan");
+
+  // ── Detect payment redirect params on mount ──
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const paymentStatus = searchParams.get('payment');
+    const tabParam = searchParams.get('tab');
+
+    if (tabParam === 'addons') {
+      setMainTab('addons');
+    }
+
+    if (paymentStatus === 'success') {
+      setTimeout(() => {
+        toast.success(
+          'Pago completado. Los nuevos servicios ya están activos en tu cuenta.',
+          { duration: 6000 }
+        );
+      }, 500);
+      setCart([]);
+    }
+
+    if (paymentStatus === 'cancelled') {
+      toast.error(
+        'El pago fue cancelado. Tu carrito sigue disponible.',
+        { duration: 4000 }
+      );
+    }
+
+    window.history.replaceState({}, '', '/app/store');
+  }, []);
   const [addonTab, setAddonTab] = useState("all");
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
@@ -328,8 +358,8 @@ export default function AddonStorePage() {
           organization_id: currentOrganization?.id,
           addon_codes: cart.map((a) => a.code),
           billing_cycle: billingCycle,
-          success_url: `${window.location.origin}/app/store?payment=success`,
-          cancel_url: `${window.location.origin}/app/store?payment=cancelled`,
+          success_url: `${window.location.origin}/app/store?payment=success&tab=addons`,
+          cancel_url: `${window.location.origin}/app/store?payment=cancelled&tab=addons`,
         },
       });
 
