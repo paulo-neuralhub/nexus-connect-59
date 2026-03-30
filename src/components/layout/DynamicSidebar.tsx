@@ -567,40 +567,6 @@ export function DynamicSidebar({
             <div className="my-3 mr-4 border-t border-white/[0.04]" />
             
             {/* SILK: Enlaces de utilidad fijos */}
-            {(() => {
-              const isAlertsActive = isPathActive("/app/alerts");
-              return (
-                <Link
-                  to="/app/alerts"
-                  onClick={onNavigate}
-                  title={collapsed ? "Alertas IA" : undefined}
-                  className={cn(
-                    "flex items-center gap-3 text-[13px] transition-colors relative",
-                    collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
-                    isAlertsActive
-                      ? "silk-menu-active text-[#0a2540] font-bold"
-                      : "text-white/[0.48] font-normal hover:text-white/70 rounded-xl mr-4 z-[1]"
-                  )}
-                >
-                  {isAlertsActive && <TongueCurves />}
-                  <Bell 
-                    className="h-3 w-3 shrink-0" 
-                    style={isAlertsActive ? { 
-                      color: '#EF4444',
-                      filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.30))'
-                    } : { color: '#EF4444', opacity: 0.5 }} 
-                  />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1">Alertas IA</span>
-                      {badgeCounts.alerts > 0 && (
-                        <span className="silk-badge-active bg-destructive">{badgeCounts.alerts}</span>
-                      )}
-                    </>
-                  )}
-                </Link>
-              );
-            })()}
 
             {(() => {
               const isHelpActive = isPathActive("/app/help");
