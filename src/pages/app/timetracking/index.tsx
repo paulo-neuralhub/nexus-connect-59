@@ -256,12 +256,56 @@ export default function TimesheetPage() {
         </div>
       </div>
 
-      {/* Monthly KPIs with NeoBadge */}
+      {/* KPIs + Period Selector */}
+      <div className="flex items-center gap-3 mb-1">
+        <span className="text-sm font-medium text-muted-foreground">Período:</span>
+        <div className="flex gap-1">
+          {([
+            { key: 'this_week', label: 'Semana' },
+            { key: 'this_month', label: 'Mes' },
+            { key: 'this_year', label: 'Año' },
+            { key: 'last_year', label: 'Año anterior' },
+            { key: 'custom', label: 'Personalizar' },
+          ] as { key: DatePreset; label: string }[]).map(p => (
+            <Button
+              key={p.key}
+              variant={datePreset === p.key ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setDatePreset(p.key)}
+              className="text-xs h-7"
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+        {datePreset === 'custom' && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs h-7 gap-1">
+                <Calendar className="h-3 w-3" />
+                {format(customRange.from, 'd MMM', { locale: es })} – {format(customRange.to, 'd MMM yy', { locale: es })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <DayPickerCalendar
+                mode="range"
+                selected={{ from: customRange.from, to: customRange.to }}
+                onSelect={(range: any) => {
+                  if (range?.from) setCustomRange({ from: range.from, to: range.to || range.from });
+                }}
+                numberOfMonths={2}
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Horas este mes" value={formatDurationShort(totalMinutesMonth)} color={TIME_COLORS.total} />
-        <StatCard label="Facturables" value={formatDurationShort(billableMinutesMonth)} color={TIME_COLORS.billable} />
-        <StatCard label="Facturadas" value={formatDurationShort(billedMinutesMonth)} color={TIME_COLORS.billed} />
-        <StatCard label="Pendientes" value={formatDurationShort(pendingMinutesMonth)} color={pendingMinutesMonth > 0 ? TIME_COLORS.pending : '#94a3b8'} />
+        <StatCard label={`Horas (${PRESET_LABELS[datePreset]})`} value={formatDurationShort(totalMinutesRange)} color={TIME_COLORS.total} />
+        <StatCard label="Facturables" value={formatDurationShort(billableMinutesRange)} color={TIME_COLORS.billable} />
+        <StatCard label="Facturadas" value={formatDurationShort(billedMinutesRange)} color={TIME_COLORS.billed} />
+        <StatCard label="Pendientes" value={formatDurationShort(pendingMinutesRange)} color={pendingMinutesRange > 0 ? TIME_COLORS.pending : '#94a3b8'} />
       </div>
 
       {/* View Toggle + Week Navigation */}
