@@ -438,76 +438,118 @@ export default function AddonStorePage() {
 
         {/* ═══ TAB 2: Módulos ═══════════════════════ */}
         <TabsContent value="modules">
-          {/* Mobile fallback */}
-          <div className="md:hidden mt-4">
-            <div className="bg-white rounded-[14px] p-5 text-center text-sm text-slate-500" style={{ boxShadow: SILK_SHADOW }}>
-              <Monitor className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-              La comparativa de módulos está optimizada para desktop.
-            </div>
-          </div>
+          <div className="mt-4 space-y-4">
+            <p className="text-xs text-slate-500 mb-4">
+              Módulos avanzados disponibles para tu plan. Haz clic en un add-on para añadirlo al carrito.
+            </p>
 
-          {/* Desktop table */}
-          <div className="hidden md:block mt-4">
-            <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
+            {isLoading && (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-48 rounded-[14px]" />
+                ))}
+              </div>
+            )}
 
-            <div className="bg-white rounded-[14px] overflow-hidden mt-4" style={{ boxShadow: SILK_SHADOW }}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="text-left p-4 text-slate-500 font-medium">Módulo</th>
-                    {PLAN_ORDER.map((pCode) => {
-                      const isCurrent = pCode === planCode;
-                      const prices = PLAN_PRICES[pCode];
-                      const price = billingCycle === "monthly" ? prices.monthly : prices.annual;
-                      return (
-                        <th key={pCode} className="p-4 text-center">
-                          {isCurrent && (
-                            <span className="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold mb-1">
-                              Actual
+            {!isLoading && modules.length === 0 && (
+              <p className="text-sm text-slate-400 text-center py-8">No hay módulos disponibles</p>
+            )}
+
+            {!isLoading && modules.map((module) => {
+              const included = isModuleIncluded(module.module_code);
+              const moduleAddons = getModuleAddons(module.module_code);
+              const color = module.color_hex;
+              return (
+                <div
+                  key={module.module_code}
+                  className="bg-white rounded-[14px] p-5 border"
+                  style={{ boxShadow: SILK_SHADOW, borderColor: included ? color + "40" : "#E2E8F0" }}
+                >
+                  <div className="flex items-start gap-4 flex-col md:flex-row">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: color + "20" }}
+                      >
+                        <LucideDynamicIcon name={module.icon_name} size={20} color={color} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h3 className="text-sm font-bold text-slate-800">{module.name_es}</h3>
+                          {included ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: color + "15", color }}>
+                              ✓ Incluido en tu plan
+                            </span>
+                          ) : (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">
+                              {module.price_from_eur ? `Desde €${module.price_from_eur}/mes` : "Add-on opcional"}
                             </span>
                           )}
-                          <p className="font-bold text-slate-800">{PLAN_NAMES[pCode]}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {pCode === "free" ? "Gratis" : `€${price}/mes`}
-                          </p>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(MODULE_LABELS).map((mk, idx) => (
-                    <tr key={mk} className={idx % 2 === 0 ? "bg-slate-50/50" : ""}>
-                      <td className="p-4 text-slate-700 font-medium">{MODULE_LABELS[mk]}</td>
-                      {PLAN_ORDER.map((pCode) => (
-                        <td key={pCode} className="p-4 text-center">
-                          {PLAN_FEATURES[pCode].modules[mk]
-                            ? <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                            : <Minus className="h-5 w-5 text-slate-300 mx-auto" />}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                        {module.tagline_es && <p className="text-xs font-medium text-slate-500 mb-2">{module.tagline_es}</p>}
+                        {module.description_es && <p className="text-xs text-slate-500 leading-relaxed mb-3">{module.description_es}</p>}
+                        {(module.features_es as string[]).length > 0 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                            {(module.features_es as string[]).map((feature, i) => (
+                              <div key={i} className="flex items-start gap-1.5">
+                                <LucideDynamicIcon name="Check" size={10} color={color} className="flex-shrink-0 mt-0.5" />
+                                <span className="text-xs text-slate-600 leading-tight">{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-            <div
-              className="mt-6 bg-white rounded-[14px] p-5 flex items-center justify-between"
-              style={{ boxShadow: SILK_SHADOW }}
-            >
-              <p className="text-sm text-slate-600">
-                ¿Necesitas un módulo que no tienes? Actualiza tu plan o explora los Add-ons disponibles.
-              </p>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button variant="outline" size="sm" onClick={() => setMainTab("plan")}>
-                  Ver planes
-                </Button>
-                <Button size="sm" className="bg-slate-900 text-white hover:bg-slate-800" onClick={() => setMainTab("addons")}>
-                  Ver Add-ons
-                </Button>
-              </div>
-            </div>
+                    {moduleAddons.length > 0 && (
+                      <div className="flex flex-col gap-2 md:min-w-[160px] w-full">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Niveles disponibles</p>
+                        {moduleAddons.map((addon) => {
+                          const state = getAddonState(addon);
+                          const isInCart = cart.some((c) => c.code === addon.code);
+                          const ac = addon.color_hex ?? color;
+                          return (
+                            <div
+                              key={addon.code}
+                              className={cn(
+                                "flex items-center justify-between gap-2 p-2.5 rounded-lg border text-xs transition-all duration-150",
+                                state === "available" && !isInCart ? "cursor-pointer hover:opacity-80" : "cursor-default"
+                              )}
+                              style={{
+                                backgroundColor: state === "active" ? ac + "12" : isInCart ? "#EFF6FF" : "#FAFAFA",
+                                borderColor: state === "active" ? ac + "40" : isInCart ? "#BFDBFE" : "#E2E8F0",
+                              }}
+                              onClick={() => { if (state === "available" && !isInCart) addToCart(addon); }}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className={cn("font-medium truncate", state === "active" ? "text-slate-700" : isInCart ? "text-blue-700" : "text-slate-600")}>
+                                  {addon.name_es}
+                                </p>
+                                {state !== "active" && state !== "redundant" && (
+                                  <p className="text-slate-400 mt-0.5">€{billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur}/mes</p>
+                                )}
+                                {state === "active" && <p className="font-medium mt-0.5" style={{ color: ac }}>Activo</p>}
+                              </div>
+                              {state === "active" && (
+                                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: ac }}>
+                                  <LucideDynamicIcon name="Check" size={10} color="white" />
+                                </div>
+                              )}
+                              {state === "available" && !isInCart && (
+                                <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                                  <LucideDynamicIcon name="Plus" size={10} color="#64748B" />
+                                </div>
+                              )}
+                              {isInCart && <LucideDynamicIcon name="ShoppingCart" size={12} color="#3B82F6" className="flex-shrink-0" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </TabsContent>
 
