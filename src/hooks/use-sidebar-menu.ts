@@ -209,7 +209,6 @@ const STATIC_SIDEBAR_DATA: SidebarSection[] = [
         moduleCategory: "addon",
         moduleExpanded: false,
         moduleMenuItems: [
-          { label: "Dashboard CRM", path: "/app/crm", icon: "LayoutDashboard" },
           { label: "Kanban", path: "/app/crm/kanban", icon: "KanbanSquare" },
           { label: "Tareas CRM", path: "/app/crm/tasks", icon: "CheckSquare", badge: "tasks" },
           { label: "Directorio", path: "/app/crm/clients", icon: "Building2" },
