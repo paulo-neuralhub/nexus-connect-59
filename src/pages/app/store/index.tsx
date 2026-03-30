@@ -165,6 +165,12 @@ export default function AddonStorePage() {
   const planCode = orgPlan?.plan_code ?? "free";
   const badgeClass = PLAN_BADGE[planCode] ?? PLAN_BADGE.free;
 
+  const activeAddonsTotalPrice = activeAddons.reduce((total, activeAddon) => {
+    const addonData = addons.find(a => a.code === activeAddon.code);
+    if (!addonData) return total;
+    return total + (billingCycle === "monthly" ? (addonData.price_monthly_eur ?? 0) : (addonData.price_annual_eur ?? 0));
+  }, 0);
+
   // Cart helpers
   const addToCart = (addon: BillingAddon) => {
     if (getAddonState(addon) !== "available") return;
