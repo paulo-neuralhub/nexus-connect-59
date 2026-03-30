@@ -177,6 +177,7 @@ export default function AddonStorePage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
 
+  const { currentOrganization } = useOrganization();
   const { addons, orgPlan, activeAddons, modules, isLoading, error, getAddonState, getRedundancyReason, isModuleIncluded, getModuleAddons } = useAddonStore();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
