@@ -113,6 +113,14 @@ const TIME_COLORS: Record<string, string> = {
 type ViewMode = 'week' | 'list';
 type DatePreset = 'this_week' | 'this_month' | 'this_year' | 'last_year' | 'custom';
 
+const PRESET_LABELS: Record<DatePreset, string> = {
+  this_week: 'semana',
+  this_month: 'mes',
+  this_year: 'año',
+  last_year: 'año anterior',
+  custom: 'rango',
+};
+
 export default function TimesheetPage() {
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
