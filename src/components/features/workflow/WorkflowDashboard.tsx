@@ -79,8 +79,8 @@ export function WorkflowDashboard() {
   const filteredWorkflows = workflows.filter(w => {
     const matchesSearch = !search || 
       w.name.toLowerCase().includes(search.toLowerCase()) ||
-      w.code.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || w.category === categoryFilter;
+      (w.description || '').toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || (w.trigger_type || '') === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
