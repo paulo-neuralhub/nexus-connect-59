@@ -152,22 +152,58 @@ export function useAddonStore(): AddonStoreResult {
     return "available";
   };
 
+  const getRedundancyReason = (addon: BillingAddon): string | null => {
+    if (getAddonState(addon) !== "redundant") return null;
+    if (addon.category === "jurisdiction_pack") {
+      if ((orgPlan?.max_jurisdictions ?? 0) === -1) return "Tu plan incluye jurisdicciones ilimitadas";
+      if (activeAddons.some((a) => a.adds_jurisdictions === -1)) return "Ya tienes el pack global contratado";
+    }
+    if (addon.adds_matters > 0 && (orgPlan?.max_matters ?? 0) >= 999999) return "Tu plan incluye expedientes ilimitados";
+    if (addon.adds_users > 0 && (orgPlan?.max_users ?? 0) >= 999999) return "Tu plan incluye usuarios ilimitados";
+    return "Ya cubierto por tu plan o add-ons activos";
+  };
+
+  const modules = query.data?.modules ?? [];
+
+  const isModuleIncluded = (moduleCode: string): boolean => {
+    const mod = modules.find((m) => m.module_code === moduleCode);
+    if (!mod) return false;
+    const plans = mod.included_in_plans as string[];
+    return plans.includes(orgPlan?.plan_code ?? "free");
+  };
+
+  const getModuleAddons = (moduleCode: string) => {
+    return addons
+      .filter((a) => (a as any).module_code === moduleCode)
+      .sort((a, b) => a.price_monthly_eur - b.price_monthly_eur);
+  };
+
   return {
     addons,
     orgPlan,
     activeAddons,
+    modules,
     isLoading: query.isLoading,
     error: query.error as Error | null,
     getAddonsByCategory,
     getAddonState,
+    getRedundancyReason,
+    isModuleIncluded,
+    getModuleAddons,
   };
 }
 
 // ── Internal fetch logic ───────────────────────────────
 async function fetchStoreData(
   organizationId: string
-): Promise<{ addons: BillingAddon[]; orgPlan: OrgPlan | null }> {
-  const [catalogResult, activeResult, planResult] = await Promise.allSettled([
+): Promise<{ addons: BillingAddon[]; orgPlan: OrgPlan | null; modules: ModuleCatalog[] }> {
+  const queryD = supabase
+    .from("module_catalog")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const [catalogResult, activeResult, planResult, modulesResult] = await Promise.allSettled([
     // A) All active billing addons
     supabase
       .from("billing_addons")
@@ -185,6 +221,9 @@ async function fetchStoreData(
 
     // C) Plan info
     fetchPlanInfo(organizationId),
+
+    // D) Module catalog
+    queryD,
   ]);
 
   // Parse catalog
@@ -239,7 +278,13 @@ async function fetchStoreData(
     };
   });
 
-  return { addons, orgPlan };
+  // Parse modules
+  const modules: ModuleCatalog[] =
+    modulesResult.status === "fulfilled" && !modulesResult.value.error
+      ? (modulesResult.value.data ?? [])
+      : [];
+
+  return { addons, orgPlan, modules };
 }
 
 async function fetchPlanInfo(organizationId: string): Promise<OrgPlan | null> {
