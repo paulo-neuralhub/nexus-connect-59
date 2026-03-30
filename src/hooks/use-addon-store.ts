@@ -97,27 +97,21 @@ export function useAddonStore(): AddonStoreResult {
     addons.filter((a) => a.category === category);
 
   const getAddonState = (addon: BillingAddon): AddonState => {
+    // 1. Ya contratado
     if (addon.is_contracted) return "active";
-    if (!addon.compatible_plan_codes.includes(orgPlan?.plan_code ?? "free")) return "incompatible";
 
-    // Jurisdictions redundant
+    // 2. REDUNDANCIA — siempre antes de incompatible
     if (addon.category === "jurisdiction_pack") {
       const planHasUnlimitedJur = (orgPlan?.max_jurisdictions ?? 0) === -1;
       const hasGlobalPack = activeAddons.some((a) => a.adds_jurisdictions === -1);
       if (planHasUnlimitedJur || hasGlobalPack) return "redundant";
     }
-
-    // Matters redundant
     if (addon.adds_matters > 0) {
       if ((orgPlan?.max_matters ?? 0) >= 999999) return "redundant";
     }
-
-    // Users redundant
     if (addon.adds_users > 0) {
       if ((orgPlan?.max_users ?? 0) >= 999999) return "redundant";
     }
-
-    // Intelligence hierarchy
     const INTEL_RANK: Record<string, number> = {
       iparadar_starter: 1,
       iparadar_pro: 2,
@@ -128,6 +122,10 @@ export function useAddonStore(): AddonStoreResult {
       if (INTEL_RANK[addon.code] <= currentLevel) return "redundant";
     }
 
+    // 3. Incompatible con plan actual
+    if (!addon.compatible_plan_codes.includes(orgPlan?.plan_code ?? "free")) return "incompatible";
+
+    // 4. Disponible
     return "available";
   };
 
