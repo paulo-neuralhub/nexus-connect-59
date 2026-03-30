@@ -515,70 +515,55 @@ export default function AddonStorePage() {
               <div className="mb-8">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                {/* LAYOUT SIDE-BY-SIDE */}
-                <div className="grid grid-cols-1 md:grid-cols-[38%_1fr] gap-4 items-stretch">
-                  {/* ── COLUMNA IZQUIERDA: PLAN (compacta) ── */}
-                  <div className="bg-slate-50 rounded-[14px] p-4 border border-slate-200 flex flex-col gap-3" style={{ boxShadow: SILK_SHADOW }}>
-                    {/* Header plan */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
-                          <LucideDynamicIcon name="Shield" size={13} color="white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-800 leading-tight">{orgPlan?.plan_name ?? "Plan actual"}</p>
-                          <p className="text-xs text-slate-400">Plan base</p>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-[30%_1fr] gap-4 items-start">
+                  {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
+                  <div className="bg-slate-50 rounded-[14px] p-4 border border-slate-200" style={{ boxShadow: SILK_SHADOW }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
+                        <LucideDynamicIcon name="Shield" size={13} color="white" />
                       </div>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-white font-medium flex-shrink-0">Activo</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-800 leading-tight truncate">{orgPlan?.plan_name ?? "Plan"}</p>
+                        <p className="text-xs text-slate-400">Plan base</p>
+                      </div>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-800 text-white font-medium flex-shrink-0">Activo</span>
                     </div>
 
-                    {/* Precio */}
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-slate-800">
+                    <div className="flex items-baseline gap-1 mb-3">
+                      <span className="text-xl font-bold text-slate-800">
                         {(orgPlan?.monthly_price_eur ?? 0) === 0 ? "Gratis" : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}`}
                       </span>
-                      {(orgPlan?.monthly_price_eur ?? 0) > 0 && (
-                        <span className="text-xs text-slate-400">/mes{billingCycle === "annual" ? " · anual" : ""}</span>
-                      )}
+                      {(orgPlan?.monthly_price_eur ?? 0) > 0 && <span className="text-xs text-slate-400">/mes</span>}
                     </div>
 
-                    {/* Métricas */}
-                    <div className="flex gap-3 py-2 border-y border-slate-200">
+                    <div className="flex gap-2 pb-3 mb-3 border-b border-slate-200">
                       {[
-                        { label: "Expedientes", value: (orgPlan?.max_matters ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_matters ?? PLAN_FEATURES[planCode]?.matters ?? "—") },
-                        { label: "Usuarios", value: (orgPlan?.max_users ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_users ?? PLAN_FEATURES[planCode]?.users ?? "—") },
-                        { label: "Jurisd.", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : String(orgPlan?.max_jurisdictions ?? PLAN_FEATURES[planCode]?.jurisdictions ?? "—") },
+                        { label: "Exp.", value: (orgPlan?.max_matters ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_matters ?? "—") },
+                        { label: "Us.", value: (orgPlan?.max_users ?? 0) >= 999999 ? "∞" : String(orgPlan?.max_users ?? "—") },
+                        { label: "Jur.", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : String(orgPlan?.max_jurisdictions ?? "—") },
                       ].map((m) => (
                         <div key={m.label} className="flex-1 text-center">
-                          <p className="text-base font-bold text-slate-800 leading-tight">{m.value}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{m.label}</p>
+                          <p className="text-sm font-bold text-slate-800">{m.value}</p>
+                          <p className="text-xs text-slate-400">{m.label}</p>
                         </div>
                       ))}
                     </div>
 
-                    {/* Módulos incluidos — compact pills */}
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {Object.entries(PLAN_INCLUDED_MODULES[planCode] ?? {})
-                        .filter(([, included]) => included)
+                        .filter(([, inc]) => inc)
                         .map(([mod]) => (
-                          <span key={mod} className="inline-flex items-center gap-1 text-xs text-slate-600 bg-white border border-slate-200 rounded-md px-2 py-0.5">
-                            <LucideDynamicIcon name={MODULE_ICONS[mod] ?? "Check"} size={9} color="#64748B" />
+                          <span key={mod} className="inline-flex items-center gap-0.5 text-xs text-slate-600 bg-white border border-slate-200 rounded px-1.5 py-0.5 leading-tight">
+                            <LucideDynamicIcon name={MODULE_ICONS[mod] ?? "Check"} size={8} color="#16a34a" />
                             {mod}
                           </span>
                         ))}
                     </div>
-
-                    {/* Link a comparativa */}
-                    <button onClick={() => setMainTab("modules")} className="text-xs text-slate-400 hover:text-slate-600 transition-colors text-left mt-auto pt-1">
-                      Ver comparativa de planes →
-                    </button>
                   </div>
 
-                  {/* ── COLUMNA DERECHA: TODOS LOS ADD-ONS ── */}
-                  <div className="bg-white rounded-[14px] p-4 border border-green-200 flex flex-col" style={{ boxShadow: SILK_SHADOW }}>
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
+                  {/* ══ COLUMNA DERECHA: ADD-ONS ══ */}
+                  <div className="bg-white rounded-[14px] p-4 border border-green-200" style={{ boxShadow: SILK_SHADOW }}>
+                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
                           <LucideDynamicIcon name="Plus" size={13} color="white" />
@@ -595,8 +580,7 @@ export default function AddonStorePage() {
                       )}
                     </div>
 
-                    {/* Lista de grupos con todos los addons */}
-                    <div className="flex flex-col gap-4 flex-1">
+                    <div className="flex flex-col gap-5">
                       {ADDON_GROUPS.map((group) => {
                         const groupAddons = addons.filter((a) => {
                           const state = getAddonState(a);
@@ -605,11 +589,12 @@ export default function AddonStorePage() {
                         if (groupAddons.length === 0) return null;
                         return (
                           <div key={group.label}>
-                            <div className="flex items-center gap-1.5 mb-1.5">
+                            <div className="flex items-center gap-1.5 mb-2">
                               <LucideDynamicIcon name={group.icon} size={10} color={group.color} />
                               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: group.color }}>{group.label}</p>
+                              <span className="text-xs text-slate-400">({groupAddons.filter((a) => getAddonState(a) === "active").length} activos)</span>
                             </div>
-                            <div className="flex flex-col gap-1">
+                            <div className="grid grid-cols-3 gap-2">
                               {groupAddons.map((addon) => {
                                 const state = getAddonState(addon);
                                 const isActive = state === "active";
@@ -621,29 +606,44 @@ export default function AddonStorePage() {
                                   <div
                                     key={addon.code}
                                     className={cn(
-                                      "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-150",
-                                      isAvailable && !isInCart ? "cursor-pointer hover:opacity-80" : "cursor-default"
+                                      "relative flex flex-col items-start gap-1.5 p-2.5 rounded-xl border transition-all duration-150",
+                                      isAvailable && !isInCart ? "cursor-pointer hover:scale-[1.02]" : "cursor-default"
                                     )}
                                     style={{
-                                      backgroundColor: isActive ? color + "15" : isInCart ? "#3B82F615" : "#F8FAFC",
-                                      border: isActive ? `1px solid ${color}30` : isInCart ? "1px solid #3B82F630" : "1px solid #E2E8F0",
+                                      backgroundColor: isActive ? color + "12" : isInCart ? "#EFF6FF" : "#F8FAFC",
+                                      borderColor: isActive ? color + "40" : isInCart ? "#BFDBFE" : "#E2E8F0",
+                                      opacity: isRedundant ? 0.5 : 1,
                                     }}
                                     onClick={() => { if (isAvailable && !isInCart) addToCart(addon); }}
                                   >
-                                    <div className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isActive || isInCart ? color + "25" : "#E2E8F0" }}>
-                                      <LucideDynamicIcon name={addon.icon_name ?? "Package"} size={10} color={isActive || isInCart ? color : "#94A3B8"} />
+                                    {/* Badge estado top-right */}
+                                    <div className="absolute top-1.5 right-1.5">
+                                      {isActive && (
+                                        <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
+                                          <LucideDynamicIcon name="Check" size={8} color="white" />
+                                        </div>
+                                      )}
+                                      {isAvailable && !isInCart && (
+                                        <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center hover:bg-green-100">
+                                          <LucideDynamicIcon name="Plus" size={8} color="#64748B" />
+                                        </div>
+                                      )}
+                                      {isInCart && (
+                                        <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+                                          <LucideDynamicIcon name="ShoppingCart" size={8} color="#3B82F6" />
+                                        </div>
+                                      )}
                                     </div>
-                                    <p className={cn("text-xs flex-1 min-w-0 truncate font-medium", isActive ? "text-slate-700" : isRedundant ? "text-slate-400" : isInCart ? "text-blue-700" : "text-slate-500")}>
+
+                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: isActive ? color + "25" : "#E2E8F0" }}>
+                                      <LucideDynamicIcon name={addon.icon_name ?? "Package"} size={12} color={isActive ? color : "#94A3B8"} />
+                                    </div>
+                                    <p className={cn("text-xs font-medium leading-tight pr-4", isActive ? "text-slate-700" : isInCart ? "text-blue-700" : "text-slate-400")}>
                                       {addon.name_es}
                                     </p>
-                                    {isActive && (
-                                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: color }}>✓</span>
-                                    )}
-                                    {isRedundant && <span className="text-xs text-slate-300 flex-shrink-0">↗</span>}
                                     {isAvailable && !isInCart && (
-                                      <span className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold flex-shrink-0 hover:bg-green-100 hover:text-green-600 transition-colors">+</span>
+                                      <p className="text-xs text-slate-400">€{billingCycle === "monthly" ? addon.price_monthly_eur : addon.price_annual_eur}/mes</p>
                                     )}
-                                    {isInCart && <span className="text-xs text-blue-500 font-medium flex-shrink-0">En carrito</span>}
                                   </div>
                                 );
                               })}
@@ -655,12 +655,12 @@ export default function AddonStorePage() {
                   </div>
                 </div>
 
-                {/* NOTA EXPLICATIVA */}
+                {/* Nota explicativa */}
                 <div className="flex items-start gap-2 mt-3 px-1">
                   <LucideDynamicIcon name="Info" size={12} color="#94A3B8" />
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    <span className="font-semibold text-slate-500">Plan base</span> incluye las funcionalidades de tu suscripción sin coste adicional.{" "}
-                    <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que se facturan adicionalmente.
+                    <span className="font-semibold text-slate-500">Plan base</span> funcionalidades incluidas sin coste adicional.{" "}
+                    <span className="font-semibold text-slate-500">Add-ons</span> módulos extra facturados adicionalmente. Haz clic en <span className="font-medium">+</span> para añadir al carrito.
                   </p>
                 </div>
               </div>
