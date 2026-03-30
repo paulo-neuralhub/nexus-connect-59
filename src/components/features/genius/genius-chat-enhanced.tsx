@@ -22,6 +22,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useGeniusChat, useGeniusFeedback } from '@/hooks/use-genius-chat';
@@ -492,7 +493,7 @@ function MessageBubble({
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
             <div className="prose prose-sm max-w-none prose-headings:text-slate-800 prose-headings:font-semibold prose-p:text-slate-700 prose-p:leading-relaxed prose-strong:text-slate-800 prose-strong:font-semibold prose-ul:text-slate-700 prose-li:marker:text-amber-500 prose-ol:text-slate-700 prose-blockquote:border-l-amber-500 prose-blockquote:text-slate-600 prose-code:text-amber-700 prose-code:bg-amber-50 prose-code:px-1 prose-code:rounded prose-hr:border-slate-200">
-              <ReactMarkdown>{message.content}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
             </div>
           )}
         </div>
