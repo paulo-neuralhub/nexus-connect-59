@@ -751,7 +751,7 @@ export default function AddonStorePage() {
                           { icon: "Globe", label: "Jurisdicciones", value: (orgPlan?.max_jurisdictions ?? 0) === -1 || (orgPlan?.max_jurisdictions ?? 0) >= 999999 ? "Ilimitadas" : String(orgPlan?.max_jurisdictions ?? "—") },
                           { icon: "HardDrive", label: "Almacenamiento", value: "500 GB" },
                           { icon: "Bot", label: "Consultas IA/mes", value: "Ilimitadas" },
-                          { icon: "Calendar", label: "Próxima facturación", value: orgPlan?.current_period_end ? new Date(orgPlan.current_period_end).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "—" },
+                          { icon: "Calendar", label: "Próxima facturación", value: (orgPlan as any)?.current_period_end ? new Date((orgPlan as any).current_period_end).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "—" },
                         ].map((item) => (
                           <div key={item.label} className="flex justify-between items-center py-1">
                             <div className="flex items-center gap-1.5">
