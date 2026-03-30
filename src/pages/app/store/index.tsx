@@ -37,6 +37,7 @@ import {
 import { LucideDynamicIcon } from "@/components/ui/lucide-dynamic-icon";
 import { useAddonStore, type BillingAddon } from "@/hooks/use-addon-store";
 import { useOrganization } from "@/contexts/organization-context";
+import { useBillingPlans } from "@/hooks/useBillingData";
 import { cn } from "@/lib/utils";
 
 // ── Static Data ─────────────────────────────────────────
@@ -132,12 +133,12 @@ const ADDON_GROUPS: { label: string; categories: string[]; icon: string; color: 
   { label: "Capacidad y cobertura", categories: ["jurisdiction_pack", "capacity", "storage", "users", "accounting"], icon: "Layers", color: "#10B981" },
 ];
 
-// Plan static prices (fallback if plan_definitions not loaded)
-const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
+// Plan static prices (fallback if billing_plans not loaded)
+const PLAN_PRICES_FALLBACK: Record<string, { monthly: number; annual: number }> = {
   free: { monthly: 0, annual: 0 },
   starter: { monthly: 49, annual: 39 },
   professional: { monthly: 149, annual: 119 },
-  enterprise: { monthly: 399, annual: 319 },
+  enterprise: { monthly: 999, annual: 799 },
 };
 
 const PLAN_INCLUDED_MODULES: Record<string, Record<string, boolean>> = {
@@ -179,6 +180,21 @@ export default function AddonStorePage() {
 
   const { currentOrganization } = useOrganization();
   const { addons, orgPlan, activeAddons, modules, isLoading, error, getAddonState, getRedundancyReason, isModuleIncluded, getModuleAddons } = useAddonStore();
+  const { data: billingPlans = [] } = useBillingPlans();
+
+  // Build dynamic price map from billing_plans, falling back to static prices
+  const PLAN_PRICES = useMemo(() => {
+    const prices: Record<string, { monthly: number; annual: number }> = { ...PLAN_PRICES_FALLBACK };
+    for (const bp of billingPlans) {
+      prices[bp.code] = {
+        monthly: Number(bp.price_monthly_eur) || 0,
+        annual: bp.price_annual_eur != null
+          ? Number(bp.price_annual_eur)
+          : Math.round((Number(bp.price_monthly_eur) || 0) * 0.8),
+      };
+    }
+    return prices;
+  }, [billingPlans]);
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [cart, setCart] = useState<BillingAddon[]>([]);
