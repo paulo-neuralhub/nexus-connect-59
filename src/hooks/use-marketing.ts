@@ -59,7 +59,7 @@ export function useTemplate(id: string | undefined) {
     queryKey: ['email-template', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .select('*')
         .eq('id', id!)
         .single();
@@ -97,7 +97,7 @@ export function useCreateTemplate() {
       };
       
       const { data: template, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .insert(insertData)
         .select()
         .single();
@@ -128,7 +128,7 @@ export function useUpdateTemplate() {
       if (data.available_variables !== undefined) updateData.available_variables = data.available_variables;
       
       const { data: template, error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .update(updateData)
         .eq('id', id)
         .select()
@@ -149,7 +149,7 @@ export function useDeleteTemplate() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('email_templates')
+        .from('comm_templates')
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -262,7 +262,7 @@ export function useCampaigns(status?: string) {
     queryKey: ['email-campaigns', currentOrganization?.id, status],
     queryFn: async () => {
       let query = supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
         .order('created_at', { ascending: false });
@@ -293,7 +293,7 @@ export function useCampaign(id: string | undefined) {
     queryKey: ['email-campaign', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('id', id!)
         .single();
@@ -339,7 +339,7 @@ export function useCreateCampaign() {
       };
       
       const { data: campaign, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .insert(insertData)
         .select()
         .single();
@@ -370,7 +370,7 @@ export function useUpdateCampaign() {
       if (data.scheduled_at !== undefined) updateData.scheduled_at = data.scheduled_at;
       
       const { data: campaign, error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .update(updateData)
         .eq('id', id)
         .select()
@@ -391,7 +391,7 @@ export function useDeleteCampaign() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('email_campaigns')
+        .from('marketing_campaigns')
         .delete()
         .eq('id', id);
       if (error) throw error;
