@@ -3,8 +3,20 @@
  * Silk v2 Design System
  */
 
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import {
   Package, Check, X, CheckCircle2, Minus, Users,
   ShoppingBag, Monitor, Lock,
@@ -24,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { LucideDynamicIcon } from "@/components/ui/lucide-dynamic-icon";
 import { useAddonStore, type BillingAddon } from "@/hooks/use-addon-store";
+import { useOrganization } from "@/contexts/organization-context";
 import { cn } from "@/lib/utils";
 
 // ── Static Data ─────────────────────────────────────────
@@ -154,6 +167,17 @@ const SILK_SHADOW_SM = "2px 2px 6px #cdd1dc, -2px -2px 6px #ffffff";
 // ── Component ───────────────────────────────────────────
 export default function AddonStorePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<{
+    code: string;
+    name: string;
+    periodEnd: string;
+  } | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
+
+  const { currentOrganization } = useOrganization();
   const { addons, orgPlan, activeAddons, modules, isLoading, error, getAddonState, getRedundancyReason, isModuleIncluded, getModuleAddons } = useAddonStore();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
@@ -179,11 +203,98 @@ export default function AddonStorePage() {
   const removeFromCart = (code: string) => {
     setCart((prev) => prev.filter((a) => a.code !== code));
   };
+  const clearCart = () => setCart([]);
   const cartCodes = useMemo(() => new Set(cart.map((a) => a.code)), [cart]);
   const cartTotal = useMemo(
     () => cart.reduce((sum, a) => sum + (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur), 0),
     [cart, billingCycle]
   );
+
+  // ── Stripe return detection ──────────────────────────
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (!payment) return;
+
+    if (payment === "success") {
+      toast.success("¡Pago completado! Tus add-ons ya están activos.", { duration: 5000 });
+      clearCart();
+    } else if (payment === "cancelled") {
+      toast.info("Pago cancelado. Tu carrito sigue disponible.", { duration: 4000 });
+    }
+
+    const timer = setTimeout(() => {
+      navigate("/app/store", { replace: true });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [searchParams]);
+
+  // ── Checkout handler ─────────────────────────────────
+  const handleCheckout = async () => {
+    if (!cart.length || isCheckingOut) return;
+    setCheckoutConfirmOpen(false);
+    setIsCheckingOut(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error("Sesión expirada. Inicia sesión de nuevo.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("stripe-checkout", {
+        body: {
+          organization_id: currentOrganization?.id,
+          addon_codes: cart.map((a) => a.code),
+          billing_cycle: billingCycle,
+          success_url: `${window.location.origin}/app/store?payment=success`,
+          cancel_url: `${window.location.origin}/app/store?payment=cancelled`,
+        },
+      });
+
+      if (error || !data?.checkout_url) {
+        toast.error("Error al procesar el pago. Inténtalo de nuevo.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      toast.error("Error al procesar el pago. Inténtalo de nuevo.");
+      setIsCheckingOut(false);
+    }
+  };
+
+  // ── Cancel addon handler ─────────────────────────────
+  const handleCancelAddon = async () => {
+    if (!cancelTarget || isCancelling) return;
+    setIsCancelling(true);
+
+    try {
+      const { error } = await supabase.rpc("schedule_addon_cancellation" as any, {
+        p_org_id: currentOrganization?.id,
+        p_addon_code: cancelTarget.code,
+        p_user_id: (await supabase.auth.getUser()).data.user?.id,
+      });
+
+      if (error) {
+        toast.error("Error al cancelar el add-on.");
+        setIsCancelling(false);
+        return;
+      }
+
+      toast.success(
+        `${cancelTarget.name} se cancelará el ${new Date(cancelTarget.periodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}.`
+      );
+      setCancelTarget(null);
+    } catch (err) {
+      toast.error("Error al cancelar el add-on.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Addon filtering — use getAddonState for counts
   const availableCount = (category: string) =>
@@ -677,11 +788,27 @@ export default function AddonStorePage() {
                                     onClick={() => { if (isAvailable && !isInCart) addToCart(addon); }}
                                   >
                                     {/* Badge estado top-right */}
-                                    <div className="absolute top-1.5 right-1.5">
+                                    <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
                                       {isActive && (
-                                        <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
-                                          <LucideDynamicIcon name="Check" size={8} color="white" />
-                                        </div>
+                                        <>
+                                          <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
+                                            <LucideDynamicIcon name="Check" size={8} color="white" />
+                                          </div>
+                                          <button
+                                            className="w-4 h-4 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors"
+                                            title="Cancelar add-on"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setCancelTarget({
+                                                code: addon.code,
+                                                name: addon.name_es,
+                                                periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                                              });
+                                            }}
+                                          >
+                                            <LucideDynamicIcon name="X" size={8} color="#EF4444" />
+                                          </button>
+                                        </>
                                       )}
                                       {isAvailable && !isInCart && (
                                         <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center hover:bg-green-100">
@@ -875,26 +1002,51 @@ export default function AddonStorePage() {
 
                   {/* CTA */}
                   <div className="px-5 pb-5">
-                    <Button
-                      className="w-full bg-slate-900 text-white hover:bg-slate-800"
-                      size="sm"
-                      onClick={() => {
-                        const subject = encodeURIComponent("Solicitud Add-ons IP-NEXUS");
-                        const body = encodeURIComponent(
-                          "Plan actual: " + (orgPlan?.plan_name ?? "Free") + "\n" +
-                          "Ciclo: " + (billingCycle === "annual" ? "Anual" : "Mensual") + "\n\n" +
-                          "Add-ons solicitados:\n" +
-                          cart.map((a) =>
-                            "- " + a.name_es + ": €" +
-                            (billingCycle === "monthly" ? a.price_monthly_eur : a.price_annual_eur) + "/mes"
-                          ).join("\n") + "\n\n" +
-                          "Total adicional: €" + cartTotal + "/mes"
-                        );
-                        window.open("mailto:ventas@ip-nexus.com?subject=" + subject + "&body=" + body, "_blank");
-                      }}
+                    <AlertDialog open={checkoutConfirmOpen} onOpenChange={setCheckoutConfirmOpen}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar compra</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Vas a contratar{" "}
+                            <strong>{cart.length} add-on{cart.length > 1 ? "s" : ""}</strong>
+                            {" "}por{" "}
+                            <strong>
+                              €{cart.reduce((sum, a) => {
+                                const addon = addons.find((ad) => ad.code === a.code);
+                                return sum + (billingCycle === "monthly"
+                                  ? (addon?.price_monthly_eur ?? 0)
+                                  : (addon?.price_annual_eur ?? 0));
+                              }, 0)}/mes
+                            </strong>
+                            . Serás redirigido a Stripe para completar el pago de forma segura.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleCheckout} disabled={isCheckingOut}>
+                            {isCheckingOut ? "Redirigiendo..." : "Ir a pagar con Stripe →"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <button
+                      onClick={() => setCheckoutConfirmOpen(true)}
+                      disabled={!cart.length || isCheckingOut}
+                      className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-2"
                     >
-                      Proceder al pago →
-                    </Button>
+                      {isCheckingOut ? (
+                        <>
+                          <LucideDynamicIcon name="Loader2" size={14} color="white" className="animate-spin" />
+                          Redirigiendo...
+                        </>
+                      ) : (
+                        <>
+                          <LucideDynamicIcon name="CreditCard" size={14} color="white" />
+                          Proceder al pago
+                        </>
+                      )}
+                    </button>
                     <div className="flex items-center justify-center gap-1.5 mt-3">
                       <Lock className="h-3 w-3 text-slate-400" />
                       <p className="text-[11px] text-slate-400">
@@ -974,6 +1126,36 @@ export default function AddonStorePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ── CANCEL ADDON DIALOG ──────────────────────── */}
+      <AlertDialog open={cancelTarget !== null} onOpenChange={(open) => { if (!open) setCancelTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar add-on</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{cancelTarget?.name}</strong> permanecerá activo hasta el{" "}
+              <strong>
+                {cancelTarget?.periodEnd
+                  ? new Date(cancelTarget.periodEnd).toLocaleDateString("es-ES", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "—"}
+              </strong>
+              . Después se cancelará automáticamente y no se renovará.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCancelTarget(null)}>
+              Mantener add-on
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelAddon} disabled={isCancelling}>
+              {isCancelling ? "Procesando..." : "Sí, cancelar al fin del período"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
