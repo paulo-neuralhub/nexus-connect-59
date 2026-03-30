@@ -697,15 +697,11 @@ export function useRenewalSchedule(filters?: RenewalFilters) {
           matter:matters(id, reference, title, type, jurisdiction, mark_name)
         `)
         .eq('organization_id', currentOrganization!.id)
-        .order('due_date', { ascending: true });
+        .order('next_renewal_date', { ascending: true });
       
       if (filters?.status) {
         const statuses = Array.isArray(filters.status) ? filters.status : [filters.status];
         query = query.in('status', statuses);
-      }
-      if (filters?.renewal_type) {
-        const types = Array.isArray(filters.renewal_type) ? filters.renewal_type : [filters.renewal_type];
-        query = query.in('renewal_type', types);
       }
       if (filters?.due_before) query = query.lte('due_date', filters.due_before);
       if (filters?.due_after) query = query.gte('due_date', filters.due_after);
