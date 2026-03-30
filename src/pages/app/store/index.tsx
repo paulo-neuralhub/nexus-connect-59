@@ -506,62 +506,51 @@ export default function AddonStorePage() {
 
           <div className={cn("mt-4", cart.length > 0 ? "flex gap-6" : "")}>
             <div className="flex-1 min-w-0">
-              {/* Included in subscription */}
-              <div className="mb-8 space-y-3">
+               {/* Included in subscription */}
+              <div className="mb-8">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
 
-                {/* ── CAJA 1: PLAN BASE — estilo plan card ── */}
-                <div className="bg-white rounded-[14px] overflow-hidden border border-slate-100" style={{ boxShadow: SILK_SHADOW }}>
-                  {/* Header del plan */}
-                  <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 flex-shrink-0">
-                          <LucideDynamicIcon name="Shield" size={18} color="white" />
+                {/* LAYOUT SIDE-BY-SIDE */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  {/* ── COLUMNA IZQUIERDA: PLAN ── */}
+                  <div className="bg-slate-50 rounded-[14px] p-5 border border-slate-200 flex flex-col" style={{ boxShadow: SILK_SHADOW }}>
+                    {/* Header plan */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
+                          <LucideDynamicIcon name="Shield" size={15} color="white" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base font-bold text-slate-800">{orgPlan?.plan_name ?? "Plan actual"}</h3>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white font-semibold">Activo</span>
-                          </div>
-                          <p className="text-xs text-slate-400 mt-0.5">Funcionalidades incluidas sin coste adicional</p>
+                          <p className="text-sm font-bold text-slate-800">{orgPlan?.plan_name ?? "Plan actual"}</p>
+                          <p className="text-xs text-slate-400">Plan base</p>
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        {(orgPlan?.monthly_price_eur ?? 0) === 0 ? (
-                          <span className="text-xl font-bold text-slate-800">Gratis</span>
-                        ) : (
-                          <>
-                            <div className="flex items-baseline gap-0.5 justify-end">
-                              <span className="text-xl font-bold text-slate-800">
-                                €{billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}
-                              </span>
-                              <span className="text-xs text-slate-400">/mes</span>
-                            </div>
-                            {billingCycle === "annual" && (
-                              <p className="text-xs text-green-600 mt-0.5">Facturado anualmente</p>
-                            )}
-                          </>
-                        )}
+                      <div className="text-right">
+                        <p className="text-base font-bold text-slate-800">
+                          {(orgPlan?.monthly_price_eur ?? 0) === 0
+                            ? "Gratis"
+                            : `€${billingCycle === "monthly" ? orgPlan?.monthly_price_eur : orgPlan?.annual_price_eur}/mes`}
+                        </p>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-white font-medium">Activo</span>
                       </div>
                     </div>
-                    <div className="flex gap-4 mt-3">
+
+                    {/* Métricas */}
+                    <div className="flex gap-4 pb-3 mb-3 border-b border-slate-200">
                       {[
-                        { label: "Expedientes", value: planCode === "enterprise" ? "∞" : (orgPlan?.max_matters?.toLocaleString() ?? PLAN_FEATURES[planCode]?.matters.toString() ?? "—") },
-                        { label: "Usuarios", value: planCode === "enterprise" ? "∞" : (orgPlan?.max_users?.toString() ?? PLAN_FEATURES[planCode]?.users.toString() ?? "—") },
-                        { label: "Jurisdicciones", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : (orgPlan?.max_jurisdictions?.toString() ?? PLAN_FEATURES[planCode]?.jurisdictions.toString() ?? "—") },
-                      ].map((metric) => (
-                        <div key={metric.label} className="flex flex-col">
-                          <span className="text-sm font-semibold text-slate-800">{metric.value}</span>
-                          <span className="text-xs text-slate-400">{metric.label}</span>
+                        { label: "Expedientes", value: planCode === "enterprise" ? "∞" : String(orgPlan?.max_matters ?? PLAN_FEATURES[planCode]?.matters ?? "—") },
+                        { label: "Usuarios", value: planCode === "enterprise" ? "∞" : String(orgPlan?.max_users ?? PLAN_FEATURES[planCode]?.users ?? "—") },
+                        { label: "Jurisd.", value: (orgPlan?.max_jurisdictions ?? 0) === -1 ? "∞" : String(orgPlan?.max_jurisdictions ?? PLAN_FEATURES[planCode]?.jurisdictions ?? "—") },
+                      ].map((m) => (
+                        <div key={m.label}>
+                          <p className="text-sm font-bold text-slate-800">{m.value}</p>
+                          <p className="text-xs text-slate-400">{m.label}</p>
                         </div>
                       ))}
                     </div>
-                  </div>
-                  {/* Módulos incluidos en grid 2 columnas */}
-                  <div className="px-5 py-4">
-                    <p className="text-xs font-medium text-slate-400 mb-3 uppercase tracking-wide">Módulos incluidos</p>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+
+                    {/* Módulos */}
+                    <div className="grid grid-cols-1 gap-1.5 flex-1">
                       {Object.entries(MODULE_LABELS).map(([key, label]) => {
                         const included = PLAN_FEATURES[planCode]?.modules[key] ?? false;
                         return (
@@ -571,60 +560,73 @@ export default function AddonStorePage() {
                                 <LucideDynamicIcon name="Check" size={9} color="#16a34a" />
                               </div>
                             ) : (
-                              <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                              <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
                                 <LucideDynamicIcon name="Minus" size={9} color="#94A3B8" />
                               </div>
                             )}
-                            <span className={`text-xs ${included ? "text-slate-700 font-medium" : "text-slate-300"}`}>{label}</span>
+                            <span className={`text-xs ${included ? "text-slate-700 font-medium" : "text-slate-400"}`}>{label}</span>
                           </div>
                         );
                       })}
                     </div>
+                  </div>
+
+                  {/* ── COLUMNA DERECHA: ADD-ONS ── */}
+                  <div className="bg-white rounded-[14px] p-5 border border-green-200 flex flex-col" style={{ boxShadow: SILK_SHADOW }}>
+                    {/* Header add-ons */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
+                          <LucideDynamicIcon name="Plus" size={15} color="white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Add-ons contratados</p>
+                          <p className="text-xs text-slate-400">Módulos extra</p>
+                        </div>
+                      </div>
+                      {activeAddons.length > 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium border border-green-200">
+                          {activeAddons.length} activo{activeAddons.length > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Lista add-ons */}
+                    {activeAddons.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <p className="text-xs text-slate-400 text-center italic">No tienes add-ons contratados todavía.</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2 flex-1">
+                        {activeAddons.map((activeAddon) => {
+                          const addonData = addons.find((a) => a.code === activeAddon.code);
+                          if (!addonData) return null;
+                          const color = addonData.color_hex ?? "#64748B";
+                          return (
+                            <div
+                              key={activeAddon.code}
+                              className="flex items-center gap-2.5 p-2.5 rounded-lg border"
+                              style={{ backgroundColor: color + "0D", borderColor: color + "30" }}
+                            >
+                              <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + "20" }}>
+                                <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={12} color={color} />
+                              </div>
+                              <p className="text-xs font-medium text-slate-700 flex-1 min-w-0 truncate">{addonData.name_es}</p>
+                              <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: color }}>+</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* ── CAJA 2: ADD-ONS CONTRATADOS ── */}
-                {activeAddons.length > 0 && (
-                  <div className="bg-white rounded-[14px] p-5 border border-green-100" style={{ boxShadow: SILK_SHADOW }}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-green-500 flex-shrink-0">
-                        <LucideDynamicIcon name="Plus" size={13} color="white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-800">Add-ons contratados</p>
-                        <p className="text-xs text-slate-400">Módulos extra añadidos a tu plan</p>
-                      </div>
-                      <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-700 font-semibold border border-green-200">
-                        {activeAddons.length} activo{activeAddons.length > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {activeAddons.map((activeAddon) => {
-                        const addonData = addons.find((a) => a.code === activeAddon.code);
-                        if (!addonData) return null;
-                        const color = addonData.color_hex ?? "#64748B";
-                        return (
-                          <div
-                            key={activeAddon.code}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-150"
-                            style={{ backgroundColor: color + "15", color, borderColor: color + "35" }}
-                          >
-                            <LucideDynamicIcon name={addonData.icon_name ?? "Package"} size={11} color={color} />
-                            {addonData.name_es}
-                            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: color }}>+</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── NOTA EXPLICATIVA ── */}
-                <div className="flex items-start gap-2 px-1 pt-1">
+                {/* NOTA EXPLICATIVA */}
+                <div className="flex items-start gap-2 mt-3 px-1">
                   <LucideDynamicIcon name="Info" size={12} color="#94A3B8" />
                   <p className="text-xs text-slate-400 leading-relaxed">
                     <span className="font-semibold text-slate-500">Plan base</span> incluye las funcionalidades de tu suscripción sin coste adicional.{" "}
-                    <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que amplían tu plan y se facturan adicionalmente.
+                    <span className="font-semibold text-slate-500">Add-ons</span> son módulos extra que se facturan adicionalmente.
                   </p>
                 </div>
               </div>
