@@ -527,7 +527,7 @@ export function useQuotes(status?: string) {
         .from('quotes')
         .select('*')
         .eq('organization_id', currentOrganization!.id)
-        .order('quote_date', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (status) query = query.eq('status', status);
       
