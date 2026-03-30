@@ -379,12 +379,15 @@ Deno.serve(async (req) => {
       systemPrompt += `\nDESPACHO: ${org?.name ?? 'Despacho IP'}`
     }
 
-    // 11. Build messages (limit history to 20)
+    // 11. Build messages (limit history to 20, filter empty content)
     const llmMessages = [
-      ...history.slice(-20).map((h: any) => ({
-        role: h.role as 'user' | 'assistant',
-        content: h.content,
-      })),
+      ...history
+        .slice(-20)
+        .filter((h: any) => h.content && typeof h.content === 'string' && h.content.trim() !== '')
+        .map((h: any) => ({
+          role: h.role as 'user' | 'assistant',
+          content: h.content,
+        })),
       { role: 'user' as const, content: message },
     ]
 
