@@ -182,7 +182,30 @@ export default function AddonStorePage() {
   const { addons, orgPlan, activeAddons, modules, isLoading, error, getAddonState, getRedundancyReason, isModuleIncluded, getModuleAddons } = useAddonStore();
   const { data: billingPlans = [] } = useBillingPlans();
 
-  // Build dynamic price map from billing_plans, falling back to static prices
+  // Next billing date from organization_addons
+  const [nextBillingDate, setNextBillingDate] = useState<string>("...");
+  useEffect(() => {
+    if (!currentOrganization?.id) { setNextBillingDate("—"); return; }
+    supabase
+      .from("organization_addons")
+      .select("current_period_end")
+      .eq("organization_id", currentOrganization.id)
+      .eq("status", "active")
+      .not("current_period_end", "is", null)
+      .order("current_period_end", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.current_period_end) {
+          setNextBillingDate(
+            new Date(data.current_period_end).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
+          );
+        } else {
+          setNextBillingDate("—");
+        }
+      });
+  }, [currentOrganization?.id]);
+
   const PLAN_PRICES = useMemo(() => {
     const prices: Record<string, { monthly: number; annual: number }> = { ...PLAN_PRICES_FALLBACK };
     for (const bp of billingPlans) {
