@@ -772,13 +772,14 @@ export default function AddonStorePage() {
 
         {/* ═══ TAB 3: Add-ons ══════════════════════ */}
         <TabsContent value="addons">
-          <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
-
           <div className={cn("mt-4", cart.length > 0 ? "flex gap-6" : "")}>
             <div className="flex-1 min-w-0">
                {/* Included in subscription */}
               <div className="mb-8">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Incluido en tu suscripción</p>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Incluido en tu suscripción</p>
+                  <BillingCycleToggle value={billingCycle} onChange={setBillingCycle} />
+                </div>
 
                 <div className="grid grid-cols-[280px_1fr] gap-4">
                   {/* ══ COLUMNA IZQUIERDA: PLAN ══ */}
