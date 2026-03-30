@@ -615,7 +615,7 @@ export default function AddonStorePage() {
                   className="w-full self-stretch flex flex-col bg-white rounded-[14px] p-5 border"
                   style={{ boxShadow: SILK_SHADOW, borderColor: included ? color + "40" : "#E2E8F0" }}
                 >
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4" style={{ flexDirection: "column" }}>
                     <div className="flex items-start gap-3 flex-1">
                       <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
