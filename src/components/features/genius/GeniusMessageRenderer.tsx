@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -219,31 +220,177 @@ export const geniusMarkdownComponents = {
   ),
 };
 
+// ── PARSER DE MENSAJE ────────────────────────────────────────
+
+function parseGeniusMessage(content: string): {
+  mainContent: string;
+  linkingQuestion: boolean;
+  legalNote: string | null;
+} {
+  let mainContent = content;
+
+  const linkingRegex =
+    /¿(Desea|Quiere|Le gustaría)\s+(vincular|asociar|añadir)\s+(esta consulta|esta conversación)[^?]*\?/i;
+  const hasLinkingQuestion = linkingRegex.test(mainContent);
+  if (hasLinkingQuestion) {
+    mainContent = mainContent.replace(linkingRegex, '').trim();
+  }
+
+  const legalRegex = /NOTA LEGAL:[\s\S]*$/i;
+  const legalMatch = mainContent.match(legalRegex);
+  const legalNote = legalMatch
+    ? legalMatch[0].replace(/^NOTA LEGAL:/i, '').trim()
+    : null;
+  if (legalMatch) {
+    mainContent = mainContent.replace(legalRegex, '').trim();
+  }
+
+  return { mainContent, linkingQuestion: hasLinkingQuestion, legalNote };
+}
+
 // ── COMPONENTE PRINCIPAL ─────────────────────────────────────
 
 interface GeniusMessageRendererProps {
   content: string;
+  conversationId?: string;
+  currentMatterId?: string | null;
+  currentMatterRef?: string | null;
+  matters?: Array<{ id: string; reference: string; title: string }>;
+  onLinkToMatter?: (matterId: string, matterRef: string) => void;
 }
 
-export function GeniusMessageRenderer({ content }: GeniusMessageRendererProps) {
+export function GeniusMessageRenderer({
+  content,
+  conversationId,
+  currentMatterId,
+  currentMatterRef,
+  matters = [],
+  onLinkToMatter,
+}: GeniusMessageRendererProps) {
+  const [selectedMatterIdLocal, setSelectedMatterIdLocal] = useState('');
+  const [dismissed, setDismissed] = useState(false);
+  const [linked, setLinked] = useState(false);
+
   const responseType = getResponseType(content);
+  const { mainContent, linkingQuestion, legalNote } = parseGeniusMessage(content);
+
+  const handleLinkConfirm = async () => {
+    if (!selectedMatterIdLocal || !onLinkToMatter) return;
+    const matter = matters.find((m) => m.id === selectedMatterIdLocal);
+    if (!matter) return;
+    await onLinkToMatter(matter.id, matter.reference);
+    setLinked(true);
+  };
 
   return (
-    <div className={`relative ${responseType ? `border-l-4 ${responseType.borderColor} pl-3` : ''}`}>
+    <div
+      className={`space-y-3 ${
+        responseType ? `border-l-4 ${responseType.borderColor} pl-3` : ''
+      }`}
+    >
+      {/* Header tipo de respuesta */}
       {responseType && (
         <div
-          className="flex items-center gap-1.5 mb-2 px-2 py-1 rounded-md w-fit text-xs font-semibold tracking-wide"
-          style={{ backgroundColor: responseType.bgColor, color: responseType.color }}
+          className="flex items-center gap-2 mb-3 pb-2 px-2 py-1.5 rounded-md"
+          style={{ backgroundColor: responseType.bgColor }}
         >
-          <span>{responseType.icon}</span>
-          <span>{responseType.label}</span>
+          <span className="text-sm">{responseType.icon}</span>
+          <span
+            className="text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: responseType.color }}
+          >
+            {responseType.label}
+          </span>
         </div>
       )}
-      <div className="max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={geniusMarkdownComponents}>
-          {content}
+
+      {/* Contenido principal */}
+      <div className="text-sm leading-relaxed">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={geniusMarkdownComponents}
+        >
+          {mainContent}
         </ReactMarkdown>
       </div>
+
+      {/* TIPO B — Vinculación a expediente */}
+      {linkingQuestion &&
+        !currentMatterId &&
+        !dismissed &&
+        !linked &&
+        onLinkToMatter && (
+          <div className="mt-4 border border-amber-200 rounded-lg bg-amber-50 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-amber-600 text-sm">📁</span>
+              <span className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                Vincular al historial del expediente
+              </span>
+            </div>
+            <p className="text-xs text-amber-700 mb-3">
+              ¿Desea registrar esta consulta en el expediente correspondiente?
+            </p>
+            <div className="flex gap-2">
+              {matters.length > 0 ? (
+                <select
+                  value={selectedMatterIdLocal}
+                  onChange={(e) => setSelectedMatterIdLocal(e.target.value)}
+                  className="flex-1 text-xs border border-amber-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Seleccionar expediente...</option>
+                  {matters.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.reference} — {m.title}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={selectedMatterIdLocal}
+                  onChange={(e) => setSelectedMatterIdLocal(e.target.value)}
+                  placeholder="Referencia del expediente"
+                  className="flex-1 text-xs border border-amber-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              )}
+              <button
+                onClick={handleLinkConfirm}
+                disabled={!selectedMatterIdLocal}
+                className="text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md font-medium transition-colors"
+              >
+                Vincular
+              </button>
+              <button
+                onClick={() => setDismissed(true)}
+                className="text-xs text-amber-600 hover:text-amber-700 px-2 py-1.5 font-medium transition-colors"
+              >
+                Ahora no
+              </button>
+            </div>
+          </div>
+        )}
+
+      {/* Badge expediente vinculado */}
+      {(linked || currentMatterId) && (
+        <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <span className="text-emerald-600 text-sm">✓</span>
+          <span className="text-xs text-emerald-700 font-medium">
+            Consulta indexada al expediente{' '}
+            <strong>{currentMatterRef ?? currentMatterId}</strong>
+            {' '}— forma parte del historial del expediente.
+          </span>
+        </div>
+      )}
+
+      {/* TIPO C — Nota legal */}
+      {legalNote && (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <p className="text-[11px] text-slate-400 italic leading-relaxed">
+            ⓘ {legalNote} Análisis generado por IA con carácter informativo. No constituye
+            asesoramiento jurídico ni sustituye la actuación de abogado colegiado.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
