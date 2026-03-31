@@ -511,12 +511,10 @@ function MessageBubble({
                       key={`msg-${message.id}`}
                       content={message.content}
                       conversationId={conversationId}
-                      currentMatterId={selectedMatterId ?? null}
-                      currentMatterRef={
-                        matters.find(m => m.id === selectedMatterId)?.reference ?? null
-                      }
+                      currentMatterId={currentMatterId}
+                      currentMatterRef={currentMatterRef}
                       matters={matters}
-                      onLinkToMatter={linkConversationToMatter}
+                      onLinkToMatter={onLinkToMatter}
                     />
           )}
         </div>
