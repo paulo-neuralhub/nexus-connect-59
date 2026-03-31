@@ -289,6 +289,11 @@ export function GeniusChatEnhanced({
               agentColor={agent.color}
               onFeedback={handleFeedback}
               onCopy={handleCopy}
+              conversationId={conversationId}
+              currentMatterId={selectedMatterId ?? null}
+              currentMatterRef={matters.find(m => m.id === selectedMatterId)?.reference ?? null}
+              matters={matters}
+              onLinkToMatter={linkConversationToMatter}
             />
           ))}
           
