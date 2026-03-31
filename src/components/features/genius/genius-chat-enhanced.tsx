@@ -452,12 +452,22 @@ function MessageBubble({
   message,
   agentColor,
   onFeedback,
-  onCopy
+  onCopy,
+  conversationId,
+  currentMatterId,
+  currentMatterRef,
+  matters,
+  onLinkToMatter,
 }: { 
   message: AIMessage;
   agentColor: string;
   onFeedback: (id: string, feedback: 'positive' | 'negative') => void;
   onCopy: (content: string) => void;
+  conversationId: string | null;
+  currentMatterId: string | null;
+  currentMatterRef: string | null;
+  matters: Array<{ id: string; reference: string; title: string }>;
+  onLinkToMatter: (matterId: string, matterRef: string) => void;
 }) {
   const isUser = message.role === 'user';
   
