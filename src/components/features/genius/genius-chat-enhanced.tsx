@@ -96,6 +96,7 @@ export function GeniusChatEnhanced({
     startNewConversation,
     loadConversation,
     setContextMatter,
+    linkConversationToMatter,
   } = useGeniusChat(agentType);
   
   const feedbackMutation = useGeniusFeedback();
