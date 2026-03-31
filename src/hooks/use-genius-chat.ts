@@ -220,12 +220,80 @@ export function useGeniusChat(agentType: AgentType) {
     contextMatterRef.current = matterId;
   }, []);
 
+  // Link conversation to matter
+  const linkConversationToMatter = useCallback(
+    async (matterId: string, matterRef: string) => {
+      if (!state.conversationId || !currentOrganization?.id) return;
+
+      const { data: matter } = await supabase
+        .from('matters')
+        .select('crm_account_id')
+        .eq('id', matterId)
+        .eq('organization_id', currentOrganization.id)
+        .single();
+
+      const { data: contact } = matter?.crm_account_id
+        ? await supabase
+            .from('contacts')
+            .select('id')
+            .eq('organization_id', currentOrganization.id)
+            .eq('crm_account_id', matter.crm_account_id)
+            .limit(1)
+            .single()
+        : { data: null };
+
+      await Promise.allSettled([
+        supabase
+          .from('ai_conversations')
+          .update({
+            matter_id: matterId,
+            context_type: 'matter',
+            context_id: matterId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', state.conversationId)
+          .eq('organization_id', currentOrganization.id),
+
+        supabase.from('matter_timeline_events').insert({
+          organization_id: currentOrganization.id,
+          matter_id: matterId,
+          event_type: 'ai_conversation',
+          title: 'Consulta IP-GENIUS vinculada al expediente',
+          description: `Conversación de IP-GENIUS indexada al expediente ${matterRef}`,
+          source_table: 'ai_conversations',
+          source_id: state.conversationId,
+          actor_type: 'staff',
+          is_visible_in_portal: false,
+          created_by: user?.id,
+        }),
+
+        supabase.from('activities').insert({
+          organization_id: currentOrganization.id,
+          type: 'ai_consultation',
+          subject: `Consulta IP-GENIUS — expediente ${matterRef}`,
+          content: 'Consulta de IA vinculada al expediente desde IP-GENIUS',
+          contact_id: contact?.id ?? null,
+          is_completed: true,
+          created_by: user?.id,
+          owner_type: 'staff',
+        }),
+      ]);
+
+      setContextMatter(matterId);
+      toast.success(`Consulta indexada al expediente ${matterRef}`, {
+        description: 'La conversación forma parte del historial del expediente',
+      });
+    },
+    [state.conversationId, currentOrganization?.id, user?.id, setContextMatter]
+  );
+
   return {
     ...state,
     sendMessage,
     loadConversation,
     startNewConversation,
     setContextMatter,
+    linkConversationToMatter,
     contextMatterId: contextMatterRef.current,
   };
 }
