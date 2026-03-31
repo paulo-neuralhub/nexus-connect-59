@@ -96,6 +96,7 @@ export function GeniusChatEnhanced({
     startNewConversation,
     loadConversation,
     setContextMatter,
+    linkConversationToMatter,
   } = useGeniusChat(agentType);
   
   const feedbackMutation = useGeniusFeedback();
@@ -288,6 +289,11 @@ export function GeniusChatEnhanced({
               agentColor={agent.color}
               onFeedback={handleFeedback}
               onCopy={handleCopy}
+              conversationId={conversationId}
+              currentMatterId={selectedMatterId ?? null}
+              currentMatterRef={matters.find(m => m.id === selectedMatterId)?.reference ?? null}
+              matters={matters}
+              onLinkToMatter={linkConversationToMatter}
             />
           ))}
           
@@ -451,12 +457,22 @@ function MessageBubble({
   message,
   agentColor,
   onFeedback,
-  onCopy
+  onCopy,
+  conversationId,
+  currentMatterId,
+  currentMatterRef,
+  matters,
+  onLinkToMatter,
 }: { 
   message: AIMessage;
   agentColor: string;
   onFeedback: (id: string, feedback: 'positive' | 'negative') => void;
   onCopy: (content: string) => void;
+  conversationId: string | null;
+  currentMatterId: string | null;
+  currentMatterRef: string | null;
+  matters: Array<{ id: string; reference: string; title: string }>;
+  onLinkToMatter: (matterId: string, matterRef: string) => void;
 }) {
   const isUser = message.role === 'user';
   
@@ -491,7 +507,15 @@ function MessageBubble({
           {isUser ? (
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
-            <GeniusMessageRenderer content={message.content} />
+            <GeniusMessageRenderer
+                      key={`msg-${message.id}`}
+                      content={message.content}
+                      conversationId={conversationId}
+                      currentMatterId={currentMatterId}
+                      currentMatterRef={currentMatterRef}
+                      matters={matters}
+                      onLinkToMatter={onLinkToMatter}
+                    />
           )}
         </div>
         
