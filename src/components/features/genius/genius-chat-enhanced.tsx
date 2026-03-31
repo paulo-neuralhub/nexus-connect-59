@@ -492,7 +492,17 @@ function MessageBubble({
           {isUser ? (
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
-            <GeniusMessageRenderer content={message.content} />
+            <GeniusMessageRenderer
+                      key={`msg-${message.id}`}
+                      content={message.content}
+                      conversationId={conversationId}
+                      currentMatterId={selectedMatterId ?? null}
+                      currentMatterRef={
+                        matters.find(m => m.id === selectedMatterId)?.reference ?? null
+                      }
+                      matters={matters}
+                      onLinkToMatter={linkConversationToMatter}
+                    />
           )}
         </div>
         
