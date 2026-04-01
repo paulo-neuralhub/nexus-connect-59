@@ -74,7 +74,7 @@ export function ConversationSidebar({ agentType, selectedId, onSelect, onNewChat
                 conversation={conv}
                 isSelected={conv.id === selectedId}
                 onSelect={() => onSelect(conv)}
-                onDelete={() => deleteMutation.mutate(conv.id)}
+                onDelete={() => deleteMutation.mutate(conv)}
                 onToggleStar={() => starMutation.mutate({ id: conv.id, starred: false })}
               />
             ))}
