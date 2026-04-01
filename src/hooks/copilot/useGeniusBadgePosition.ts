@@ -250,10 +250,10 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
     position,
     isDraggingRef,
     showAttention,
+    didDragEnd,
     elementRef,
     onPointerDown,
     onPointerMove,
     onPointerUp,
-    wasClick,
   };
 }
