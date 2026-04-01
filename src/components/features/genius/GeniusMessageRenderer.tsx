@@ -13,24 +13,24 @@ export interface ResponseType {
 }
 
 export function getResponseType(content: string): ResponseType | null {
-  // Documentos legales — más específico primero
-  if (/SOLICITA|Cease.*Desist|C&D letter|escrito.*oposición|contrato.*licencia|acuerdo.*coexistencia|demanda|medida.*cautelar/i.test(content))
-    return {
-      label: 'DOCUMENTO LEGAL',
-      color: '#1E293B',
-      bgColor: '#1E293B0D',
-      icon: '📋',
-      borderColor: 'border-l-slate-700',
-    };
-
-  // Análisis de marcas — requiere múltiples señales
-  if (/similitud.*fonética|similitud.*visual|similitud.*conceptual|riesgo.*confusión|CONCLUSIÓN EJECUTIVA.*marca|test.*TJUE|consumidor.*medio/i.test(content))
+  // Análisis de marcas — ANTES de documento legal para evitar falsos positivos
+  if (/ANÁLISIS DE SIMILITUD|CONCLUSIÓN EJECUTIVA[\s\S]{0,50}marca|similitud.*fonética[\s\S]{0,100}conceptual|TECHVIDA|riesgo.*confusión.*elevado/i.test(content))
     return {
       label: 'ANÁLISIS DE MARCAS',
       color: '#D97706',
       bgColor: '#F59E0B0D',
       icon: '⚖️',
       borderColor: 'border-l-amber-400',
+    };
+
+  // Documentos legales — regex más estricta
+  if (/SOLICITA\s|Cease.*Desist|C&D letter|escrito.*oposición.*ante|contrato.*licencia|acuerdo.*coexistencia|demanda.*judicial|medida.*cautelar/i.test(content))
+    return {
+      label: 'DOCUMENTO LEGAL',
+      color: '#1E293B',
+      bgColor: '#1E293B0D',
+      icon: '📋',
+      borderColor: 'border-l-slate-700',
     };
 
   // Estimación de costes — requiere € Y tabla
@@ -246,7 +246,10 @@ function parseGeniusMessage(content: string): {
   }
 
   mainContent = mainContent
+    .replace(/---\s*Análisis generado por IA[\s\S]*$/i, '')
     .replace(/^\*\*\s*$/gm, '')
+    .replace(/^•\s*•\s*$/gm, '')
+    .replace(/^[\*\-]\s*$\n/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
@@ -275,6 +278,7 @@ export function GeniusMessageRenderer({
   const [selectedMatterIdLocal, setSelectedMatterIdLocal] = useState('');
   const [dismissed, setDismissed] = useState(false);
   const [linked, setLinked] = useState(false);
+  const [linkedMatterRef, setLinkedMatterRef] = useState('');
 
   const responseType = getResponseType(content);
   const { mainContent, linkingQuestion, legalNote } = parseGeniusMessage(content);
@@ -283,6 +287,7 @@ export function GeniusMessageRenderer({
     if (!selectedMatterIdLocal || !onLinkToMatter) return;
     const matter = matters.find((m) => m.id === selectedMatterIdLocal);
     if (!matter) return;
+    setLinkedMatterRef(matter.reference);
     await onLinkToMatter(matter.id, matter.reference);
     setLinked(true);
   };
@@ -380,7 +385,7 @@ export function GeniusMessageRenderer({
           <span className="text-emerald-600 text-sm">✓</span>
           <span className="text-xs text-emerald-700 font-medium">
             Consulta indexada al expediente{' '}
-            <strong>{currentMatterRef ?? 'expediente seleccionado'}</strong>
+            <strong>{linkedMatterRef || currentMatterRef || 'expediente vinculado'}</strong>
             {' '}— forma parte del historial del expediente.
           </span>
         </div>
