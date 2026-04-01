@@ -326,12 +326,31 @@ export function EmailComposer({
 
           {/* Editor */}
           <div className="space-y-1">
-            <Label>Mensaje</Label>
+            <div className="flex items-center justify-between">
+              <Label>Mensaje</Label>
+              <GeniusFullDraftMenu
+                onDraftGenerated={(subj, bodyHtml) => {
+                  if (subj && !subject) setSubject(subj);
+                  setBody(bodyHtml);
+                }}
+                context={{
+                  page: window.location.pathname,
+                  ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
+                  ...(subject ? { email_subject: subject } : {}),
+                }}
+              />
+            </div>
             <TipTapEditor
               content={body}
               onChange={setBody}
-              placeholder="Escribe tu mensaje..."
+              placeholder="Escribe tu mensaje o pide a GENIUS que redacte... (⌘+Shift+G)"
               minHeight="200px"
+              enableGeniusToolbar
+              geniusContext={{
+                page: window.location.pathname,
+                ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
+                ...(subject ? { email_subject: subject } : {}),
+              }}
             />
           </div>
 
