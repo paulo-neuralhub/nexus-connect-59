@@ -458,6 +458,35 @@ NOTA LEGAL: Análisis informativo. No constituye asesoramiento jurídico. Consul
       systemPrompt += `\nDESPACHO: ${org?.name ?? 'Despacho IP'}`
     }
 
+    // RAG: buscar conocimiento relevante
+    let ragContext = ''
+    try {
+      const { data: ragResults } = await supabase.rpc(
+        'genius_hybrid_search',
+        {
+          p_query_text: message.slice(0, 500),
+          p_org_id: organizationId,
+          p_matter_id: contextMatterId ?? null,
+          p_user_id: user.id,
+          p_limit: 5
+        }
+      )
+
+      if (ragResults && ragResults.length > 0) {
+        ragContext = '\n\nCONOCIMIENTO VERIFICADO DE LA BASE DE DATOS:\n'
+        ragContext += ragResults.map((r: any, i: number) =>
+          `[${i + 1}] ${r.title} (${r.source})\n${r.content}`
+        ).join('\n\n---\n\n')
+        ragContext += '\n\nCuando uses información del conocimiento verificado arriba, cita la fuente entre corchetes: [1], [2], etc.'
+      }
+    } catch {
+      // Si RAG falla, continuar sin contexto adicional
+    }
+
+    if (ragContext) {
+      systemPrompt += ragContext
+    }
+
     // Instrucción de brevedad según tipo de consulta
     systemPrompt += `\n\nLONGITUD DE RESPUESTA:
 - quick_question: máximo 3 párrafos cortos
