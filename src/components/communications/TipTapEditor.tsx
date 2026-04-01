@@ -106,6 +106,16 @@ export function TipTapEditor({
     }
   }, [content, editor]);
 
+  const handleApplyText = useCallback((newText: string) => {
+    if (!editor) return;
+    const { from, to: selTo } = editor.state.selection;
+    if (from !== selTo) {
+      editor.chain().focus().deleteRange({ from, to: selTo }).insertContentAt(from, newText).run();
+    } else {
+      editor.chain().focus().insertContent(newText).run();
+    }
+  }, [editor]);
+
   if (!editor) return null;
 
   const addLink = () => {
