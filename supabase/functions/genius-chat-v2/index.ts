@@ -190,6 +190,24 @@ async function callGoogle(
   }
 }
 
+// ── DEPRECATED MODEL MIGRATION MAP ──────────────────────────
+const MODEL_MIGRATION: Record<string, string> = {
+  'claude-3-5-sonnet-20241022': 'claude-sonnet-4-20250514',
+  'claude-3-5-sonnet-20240620': 'claude-sonnet-4-20250514',
+  'claude-3-5-haiku-20241022': 'claude-haiku-4-5-20251001',
+  'claude-3-opus-20240229': 'claude-sonnet-4-20250514',
+  'claude-3-sonnet-20240229': 'claude-sonnet-4-20250514',
+  'claude-3-haiku-20240307': 'claude-haiku-4-5-20251001',
+}
+
+function migrateModel(model: string): string {
+  const migrated = MODEL_MIGRATION[model]
+  if (migrated) {
+    console.warn(`Model ${model} deprecated → migrating to ${migrated}`)
+  }
+  return migrated || model
+}
+
 // ── ROUTER DINÁMICO ─────────────────────────────────────────
 async function callLLM(
   provider: string, model: string,
@@ -200,15 +218,17 @@ async function callLLM(
   const apiKey = getApiKey(provider)
   if (!apiKey) throw new Error(`No API key for ${provider}`)
 
+  const resolvedModel = migrateModel(model)
+
   if (provider === 'anthropic')
-    return callAnthropic(apiKey, model, systemPrompt, messages, temperature, maxTokens)
+    return callAnthropic(apiKey, resolvedModel, systemPrompt, messages, temperature, maxTokens)
 
   if (provider === 'google')
-    return callGoogle(apiKey, model, systemPrompt, messages, temperature, maxTokens)
+    return callGoogle(apiKey, resolvedModel, systemPrompt, messages, temperature, maxTokens)
 
   const baseUrl = BASE_URLS[provider]
   if (!baseUrl) throw new Error(`Unknown provider: ${provider}`)
-  return callOpenAICompat(baseUrl, apiKey, model, systemPrompt, messages, temperature, maxTokens)
+  return callOpenAICompat(baseUrl, apiKey, resolvedModel, systemPrompt, messages, temperature, maxTokens)
 }
 
 // ── HANDLER PRINCIPAL ───────────────────────────────────────
