@@ -105,9 +105,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
           <p className="text-sm text-muted-foreground">
             Sin datos de inteligencia de tasas para esta oficina
           </p>
-          <button className="mt-3 text-xs text-primary hover:underline">
-            Solicitar investigación
-          </button>
         </CardContent>
       </Card>
     );
