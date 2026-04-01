@@ -105,6 +105,11 @@ import ExpedientesPage from "./pages/app/expedientes";
 import MatterDetailPageV2 from "./pages/app/expedientes/[id]";
 import EditMatterPage from "./pages/app/expedientes/[id]/editar";
 import NewMatterPage from "./pages/app/expedientes/nuevo";
+// Oposiciones
+import OposicionesOverview from "./pages/app/expedientes/oposiciones";
+import OfensivasPage from "./pages/app/expedientes/oposiciones/ofensivas";
+import DefensivasPage from "./pages/app/expedientes/oposiciones/defensivas";
+import CoexistenciasPage from "./pages/app/expedientes/oposiciones/coexistencias";
 // Calendario Unificado
 import CalendarioPage from "./pages/app/calendario";
 // Tareas Unificadas
@@ -529,6 +534,11 @@ const App = () => (
                 <Route path="expedientes/nuevo" element={<NewMatterPage />} />
                 <Route path="expedientes/:id" element={<MatterDetailPageV2 />} />
                 <Route path="expedientes/:id/editar" element={<EditMatterPage />} />
+                {/* Oposiciones */}
+                <Route path="expedientes/oposiciones" element={<OposicionesOverview />} />
+                <Route path="expedientes/oposiciones/ofensivas" element={<OfensivasPage />} />
+                <Route path="expedientes/oposiciones/defensivas" element={<DefensivasPage />} />
+                <Route path="expedientes/oposiciones/coexistencias" element={<CoexistenciasPage />} />
                 {/* Calendario Unificado */}
                 <Route path="calendario" element={<CalendarioPage />} />
                 {/* Tareas Unificadas */}
