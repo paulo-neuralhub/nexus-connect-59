@@ -417,11 +417,21 @@ export function GeniusOnboarding({
   }, [user?.id, organizationId, forceOpen]);
 
   const isOpen = open !== undefined ? open : shouldShow;
-  if (!isOpen || !checked) return null;
+  if (!isOpen || !checked || legalLoading) return null;
+
+  // If legal not accepted, show legal modal first
+  if (!legalAccepted && !showLegal && step === 0) {
+    // Show legal on first "Continuar" click, not immediately
+  }
 
   const TOTAL_STEPS = 4;
 
   const handleNext = () => {
+    // On step 0, check legal gate before proceeding
+    if (step === 0 && !legalAccepted) {
+      setShowLegal(true);
+      return;
+    }
     if (step < TOTAL_STEPS - 1) setStep((s) => s + 1);
   };
 
