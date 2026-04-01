@@ -3,6 +3,7 @@ import {
   Search,
   Plus,
   MessageSquare,
+  Calendar,
   MoreHorizontal,
   Star,
   Trash2,
@@ -10,6 +11,12 @@ import {
   FileText,
   Check,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   isAfter,
   isBefore,
@@ -115,136 +122,195 @@ function ConversationItem({
   const agent = AGENTS[conv.agent_type];
 
   return (
-    <div
-      onClick={() => !isEditing && onSelect(conv)}
-      className={cn(
-        'group relative flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer mb-0.5 transition-all duration-150',
-        isActive
-          ? 'bg-primary/10 border border-primary/20'
-          : 'hover:bg-muted/80'
-      )}
-    >
-      {/* Active indicator */}
-      {isActive && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
-      )}
-
-      {/* Agent icon */}
-      <div
-        className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: `${agent.color}15` }}
-      >
-        <MessageSquare className="w-3.5 h-3.5" style={{ color: agent.color }} />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {isEditing ? (
+    <TooltipProvider delayDuration={400}>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <div
-            className="flex items-center gap-1.5"
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => !isEditing && onSelect(conv)}
+            className={cn(
+              'group relative flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer mb-0.5 transition-all duration-150',
+              isActive
+                ? 'bg-primary/10 border border-primary/20'
+                : 'hover:bg-muted/80'
+            )}
           >
-            <input
-              autoFocus
-              value={editingTitle}
-              onChange={(e) => setEditingTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') onRenameConfirm(conv.id);
-                if (e.key === 'Escape') onRenameConfirm(null);
-              }}
-              className="flex-1 bg-muted text-foreground text-xs px-2 py-1 rounded border border-primary/40 outline-none focus:border-primary"
-            />
-            <button
-              onClick={() => onRenameConfirm(conv.id)}
-              className="text-primary hover:text-primary/80 p-0.5"
+            {/* Active indicator */}
+            {isActive && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
+            )}
+
+            {/* Agent icon */}
+            <div
+              className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${agent.color}15` }}
             >
-              <Check className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ) : (
-          <>
-            <p className="text-sm font-medium text-foreground truncate leading-tight">
-              {conv.title ?? 'Nueva conversación'}
-            </p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[11px] text-muted-foreground">
-                {formatDistanceToNow(new Date(conv.last_message_at), {
-                  addSuffix: true,
-                  locale: es,
-                })}
-              </span>
-              {conv.matter_id && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-full">
-                  <FileText className="w-2.5 h-2.5" />
-                  <span className="truncate max-w-[80px]">
-                    {(conv as any).matter_reference ?? 'Expediente'}
-                  </span>
-                </span>
-              )}
-              {conv.is_starred && (
-                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+              <MessageSquare className="w-3.5 h-3.5" style={{ color: agent.color }} />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {isEditing ? (
+                <div
+                  className="flex items-center gap-1.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    autoFocus
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') onRenameConfirm(conv.id);
+                      if (e.key === 'Escape') onRenameConfirm(null);
+                    }}
+                    className="flex-1 bg-muted text-foreground text-xs px-2 py-1 rounded border border-primary/40 outline-none focus:border-primary"
+                  />
+                  <button
+                    onClick={() => onRenameConfirm(conv.id)}
+                    className="text-primary hover:text-primary/80 p-0.5"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground truncate leading-tight">
+                    {conv.title ?? 'Nueva conversación'}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(conv.last_message_at), {
+                        addSuffix: true,
+                        locale: es,
+                      })}
+                    </span>
+                    {conv.matter_id && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-full">
+                        <FileText className="w-2.5 h-2.5" />
+                        <span className="truncate max-w-[80px]">
+                          {(conv as any).matter_reference ?? 'Expediente'}
+                        </span>
+                      </span>
+                    )}
+                    {conv.is_starred && (
+                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                    )}
+                  </div>
+                </>
               )}
             </div>
-          </>
-        )}
-      </div>
 
-      {/* Context menu ··· */}
-      {!isEditing && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            asChild
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted">
-              <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onRenameStart(conv);
-              }}
-            >
-              <Pencil className="w-3.5 h-3.5 mr-2" />
-              Renombrar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onStar(conv.id);
-              }}
-            >
-              <Star className="w-3.5 h-3.5 mr-2" />
-              {conv.is_starred ? 'Quitar favorito' : 'Marcar favorito'}
-            </DropdownMenuItem>
-            {conv.matter_id && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/app/expedientes/${conv.matter_id}`);
-                }}
-              >
-                <FileText className="w-3.5 h-3.5 mr-2" />
-                Ver expediente
-              </DropdownMenuItem>
+            {/* Context menu ··· */}
+            {!isEditing && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  asChild
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted">
+                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRenameStart(conv);
+                    }}
+                  >
+                    <Pencil className="w-3.5 h-3.5 mr-2" />
+                    Renombrar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStar(conv.id);
+                    }}
+                  >
+                    <Star className="w-3.5 h-3.5 mr-2" />
+                    {conv.is_starred ? 'Quitar favorito' : 'Marcar favorito'}
+                  </DropdownMenuItem>
+                  {conv.matter_id && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/app/expedientes/${conv.matter_id}`);
+                      }}
+                    >
+                      <FileText className="w-3.5 h-3.5 mr-2" />
+                      Ver expediente
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteRequest(conv);
+                    }}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-2" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteRequest(conv);
-              }}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-2" />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
+          </div>
+        </TooltipTrigger>
+
+        <TooltipContent side="right" sideOffset={8} className="max-w-[280px] p-0 overflow-hidden">
+          {/* Header */}
+          <div className="px-3 py-2 border-b border-border/50 bg-muted/30">
+            <p className="text-xs font-semibold text-foreground leading-snug">
+              {conv.title ?? 'Nueva conversación'}
+            </p>
+          </div>
+
+          {/* Summary */}
+          {conv.summary && (
+            <div className="px-3 py-2 border-b border-border/50">
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">
+                {conv.summary}
+              </p>
+            </div>
+          )}
+
+          {/* Metadata */}
+          <div className="px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <MessageSquare className="w-3 h-3" />
+              {conv.message_count ?? 0} mensajes
+            </span>
+            {conv.matter_id && (
+              <span className="inline-flex items-center gap-1">
+                <FileText className="w-3 h-3" />
+                {(conv as any).matter_reference ?? 'Expediente'}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDistanceToNow(new Date(conv.last_message_at), {
+                addSuffix: true,
+                locale: es,
+              })}
+            </span>
+          </div>
+
+          {/* Tags */}
+          {conv.tags && conv.tags.length > 0 && (
+            <div className="px-3 py-2 border-t border-border/50 flex flex-wrap gap-1">
+              {conv.tags.slice(0, 4).map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
