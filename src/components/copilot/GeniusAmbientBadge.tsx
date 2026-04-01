@@ -72,7 +72,7 @@ export function GeniusAmbientBadge() {
 
   const {
     position,
-    isDragging,
+    isDraggingRef,
     showAttention,
     elementRef,
     onPointerDown,
