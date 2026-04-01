@@ -275,7 +275,18 @@ export function TipTapEditor({
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} />
+      <div ref={editorWrapperRef}>
+        <EditorContent editor={editor} />
+      </div>
+
+      {/* Genius AI Writing Toolbar */}
+      {enableGeniusToolbar && (
+        <GeniusWritingToolbar
+          containerRef={editorWrapperRef}
+          onApplyText={handleApplyText}
+          context={geniusContext}
+        />
+      )}
     </div>
   );
 }
