@@ -5,7 +5,9 @@
  */
 
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { useOrganization } from "@/contexts/organization-context";
 import { useSidebarMenu, type SidebarModule, type SidebarSection } from "@/hooks/use-sidebar-menu";
@@ -25,7 +27,8 @@ import {
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
   Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
-  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun
+  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun, Zap, Plus, Globe2, CheckCircle,
+  MoreHorizontal
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -116,6 +119,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   CalendarClock,
   ClipboardList,
   Sun,
+  Zap,
+  Plus,
+  Globe2,
+  MoreHorizontal,
+  CheckCircle,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
@@ -141,8 +149,27 @@ export function DynamicSidebar({
   const { data: ipoDocsCounts } = useIpoDocumentCounts();
   const { data: briefingUrgent = 0 } = useBriefingBadge();
 
+  // Deadline count for PLAZOS badge (due within 7 days, not completed)
+  const { data: deadlineCount = 0 } = useQuery({
+    queryKey: ['sidebar-deadline-count', currentOrganization?.id],
+    queryFn: async () => {
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      const { count, error } = await supabase
+        .from('matter_deadlines')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', currentOrganization!.id)
+        .lt('due_date', sevenDaysFromNow.toISOString())
+        .neq('status', 'completed');
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!currentOrganization?.id,
+    staleTime: 60_000,
+  });
+
   // Expandir/contraer secciones
-  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "hoy", "expedientes", "negocio", "operaciones"]));
+  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "hoy", "plazos", "expedientes", "negocio", "operaciones"]));
   // Expandir/contraer módulos con sub-items
   const [expandedModules, setExpandedModules] = React.useState<Set<string>>(new Set(["docket"]));
 
@@ -263,7 +290,18 @@ export function DynamicSidebar({
     const Icon = getIcon(mod.moduleIconLucide || mod.moduleIcon);
     const hasSubItems = mod.moduleMenuItems.length > 0;
     const isExpanded = expandedModules.has(mod.moduleCode);
-    const MODULE_PATHS: Record<string, string> = { docket: '/app/expedientes', deadlines: '/app/deadlines', 'crm-clientes': '/app/crm', jurisdictions: '/app/jurisdictions' };
+    const MODULE_PATHS: Record<string, string> = {
+      docket: '/app/expedientes',
+      deadlines: '/app/deadlines',
+      'crm-clientes': '/app/crm',
+      jurisdictions: '/app/jurisdictions',
+      'plazos-all': '/app/plazos',
+      'plazos-calendario': '/app/plazos/calendario',
+      'plazos-renovaciones': '/app/plazos/renovaciones',
+      'plazos-alertas-config': '/app/plazos/alertas-config',
+      'oposiciones': '/app/expedientes/oposiciones',
+      'genius-chat': '/app/genius',
+    };
     const mainPath = MODULE_PATHS[mod.moduleCode] || mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
     const isActive = isPathActive(mainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
 
@@ -456,6 +494,54 @@ export function DynamicSidebar({
       );
     }
 
+    // PLAZOS section — special rendering with pulsing badge
+    if (section.sectionCode === "plazos") {
+      const hasOverdue = deadlineCount > 0;
+      return (
+        <div key={section.sectionCode} className="mb-1">
+          {!collapsed && (
+            <Collapsible open={isExpanded} onOpenChange={() => toggleSection(section.sectionCode)} className="silk-sidebar-collapsible">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 mt-4 pb-1.5 text-[10px] font-semibold uppercase",
+                    "hover:text-white/50 transition-colors border-t border-white/[0.06]",
+                    "tracking-[0.1em]",
+                    hasOverdue ? "text-red-400/80" : "text-white/[0.40]"
+                  )}
+                  style={hasOverdue ? { borderLeftColor: '#DC2626', borderLeftWidth: 2 } : undefined}
+                >
+                  <Zap className={cn("h-3 w-3", hasOverdue && "text-red-400")} />
+                  <span className="flex-1 text-left">PLAZOS</span>
+                  {hasOverdue ? (
+                    <span className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center animate-pulse">
+                      {deadlineCount}
+                    </span>
+                  ) : (
+                    <CheckCircle className="h-3 w-3 text-emerald-400/60" />
+                  )}
+                  <ChevronDown
+                    className={cn("h-3 w-3 transition-transform", !isExpanded && "-rotate-90")}
+                  />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-[1px]" style={{ overflow: 'visible' }}>
+                {hasModules ? section.modules.map(renderModule) : (
+                  <p className="text-[11px] text-white/[0.28] px-4 py-2">Sin módulos</p>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          {collapsed && hasModules && (
+            <div className="space-y-1">
+              {section.modules.map(renderModule)}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     // Expedientes section — no header, modules render directly
     if (section.sectionCode === "expedientes") {
       return (
@@ -606,35 +692,7 @@ export function DynamicSidebar({
         </div>
       )}
 
-      {/* SILK: Settings */}
-      <div className={cn("py-2", collapsed ? "px-2" : "pr-4")}>
-        {(() => {
-          const isSettingsActive = location.pathname.startsWith("/app/settings");
-          return (
-            <Link
-              to="/app/settings"
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 text-[13px] transition-colors relative",
-                collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
-                isSettingsActive
-                  ? "silk-menu-active text-[#0a2540] font-bold"
-                  : "text-white/[0.48] font-normal hover:text-white/70 rounded-xl z-[1]"
-              )}
-            >
-              {isSettingsActive && <TongueCurves />}
-              <Settings 
-                className="h-3 w-3" 
-                style={isSettingsActive ? { 
-                  color: '#00b4d8',
-                  filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                } : { color: 'rgba(255,255,255,0.28)' }}
-              />
-              {!collapsed && "Configuración"}
-            </Link>
-          );
-        })()}
-      </div>
+      {/* Settings moved to user dropdown */}
 
       {/* SILK: Collapse Button */}
       {variant === "desktop" && onToggleCollapsed && (
@@ -673,7 +731,16 @@ export function DynamicSidebar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem asChild>
-              <Link to="/app/settings">Mi perfil</Link>
+              <Link to="/app/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Configuración
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/app/perfil" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Mi Perfil
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/app/settings/billing">Suscripción</Link>
