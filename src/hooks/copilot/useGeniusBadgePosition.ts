@@ -97,11 +97,11 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (isMobile) return;
-    e.preventDefault(); // prevent text selection
+    // Don't call e.preventDefault() — it blocks click events
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointerIdRef.current = e.pointerId;
 
-    // Offset = pointer position relative to current badge position
+    startPosRef.current = { x: e.clientX, y: e.clientY };
     offsetRef.current = {
       x: e.clientX - posRef.current.x,
       y: e.clientY - posRef.current.y,
