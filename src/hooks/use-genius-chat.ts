@@ -148,7 +148,12 @@ export function useGeniusChat(agentType: AgentType) {
         isLoading: false,
       }));
 
-      // Invalidate queries
+      // If title was auto-generated, refresh sidebar immediately
+      if (data?.title_generated) {
+        queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+      }
+
+      // Always invalidate conversations list
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
 
       return data;
