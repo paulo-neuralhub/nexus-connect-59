@@ -245,6 +245,11 @@ function parseGeniusMessage(content: string): {
     mainContent = mainContent.replace(legalRegex, '').trim();
   }
 
+  mainContent = mainContent
+    .replace(/^\*\*\s*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
   return { mainContent, linkingQuestion: hasLinkingQuestion, legalNote };
 }
 
