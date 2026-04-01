@@ -543,7 +543,65 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
         1_000_000 * 100,
     )
 
-    // 14. Save messages (Promise.allSettled — never Promise.all)
+    // 14. Auto-generate title for new conversations
+    const isFirstMessage = history.length === 0
+    let autoTitle: string | null = null
+
+    if (isFirstMessage && conversationId) {
+      const { data: convCheck } = await supabase
+        .from('ai_conversations')
+        .select('title')
+        .eq('id', conversationId)
+        .single()
+
+      const needsTitle = !convCheck?.title
+
+      if (needsTitle) {
+        try {
+          const groqKey = Deno.env.get('GROQ_API_KEY')
+          if (groqKey) {
+            const titleRes = await fetch(
+              'https://api.groq.com/openai/v1/chat/completions',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${groqKey}`,
+                },
+                body: JSON.stringify({
+                  model: 'llama-3.3-70b-versatile',
+                  max_tokens: 15,
+                  temperature: 0.1,
+                  messages: [{
+                    role: 'system',
+                    content: `Genera un título conciso de máximo 8 palabras en español para esta consulta de Propiedad Intelectual.
+Reglas:
+- Solo el título, sin puntuación final ni comillas
+- NO incluir nombres de personas físicas
+- SÍ incluir: tipo de acción, marca/activo, jurisdicción si se menciona
+- Ejemplos buenos: "Análisis similitud TECHVIDA vs TECVIDA EUIPO", "Oposición EUIPO marca CASTELLANA PREMIUM", "Tasas registro USPTO clases 9 y 42", "C&D letter infracción diseño industrial"`,
+                  }, {
+                    role: 'user',
+                    content: message.slice(0, 400),
+                  }],
+                }),
+              },
+            )
+            if (titleRes.ok) {
+              const titleData = await titleRes.json()
+              const rawTitle = titleData.choices?.[0]?.message?.content?.trim() ?? null
+              autoTitle = rawTitle?.replace(/^["']|["']$/g, '')?.trim() ?? null
+            } else {
+              await titleRes.text() // consume body
+            }
+          }
+        } catch {
+          // Si falla la generación del título, continuar sin él
+        }
+      }
+    }
+
+    // 15. Save messages (Promise.allSettled — never Promise.all)
     if (conversationId) {
       await Promise.allSettled([
         supabase.from('ai_messages').insert({
@@ -565,13 +623,14 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
         supabase.from('ai_conversations').update({
           last_message_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          ...(autoTitle ? { title: autoTitle } : {}),
         })
           .eq('id', conversationId)
           .eq('organization_id', organizationId),
       ])
     }
 
-    // 15. Log in ai_request_logs — NO message content
+    // 16. Log in ai_request_logs — NO message content
     supabase.from('ai_request_logs').insert({
       organization_id: organizationId,
       user_id: user.id,
@@ -585,7 +644,7 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
       status: 'success',
     }).then(() => {}).catch(() => {})
 
-    // 16. Response
+    // 17. Response
     return new Response(
       JSON.stringify({
         message: result.text,
@@ -594,6 +653,8 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
         query_type: queryType,
         source,
         fallback_used: source === 'fallback',
+        title_generated: !!autoTitle,
+        generated_title: autoTitle ?? null,
         usage: {
           input_tokens: result.inputTokens,
           output_tokens: result.outputTokens,
