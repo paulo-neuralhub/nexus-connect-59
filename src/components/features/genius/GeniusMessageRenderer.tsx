@@ -287,6 +287,7 @@ export function GeniusMessageRenderer({
     if (!selectedMatterIdLocal || !onLinkToMatter) return;
     const matter = matters.find((m) => m.id === selectedMatterIdLocal);
     if (!matter) return;
+    setLinkedMatterRef(matter.reference);
     await onLinkToMatter(matter.id, matter.reference);
     setLinked(true);
   };
