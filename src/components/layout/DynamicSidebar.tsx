@@ -147,8 +147,27 @@ export function DynamicSidebar({
   const { data: ipoDocsCounts } = useIpoDocumentCounts();
   const { data: briefingUrgent = 0 } = useBriefingBadge();
 
+  // Deadline count for PLAZOS badge (due within 7 days, not completed)
+  const { data: deadlineCount = 0 } = useQuery({
+    queryKey: ['sidebar-deadline-count', currentOrganization?.id],
+    queryFn: async () => {
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      const { count, error } = await supabase
+        .from('matter_deadlines')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', currentOrganization!.id)
+        .lt('due_date', sevenDaysFromNow.toISOString())
+        .neq('status', 'completed');
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!currentOrganization?.id,
+    staleTime: 60_000,
+  });
+
   // Expandir/contraer secciones
-  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "hoy", "expedientes", "negocio", "operaciones"]));
+  const [expandedSections, setExpandedSections] = React.useState<Set<string>>(new Set(["dashboard", "hoy", "plazos", "expedientes", "negocio", "operaciones"]));
   // Expandir/contraer módulos con sub-items
   const [expandedModules, setExpandedModules] = React.useState<Set<string>>(new Set(["docket"]));
 
