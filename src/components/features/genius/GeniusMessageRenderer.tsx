@@ -246,7 +246,10 @@ function parseGeniusMessage(content: string): {
   }
 
   mainContent = mainContent
+    .replace(/---\s*Análisis generado por IA[\s\S]*$/i, '')
     .replace(/^\*\*\s*$/gm, '')
+    .replace(/^•\s*•\s*$/gm, '')
+    .replace(/^[\*\-]\s*$\n/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
