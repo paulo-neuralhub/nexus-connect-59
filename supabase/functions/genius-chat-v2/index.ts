@@ -546,6 +546,7 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
     // 14. Auto-generate title for new conversations
     const isFirstMessage = history.length === 0
     let autoTitle: string | null = null
+    let autoSummary: string | null = null
 
     if (isFirstMessage && conversationId) {
       const { data: convCheck } = await supabase
@@ -560,9 +561,9 @@ Responde siempre de forma concisa y directa. Evita introducciones largas y repet
         try {
           const groqKey = Deno.env.get('GROQ_API_KEY')
           if (groqKey) {
-            const titleRes = await fetch(
-              'https://api.groq.com/openai/v1/chat/completions',
-              {
+            const [titleRes, summaryRes] = await Promise.allSettled([
+              // Generar título
+              fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -585,20 +586,47 @@ Reglas:
                     content: message.slice(0, 400),
                   }],
                 }),
-              },
-            )
-            if (titleRes.ok) {
-              const titleData = await titleRes.json()
+              }),
+              // Generar summary
+              fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${groqKey}`,
+                },
+                body: JSON.stringify({
+                  model: 'llama-3.3-70b-versatile',
+                  max_tokens: 50,
+                  temperature: 0.1,
+                  messages: [{
+                    role: 'system',
+                    content: `Genera un resumen descriptivo de máximo 20 palabras en español de esta consulta de PI. Describe el tema, no hagas recomendaciones. Sin nombres de personas físicas. Empieza con un verbo en infinitivo o sustantivo. Ejemplos: "Consulta sobre similitud entre marcas denominativas para análisis de riesgo de confusión ante EUIPO.", "Búsqueda de anterioridades para nueva marca en clases 5 y 29 en OEPM y EUIPO."`,
+                  }, {
+                    role: 'user',
+                    content: message.slice(0, 400),
+                  }],
+                }),
+              }),
+            ])
+
+            // Extraer título
+            if (titleRes.status === 'fulfilled' && titleRes.value.ok) {
+              const titleData = await titleRes.value.json()
               const rawTitle = titleData.choices?.[0]?.message?.content?.trim() ?? null
               autoTitle = rawTitle?.replace(/^["']|["']$/g, '')?.trim() ?? null
-            } else {
-              await titleRes.text() // consume body
+            }
+
+            // Extraer summary
+            if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
+              const summaryData = await summaryRes.value.json()
+              autoSummary = summaryData.choices?.[0]?.message?.content?.trim()?.replace(/^["']|["']$/g, '')?.trim() ?? null
             }
           }
         } catch {
-          // Si falla la generación del título, continuar sin él
+          // Si falla la generación, continuar sin título/summary
         }
       }
+    }
     }
 
     // 15. Save messages (Promise.allSettled — never Promise.all)
