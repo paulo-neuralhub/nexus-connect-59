@@ -18,3 +18,5 @@ export { ApprovalExpresaFlow } from './ApprovalExpresaFlow';
 export { GeniusAvatar } from './GeniusAvatar';
 export type { GeniusAvatarProps } from './GeniusAvatar';
 export { GeniusOnboarding } from './GeniusOnboarding';
+export { GeniusLegalAcceptance } from './GeniusLegalAcceptance';
+export { AIDisclaimerPersistent } from './AIDisclaimerPersistent';

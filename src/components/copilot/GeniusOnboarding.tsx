@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useOrganization } from "@/hooks/useOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { GeniusAvatar } from "./GeniusAvatar";
+import { GeniusLegalAcceptance } from "./GeniusLegalAcceptance";
+import { useGeniusLegalGate } from "@/hooks/copilot/useGeniusLegalGate";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Sparkles, MessageSquare, Shield, Zap, Brain, Bell, ChevronRight, Check, X } from "lucide-react";
@@ -370,7 +372,9 @@ export function GeniusOnboarding({
 }) {
   const { user, profile } = useAuth();
   const { organizationId } = useOrganization();
+  const { hasAccepted: legalAccepted, isLoading: legalLoading, refetch: refetchLegal } = useGeniusLegalGate();
   const [step, setStep] = useState(0);
+  const [showLegal, setShowLegal] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [saving, setSaving] = useState(false);
   const [shouldShow, setShouldShow] = useState(false);
@@ -413,11 +417,21 @@ export function GeniusOnboarding({
   }, [user?.id, organizationId, forceOpen]);
 
   const isOpen = open !== undefined ? open : shouldShow;
-  if (!isOpen || !checked) return null;
+  if (!isOpen || !checked || legalLoading) return null;
+
+  // If legal not accepted, show legal modal first
+  if (!legalAccepted && !showLegal && step === 0) {
+    // Show legal on first "Continuar" click, not immediately
+  }
 
   const TOTAL_STEPS = 4;
 
   const handleNext = () => {
+    // On step 0, check legal gate before proceeding
+    if (step === 0 && !legalAccepted) {
+      setShowLegal(true);
+      return;
+    }
     if (step < TOTAL_STEPS - 1) setStep((s) => s + 1);
   };
 
@@ -467,6 +481,20 @@ export function GeniusOnboarding({
   };
 
   return (
+    <>
+    {/* Legal acceptance modal */}
+    <GeniusLegalAcceptance
+      open={showLegal}
+      onAccepted={() => {
+        setShowLegal(false);
+        refetchLegal();
+        setStep(1);
+      }}
+      onDeclined={() => {
+        setShowLegal(false);
+      }}
+    />
+
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
@@ -526,5 +554,6 @@ export function GeniusOnboarding({
         </div>
       </div>
     </div>
+    </>
   );
 }
