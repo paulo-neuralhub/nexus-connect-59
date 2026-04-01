@@ -31,11 +31,32 @@ const AMBER = '#F59E0B';
 export default function GeniusDashboard() {
   const { setTitle } = usePageTitle();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: config, isLoading } = useGeniusTenantConfig();
   const usage = useGeniusUsageStats();
   const { data: proactive = [] } = useProactiveSuggestions();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    searchParams.get('conversation') || undefined
+  );
+
+  const handleSelectConversation = (conv: AIConversation) => {
+    setConversationId(conv.id);
+    setSearchParams({ conversation: conv.id });
+    setSidebarOpen(false);
+  };
+
+  const handleNewChat = () => {
+    setConversationId(undefined);
+    setSearchParams({});
+  };
+
+  const handleConversationChange = (id: string) => {
+    setConversationId(id);
+    setSearchParams({ conversation: id });
+  };
 
   useEffect(() => {
     setTitle('IP-GENIUS PRO');
