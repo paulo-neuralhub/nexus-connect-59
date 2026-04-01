@@ -470,6 +470,8 @@ const App = () => (
                 <Route path="docket/:id/edit" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="data-hub" element={<DataHubPage />} />
                 <Route path="data-hub/import-export" element={<ImportExportPage />} />
+                <Route path="jurisdictions" element={<JurisdictionsPage />} />
+                <Route path="jurisdictions/:code" element={<JurisdictionDetailPage />} />
                 <Route path="spider" element={<SpiderLayout />}>
                   <Route index element={<SpiderDashboard />} />
                   <Route path="alerts/:id" element={<SpiderAlertDetailPage />} />
