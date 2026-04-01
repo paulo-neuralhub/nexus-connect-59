@@ -245,6 +245,11 @@ function parseGeniusMessage(content: string): {
     mainContent = mainContent.replace(legalRegex, '').trim();
   }
 
+  mainContent = mainContent
+    .replace(/^\*\*\s*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
   return { mainContent, linkingQuestion: hasLinkingQuestion, legalNote };
 }
 
@@ -330,7 +335,7 @@ export function GeniusMessageRenderer({
             <p className="text-xs text-amber-700 mb-3">
               ¿Desea registrar esta consulta en el expediente correspondiente?
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 mt-2">
               {matters.length > 0 ? (
                 <select
                   value={selectedMatterIdLocal}
@@ -356,7 +361,7 @@ export function GeniusMessageRenderer({
               <button
                 onClick={handleLinkConfirm}
                 disabled={!selectedMatterIdLocal}
-                className="text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md font-medium transition-colors"
+                className="shrink-0 text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap"
               >
                 Vincular
               </button>
@@ -376,7 +381,7 @@ export function GeniusMessageRenderer({
           <span className="text-emerald-600 text-sm">✓</span>
           <span className="text-xs text-emerald-700 font-medium">
             Consulta indexada al expediente{' '}
-            <strong>{currentMatterRef ?? currentMatterId}</strong>
+            <strong>{currentMatterRef ?? 'expediente seleccionado'}</strong>
             {' '}— forma parte del historial del expediente.
           </span>
         </div>
