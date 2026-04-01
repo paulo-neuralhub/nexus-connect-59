@@ -17,3 +17,4 @@ export { AuditTrailInline } from './AuditTrailInline';
 export { ApprovalExpresaFlow } from './ApprovalExpresaFlow';
 export { GeniusAvatar } from './GeniusAvatar';
 export type { GeniusAvatarProps } from './GeniusAvatar';
+export { GeniusOnboarding } from './GeniusOnboarding';

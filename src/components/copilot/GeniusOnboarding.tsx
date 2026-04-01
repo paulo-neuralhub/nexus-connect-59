@@ -379,7 +379,7 @@ export function GeniusOnboarding({
   // Determine avatar variant based on subscription
   const variant: "nexus" | "genius" = "genius"; // TODO: derive from org tier
 
-  const userName = profile?.first_name || profile?.display_name || "usuario";
+  const userName = profile?.full_name?.split(" ")[0] || "usuario";
 
   // Inject CSS
   useEffect(() => {
