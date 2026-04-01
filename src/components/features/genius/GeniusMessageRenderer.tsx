@@ -321,7 +321,6 @@ export function GeniusMessageRenderer({
 
       {/* TIPO B — Vinculación a expediente */}
       {linkingQuestion &&
-        !currentMatterId &&
         !dismissed &&
         !linked &&
         onLinkToMatter && (
