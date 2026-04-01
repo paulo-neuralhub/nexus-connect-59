@@ -73,6 +73,9 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
   const elementRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number>(0);
   const pointerIdRef = useRef<number | null>(null);
+  const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // for click distance calc
+  const onClickRef = useRef(onClickCallback);
+  onClickRef.current = onClickCallback;
 
   const getPixelCoords = useCallback((pos: BadgePosition): { x: number; y: number } => {
     const x = pos.side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
