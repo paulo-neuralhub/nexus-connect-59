@@ -317,8 +317,8 @@ export function GeniusChatSidebar() {
         {/* Empty state */}
         {isEmpty && (
           <div className="flex flex-col items-center justify-center h-full py-8">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6 text-[#B8860B]" />
+            <div className="mb-4">
+              <GeniusAvatar variant="genius" size="lg" state="greeting" showSparkle />
             </div>
             <h3 className="text-[16px] font-semibold mb-1" style={{ color: "#0F1729" }}>
               Hola, {firstName}.
