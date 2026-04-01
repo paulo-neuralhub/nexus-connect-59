@@ -6,3 +6,6 @@ export { CoPilotMemoryPanel } from './CoPilotMemoryPanel';
 export { GeniusAmbientBadge } from './GeniusAmbientBadge';
 export { GeniusInsightPanel } from './GeniusInsightPanel';
 export { GeniusInsightCard } from './GeniusInsightCard';
+export { GeniusChatSidebar } from './GeniusChatSidebar';
+export { GeniusChatBubble } from './GeniusChatBubble';
+export { GeniusChatHistory } from './GeniusChatHistory';

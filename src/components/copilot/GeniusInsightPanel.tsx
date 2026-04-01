@@ -3,8 +3,9 @@
 // ============================================================
 
 import { useState, useCallback, useMemo } from "react";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGeniusSidebar } from "@/contexts/genius-sidebar-context";
 import { GeniusInsightCard } from "./GeniusInsightCard";
 import type { CopilotSuggestion } from "@/hooks/copilot/useGeniusAmbient";
 
@@ -35,6 +36,7 @@ export function GeniusInsightPanel({
   onShown,
 }: Props) {
   const [filter, setFilter] = useState<string>("all");
+  const { openChat } = useGeniusSidebar();
 
   const filtered = useMemo(() => {
     if (filter === "all") return suggestions;
@@ -79,7 +81,16 @@ export function GeniusInsightPanel({
         </button>
       </div>
 
-      {/* Filter chips */}
+      {/* Open chat button */}
+      <div className="px-4 py-2 border-b border-[#E7E5E4]">
+        <button
+          onClick={() => { onClose(); openChat(); }}
+          className="w-full flex items-center justify-center gap-2 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#0F1729] text-white hover:bg-[#1E293B] transition-colors"
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          Abrir chat con GENIUS
+        </button>
+      </div>
       <div className="flex gap-1.5 px-4 py-2 border-b border-[#E7E5E4] overflow-x-auto">
         {FILTERS.map((f) => (
           <button
