@@ -84,14 +84,33 @@ export function useGeniusChat(agentType: AgentType) {
         contextMatterRef.current = matterId;
       }
 
-      // Add user message to UI immediately
-      const userMessage: AIMessage = {
-        id: `temp-user-${Date.now()}`,
-        conversation_id: conversationId,
-        role: 'user',
-        content: message,
-        created_at: new Date().toISOString(),
-      };
+      // Persist user message to DB first so it survives Edge Function failures
+      const { data: savedMsg, error: insertError } = await supabase
+        .from('ai_messages')
+        .insert({
+          conversation_id: conversationId,
+          role: 'user',
+          content: message,
+        })
+        .select('id, conversation_id, role, content, created_at')
+        .single();
+
+      const userMessage: AIMessage = savedMsg
+        ? {
+            ...savedMsg,
+            role: savedMsg.role as AIMessage['role'],
+          }
+        : {
+            id: `temp-user-${Date.now()}`,
+            conversation_id: conversationId,
+            role: 'user',
+            content: message,
+            created_at: new Date().toISOString(),
+          };
+
+      if (insertError) {
+        console.warn('Failed to persist user message, continuing with temp:', insertError);
+      }
       
       setState(prev => ({
         ...prev,
