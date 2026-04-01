@@ -74,17 +74,79 @@ export function useConversationMessages(conversationId: string) {
 
 export function useDeleteConversation() {
   const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (conversation: AIConversation) => {
+      if (conversation.matter_id) {
+        // Soft delete — mantener para expediente
+        const { error } = await supabase
+          .from('ai_conversations')
+          .update({
+            status: 'archived',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', conversation.id)
+          .eq('organization_id', currentOrganization!.id)
+          .eq('user_id', user!.id);
+        if (error) throw error;
+      } else {
+        // Hard delete — sin vínculo a expediente
+        const { error } = await supabase
+          .from('ai_conversations')
+          .delete()
+          .eq('id', conversation.id)
+          .eq('organization_id', currentOrganization!.id)
+          .eq('user_id', user!.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, conversation) => {
+      queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+      toast.success(
+        conversation.matter_id
+          ? 'Eliminada del sidebar. Sigue disponible en el expediente.'
+          : 'Conversación eliminada'
+      );
+    },
+    onError: () => {
+      toast.error('Error al eliminar la conversación');
+    },
+  });
+}
+
+export function useRenameConversation() {
+  const queryClient = useQueryClient();
+  const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      conversationId,
+      title,
+    }: {
+      conversationId: string;
+      title: string;
+    }) => {
+      if (!title.trim()) throw new Error('El título no puede estar vacío');
       const { error } = await supabase
         .from('ai_conversations')
-        .update({ status: 'archived' })
-        .eq('id', id);
+        .update({
+          title: title.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', conversationId)
+        .eq('organization_id', currentOrganization!.id)
+        .eq('user_id', user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+      toast.success('Conversación renombrada');
+    },
+    onError: () => {
+      toast.error('Error al renombrar la conversación');
     },
   });
 }
