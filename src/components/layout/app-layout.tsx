@@ -118,6 +118,7 @@ export function AppLayout() {
 
                 {/* CoPilot — self-contained widget */}
                 <CoPilotWidget />
+                <GeniusAmbientBadge />
 
                 <IPSoftphone />
                 <CallManager />
