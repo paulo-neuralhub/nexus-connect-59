@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles } from "lucide-react";
+import { GeniusAvatar } from "./GeniusAvatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGeniusAmbient } from "@/hooks/copilot/useGeniusAmbient";
 import { GeniusInsightPanel } from "./GeniusInsightPanel";
