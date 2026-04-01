@@ -62,6 +62,7 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
   // position state — updated ONLY on mount, drag-end, smart-reposition. Never during drag.
   const [position, setPosition] = useState<BadgePosition>(defaultPos);
   const [showAttention, setShowAttention] = useState(false);
+  const [didDragEnd, setDidDragEnd] = useState(false); // triggers post-drag celebration
 
   // All drag state lives in refs — zero re-renders during drag
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
