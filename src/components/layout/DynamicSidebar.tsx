@@ -117,6 +117,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?:
   CalendarClock,
   ClipboardList,
   Sun,
+  Zap,
+  Plus,
+  Globe2,
+  MoreHorizontal,
+  CheckCircle,
 };
 
 function getIcon(iconName: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
