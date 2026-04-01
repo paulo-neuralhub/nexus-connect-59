@@ -261,7 +261,7 @@ export function GeniusAmbientBadge() {
         </Tooltip>
 
         {/* Greeting bubble */}
-        {showGreeting && !panelOpen && !isDragging && (
+        {showGreeting && !panelOpen && !isDraggingRef.current && (
           <div
             className="absolute bg-white border border-[#E7E5E4] rounded-xl px-4 py-3 shadow-lg"
             style={{
