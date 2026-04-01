@@ -17,11 +17,14 @@ import {
   useProactiveSuggestions,
 } from '@/hooks/genius/useGeniusTenantConfig';
 import { GeniusDisclaimerModal } from '@/components/features/genius/genius-disclaimer-modal';
-import { GeniusChatEnhanced } from '@/components/features/genius';
+import { GeniusChatEnhanced, ConversationSidebar } from '@/components/features/genius';
 import { GeniusDocumentsTab } from '@/components/features/genius/genius-documents-tab';
 import { GeniusActionsTab } from '@/components/features/genius/genius-actions-tab';
 import { GeniusHistoryTab } from '@/components/features/genius/genius-history-tab';
 import { ModuleGate } from '@/components/common/ModuleGate';
+import { Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { AIConversation } from '@/types/genius';
 
 const AMBER = '#F59E0B';
 
