@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AIService, ChatMessage } from '@/lib/services/ai-service';
 import { useAuth } from '@/contexts/auth-context';
 import { useOrganization } from '@/contexts/organization-context';
+import { toast } from 'sonner';
 import type { 
   AIConversation, 
   AIMessage, 
