@@ -554,5 +554,6 @@ export function GeniusOnboarding({
         </div>
       </div>
     </div>
+    </>
   );
 }
