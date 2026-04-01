@@ -150,7 +150,6 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     pointerIdRef.current = null;
 
-    // Clean up body styles
     document.body.style.userSelect = "";
     document.body.style.touchAction = "";
 
@@ -158,7 +157,15 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
     isDraggingRef.current = false;
     dragActivatedRef.current = false;
 
-    if (!wasDrag) return; // was a click — let onClick handle it
+    if (!wasDrag) {
+      // It was a click! Calculate distance to be sure
+      const dx = e.clientX - startPosRef.current.x;
+      const dy = e.clientY - startPosRef.current.y;
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) {
+        onClickRef.current?.();
+      }
+      return;
+    }
 
     // Snap to nearest edge
     const midX = window.innerWidth / 2;
@@ -168,7 +175,6 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
 
     const el = elementRef.current;
     if (el) {
-      // Animate snap with CSS transition
       el.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
       el.style.transform = `translate3d(${finalX}px, ${finalY}px, 0) scale(1)`;
 
@@ -178,16 +184,19 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onC
         el.style.cursor = "grab";
       };
       el.addEventListener("transitionend", cleanup, { once: true });
-      setTimeout(cleanup, 350); // fallback
+      setTimeout(cleanup, 350);
     }
 
     posRef.current = { x: finalX, y: finalY };
     lastManualDragRef.current = Date.now();
 
-    // Single state sync AFTER drag ends
     const newPos: BadgePosition = { side, y: finalY };
     setPosition(newPos);
     savePosition(newPos);
+
+    // Trigger post-drag celebration
+    setDidDragEnd(true);
+    setTimeout(() => setDidDragEnd(false), 400);
   }, [isMobile, badgeSize]);
 
   // Expose a ref-based check (no state) for click vs drag distinction
