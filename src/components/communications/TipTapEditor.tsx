@@ -41,6 +41,8 @@ interface TipTapEditorProps {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  enableGeniusToolbar?: boolean;
+  geniusContext?: Record<string, string>;
 }
 
 const TEXT_COLORS = [
