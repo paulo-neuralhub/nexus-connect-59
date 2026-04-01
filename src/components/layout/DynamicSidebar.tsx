@@ -25,7 +25,8 @@ import {
   Calendar, Folder, FolderKanban, CheckSquare, Phone, Receipt, CreditCard, Coins,
   Eye, FileBarChart, Bot, History, Building2, Handshake, Activity, Cog, ShoppingBag,
   Search, Package, Circle, Puzzle, Columns3, UserPlus, ListTodo, Send, Wrench, Inbox,
-  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun
+  Users2, KanbanSquare, Cpu, CalendarClock, ClipboardList, Sun, Zap, Plus, Globe2, CheckCircle,
+  MoreHorizontal
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
