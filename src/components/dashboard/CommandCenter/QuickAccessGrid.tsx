@@ -1,5 +1,6 @@
 // =============================================
 // Quick Access — 2×3 grid of shortcut cards
+// SILK v2 Design System
 // =============================================
 
 import { Link } from 'react-router-dom';
@@ -15,6 +16,7 @@ import {
 interface ShortcutCard {
   icon: React.ElementType;
   label: string;
+  color: string;
   href?: string;
   onClick?: () => void;
 }
@@ -25,19 +27,22 @@ interface QuickAccessGridProps {
 
 export function QuickAccessGrid({ onOpenCopilot }: QuickAccessGridProps) {
   const shortcuts: ShortcutCard[] = [
-    { icon: FolderPlus, label: '+ Nuevo Expediente', href: '/app/expedientes/nuevo' },
-    { icon: Clock, label: 'Ver Plazos', href: '/app/plazos' },
-    { icon: Search, label: 'Alertas Spider', href: '/app/expedientes/vigilancia' },
-    { icon: Shield, label: 'Oposiciones', href: '/app/expedientes/oposiciones' },
-    { icon: RefreshCw, label: 'Renovaciones', href: '/app/plazos?tab=renovaciones' },
-    { icon: Sparkles, label: 'GENIUS Chat', onClick: onOpenCopilot },
+    { icon: FolderPlus, label: '+ Nuevo Expediente', color: '#00b4d8', href: '/app/expedientes/nuevo' },
+    { icon: Clock, label: 'Ver Plazos', color: '#ef4444', href: '/app/plazos' },
+    { icon: Search, label: 'Alertas Spider', color: '#f59e0b', href: '/app/expedientes/vigilancia' },
+    { icon: Shield, label: 'Oposiciones', color: '#2563eb', href: '/app/expedientes/oposiciones' },
+    { icon: RefreshCw, label: 'Renovaciones', color: '#10b981', href: '/app/plazos?tab=renovaciones' },
+    { icon: Sparkles, label: 'GENIUS Chat', color: '#b45309', onClick: onOpenCopilot },
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div
+      className="rounded-[14px] border p-[18px]"
+      style={{ background: '#ffffff', borderColor: 'hsl(var(--border))' }}
+    >
       <h3
         className="text-[13px] font-bold tracking-[0.15px] mb-3"
-        style={{ color: '#0a2540' }}
+        style={{ color: 'hsl(var(--foreground))' }}
       >
         Acceso Rápido
       </h3>
@@ -45,9 +50,20 @@ export function QuickAccessGrid({ onOpenCopilot }: QuickAccessGridProps) {
         {shortcuts.map((s) => {
           const Icon = s.icon;
           const inner = (
-            <div className="flex flex-col items-center gap-2 p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:shadow-sm hover:border-slate-200 transition-all cursor-pointer">
-              <Icon className="h-5 w-5" style={{ color: '#475569' }} />
-              <span className="text-[11px] font-medium text-center" style={{ color: '#374151' }}>
+            <div
+              className="flex flex-col items-center gap-2 p-3 rounded-[12px] border border-black/[0.04] transition-all duration-200 hover:border-[rgba(0,180,216,0.15)] hover:shadow-sm cursor-pointer"
+              style={{ background: '#f8fafc' }}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{ background: `${s.color}12` }}
+              >
+                <Icon className="h-4 w-4" style={{ color: s.color }} />
+              </div>
+              <span
+                className="text-[10px] font-medium text-center"
+                style={{ color: 'hsl(var(--text-primary))' }}
+              >
                 {s.label}
               </span>
             </div>
