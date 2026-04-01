@@ -73,6 +73,7 @@ export function AppLayout() {
                 <MobileBottomNav />
                 <PWAInstallPrompt />
                 <GlobalTimer />
+                <GeniusAmbientBadge />
                 <IPSoftphone />
                 {isDemoMode && (
                   <>
