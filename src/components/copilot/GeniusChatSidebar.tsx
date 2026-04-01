@@ -194,17 +194,23 @@ export function GeniusChatSidebar() {
   const firstName = user?.user_metadata?.first_name || user?.email?.split("@")[0] || "usuario";
   const isEmpty = messages.length === 0 && !chatLoading;
 
+  const { badgeSide } = useGeniusSidebar();
+  const isLeftSide = badgeSide === "left";
+  const enterClass = isLeftSide ? "genius-sidebar-enter-left" : "genius-sidebar-enter-right";
+  const borderClass = isLeftSide ? "border-r" : "border-l";
+  const positionClass = isLeftSide ? "left-0" : "right-0";
+
   return (
     <div
       ref={sidebarRef}
       role="complementary"
       aria-label="GENIUS chat"
-      className={`fixed top-0 right-0 h-screen flex flex-col bg-white border-l border-[#E7E5E4] z-40 genius-sidebar-enter ${
+      className={`fixed top-0 ${positionClass} h-screen flex flex-col bg-white ${borderClass} border-[#E7E5E4] z-40 ${enterClass} ${
         isMobile ? "w-full" : ""
       }`}
       style={{
         width: isMobile ? "100%" : sidebarWidth,
-        boxShadow: "-4px 0 24px rgba(0,0,0,0.08)",
+        boxShadow: isLeftSide ? "4px 0 24px rgba(0,0,0,0.08)" : "-4px 0 24px rgba(0,0,0,0.08)",
       }}
     >
       {/* Resize handle */}
