@@ -494,6 +494,54 @@ export function DynamicSidebar({
       );
     }
 
+    // PLAZOS section — special rendering with pulsing badge
+    if (section.sectionCode === "plazos") {
+      const hasOverdue = deadlineCount > 0;
+      return (
+        <div key={section.sectionCode} className="mb-1">
+          {!collapsed && (
+            <Collapsible open={isExpanded} onOpenChange={() => toggleSection(section.sectionCode)} className="silk-sidebar-collapsible">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 mt-4 pb-1.5 text-[10px] font-semibold uppercase",
+                    "hover:text-white/50 transition-colors border-t border-white/[0.06]",
+                    "tracking-[0.1em]",
+                    hasOverdue ? "text-red-400/80" : "text-white/[0.40]"
+                  )}
+                  style={hasOverdue ? { borderLeftColor: '#DC2626', borderLeftWidth: 2 } : undefined}
+                >
+                  <Zap className={cn("h-3 w-3", hasOverdue && "text-red-400")} />
+                  <span className="flex-1 text-left">PLAZOS</span>
+                  {hasOverdue ? (
+                    <span className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center animate-pulse">
+                      {deadlineCount}
+                    </span>
+                  ) : (
+                    <CheckCircle className="h-3 w-3 text-emerald-400/60" />
+                  )}
+                  <ChevronDown
+                    className={cn("h-3 w-3 transition-transform", !isExpanded && "-rotate-90")}
+                  />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-[1px]" style={{ overflow: 'visible' }}>
+                {hasModules ? section.modules.map(renderModule) : (
+                  <p className="text-[11px] text-white/[0.28] px-4 py-2">Sin módulos</p>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          {collapsed && hasModules && (
+            <div className="space-y-1">
+              {section.modules.map(renderModule)}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     // Expedientes section — no header, modules render directly
     if (section.sectionCode === "expedientes") {
       return (
