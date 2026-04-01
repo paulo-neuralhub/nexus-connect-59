@@ -5,8 +5,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import {
-  Sparkles, X, Minus, ClipboardList, Send, Paperclip, AlertTriangle,
+  X, Minus, ClipboardList, Send, Paperclip, AlertTriangle,
 } from "lucide-react";
+import { GeniusAvatar } from "./GeniusAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useGeniusChat, useGeniusFeedback } from "@/hooks/use-genius-chat";
