@@ -283,7 +283,7 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
           )}
 
           {/* Historial */}
-          {((p.known_change_dates && p.known_change_dates.length > 0) || p.researched_at || researchSources.length > 0) && (
+          {p.known_change_dates && p.known_change_dates.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Historial</h4>
               {p.known_change_dates && p.known_change_dates.length > 0 && (
