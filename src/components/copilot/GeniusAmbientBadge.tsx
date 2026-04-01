@@ -72,7 +72,7 @@ export function GeniusAmbientBadge() {
 
   const {
     position,
-    isDragging,
+    isDraggingRef,
     showAttention,
     elementRef,
     onPointerDown,
@@ -222,8 +222,7 @@ export function GeniusAmbientBadge() {
         style={{
           top: 0,
           left: 0,
-          willChange: "transform",
-          cursor: isDragging ? "grabbing" : "grab",
+          cursor: "grab",
           touchAction: "none",
           userSelect: "none",
         }}
@@ -240,11 +239,7 @@ export function GeniusAmbientBadge() {
               style={{
                 width: badgeSize,
                 height: badgeSize,
-                boxShadow: isDragging
-                  ? "0 8px 32px rgba(0,0,0,0.2)"
-                  : showAttention
-                  ? undefined
-                  : "0 2px 12px rgba(0,0,0,0.1)",
+                boxShadow: showAttention ? undefined : "0 2px 12px rgba(0,0,0,0.1)",
                 animation: showAttention ? "genius-attention-pulse 1s ease-in-out 2" : undefined,
                 transition: "box-shadow 200ms ease",
               }}
@@ -258,7 +253,7 @@ export function GeniusAmbientBadge() {
               )}
             </button>
           </TooltipTrigger>
-          {!isDragging && (
+          {!isDraggingRef.current && (
             <TooltipContent side={isLeft ? "right" : "left"} className="text-xs">
               {tooltipText}
             </TooltipContent>
@@ -266,7 +261,7 @@ export function GeniusAmbientBadge() {
         </Tooltip>
 
         {/* Greeting bubble */}
-        {showGreeting && !panelOpen && !isDragging && (
+        {showGreeting && !panelOpen && !isDraggingRef.current && (
           <div
             className="absolute bg-white border border-[#E7E5E4] rounded-xl px-4 py-3 shadow-lg"
             style={{
@@ -287,7 +282,7 @@ export function GeniusAmbientBadge() {
         )}
 
         {/* Panel */}
-        {panelOpen && !isDragging && (
+        {panelOpen && !isDraggingRef.current && (
           <div
             ref={panelRef}
             className="absolute"
