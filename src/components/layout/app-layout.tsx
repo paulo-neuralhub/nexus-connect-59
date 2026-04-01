@@ -139,7 +139,9 @@ export function AppLayout() {
                 )}
               </div>
             )}
+            <GeniusChatSidebar />
           </ContextualHelpProvider>
+          </GeniusSidebarProvider>
         </PageProvider>
       </OrgGuard>
     </AuthGuard>
