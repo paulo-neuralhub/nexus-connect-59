@@ -71,6 +71,8 @@ import WorkDetailPage from "./pages/app/market/work/[id]";
 import RankingsPage from "./pages/app/market/RankingsPage";
 import MyOffersPage from "./pages/app/market/offers";
 import DataHubPage from "./pages/app/data-hub";
+import JurisdictionsPage from "./pages/app/jurisdictions";
+import JurisdictionDetailPage from "./pages/app/jurisdictions/[code]";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
 import GeniusDashboard from "./pages/app/genius/dashboard";
