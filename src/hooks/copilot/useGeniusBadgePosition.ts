@@ -55,7 +55,7 @@ function getSmartPosition(pathname: string): BadgePosition {
   return { side: "right", y: 0.6 };
 }
 
-export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
+export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onClickCallback?: () => void) {
   const location = useLocation();
 
   const defaultPos = loadPosition() ?? { side: "right" as const, y: window.innerHeight * 0.7 };
