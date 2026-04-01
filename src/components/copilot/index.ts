@@ -3,3 +3,6 @@ export { CoPilotGuide } from './CoPilotGuide';
 export { BriefingCard } from './BriefingCard';
 export { CoPilotBubble } from './CoPilotBubble';
 export { CoPilotMemoryPanel } from './CoPilotMemoryPanel';
+export { GeniusAmbientBadge } from './GeniusAmbientBadge';
+export { GeniusInsightPanel } from './GeniusInsightPanel';
+export { GeniusInsightCard } from './GeniusInsightCard';
