@@ -138,11 +138,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
               Inteligencia de Tasas
             </CardTitle>
             <div className="flex items-center gap-2 flex-wrap">
-              {p.source && (
-                <Badge variant="outline" className="text-[10px]">
-                  {p.source === "gemini_research" ? "Gemini Research" : p.source}
-                </Badge>
-              )}
               {p.last_pattern_review && (
                 <Badge variant="outline" className="text-[10px]">
                   <Clock className="h-2.5 w-2.5 mr-1" />
