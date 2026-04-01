@@ -159,7 +159,7 @@ export function DynamicSidebar({
         .from('matter_deadlines')
         .select('*', { count: 'exact', head: true })
         .eq('organization_id', currentOrganization!.id)
-        .lt('due_date', sevenDaysFromNow.toISOString())
+        .lt('deadline_date', sevenDaysFromNow.toISOString())
         .neq('status', 'completed');
       if (error) return 0;
       return count || 0;
