@@ -55,13 +55,14 @@ function getSmartPosition(pathname: string): BadgePosition {
   return { side: "right", y: 0.6 };
 }
 
-export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
+export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean, onClickCallback?: () => void) {
   const location = useLocation();
 
   const defaultPos = loadPosition() ?? { side: "right" as const, y: window.innerHeight * 0.7 };
   // position state — updated ONLY on mount, drag-end, smart-reposition. Never during drag.
   const [position, setPosition] = useState<BadgePosition>(defaultPos);
   const [showAttention, setShowAttention] = useState(false);
+  const [didDragEnd, setDidDragEnd] = useState(false); // triggers post-drag celebration
 
   // All drag state lives in refs — zero re-renders during drag
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -72,6 +73,9 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
   const elementRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number>(0);
   const pointerIdRef = useRef<number | null>(null);
+  const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 }); // for click distance calc
+  const onClickRef = useRef(onClickCallback);
+  onClickRef.current = onClickCallback;
 
   const getPixelCoords = useCallback((pos: BadgePosition): { x: number; y: number } => {
     const x = pos.side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
@@ -93,11 +97,11 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (isMobile) return;
-    e.preventDefault(); // prevent text selection
+    // Don't call e.preventDefault() — it blocks click events
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointerIdRef.current = e.pointerId;
 
-    // Offset = pointer position relative to current badge position
+    startPosRef.current = { x: e.clientX, y: e.clientY };
     offsetRef.current = {
       x: e.clientX - posRef.current.x,
       y: e.clientY - posRef.current.y,
@@ -146,7 +150,6 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     pointerIdRef.current = null;
 
-    // Clean up body styles
     document.body.style.userSelect = "";
     document.body.style.touchAction = "";
 
@@ -154,7 +157,15 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     isDraggingRef.current = false;
     dragActivatedRef.current = false;
 
-    if (!wasDrag) return; // was a click — let onClick handle it
+    if (!wasDrag) {
+      // It was a click! Calculate distance to be sure
+      const dx = e.clientX - startPosRef.current.x;
+      const dy = e.clientY - startPosRef.current.y;
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) {
+        onClickRef.current?.();
+      }
+      return;
+    }
 
     // Snap to nearest edge
     const midX = window.innerWidth / 2;
@@ -164,7 +175,6 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
 
     const el = elementRef.current;
     if (el) {
-      // Animate snap with CSS transition
       el.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
       el.style.transform = `translate3d(${finalX}px, ${finalY}px, 0) scale(1)`;
 
@@ -174,16 +184,19 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
         el.style.cursor = "grab";
       };
       el.addEventListener("transitionend", cleanup, { once: true });
-      setTimeout(cleanup, 350); // fallback
+      setTimeout(cleanup, 350);
     }
 
     posRef.current = { x: finalX, y: finalY };
     lastManualDragRef.current = Date.now();
 
-    // Single state sync AFTER drag ends
     const newPos: BadgePosition = { side, y: finalY };
     setPosition(newPos);
     savePosition(newPos);
+
+    // Trigger post-drag celebration
+    setDidDragEnd(true);
+    setTimeout(() => setDidDragEnd(false), 400);
   }, [isMobile, badgeSize]);
 
   // Expose a ref-based check (no state) for click vs drag distinction
@@ -237,10 +250,10 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     position,
     isDraggingRef,
     showAttention,
+    didDragEnd,
     elementRef,
     onPointerDown,
     onPointerMove,
     onPointerUp,
-    wasClick,
   };
 }
