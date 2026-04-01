@@ -74,6 +74,9 @@ export interface AIConversation {
   status: 'active' | 'archived';
   is_starred: boolean;
   is_pinned?: boolean;
+  summary?: string;
+  tags?: string[];
+  is_pinned?: boolean;
   message_count: number;
   token_count: number;
   created_at: string;
