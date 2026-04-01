@@ -43,6 +43,7 @@ export function AppLayout() {
     <AuthGuard>
       <OrgGuard>
         <PageProvider>
+          <GeniusSidebarProvider>
           <ContextualHelpProvider>
             
             {isMobile ? (
