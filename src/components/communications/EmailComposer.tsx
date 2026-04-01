@@ -42,6 +42,7 @@ import { MatterSelector } from '@/components/matters/MatterSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { GeniusFullDraftMenu } from '@/components/copilot/GeniusWritingToolbar';
 
 interface SelectedContact {
   id?: string;
