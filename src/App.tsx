@@ -99,6 +99,7 @@ import MatterList from "./pages/app/docket";
 import MatterDetail from "./pages/app/docket/MatterDetail";
 import MatterForm from "./pages/app/docket/MatterForm";
 import DeadlinesPage from "./pages/app/docket/DeadlinesPage";
+import PlazosPage from "./pages/app/plazos";
 // Expedientes V2
 import ExpedientesPage from "./pages/app/expedientes";
 import MatterDetailPageV2 from "./pages/app/expedientes/[id]";
