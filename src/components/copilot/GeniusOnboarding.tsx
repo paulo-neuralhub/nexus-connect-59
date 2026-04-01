@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useOrganization } from "@/hooks/useOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { GeniusAvatar } from "./GeniusAvatar";
+import { GeniusLegalAcceptance } from "./GeniusLegalAcceptance";
+import { useGeniusLegalGate } from "@/hooks/copilot/useGeniusLegalGate";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Sparkles, MessageSquare, Shield, Zap, Brain, Bell, ChevronRight, Check, X } from "lucide-react";
