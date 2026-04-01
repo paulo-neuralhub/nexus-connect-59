@@ -692,35 +692,7 @@ export function DynamicSidebar({
         </div>
       )}
 
-      {/* SILK: Settings */}
-      <div className={cn("py-2", collapsed ? "px-2" : "pr-4")}>
-        {(() => {
-          const isSettingsActive = location.pathname.startsWith("/app/settings");
-          return (
-            <Link
-              to="/app/settings"
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 text-[13px] transition-colors relative",
-                collapsed ? "px-3 py-3 justify-center" : "py-[10px] px-3",
-                isSettingsActive
-                  ? "silk-menu-active text-[#0a2540] font-bold"
-                  : "text-white/[0.48] font-normal hover:text-white/70 rounded-xl z-[1]"
-              )}
-            >
-              {isSettingsActive && <TongueCurves />}
-              <Settings 
-                className="h-3 w-3" 
-                style={isSettingsActive ? { 
-                  color: '#00b4d8',
-                  filter: 'drop-shadow(0 0 4px rgba(0,180,216,0.30))'
-                } : { color: 'rgba(255,255,255,0.28)' }}
-              />
-              {!collapsed && "Configuración"}
-            </Link>
-          );
-        })()}
-      </div>
+      {/* Settings moved to user dropdown */}
 
       {/* SILK: Collapse Button */}
       {variant === "desktop" && onToggleCollapsed && (
