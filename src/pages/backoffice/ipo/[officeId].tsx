@@ -17,7 +17,7 @@ import { DetailTabTreaties } from "@/components/ip-offices/detail-tabs/DetailTab
 import { DetailTabDigital } from "@/components/ip-offices/detail-tabs/DetailTabDigital";
 import { DetailTabProcess } from "@/components/ip-offices/detail-tabs/DetailTabProcess";
 import { DetailTabRequirements } from "@/components/ip-offices/detail-tabs/DetailTabRequirements";
-import { IPOfficeFeeIntelligence } from "@/components/ip-offices/IPOfficeFeeIntelligence";
+import { OfficeIntelligencePanel } from "@/components/ip-offices/OfficeIntelligencePanel";
 
 export default function IpOfficeDetailPage() {
   const { officeId: code } = useParams<{ officeId: string }>();
