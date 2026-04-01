@@ -731,7 +731,16 @@ export function DynamicSidebar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem asChild>
-              <Link to="/app/settings">Mi perfil</Link>
+              <Link to="/app/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Configuración
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/app/perfil" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Mi Perfil
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/app/settings/billing">Suscripción</Link>
