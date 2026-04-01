@@ -1,5 +1,5 @@
 // ============================================================
-// GENIUS Ambient Badge — Fixed-position floating badge
+// GENIUS Ambient Badge — Draggable + context-aware floating badge
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -8,6 +8,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useGeniusAmbient } from "@/hooks/copilot/useGeniusAmbient";
 import { GeniusInsightPanel } from "./GeniusInsightPanel";
 import { useIsMobile, useNetworkStatus } from "@/hooks/use-mobile";
+import { useGeniusBadgePosition } from "@/hooks/copilot/useGeniusBadgePosition";
+import { useGeniusSidebar } from "@/contexts/genius-sidebar-context";
 
 const BADGE_CSS_ID = "genius-ambient-css";
 const BADGE_CSS = `
@@ -33,6 +35,10 @@ const BADGE_CSS = `
     from { opacity: 0; transform: translateY(8px) scale(0.95); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
+  @keyframes genius-attention-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(184,134,11,0); }
+    50% { box-shadow: 0 0 16px 6px rgba(184,134,11,0.25); }
+  }
   @media (prefers-reduced-motion: reduce) {
     .genius-badge, .genius-badge-glow, .genius-badge-urgent {
       animation: none !important;
@@ -57,8 +63,28 @@ export function GeniusAmbientBadge() {
   const [showGreeting, setShowGreeting] = useState(false);
   const isMobile = useIsMobile();
   const { isOnline } = useNetworkStatus();
+  const { setBadgeSide, toggleChat } = useGeniusSidebar();
   const badgeRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const isCompact = preferences.copilot_size === "compact";
+  const badgeSize = isCompact ? 44 : isMobile ? 48 : 56;
+
+  const {
+    position,
+    isDragging,
+    showAttention,
+    elementRef,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    wasClick,
+  } = useGeniusBadgePosition(badgeSize, isMobile);
+
+  // Sync badge side to sidebar context
+  useEffect(() => {
+    setBadgeSide(position.side);
+  }, [position.side, setBadgeSide]);
 
   // Inject CSS
   useEffect(() => {
@@ -115,24 +141,21 @@ export function GeniusAmbientBadge() {
   }, [markActioned]);
   const handleShown = useCallback((id: string) => markShown(id), [markShown]);
 
+  const handleClick = useCallback(() => {
+    if (!wasClick()) return; // was a drag, ignore
+    setPanelOpen((v) => !v);
+  }, [wasClick]);
+
   if (!preferences.copilot_visible) return null;
 
-  const isCompact = preferences.copilot_size === "compact";
-  const badgeSize = isCompact ? 44 : isMobile ? 48 : 56;
-  const isLeft = preferences.copilot_position === "bottom-left";
-
-  // Badge state
-  let badgeAnimation = "genius-breathe 4s ease-in-out infinite";
-  let borderColor = "transparent";
+  // Badge state animation (applied to the inner avatar wrapper)
+  let avatarState: "idle" | "thinking" | "alert" = "idle";
   if (!isOnline) {
-    badgeAnimation = "none";
-    borderColor = "#9CA3AF";
+    avatarState = "idle";
   } else if (hasUrgent) {
-    badgeAnimation = "genius-urgent-pulse 2s ease-in-out infinite";
-    borderColor = "#DC2626";
+    avatarState = "alert";
   } else if (unreadCount > 0) {
-    badgeAnimation = "genius-glow 3s ease-in-out infinite";
-    borderColor = "#B8860B";
+    avatarState = "thinking";
   }
 
   const tooltipText = !isOnline
@@ -146,63 +169,104 @@ export function GeniusAmbientBadge() {
     return "Buenas noches";
   })();
 
+  const isLeft = position.side === "left";
+
+  // Mobile: fixed bottom-right, no dragging
+  if (isMobile) {
+    return (
+      <>
+        <div
+          ref={badgeRef}
+          className="fixed z-[9999]"
+          style={{ bottom: 80, right: 24 }}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setPanelOpen((v) => !v)}
+                aria-label={tooltipText}
+                className="relative rounded-full flex items-center justify-center cursor-pointer"
+                style={{ width: badgeSize, height: badgeSize }}
+              >
+                <GeniusAvatar variant="genius" size="lg" state={avatarState} showSparkle breathing className="w-full h-full" />
+                {unreadCount > 0 && (
+                  <span className="absolute flex items-center justify-center rounded-full text-white font-bold"
+                    style={{ top: -4, right: -4, width: 20, height: 20, fontSize: 11, background: hasUrgent ? "#DC2626" : "#B8860B" }}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="text-xs">{tooltipText}</TooltipContent>
+          </Tooltip>
+          {panelOpen && (
+            <div ref={panelRef} style={{ position: "fixed", left: 0, right: 0, bottom: 0 }}>
+              <GeniusInsightPanel suggestions={suggestions} isLoading={isLoading} suggestionsEnabled={preferences.suggestions_enabled}
+                onClose={() => setPanelOpen(false)} onDismiss={handleDismiss} onAction={handleAction} onShown={handleShown} />
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  // Desktop: draggable badge
   return (
     <>
-      {/* Badge */}
       <div
-        ref={badgeRef}
-        className="fixed z-50"
-        style={{
-          bottom: isMobile ? 80 : 24,
-          [isLeft ? "left" : "right"]: 24,
+        ref={(node) => {
+          (badgeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          elementRef.current = node;
         }}
+        className="fixed z-[9999]"
+        style={{
+          top: 0,
+          left: 0,
+          willChange: "transform",
+          cursor: isDragging ? "grabbing" : "grab",
+          touchAction: "none",
+          userSelect: "none",
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
       >
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => setPanelOpen((v) => !v)}
+              onClick={handleClick}
               aria-label={tooltipText}
-              className="relative rounded-full flex items-center justify-center cursor-pointer transition-transform duration-150 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2"
+              className="relative rounded-full flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2"
               style={{
                 width: badgeSize,
                 height: badgeSize,
+                boxShadow: isDragging
+                  ? "0 8px 32px rgba(0,0,0,0.2)"
+                  : showAttention
+                  ? undefined
+                  : "0 2px 12px rgba(0,0,0,0.1)",
+                animation: showAttention ? "genius-attention-pulse 1s ease-in-out 2" : undefined,
+                transition: "box-shadow 200ms ease",
               }}
             >
-              <GeniusAvatar
-                variant="genius"
-                size="lg"
-                state={badgeAnimation ? "thinking" : "idle"}
-                showSparkle
-                showBadge={false}
-                breathing
-                className="w-full h-full"
-              />
-
-              {/* Unread counter */}
+              <GeniusAvatar variant="genius" size="lg" state={avatarState} showSparkle breathing className="w-full h-full" />
               {unreadCount > 0 && (
-                <span
-                  className="absolute flex items-center justify-center rounded-full text-white font-bold"
-                  style={{
-                    top: -4,
-                    right: -4,
-                    width: 20,
-                    height: 20,
-                    fontSize: 11,
-                    background: hasUrgent ? "#DC2626" : "#B8860B",
-                  }}
-                >
+                <span className="absolute flex items-center justify-center rounded-full text-white font-bold"
+                  style={{ top: -4, right: -4, width: 20, height: 20, fontSize: 11, background: hasUrgent ? "#DC2626" : "#B8860B" }}>
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </button>
           </TooltipTrigger>
-          <TooltipContent side="left" className="text-xs">
-            {tooltipText}
-          </TooltipContent>
+          {!isDragging && (
+            <TooltipContent side={isLeft ? "right" : "left"} className="text-xs">
+              {tooltipText}
+            </TooltipContent>
+          )}
         </Tooltip>
 
         {/* Greeting bubble */}
-        {showGreeting && !panelOpen && (
+        {showGreeting && !panelOpen && !isDragging && (
           <div
             className="absolute bg-white border border-[#E7E5E4] rounded-xl px-4 py-3 shadow-lg"
             style={{
@@ -223,16 +287,13 @@ export function GeniusAmbientBadge() {
         )}
 
         {/* Panel */}
-        {panelOpen && (
+        {panelOpen && !isDragging && (
           <div
             ref={panelRef}
             className="absolute"
             style={{
               bottom: badgeSize + 12,
               [isLeft ? "left" : "right"]: 0,
-              ...(isMobile
-                ? { position: "fixed", left: 0, right: 0, bottom: 0 }
-                : {}),
             }}
           >
             <GeniusInsightPanel

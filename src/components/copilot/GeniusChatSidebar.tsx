@@ -21,24 +21,25 @@ import { toast } from "sonner";
 // ── CSS injection ─────────────────────────────────────────
 const CSS_ID = "genius-sidebar-css";
 const CSS = `
-  @keyframes genius-slide-in {
+  @keyframes genius-slide-in-right {
     from { transform: translateX(100%); }
     to   { transform: translateX(0); }
   }
-  @keyframes genius-slide-out {
-    from { transform: translateX(0); }
-    to   { transform: translateX(100%); }
+  @keyframes genius-slide-in-left {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
   }
   @keyframes genius-dots {
     0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
     30% { opacity: 1; transform: translateY(-4px); }
   }
-  .genius-sidebar-enter { animation: genius-slide-in 0.3s ease-out; }
+  .genius-sidebar-enter-right { animation: genius-slide-in-right 0.3s ease-out; }
+  .genius-sidebar-enter-left { animation: genius-slide-in-left 0.3s ease-out; }
   .genius-dot { animation: genius-dots 1.2s ease-in-out infinite; }
   .genius-dot:nth-child(2) { animation-delay: 0.2s; }
   .genius-dot:nth-child(3) { animation-delay: 0.4s; }
   @media (prefers-reduced-motion: reduce) {
-    .genius-sidebar-enter { animation: none !important; }
+    .genius-sidebar-enter-right, .genius-sidebar-enter-left { animation: none !important; }
     .genius-dot { animation: none !important; opacity: 1 !important; }
   }
 `;
@@ -193,23 +194,29 @@ export function GeniusChatSidebar() {
   const firstName = user?.user_metadata?.first_name || user?.email?.split("@")[0] || "usuario";
   const isEmpty = messages.length === 0 && !chatLoading;
 
+  const { badgeSide } = useGeniusSidebar();
+  const isLeftSide = badgeSide === "left";
+  const enterClass = isLeftSide ? "genius-sidebar-enter-left" : "genius-sidebar-enter-right";
+  const borderClass = isLeftSide ? "border-r" : "border-l";
+  const positionClass = isLeftSide ? "left-0" : "right-0";
+
   return (
     <div
       ref={sidebarRef}
       role="complementary"
       aria-label="GENIUS chat"
-      className={`fixed top-0 right-0 h-screen flex flex-col bg-white border-l border-[#E7E5E4] z-40 genius-sidebar-enter ${
+      className={`fixed top-0 ${positionClass} h-screen flex flex-col bg-white ${borderClass} border-[#E7E5E4] z-40 ${enterClass} ${
         isMobile ? "w-full" : ""
       }`}
       style={{
         width: isMobile ? "100%" : sidebarWidth,
-        boxShadow: "-4px 0 24px rgba(0,0,0,0.08)",
+        boxShadow: isLeftSide ? "4px 0 24px rgba(0,0,0,0.08)" : "-4px 0 24px rgba(0,0,0,0.08)",
       }}
     >
       {/* Resize handle */}
       {!isMobile && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-300 transition-colors z-10"
+          className={`absolute ${isLeftSide ? "right-0" : "left-0"} top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-300 transition-colors z-10`}
           onMouseDown={startResize}
           style={{ background: isResizing ? "#3B82F6" : "transparent" }}
         />
