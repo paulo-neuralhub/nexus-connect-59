@@ -353,8 +353,8 @@ export function GeniusChatSidebar() {
         {/* Streaming / loading indicator */}
         {chatLoading && (
           <div className="flex gap-2 mb-4">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center mt-0.5">
-              <Sparkles className="w-3 h-3 text-[#B8860B]" />
+            <div className="flex-shrink-0 mt-0.5">
+              <GeniusAvatar variant="genius" size="xs" state="thinking" breathing={false} showSparkle={false} />
             </div>
             <div className="flex-1">
               <span className="text-[13px] font-medium" style={{ color: "#B8860B" }}>

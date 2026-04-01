@@ -584,7 +584,7 @@ export function CoPilotWidget() {
   const ACCENT_LIGHT = '#374151'
   const ACCENT_FULL = '#D97706'
   const ACCENT = isGeniusFull ? ACCENT_FULL : ACCENT_LIGHT
-  const AVATAR = '/assets/copilot-nexus-avatar.jpeg'
+  const AVATAR = isGeniusFull ? '/assets/copilot-genius-avatar.jpeg' : '/assets/copilot-nexus-avatar.jpeg'
   const panelWidth = isGeniusFull ? 480 : 380
   const pageName = getPageName(location.pathname)
 
