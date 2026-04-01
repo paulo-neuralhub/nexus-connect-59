@@ -3,8 +3,9 @@
 // ============================================================
 
 import { useState, useCallback, useMemo } from "react";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGeniusSidebar } from "@/contexts/genius-sidebar-context";
 import { GeniusInsightCard } from "./GeniusInsightCard";
 import type { CopilotSuggestion } from "@/hooks/copilot/useGeniusAmbient";
 
