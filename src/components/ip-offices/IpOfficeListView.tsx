@@ -79,7 +79,7 @@ export function IpOfficeListView({ offices, researchMap, onOfficeClick }: Props)
                     return <span className={cn("text-xs font-medium", color)}>{icon} {score}%</span>;
                   })()}
                 </TableCell>
-                <TableCell className="hidden md:table-cell"><ResearchStatusBadge research={researchMap?.get(office.id)} compact /></TableCell>
+                
                 <TableCell>
                   {(office.website_main || office.website_url) && (
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); window.open((office.website_main || office.website_url) as string, "_blank"); }}>
