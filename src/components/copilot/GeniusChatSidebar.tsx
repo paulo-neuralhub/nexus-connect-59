@@ -220,9 +220,7 @@ export function GeniusChatSidebar() {
         {/* Top row */}
         <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#B8860B]" />
-            </div>
+            <GeniusAvatar variant="genius" size="sm" state={chatLoading ? "thinking" : "idle"} showSparkle />
             <span className="text-[16px] font-semibold" style={{ color: "#0F1729" }}>
               ✦ GENIUS
             </span>
