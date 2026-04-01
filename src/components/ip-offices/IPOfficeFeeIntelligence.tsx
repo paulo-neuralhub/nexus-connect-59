@@ -105,9 +105,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
           <p className="text-sm text-muted-foreground">
             Sin datos de inteligencia de tasas para esta oficina
           </p>
-          <button className="mt-3 text-xs text-primary hover:underline">
-            Solicitar investigación
-          </button>
         </CardContent>
       </Card>
     );
@@ -116,7 +113,7 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
   const p = patterns[0];
   const isVolatile = p.avg_change_interval_days != null && p.avg_change_interval_days <= 1;
   const confidencePct = p.confidence_in_pattern != null ? Math.round(p.confidence_in_pattern * 100) : null;
-  const researchSources = Array.isArray(p.research_sources) ? p.research_sources as string[] : [];
+  
   const notesHasAlert = p.notes ? /ALERTA|CRÍTICO|CRITICO/i.test(p.notes) : false;
 
   return (
@@ -141,11 +138,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
               Inteligencia de Tasas
             </CardTitle>
             <div className="flex items-center gap-2 flex-wrap">
-              {p.source && (
-                <Badge variant="outline" className="text-[10px]">
-                  {p.source === "gemini_research" ? "Gemini Research" : p.source}
-                </Badge>
-              )}
               {p.last_pattern_review && (
                 <Badge variant="outline" className="text-[10px]">
                   <Clock className="h-2.5 w-2.5 mr-1" />
@@ -291,7 +283,7 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
           )}
 
           {/* Historial */}
-          {((p.known_change_dates && p.known_change_dates.length > 0) || p.researched_at || researchSources.length > 0) && (
+          {p.known_change_dates && p.known_change_dates.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Historial</h4>
               {p.known_change_dates && p.known_change_dates.length > 0 && (
@@ -300,26 +292,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
                     <Badge key={i} variant="outline" className="text-[10px]">
                       {formatDate(d)}
                     </Badge>
-                  ))}
-                </div>
-              )}
-              {p.researched_at && (
-                <p className="text-xs text-muted-foreground">
-                  Investigado el {formatDate(p.researched_at)}
-                </p>
-              )}
-              {researchSources.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {researchSources.map((src, i) => (
-                    <a
-                      key={i}
-                      href={String(src)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-primary hover:underline"
-                    >
-                      [{i + 1}]
-                    </a>
                   ))}
                 </div>
               )}
