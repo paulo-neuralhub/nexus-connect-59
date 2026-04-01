@@ -12527,6 +12527,95 @@ export type Database = {
         }
         Relationships: []
       }
+      genius_kb_sources: {
+        Row: {
+          advance_notice_months: number | null
+          alert_on_change: boolean | null
+          change_frequency_months: number | null
+          check_cost_estimate: number | null
+          check_frequency: string | null
+          consecutive_no_change: number | null
+          created_at: string | null
+          gazette_announcement_url: string | null
+          id: string
+          is_active: boolean | null
+          jurisdiction_code: string
+          knowledge_type: string
+          last_change_detected_at: string | null
+          last_changed_at: string | null
+          last_checked_at: string | null
+          last_content_hash: string | null
+          next_check_date: string | null
+          notes: string | null
+          office_id: string | null
+          source_name: string
+          source_url: string
+          total_changes_found: number | null
+          total_checks: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          advance_notice_months?: number | null
+          alert_on_change?: boolean | null
+          change_frequency_months?: number | null
+          check_cost_estimate?: number | null
+          check_frequency?: string | null
+          consecutive_no_change?: number | null
+          created_at?: string | null
+          gazette_announcement_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code: string
+          knowledge_type: string
+          last_change_detected_at?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string | null
+          last_content_hash?: string | null
+          next_check_date?: string | null
+          notes?: string | null
+          office_id?: string | null
+          source_name: string
+          source_url: string
+          total_changes_found?: number | null
+          total_checks?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          advance_notice_months?: number | null
+          alert_on_change?: boolean | null
+          change_frequency_months?: number | null
+          check_cost_estimate?: number | null
+          check_frequency?: string | null
+          consecutive_no_change?: number | null
+          created_at?: string | null
+          gazette_announcement_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          jurisdiction_code?: string
+          knowledge_type?: string
+          last_change_detected_at?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string | null
+          last_content_hash?: string | null
+          next_check_date?: string | null
+          notes?: string | null
+          office_id?: string | null
+          source_name?: string
+          source_url?: string
+          total_changes_found?: number | null
+          total_checks?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_kb_sources_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "ipo_offices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_kb_update_log: {
         Row: {
           action: string
@@ -31336,6 +31425,68 @@ export type Database = {
           },
         ]
       }
+      v_kb_source_schedule: {
+        Row: {
+          advance_notice_months: number | null
+          change_frequency_months: number | null
+          change_hit_rate_pct: number | null
+          check_frequency: string | null
+          check_status: string | null
+          consecutive_no_change: number | null
+          jurisdiction_code: string | null
+          knowledge_type: string | null
+          last_changed_at: string | null
+          last_checked_at: string | null
+          next_check_date: string | null
+          source_name: string | null
+          total_changes_found: number | null
+          total_checks: number | null
+        }
+        Insert: {
+          advance_notice_months?: number | null
+          change_frequency_months?: number | null
+          change_hit_rate_pct?: never
+          check_frequency?: string | null
+          check_status?: never
+          consecutive_no_change?: number | null
+          jurisdiction_code?: string | null
+          knowledge_type?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string | null
+          next_check_date?: string | null
+          source_name?: string | null
+          total_changes_found?: number | null
+          total_checks?: number | null
+        }
+        Update: {
+          advance_notice_months?: number | null
+          change_frequency_months?: number | null
+          change_hit_rate_pct?: never
+          check_frequency?: string | null
+          check_status?: never
+          consecutive_no_change?: number | null
+          jurisdiction_code?: string | null
+          knowledge_type?: string | null
+          last_changed_at?: string | null
+          last_checked_at?: string | null
+          next_check_date?: string | null
+          source_name?: string | null
+          total_changes_found?: number | null
+          total_checks?: number | null
+        }
+        Relationships: []
+      }
+      v_offices_pending_embeddings: {
+        Row: {
+          code: string | null
+          embedding_coverage_pct: number | null
+          name_short: string | null
+          pending_embeddings: number | null
+          total_entries: number | null
+          with_embeddings: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_addon_after_payment: {
@@ -31376,6 +31527,15 @@ export type Database = {
         Args: { p_period_month?: string }
         Returns: undefined
       }
+      calculate_next_check_date: {
+        Args: {
+          p_advance_notice_months: number
+          p_change_frequency_months: number
+          p_consecutive_no_change: number
+          p_last_change_detected_at: string
+        }
+        Returns: string
+      }
       capture_ai_costs_to_platform: {
         Args: { p_period_end?: string; p_period_start?: string }
         Returns: number
@@ -31407,6 +31567,14 @@ export type Database = {
       delete_user_ai_data: { Args: { p_user_id: string }; Returns: undefined }
       expire_overdue_addons: { Args: never; Returns: number }
       expire_pending_approvals: { Args: never; Returns: number }
+      fire_enricher_batches: {
+        Args: { p_total_offices?: number }
+        Returns: {
+          batch_num: number
+          office_codes: string
+          request_id: number
+        }[]
+      }
       generate_journal_entry_for_invoice: {
         Args: { p_invoice_id: string }
         Returns: string
@@ -31481,6 +31649,15 @@ export type Database = {
         Returns: string
       }
       get_org_entitlements: { Args: { p_org_id: string }; Returns: Json }
+      get_random_unembedded_global: {
+        Args: { p_limit?: number }
+        Returns: {
+          content: string
+          id: string
+          jurisdiction_code: string
+          title: string
+        }[]
+      }
       get_user_account_ids: { Args: never; Returns: string[] }
       get_user_org_id: { Args: never; Returns: string }
       get_user_permissions: {
@@ -31518,12 +31695,20 @@ export type Database = {
         Returns: undefined
       }
       refresh_agent_portfolio_analytics: { Args: never; Returns: undefined }
+      request_embeddings_for_office: {
+        Args: { p_office_code: string }
+        Returns: number
+      }
       reset_monthly_plan_counters: { Args: never; Returns: undefined }
       schedule_addon_cancellation: {
         Args: { p_addon_code: string; p_org_id: string; p_user_id: string }
         Returns: Json
       }
       slugify: { Args: { input_text: string }; Returns: string }
+      sync_office_to_knowledge_global: {
+        Args: { p_office_id: string }
+        Returns: number
+      }
       sync_plan_to_genius_config: {
         Args: { p_plan_code: string }
         Returns: number
