@@ -33,7 +33,8 @@ import {
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { GeniusWritingToolbar } from '@/components/copilot/GeniusWritingToolbar';
 
 interface TipTapEditorProps {
   content: string;
