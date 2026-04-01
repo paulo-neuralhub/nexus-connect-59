@@ -385,7 +385,7 @@ export function GeniusMessageRenderer({
           <span className="text-emerald-600 text-sm">✓</span>
           <span className="text-xs text-emerald-700 font-medium">
             Consulta indexada al expediente{' '}
-            <strong>{currentMatterRef ?? 'expediente seleccionado'}</strong>
+            <strong>{linkedMatterRef || currentMatterRef || 'expediente vinculado'}</strong>
             {' '}— forma parte del historial del expediente.
           </span>
         </div>
