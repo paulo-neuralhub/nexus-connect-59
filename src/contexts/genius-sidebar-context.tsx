@@ -10,6 +10,8 @@ interface GeniusSidebarContextValue {
   closeChat: () => void;
   toggleChat: () => void;
   initialMatterId?: string;
+  badgeSide: "left" | "right";
+  setBadgeSide: (side: "left" | "right") => void;
 }
 
 const GeniusSidebarContext = createContext<GeniusSidebarContextValue>({
@@ -17,6 +19,8 @@ const GeniusSidebarContext = createContext<GeniusSidebarContextValue>({
   openChat: () => {},
   closeChat: () => {},
   toggleChat: () => {},
+  badgeSide: "right",
+  setBadgeSide: () => {},
 });
 
 export function useGeniusSidebar() {
@@ -26,6 +30,7 @@ export function useGeniusSidebar() {
 export function GeniusSidebarProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [initialMatterId, setInitialMatterId] = useState<string | undefined>();
+  const [badgeSide, setBadgeSide] = useState<"left" | "right">("right");
 
   const openChat = useCallback((matterId?: string) => {
     setInitialMatterId(matterId);
@@ -53,7 +58,7 @@ export function GeniusSidebarProvider({ children }: { children: React.ReactNode 
   }, [toggleChat]);
 
   return (
-    <GeniusSidebarContext.Provider value={{ isOpen, openChat, closeChat, toggleChat, initialMatterId }}>
+    <GeniusSidebarContext.Provider value={{ isOpen, openChat, closeChat, toggleChat, initialMatterId, badgeSide, setBadgeSide }}>
       {children}
     </GeniusSidebarContext.Provider>
   );
