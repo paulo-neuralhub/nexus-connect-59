@@ -335,7 +335,7 @@ export function GeniusMessageRenderer({
             <p className="text-xs text-amber-700 mb-3">
               ¿Desea registrar esta consulta en el expediente correspondiente?
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 mt-2">
               {matters.length > 0 ? (
                 <select
                   value={selectedMatterIdLocal}
