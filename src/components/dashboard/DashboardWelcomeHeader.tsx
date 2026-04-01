@@ -1,6 +1,6 @@
 // =============================================
 // COMPONENTE: DashboardWelcomeHeader
-// Card de bienvenida con saludo + búsqueda + notificaciones + perfil
+// Card de bienvenida — SILK v2 Design System
 // =============================================
 
 import { useNavigate } from "react-router-dom";
@@ -35,10 +35,8 @@ export function DashboardWelcomeHeader({ plazosEstaSemana = 0 }: DashboardWelcom
     navigate('/login');
   };
 
-  // Nombre del usuario
   const firstName = profile?.full_name?.split(' ')[0] || profile?.email?.split('@')[0] || 'Usuario';
 
-  // Saludo según hora del día
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Buenos días";
@@ -46,50 +44,48 @@ export function DashboardWelcomeHeader({ plazosEstaSemana = 0 }: DashboardWelcom
     return "Buenas noches";
   };
 
-  // Fecha actual formateada
   const fechaActual = format(new Date(), "EEEE d 'de' MMMM yyyy", { locale: es });
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 px-6 py-4">
+    <div
+      className="rounded-[14px] border mb-4 px-[18px] py-4"
+      style={{ background: '#ffffff', borderColor: 'hsl(var(--border))' }}
+    >
       <div className="flex items-center justify-between">
         
-        {/* Lado izquierdo: Saludo grande con fecha */}
+        {/* Left: Greeting */}
         <div>
-          <h1 className="text-2xl font-light text-slate-800 mb-1">
+          <h1
+            className="text-2xl font-light mb-1"
+            style={{ color: 'hsl(var(--foreground))' }}
+          >
             {getGreeting()}, <span className="font-bold">{firstName}</span>
           </h1>
-          <p className="text-sm">
-            <span className="text-cyan-600 font-semibold">
+          <p className="text-[12px]">
+            <span className="font-semibold" style={{ color: '#00b4d8' }}>
               {plazosEstaSemana} plazos esta semana
             </span>
-            <span className="text-slate-400 mx-2">·</span>
-            <span className="text-slate-500 capitalize">{fechaActual}</span>
+            <span className="mx-2" style={{ color: 'hsl(var(--text-tertiary))' }}>·</span>
+            <span className="capitalize" style={{ color: 'hsl(var(--text-secondary))' }}>{fechaActual}</span>
           </p>
         </div>
 
-        {/* Lado derecho: Búsqueda + Theme + Notificaciones + Perfil */}
+        {/* Right: Actions */}
         <div className="flex items-center gap-4">
           
-          {/* Búsqueda - Desktop */}
           <div className="hidden md:block">
             <GlobalSearchTrigger className="w-64 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white" />
           </div>
           
-          {/* Mobile search button */}
           <div className="md:hidden">
             <GlobalSearchTrigger variant="compact" />
           </div>
           
-          {/* Dark Mode Toggle */}
           <ThemeToggle />
-          
-          {/* Notificaciones */}
           <NotificationBell />
 
-          {/* Separador */}
-          <div className="h-6 w-px bg-slate-200 hidden sm:block" />
+          <div className="h-6 w-px hidden sm:block" style={{ background: 'hsl(var(--border))' }} />
 
-          {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 gap-2 px-2 hover:bg-slate-100">
@@ -99,10 +95,13 @@ export function DashboardWelcomeHeader({ plazosEstaSemana = 0 }: DashboardWelcom
                     {getInitials(profile?.full_name || profile?.email || 'U')}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden text-sm font-medium text-slate-700 sm:inline">
+                <span
+                  className="hidden text-[12px] font-medium sm:inline"
+                  style={{ color: 'hsl(var(--text-primary))' }}
+                >
                   {firstName}
                 </span>
-                <ChevronDown className="h-3 w-3 text-slate-400" />
+                <ChevronDown className="h-3 w-3" style={{ color: 'hsl(var(--text-tertiary))' }} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

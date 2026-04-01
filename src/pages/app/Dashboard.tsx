@@ -1,6 +1,6 @@
 // =============================================
-// Dashboard Principal — Enhanced Command Center
-// KPI Cards + Próximos 7 Días + Activity + Quick Access
+// Dashboard Principal — Command Center
+// SILK v2 Design System — All data preserved
 // =============================================
 
 import { useDashboardHome } from '@/hooks/use-dashboard-home';
@@ -37,7 +37,6 @@ export default function Dashboard() {
   const orgId = currentOrganization?.id;
 
   // ── Enhanced queries for KPI cards ──────────────────
-  // Spider alerts (high + critical, status=new)
   const { data: spiderCount } = useQuery({
     queryKey: ['dashboard-spider-alerts', orgId],
     queryFn: async () => {
@@ -53,7 +52,6 @@ export default function Dashboard() {
     staleTime: 30000,
   });
 
-  // Active matters (not closed/abandoned)
   const { data: mattersCount } = useQuery({
     queryKey: ['dashboard-active-matters', orgId],
     queryFn: async () => {
@@ -68,7 +66,6 @@ export default function Dashboard() {
     staleTime: 30000,
   });
 
-  // Pending tasks for current user
   const { data: tasksCount } = useQuery({
     queryKey: ['dashboard-my-tasks', orgId, user?.id],
     queryFn: async () => {
@@ -84,12 +81,11 @@ export default function Dashboard() {
     staleTime: 30000,
   });
 
-  // Próximos 7 días deadlines with full join data
+  // Próximos 7 días deadlines
   const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: deadlines7d, isLoading: loadingDeadlines7d } = useQuery({
     queryKey: ['dashboard-7d-deadlines', orgId],
     queryFn: async () => {
-      // Fetch deadlines ≤ 7 days (including overdue)
       const { data: rows } = await supabase
         .from('matter_deadlines')
         .select(`
@@ -105,11 +101,8 @@ export default function Dashboard() {
 
       if (!rows) return [];
 
-      // Fetch client names for crm_account_ids
       const accountIds = [...new Set(
-        rows
-          .map((r: any) => r.matters?.crm_account_id)
-          .filter(Boolean)
+        rows.map((r: any) => r.matters?.crm_account_id).filter(Boolean)
       )];
 
       let clientMap: Record<string, string> = {};
@@ -139,7 +132,6 @@ export default function Dashboard() {
     staleTime: 30000,
   });
 
-  // Count plazos < 7 days for KPI
   const plazosUrgentes = deadlines7d?.filter(d => !['completed'].includes(d.priority)).length ?? 0;
 
   // Derive values from data
@@ -147,7 +139,6 @@ export default function Dashboard() {
   const recentActivity = data?.recentActivity ?? [];
   const mattersByPhase = data?.mattersByPhase ?? [];
 
-  // Count plazos this week for header
   const now = new Date();
   const weekEnd = new Date(now);
   weekEnd.setDate(weekEnd.getDate() + 7);
@@ -156,7 +147,6 @@ export default function Dashboard() {
     return due >= now && due <= weekEnd;
   }).length;
 
-  // Map deadlines for UpcomingDeadlinesList
   const upcomingDeadlineItems = deadlines.map(d => ({
     id: d.id,
     titulo: d.title,
@@ -166,7 +156,6 @@ export default function Dashboard() {
     matterId: d.matterId,
   }));
 
-  // Map activities for RecentActivityFeed
   const activityItems = recentActivity.map(a => ({
     id: a.id,
     type: a.type,
@@ -176,7 +165,6 @@ export default function Dashboard() {
     link: a.link,
   }));
 
-  // Facturacion chart data
   const facturacionData = [
     { mes: 'Ene', valor: 0 },
     { mes: 'Feb', valor: 0 },
@@ -186,12 +174,10 @@ export default function Dashboard() {
     { mes: 'Jun', valor: 0 },
   ];
 
-  // Expedientes por tipo
   const expedientesTipos = mattersByPhase
     .filter(p => p.count > 0)
     .map(p => ({ tipo: p.nombre, count: p.count, color: p.color }));
 
-  // Pipeline data
   const pipelineData = mattersByPhase.map(p => ({
     fase: p.fase, nombre: p.nombre, count: p.count, color: p.color, max: p.max,
   }));
@@ -199,17 +185,13 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
-          ))}
-        </div>
-        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-[14px]" />
+        <Skeleton className="h-20 w-full rounded-[14px]" />
+        <Skeleton className="h-64 w-full rounded-[14px]" />
         <div className="grid grid-cols-12 gap-4">
-          <Skeleton className="col-span-4 h-80 rounded-xl" />
-          <Skeleton className="col-span-5 h-80 rounded-xl" />
-          <Skeleton className="col-span-3 h-80 rounded-xl" />
+          <Skeleton className="col-span-4 h-80 rounded-[14px]" />
+          <Skeleton className="col-span-5 h-80 rounded-[14px]" />
+          <Skeleton className="col-span-3 h-80 rounded-[14px]" />
         </div>
       </div>
     );
@@ -220,7 +202,7 @@ export default function Dashboard() {
       {/* ── HEADER ─────────────────────────────── */}
       <DashboardWelcomeHeader plazosEstaSemana={plazosEstaSemana} />
 
-      {/* ── KPI CARDS (Section 1) ──────────────── */}
+      {/* ── KPI CARDS (NeoBadge style) ─────────── */}
       <DashboardKPICards
         plazosUrgentes={plazosUrgentes}
         alertasSpider={spiderCount ?? 0}
@@ -228,19 +210,19 @@ export default function Dashboard() {
         misTareas={tasksCount ?? 0}
       />
 
-      {/* ── PRÓXIMOS 7 DÍAS (Section 2) ────────── */}
-      <Proximos7Dias
-        deadlines={deadlines7d ?? []}
-        isLoading={loadingDeadlines7d}
-      />
-
-      {/* ── URGENT BADGES (existing, shown if needed) */}
+      {/* ── URGENT BADGES (LED alerts) ─────────── */}
       <UrgentBadges
         plazosHoy={data?.upcomingDeadlines ?? 0}
         expedientesUrgentes={0}
         alertasSpider={(data?.criticalAlerts ?? 0) + (data?.highAlerts ?? 0)}
         plazosUrgentes={plazosEstaSemana}
         aprobacionesPendientes={countsData?.total ?? 0}
+      />
+
+      {/* ── PRÓXIMOS 7 DÍAS ────────────────────── */}
+      <Proximos7Dias
+        deadlines={deadlines7d ?? []}
+        isLoading={loadingDeadlines7d}
       />
 
       {/* ── MAIN CONTENT: Agenda + Calendar + Deadlines ── */}
@@ -266,10 +248,10 @@ export default function Dashboard() {
         <PipelineChart data={pipelineData} />
       </div>
 
-      {/* ── RECENT ACTIVITY (Section 3) ────────── */}
+      {/* ── RECENT ACTIVITY ────────────────────── */}
       <RecentActivityFeed actividades={activityItems} />
 
-      {/* ── QUICK ACCESS (Section 4) ───────────── */}
+      {/* ── QUICK ACCESS ───────────────────────── */}
       <QuickAccessGrid />
     </div>
   );
