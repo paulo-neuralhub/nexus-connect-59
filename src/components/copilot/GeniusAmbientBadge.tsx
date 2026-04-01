@@ -222,8 +222,7 @@ export function GeniusAmbientBadge() {
         style={{
           top: 0,
           left: 0,
-          willChange: "transform",
-          cursor: isDragging ? "grabbing" : "grab",
+          cursor: "grab",
           touchAction: "none",
           userSelect: "none",
         }}
