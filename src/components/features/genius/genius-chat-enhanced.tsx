@@ -272,7 +272,7 @@ export function GeniusChatEnhanced({
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4 max-w-3xl mx-auto">
-          {messages.length === 0 && !isLoading && (
+          {messages.length === 0 && !isLoading && !initialConversationId && (
             <EmptyState 
               agent={agent} 
               quickActions={QUICK_ACTIONS}
@@ -280,6 +280,22 @@ export function GeniusChatEnhanced({
               displayName={displayName}
               displayCapabilities={displayCapabilities}
             />
+          )}
+
+          {messages.length === 0 && !isLoading && initialConversationId && (
+            <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+              <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-medium text-foreground mb-1">Conversación sin mensajes</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                Es posible que el envío original haya fallado. Puedes escribir un nuevo mensaje o iniciar una conversación nueva.
+              </p>
+              <Button variant="outline" size="sm" onClick={handleNewChat}>
+                <RotateCcw className="w-4 h-4 mr-1" />
+                Nueva conversación
+              </Button>
+            </div>
           )}
           
           {messages.map((message) => (
