@@ -5,8 +5,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import {
-  Sparkles, X, Minus, ClipboardList, Send, Paperclip, AlertTriangle,
+  X, Minus, ClipboardList, Send, Paperclip, AlertTriangle,
 } from "lucide-react";
+import { GeniusAvatar } from "./GeniusAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useGeniusChat, useGeniusFeedback } from "@/hooks/use-genius-chat";
@@ -219,9 +220,7 @@ export function GeniusChatSidebar() {
         {/* Top row */}
         <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#B8860B]" />
-            </div>
+            <GeniusAvatar variant="genius" size="sm" state={chatLoading ? "thinking" : "idle"} showSparkle />
             <span className="text-[16px] font-semibold" style={{ color: "#0F1729" }}>
               ✦ GENIUS
             </span>
@@ -318,8 +317,8 @@ export function GeniusChatSidebar() {
         {/* Empty state */}
         {isEmpty && (
           <div className="flex flex-col items-center justify-center h-full py-8">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6 text-[#B8860B]" />
+            <div className="mb-4">
+              <GeniusAvatar variant="genius" size="lg" state="greeting" showSparkle />
             </div>
             <h3 className="text-[16px] font-semibold mb-1" style={{ color: "#0F1729" }}>
               Hola, {firstName}.
@@ -354,8 +353,8 @@ export function GeniusChatSidebar() {
         {/* Streaming / loading indicator */}
         {chatLoading && (
           <div className="flex gap-2 mb-4">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-[#0F1729] to-[#1E293B] flex items-center justify-center mt-0.5">
-              <Sparkles className="w-3 h-3 text-[#B8860B]" />
+            <div className="flex-shrink-0 mt-0.5">
+              <GeniusAvatar variant="genius" size="xs" state="thinking" breathing={false} showSparkle={false} />
             </div>
             <div className="flex-1">
               <span className="text-[13px] font-medium" style={{ color: "#B8860B" }}>

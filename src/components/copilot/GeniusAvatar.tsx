@@ -114,7 +114,7 @@ export function GeniusAvatar({
 
   const px = SIZE_MAP[size];
   const sparklePx = SPARKLE_SIZE[size];
-  const imgSrc = variant === "nexus" ? "/avatars/nexus-avatar.png" : "/avatars/genius-avatar.png";
+  const imgSrc = variant === "nexus" ? "/assets/copilot-nexus-avatar.jpeg" : "/assets/copilot-genius-avatar.jpeg";
   const initial = variant === "nexus" ? "N" : "G";
   const altText = variant === "nexus" ? "NEXUS copilot" : "GENIUS copilot";
 

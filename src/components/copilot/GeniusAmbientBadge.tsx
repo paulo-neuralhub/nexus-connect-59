@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles } from "lucide-react";
+import { GeniusAvatar } from "./GeniusAvatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGeniusAmbient } from "@/hooks/copilot/useGeniusAmbient";
 import { GeniusInsightPanel } from "./GeniusInsightPanel";
@@ -166,14 +166,16 @@ export function GeniusAmbientBadge() {
               style={{
                 width: badgeSize,
                 height: badgeSize,
-                background: "linear-gradient(135deg, #0F1729, #1E293B)",
-                border: `2.5px solid ${borderColor}`,
-                animation: badgeAnimation,
               }}
             >
-              <Sparkles
-                className="text-[#B8860B]"
-                style={{ width: badgeSize * 0.43, height: badgeSize * 0.43 }}
+              <GeniusAvatar
+                variant="genius"
+                size="lg"
+                state={badgeAnimation ? "thinking" : "idle"}
+                showSparkle
+                showBadge={false}
+                breathing
+                className="w-full h-full"
               />
 
               {/* Unread counter */}
