@@ -239,11 +239,7 @@ export function GeniusAmbientBadge() {
               style={{
                 width: badgeSize,
                 height: badgeSize,
-                boxShadow: isDragging
-                  ? "0 8px 32px rgba(0,0,0,0.2)"
-                  : showAttention
-                  ? undefined
-                  : "0 2px 12px rgba(0,0,0,0.1)",
+                boxShadow: showAttention ? undefined : "0 2px 12px rgba(0,0,0,0.1)",
                 animation: showAttention ? "genius-attention-pulse 1s ease-in-out 2" : undefined,
                 transition: "box-shadow 200ms ease",
               }}
