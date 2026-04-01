@@ -375,7 +375,7 @@ export function GeniusMessageRenderer({
         )}
 
       {/* Badge expediente vinculado */}
-      {linked && (
+      {(linked || (currentMatterId && currentMatterRef)) && (
         <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
           <span className="text-emerald-600 text-sm">✓</span>
           <span className="text-xs text-emerald-700 font-medium">
