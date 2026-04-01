@@ -23220,6 +23220,146 @@ export type Database = {
         }
         Relationships: []
       }
+      oppositions: {
+        Row: {
+          actual_cost: number | null
+          assigned_to: string | null
+          coexistence_expiry_date: string | null
+          coexistence_terms: string | null
+          coexistence_territory: string[] | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          estimated_cost: number | null
+          filing_date: string | null
+          grounds: string[] | null
+          grounds_detail: string | null
+          hearing_date: string | null
+          id: string
+          matter_id: string | null
+          notification_date: string | null
+          opponent_country: string | null
+          opponent_name: string | null
+          opponent_representative: string | null
+          opposed_mark_jurisdiction: string | null
+          opposed_mark_name: string | null
+          opposed_mark_number: string | null
+          opposed_nice_classes: number[] | null
+          opposition_type: string
+          organization_id: string
+          outcome: string | null
+          outcome_notes: string | null
+          resolution_date: string | null
+          response_deadline: string | null
+          spider_alert_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          assigned_to?: string | null
+          coexistence_expiry_date?: string | null
+          coexistence_terms?: string | null
+          coexistence_territory?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          estimated_cost?: number | null
+          filing_date?: string | null
+          grounds?: string[] | null
+          grounds_detail?: string | null
+          hearing_date?: string | null
+          id?: string
+          matter_id?: string | null
+          notification_date?: string | null
+          opponent_country?: string | null
+          opponent_name?: string | null
+          opponent_representative?: string | null
+          opposed_mark_jurisdiction?: string | null
+          opposed_mark_name?: string | null
+          opposed_mark_number?: string | null
+          opposed_nice_classes?: number[] | null
+          opposition_type: string
+          organization_id: string
+          outcome?: string | null
+          outcome_notes?: string | null
+          resolution_date?: string | null
+          response_deadline?: string | null
+          spider_alert_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          assigned_to?: string | null
+          coexistence_expiry_date?: string | null
+          coexistence_terms?: string | null
+          coexistence_territory?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          estimated_cost?: number | null
+          filing_date?: string | null
+          grounds?: string[] | null
+          grounds_detail?: string | null
+          hearing_date?: string | null
+          id?: string
+          matter_id?: string | null
+          notification_date?: string | null
+          opponent_country?: string | null
+          opponent_name?: string | null
+          opponent_representative?: string | null
+          opposed_mark_jurisdiction?: string | null
+          opposed_mark_name?: string | null
+          opposed_mark_number?: string | null
+          opposed_nice_classes?: number[] | null
+          opposition_type?: string
+          organization_id?: string
+          outcome?: string | null
+          outcome_notes?: string | null
+          resolution_date?: string | null
+          response_deadline?: string | null
+          spider_alert_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oppositions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oppositions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oppositions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oppositions_spider_alert_id_fkey"
+            columns: ["spider_alert_id"]
+            isOneToOne: false
+            referencedRelation: "spider_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number
