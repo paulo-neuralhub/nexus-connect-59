@@ -253,7 +253,7 @@ export function GeniusAmbientBadge() {
               )}
             </button>
           </TooltipTrigger>
-          {!isDragging && (
+          {!isDraggingRef.current && (
             <TooltipContent side={isLeft ? "right" : "left"} className="text-xs">
               {tooltipText}
             </TooltipContent>
