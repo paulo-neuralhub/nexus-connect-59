@@ -113,7 +113,7 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
   const p = patterns[0];
   const isVolatile = p.avg_change_interval_days != null && p.avg_change_interval_days <= 1;
   const confidencePct = p.confidence_in_pattern != null ? Math.round(p.confidence_in_pattern * 100) : null;
-  const researchSources = Array.isArray(p.research_sources) ? p.research_sources as string[] : [];
+  
   const notesHasAlert = p.notes ? /ALERTA|CRÍTICO|CRITICO/i.test(p.notes) : false;
 
   return (
