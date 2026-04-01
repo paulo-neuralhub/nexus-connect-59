@@ -39,7 +39,7 @@ export function IpOfficeListView({ offices, researchMap, onOfficeClick }: Props)
             <TableHead className="hidden lg:table-cell text-center">Madrid</TableHead>
             <TableHead className="hidden lg:table-cell text-center">Digital</TableHead>
             <TableHead className="hidden md:table-cell text-center">Datos</TableHead>
-            <TableHead className="hidden md:table-cell">Actualización</TableHead>
+            
             <TableHead className="w-10"></TableHead>
           </TableRow>
         </TableHeader>
