@@ -133,7 +133,7 @@ export default function IpOfficeDetailPage() {
           <DetailTabDigital office={office} />
         </TabsContent>
         <TabsContent value="intelligence">
-          <IPOfficeFeeIntelligence officeId={office.id as string} officeName={(office.name_official as string) || (office.name as string)} />
+          <OfficeIntelligencePanel office={office as any} />
         </TabsContent>
         <TabsContent value="requirements">
           <DetailTabRequirements office={office} />
