@@ -1,12 +1,15 @@
- // =============================================
- // Command Center Dashboard Components
- // Exports for SILK Dashboard
- // =============================================
- 
- export { UrgentBadges } from './UrgentBadges';
- export { OperationalKPIs } from './OperationalKPIs';
- export { AgendaToday, type AgendaEvent } from './AgendaToday';
- export { MiniCalendar } from './MiniCalendar';
- export { UpcomingDeadlinesList, type UpcomingDeadline } from './UpcomingDeadlinesList';
- export { ExpedientesTiposChart, FacturacionEvolucionChart, PipelineChart } from './BusinessCharts';
- export { RecentActivityFeed, type ActivityItem } from './RecentActivityFeed';
+// =============================================
+// Command Center Dashboard Components
+// Exports for SILK Dashboard
+// =============================================
+
+export { UrgentBadges } from './UrgentBadges';
+export { OperationalKPIs } from './OperationalKPIs';
+export { AgendaToday, type AgendaEvent } from './AgendaToday';
+export { MiniCalendar } from './MiniCalendar';
+export { UpcomingDeadlinesList, type UpcomingDeadline } from './UpcomingDeadlinesList';
+export { ExpedientesTiposChart, FacturacionEvolucionChart, PipelineChart } from './BusinessCharts';
+export { RecentActivityFeed, type ActivityItem } from './RecentActivityFeed';
+export { DashboardKPICards } from './DashboardKPICards';
+export { Proximos7Dias, type Deadline7d } from './Proximos7Dias';
+export { QuickAccessGrid } from './QuickAccessGrid';
