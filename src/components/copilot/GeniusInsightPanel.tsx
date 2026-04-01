@@ -36,6 +36,7 @@ export function GeniusInsightPanel({
   onShown,
 }: Props) {
   const [filter, setFilter] = useState<string>("all");
+  const { openChat } = useGeniusSidebar();
 
   const filtered = useMemo(() => {
     if (filter === "all") return suggestions;
