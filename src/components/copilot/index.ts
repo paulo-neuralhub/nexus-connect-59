@@ -15,3 +15,5 @@ export { AIDisclaimerBanner } from './AIDisclaimerBanner';
 export { FeedbackInline } from './FeedbackInline';
 export { AuditTrailInline } from './AuditTrailInline';
 export { ApprovalExpresaFlow } from './ApprovalExpresaFlow';
+export { GeniusAvatar } from './GeniusAvatar';
+export type { GeniusAvatarProps } from './GeniusAvatar';
