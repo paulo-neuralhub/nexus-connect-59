@@ -13026,6 +13026,59 @@ export type Database = {
           },
         ]
       }
+      genius_legal_acceptances: {
+        Row: {
+          acceptance_version: string
+          accepted_at: string
+          created_at: string
+          full_name_typed: string
+          id: string
+          ip_address: string | null
+          jurisdiction: string | null
+          organization_id: string
+          professional_id: string | null
+          scroll_completed: boolean | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acceptance_version?: string
+          accepted_at?: string
+          created_at?: string
+          full_name_typed: string
+          id?: string
+          ip_address?: string | null
+          jurisdiction?: string | null
+          organization_id: string
+          professional_id?: string | null
+          scroll_completed?: boolean | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acceptance_version?: string
+          accepted_at?: string
+          created_at?: string
+          full_name_typed?: string
+          id?: string
+          ip_address?: string | null
+          jurisdiction?: string | null
+          organization_id?: string
+          professional_id?: string | null
+          scroll_completed?: boolean | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_legal_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       genius_legal_sources: {
         Row: {
           content: string | null
