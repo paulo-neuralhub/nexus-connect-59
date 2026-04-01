@@ -140,6 +140,7 @@ export function AppLayout() {
               </div>
             )}
             <GeniusChatSidebar />
+            <GeniusOnboarding />
           </ContextualHelpProvider>
           </GeniusSidebarProvider>
         </PageProvider>
