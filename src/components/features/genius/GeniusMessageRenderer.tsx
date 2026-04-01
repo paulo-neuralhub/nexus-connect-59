@@ -361,7 +361,7 @@ export function GeniusMessageRenderer({
               <button
                 onClick={handleLinkConfirm}
                 disabled={!selectedMatterIdLocal}
-                className="text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md font-medium transition-colors"
+                className="shrink-0 text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap"
               >
                 Vincular
               </button>
