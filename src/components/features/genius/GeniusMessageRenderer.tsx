@@ -278,6 +278,7 @@ export function GeniusMessageRenderer({
   const [selectedMatterIdLocal, setSelectedMatterIdLocal] = useState('');
   const [dismissed, setDismissed] = useState(false);
   const [linked, setLinked] = useState(false);
+  const [linkedMatterRef, setLinkedMatterRef] = useState('');
 
   const responseType = getResponseType(content);
   const { mainContent, linkingQuestion, legalNote } = parseGeniusMessage(content);
