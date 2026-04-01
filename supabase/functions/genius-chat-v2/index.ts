@@ -652,6 +652,7 @@ Reglas:
           last_message_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           ...(autoTitle ? { title: autoTitle } : {}),
+          ...(autoSummary ? { summary: autoSummary } : {}),
         })
           .eq('id', conversationId)
           .eq('organization_id', organizationId),
