@@ -21,24 +21,25 @@ import { toast } from "sonner";
 // ── CSS injection ─────────────────────────────────────────
 const CSS_ID = "genius-sidebar-css";
 const CSS = `
-  @keyframes genius-slide-in {
+  @keyframes genius-slide-in-right {
     from { transform: translateX(100%); }
     to   { transform: translateX(0); }
   }
-  @keyframes genius-slide-out {
-    from { transform: translateX(0); }
-    to   { transform: translateX(100%); }
+  @keyframes genius-slide-in-left {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
   }
   @keyframes genius-dots {
     0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
     30% { opacity: 1; transform: translateY(-4px); }
   }
-  .genius-sidebar-enter { animation: genius-slide-in 0.3s ease-out; }
+  .genius-sidebar-enter-right { animation: genius-slide-in-right 0.3s ease-out; }
+  .genius-sidebar-enter-left { animation: genius-slide-in-left 0.3s ease-out; }
   .genius-dot { animation: genius-dots 1.2s ease-in-out infinite; }
   .genius-dot:nth-child(2) { animation-delay: 0.2s; }
   .genius-dot:nth-child(3) { animation-delay: 0.4s; }
   @media (prefers-reduced-motion: reduce) {
-    .genius-sidebar-enter { animation: none !important; }
+    .genius-sidebar-enter-right, .genius-sidebar-enter-left { animation: none !important; }
     .genius-dot { animation: none !important; opacity: 1 !important; }
   }
 `;
