@@ -263,7 +263,7 @@ export function DynamicSidebar({
     const Icon = getIcon(mod.moduleIconLucide || mod.moduleIcon);
     const hasSubItems = mod.moduleMenuItems.length > 0;
     const isExpanded = expandedModules.has(mod.moduleCode);
-    const MODULE_PATHS: Record<string, string> = { docket: '/app/expedientes', deadlines: '/app/deadlines', 'crm-clientes': '/app/crm' };
+    const MODULE_PATHS: Record<string, string> = { docket: '/app/expedientes', deadlines: '/app/deadlines', 'crm-clientes': '/app/crm', jurisdictions: '/app/jurisdictions' };
     const mainPath = MODULE_PATHS[mod.moduleCode] || mod.moduleMenuItems[0]?.path || `/app/${mod.moduleCode}`;
     const isActive = isPathActive(mainPath) || mod.moduleMenuItems.some(item => isPathActive(item.path));
 

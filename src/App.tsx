@@ -71,6 +71,8 @@ import WorkDetailPage from "./pages/app/market/work/[id]";
 import RankingsPage from "./pages/app/market/RankingsPage";
 import MyOffersPage from "./pages/app/market/offers";
 import DataHubPage from "./pages/app/data-hub";
+import JurisdictionsPage from "./pages/app/jurisdictions";
+import JurisdictionDetailPage from "./pages/app/jurisdictions/[code]";
 import ImportExportPage from "./pages/app/data-hub/import-export";
 import GeniusLayout from "./pages/app/genius/GeniusLayout";
 import GeniusDashboard from "./pages/app/genius/dashboard";
@@ -468,6 +470,8 @@ const App = () => (
                 <Route path="docket/:id/edit" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="data-hub" element={<DataHubPage />} />
                 <Route path="data-hub/import-export" element={<ImportExportPage />} />
+                <Route path="jurisdictions" element={<JurisdictionsPage />} />
+                <Route path="jurisdictions/:code" element={<JurisdictionDetailPage />} />
                 <Route path="spider" element={<SpiderLayout />}>
                   <Route index element={<SpiderDashboard />} />
                   <Route path="alerts/:id" element={<SpiderAlertDetailPage />} />
