@@ -11,7 +11,7 @@ import { MobileBottomNav, OfflineBanner, PWAInstallPrompt } from "@/components/m
 import { ContextualHelpProvider } from "@/components/help/ContextualHelpProvider";
 import { TrialBanner } from "@/components/upgrade/TrialBanner";
 import { AlertBanner } from "@/components/alerts/AlertBanner";
-import { CoPilotWidget, GeniusAmbientBadge, GeniusChatSidebar, GeniusOnboarding } from "@/components/copilot";
+import { GeniusAmbientBadge, GeniusChatSidebar, GeniusOnboarding } from "@/components/copilot";
 import { GeniusSidebarProvider } from "@/contexts/genius-sidebar-context";
 import { UrgencyBanner } from "@/components/layout/UrgencyBanner";
 import { GlobalTimer } from "@/components/timetracking";
@@ -118,8 +118,6 @@ export function AppLayout() {
                   </main>
                 </div>
 
-                {/* CoPilot — self-contained widget */}
-                <CoPilotWidget />
                 <GeniusAmbientBadge />
 
                 <IPSoftphone />
