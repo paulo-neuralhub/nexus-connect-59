@@ -1682,6 +1682,8 @@ export type Database = {
           message_count: number | null
           organization_id: string
           status: string | null
+          summary: string | null
+          tags: string[] | null
           title: string | null
           token_count: number | null
           updated_at: string | null
@@ -1702,6 +1704,8 @@ export type Database = {
           message_count?: number | null
           organization_id: string
           status?: string | null
+          summary?: string | null
+          tags?: string[] | null
           title?: string | null
           token_count?: number | null
           updated_at?: string | null
@@ -1722,6 +1726,8 @@ export type Database = {
           message_count?: number | null
           organization_id?: string
           status?: string | null
+          summary?: string | null
+          tags?: string[] | null
           title?: string | null
           token_count?: number | null
           updated_at?: string | null
