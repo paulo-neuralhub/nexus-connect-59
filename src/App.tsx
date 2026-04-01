@@ -534,6 +534,11 @@ const App = () => (
                 <Route path="expedientes/nuevo" element={<NewMatterPage />} />
                 <Route path="expedientes/:id" element={<MatterDetailPageV2 />} />
                 <Route path="expedientes/:id/editar" element={<EditMatterPage />} />
+                {/* Oposiciones */}
+                <Route path="expedientes/oposiciones" element={<OposicionesOverview />} />
+                <Route path="expedientes/oposiciones/ofensivas" element={<OfensivasPage />} />
+                <Route path="expedientes/oposiciones/defensivas" element={<DefensivasPage />} />
+                <Route path="expedientes/oposiciones/coexistencias" element={<CoexistenciasPage />} />
                 {/* Calendario Unificado */}
                 <Route path="calendario" element={<CalendarioPage />} />
                 {/* Tareas Unificadas */}
