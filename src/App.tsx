@@ -99,6 +99,7 @@ import MatterList from "./pages/app/docket";
 import MatterDetail from "./pages/app/docket/MatterDetail";
 import MatterForm from "./pages/app/docket/MatterForm";
 import DeadlinesPage from "./pages/app/docket/DeadlinesPage";
+import PlazosPage from "./pages/app/plazos";
 // Expedientes V2
 import ExpedientesPage from "./pages/app/expedientes";
 import MatterDetailPageV2 from "./pages/app/expedientes/[id]";
@@ -464,7 +465,10 @@ const App = () => (
                 <Route path="docket" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="docket/deadlines" element={<DeadlinesPage />} />
                 <Route path="deadlines" element={<DeadlinesPage />} />
-                <Route path="plazos" element={<DeadlinesPage />} />
+                <Route path="plazos" element={<PlazosPage />} />
+                <Route path="plazos/calendario" element={<PlazosPage />} />
+                <Route path="plazos/renovaciones" element={<PlazosPage />} />
+                <Route path="plazos/alertas-config" element={<PlazosPage />} />
                 <Route path="docket/new" element={<Navigate to="/app/expedientes/nuevo" replace />} />
                 <Route path="docket/:id" element={<Navigate to="/app/expedientes" replace />} />
                 <Route path="docket/:id/edit" element={<Navigate to="/app/expedientes" replace />} />
