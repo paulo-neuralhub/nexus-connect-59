@@ -198,19 +198,59 @@ export default function GeniusDashboard() {
           </TabsList>
 
           <TabsContent value="chat" className="mt-4">
-            <div className="h-[calc(100vh-22rem)] overflow-hidden">
-              <GeniusChatEnhanced
-                agentType="legal"
-                brandName="IP-GENIUS"
-                brandDescription="Tu asistente IA integral de Propiedad Intelectual"
-                brandCapabilities={[
-                  'Consultas legales y análisis de registrabilidad',
-                  'Gestión de expedientes y plazos',
-                  'Generación de documentos legales',
-                  'Vigilancia de marcas y conflictos',
-                  'Análisis y resumen de documentos',
-                ]}
-              />
+            <div className="h-[calc(100vh-22rem)] flex rounded-xl border bg-card overflow-hidden">
+              {/* Mobile sidebar toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden absolute top-4 left-4 z-10"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+
+              {/* Sidebar */}
+              <div className={cn(
+                "w-72 flex-shrink-0 transition-all duration-300",
+                "lg:block",
+                sidebarOpen
+                  ? "fixed inset-y-0 left-0 z-50 lg:relative lg:inset-auto"
+                  : "hidden"
+              )}>
+                <ConversationSidebar
+                  agentType="legal"
+                  selectedId={conversationId}
+                  onSelect={handleSelectConversation}
+                  onNewChat={handleNewChat}
+                />
+              </div>
+
+              {/* Mobile backdrop */}
+              {sidebarOpen && (
+                <div
+                  className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                  onClick={() => setSidebarOpen(false)}
+                />
+              )}
+
+              {/* Chat */}
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <GeniusChatEnhanced
+                  key={conversationId || 'new'}
+                  agentType="legal"
+                  initialConversationId={conversationId}
+                  onConversationChange={handleConversationChange}
+                  brandName="IP-GENIUS"
+                  brandDescription="Tu asistente IA integral de Propiedad Intelectual"
+                  brandCapabilities={[
+                    'Consultas legales y análisis de registrabilidad',
+                    'Gestión de expedientes y plazos',
+                    'Generación de documentos legales',
+                    'Vigilancia de marcas y conflictos',
+                    'Análisis y resumen de documentos',
+                  ]}
+                />
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="documents" className="mt-4">
