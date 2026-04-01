@@ -56,7 +56,10 @@ export function TipTapEditor({
   placeholder = 'Escribe tu mensaje...',
   className,
   minHeight = '200px',
+  enableGeniusToolbar = false,
+  geniusContext,
 }: TipTapEditorProps) {
+  const editorWrapperRef = useRef<HTMLDivElement>(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
 
