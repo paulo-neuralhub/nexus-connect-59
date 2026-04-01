@@ -3,6 +3,7 @@ import {
   Search,
   Plus,
   MessageSquare,
+  Calendar,
   MoreHorizontal,
   Star,
   Trash2,
@@ -10,6 +11,12 @@ import {
   FileText,
   Check,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   isAfter,
   isBefore,
