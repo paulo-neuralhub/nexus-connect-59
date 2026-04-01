@@ -105,6 +105,11 @@ import ExpedientesPage from "./pages/app/expedientes";
 import MatterDetailPageV2 from "./pages/app/expedientes/[id]";
 import EditMatterPage from "./pages/app/expedientes/[id]/editar";
 import NewMatterPage from "./pages/app/expedientes/nuevo";
+// Oposiciones
+import OposicionesOverview from "./pages/app/expedientes/oposiciones";
+import OfensivasPage from "./pages/app/expedientes/oposiciones/ofensivas";
+import DefensivasPage from "./pages/app/expedientes/oposiciones/defensivas";
+import CoexistenciasPage from "./pages/app/expedientes/oposiciones/coexistencias";
 // Calendario Unificado
 import CalendarioPage from "./pages/app/calendario";
 // Tareas Unificadas
