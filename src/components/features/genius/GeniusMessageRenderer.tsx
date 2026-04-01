@@ -13,24 +13,24 @@ export interface ResponseType {
 }
 
 export function getResponseType(content: string): ResponseType | null {
-  // Documentos legales — más específico primero
-  if (/SOLICITA|Cease.*Desist|C&D letter|escrito.*oposición|contrato.*licencia|acuerdo.*coexistencia|demanda|medida.*cautelar/i.test(content))
-    return {
-      label: 'DOCUMENTO LEGAL',
-      color: '#1E293B',
-      bgColor: '#1E293B0D',
-      icon: '📋',
-      borderColor: 'border-l-slate-700',
-    };
-
-  // Análisis de marcas — requiere múltiples señales
-  if (/similitud.*fonética|similitud.*visual|similitud.*conceptual|riesgo.*confusión|CONCLUSIÓN EJECUTIVA.*marca|test.*TJUE|consumidor.*medio/i.test(content))
+  // Análisis de marcas — ANTES de documento legal para evitar falsos positivos
+  if (/ANÁLISIS DE SIMILITUD|CONCLUSIÓN EJECUTIVA[\s\S]{0,50}marca|similitud.*fonética[\s\S]{0,100}conceptual|TECHVIDA|riesgo.*confusión.*elevado/i.test(content))
     return {
       label: 'ANÁLISIS DE MARCAS',
       color: '#D97706',
       bgColor: '#F59E0B0D',
       icon: '⚖️',
       borderColor: 'border-l-amber-400',
+    };
+
+  // Documentos legales — regex más estricta
+  if (/SOLICITA\s|Cease.*Desist|C&D letter|escrito.*oposición.*ante|contrato.*licencia|acuerdo.*coexistencia|demanda.*judicial|medida.*cautelar/i.test(content))
+    return {
+      label: 'DOCUMENTO LEGAL',
+      color: '#1E293B',
+      bgColor: '#1E293B0D',
+      icon: '📋',
+      borderColor: 'border-l-slate-700',
     };
 
   // Estimación de costes — requiere € Y tabla
