@@ -372,7 +372,9 @@ export function GeniusOnboarding({
 }) {
   const { user, profile } = useAuth();
   const { organizationId } = useOrganization();
+  const { hasAccepted: legalAccepted, isLoading: legalLoading, refetch: refetchLegal } = useGeniusLegalGate();
   const [step, setStep] = useState(0);
+  const [showLegal, setShowLegal] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [saving, setSaving] = useState(false);
   const [shouldShow, setShouldShow] = useState(false);
