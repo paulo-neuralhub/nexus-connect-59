@@ -2,7 +2,7 @@
  * Genius Dashboard — Main view with KPIs, proactive suggestions, and tabs
  */
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Brain, MessageSquare, FileText, Zap, Lightbulb, Sparkles, Lock } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
