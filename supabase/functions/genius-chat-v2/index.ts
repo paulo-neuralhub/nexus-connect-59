@@ -627,7 +627,6 @@ Reglas:
         }
       }
     }
-    }
 
     // 15. Save messages (Promise.allSettled — never Promise.all)
     if (conversationId) {
