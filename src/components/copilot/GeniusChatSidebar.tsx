@@ -216,7 +216,7 @@ export function GeniusChatSidebar() {
       {/* Resize handle */}
       {!isMobile && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-300 transition-colors z-10"
+          className={`absolute ${isLeftSide ? "right-0" : "left-0"} top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-300 transition-colors z-10`}
           onMouseDown={startResize}
           style={{ background: isResizing ? "#3B82F6" : "transparent" }}
         />
