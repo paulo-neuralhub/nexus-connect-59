@@ -282,7 +282,7 @@ export function GeniusAmbientBadge() {
         )}
 
         {/* Panel */}
-        {panelOpen && !isDragging && (
+        {panelOpen && !isDraggingRef.current && (
           <div
             ref={panelRef}
             className="absolute"
