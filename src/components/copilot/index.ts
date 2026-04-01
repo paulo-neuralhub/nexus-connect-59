@@ -20,3 +20,4 @@ export type { GeniusAvatarProps } from './GeniusAvatar';
 export { GeniusOnboarding } from './GeniusOnboarding';
 export { GeniusLegalAcceptance } from './GeniusLegalAcceptance';
 export { AIDisclaimerPersistent } from './AIDisclaimerPersistent';
+export { GeniusWritingToolbar, GeniusFullDraftMenu } from './GeniusWritingToolbar';

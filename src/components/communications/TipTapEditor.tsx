@@ -33,7 +33,8 @@ import {
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { GeniusWritingToolbar } from '@/components/copilot/GeniusWritingToolbar';
 
 interface TipTapEditorProps {
   content: string;
@@ -41,6 +42,8 @@ interface TipTapEditorProps {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  enableGeniusToolbar?: boolean;
+  geniusContext?: Record<string, string>;
 }
 
 const TEXT_COLORS = [
@@ -54,7 +57,10 @@ export function TipTapEditor({
   placeholder = 'Escribe tu mensaje...',
   className,
   minHeight = '200px',
+  enableGeniusToolbar = false,
+  geniusContext,
 }: TipTapEditorProps) {
+  const editorWrapperRef = useRef<HTMLDivElement>(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
 
@@ -99,6 +105,16 @@ export function TipTapEditor({
       editor.commands.setContent(content);
     }
   }, [content, editor]);
+
+  const handleApplyText = useCallback((newText: string) => {
+    if (!editor) return;
+    const { from, to: selTo } = editor.state.selection;
+    if (from !== selTo) {
+      editor.chain().focus().deleteRange({ from, to: selTo }).insertContentAt(from, newText).run();
+    } else {
+      editor.chain().focus().insertContent(newText).run();
+    }
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -259,7 +275,18 @@ export function TipTapEditor({
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} />
+      <div ref={editorWrapperRef}>
+        <EditorContent editor={editor} />
+      </div>
+
+      {/* Genius AI Writing Toolbar */}
+      {enableGeniusToolbar && (
+        <GeniusWritingToolbar
+          containerRef={editorWrapperRef}
+          onApplyText={handleApplyText}
+          context={geniusContext}
+        />
+      )}
     </div>
   );
 }
