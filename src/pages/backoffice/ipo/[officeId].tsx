@@ -17,7 +17,7 @@ import { DetailTabTreaties } from "@/components/ip-offices/detail-tabs/DetailTab
 import { DetailTabDigital } from "@/components/ip-offices/detail-tabs/DetailTabDigital";
 import { DetailTabProcess } from "@/components/ip-offices/detail-tabs/DetailTabProcess";
 import { DetailTabRequirements } from "@/components/ip-offices/detail-tabs/DetailTabRequirements";
-import { IPOfficeFeeIntelligence } from "@/components/ip-offices/IPOfficeFeeIntelligence";
+import { OfficeIntelligencePanel } from "@/components/ip-offices/OfficeIntelligencePanel";
 
 export default function IpOfficeDetailPage() {
   const { officeId: code } = useParams<{ officeId: string }>();
@@ -133,7 +133,7 @@ export default function IpOfficeDetailPage() {
           <DetailTabDigital office={office} />
         </TabsContent>
         <TabsContent value="intelligence">
-          <IPOfficeFeeIntelligence officeId={office.id as string} officeName={(office.name_official as string) || (office.name as string)} />
+          <OfficeIntelligencePanel office={office as any} />
         </TabsContent>
         <TabsContent value="requirements">
           <DetailTabRequirements office={office} />
