@@ -1,5 +1,6 @@
 // ============================================================
 // useGeniusBadgePosition — Draggable + smart-positioning hook
+// Zero React state updates during drag — refs + direct DOM only
 // ============================================================
 
 import { useRef, useCallback, useEffect, useState } from "react";
@@ -15,10 +16,10 @@ const EDGE_PADDING = 16;
 const TOP_MIN = 80;
 const BOTTOM_MIN = 80;
 const DRAG_THRESHOLD = 5;
-const MANUAL_DRAG_COOLDOWN = 60_000; // 60s
+const MANUAL_DRAG_COOLDOWN = 60_000;
 
 const SMART_POSITIONS: Record<string, BadgePosition> = {
-  "/app/expedientes/": { side: "right", y: 0.4 }, // fraction
+  "/app/expedientes/": { side: "right", y: 0.4 },
   "/app/plazos":       { side: "right", y: 0.3 },
   "/app/genius":       { side: "left",  y: 0.5 },
   "/app/crm":          { side: "right", y: 0.5 },
@@ -47,12 +48,9 @@ function clampY(y: number, badgeSize: number): number {
 }
 
 function getSmartPosition(pathname: string): BadgePosition {
-  // Check specific routes first (longest match)
   const sorted = Object.keys(SMART_POSITIONS).sort((a, b) => b.length - a.length);
   for (const route of sorted) {
-    if (pathname.startsWith(route)) {
-      return SMART_POSITIONS[route];
-    }
+    if (pathname.startsWith(route)) return SMART_POSITIONS[route];
   }
   return { side: "right", y: 0.6 };
 }
@@ -60,89 +58,103 @@ function getSmartPosition(pathname: string): BadgePosition {
 export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
   const location = useLocation();
 
-  // The "rendered" position state — only updated on mount, drag-end, and smart-reposition
   const defaultPos = loadPosition() ?? { side: "right" as const, y: window.innerHeight * 0.7 };
+  // position state — updated ONLY on mount, drag-end, smart-reposition. Never during drag.
   const [position, setPosition] = useState<BadgePosition>(defaultPos);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [showAttention, setShowAttention] = useState(false);
 
-  // Refs for drag math (no re-renders during drag)
+  // All drag state lives in refs — zero re-renders during drag
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const dragStartRef = useRef<{ px: number; py: number; bx: number; by: number } | null>(null);
-  const totalDistRef = useRef(0);
+  const offsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
   const dragActivatedRef = useRef(false);
   const lastManualDragRef = useRef(0);
   const elementRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number>(0);
+  const pointerIdRef = useRef<number | null>(null);
 
-  // Convert position to pixel coords
   const getPixelCoords = useCallback((pos: BadgePosition): { x: number; y: number } => {
     const x = pos.side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
     const y = clampY(pos.y, badgeSize);
     return { x, y };
   }, [badgeSize]);
 
-  // Apply transform to element
-  const applyTransform = useCallback((x: number, y: number, scale = 1) => {
-    if (!elementRef.current) return;
-    elementRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
-  }, []);
-
   // Initialize position on mount
   useEffect(() => {
     if (isMobile) return;
     const coords = getPixelCoords(position);
     posRef.current = coords;
-    applyTransform(coords.x, coords.y);
+    if (elementRef.current) {
+      elementRef.current.style.transform = `translate3d(${coords.x}px, ${coords.y}px, 0)`;
+    }
   }, [isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pointer handlers
+  // ── Pointer handlers (zero state updates during drag) ──────
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (isMobile) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStartRef.current = {
-      px: e.clientX,
-      py: e.clientY,
-      bx: posRef.current.x,
-      by: posRef.current.y,
+    e.preventDefault(); // prevent text selection
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointerIdRef.current = e.pointerId;
+
+    // Offset = pointer position relative to current badge position
+    offsetRef.current = {
+      x: e.clientX - posRef.current.x,
+      y: e.clientY - posRef.current.y,
     };
-    totalDistRef.current = 0;
+    isDraggingRef.current = false;
     dragActivatedRef.current = false;
   }, [isMobile]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragStartRef.current || isMobile) return;
-    const dx = e.clientX - dragStartRef.current.px;
-    const dy = e.clientY - dragStartRef.current.py;
-    totalDistRef.current = Math.sqrt(dx * dx + dy * dy);
+    if (pointerIdRef.current === null || isMobile) return;
 
-    if (totalDistRef.current < DRAG_THRESHOLD) return;
+    const newX = e.clientX - offsetRef.current.x;
+    const newY = e.clientY - offsetRef.current.y;
 
+    // Check threshold before activating drag
     if (!dragActivatedRef.current) {
+      const dx = newX - posRef.current.x;
+      const dy = newY - posRef.current.y;
+      if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) return;
       dragActivatedRef.current = true;
-      setIsDragging(true);
+      isDraggingRef.current = true;
+
+      // Apply drag styles directly to DOM — no React state
+      const el = elementRef.current;
+      if (el) {
+        el.style.willChange = "transform";
+        el.style.cursor = "grabbing";
+      }
+      document.body.style.userSelect = "none";
+      document.body.style.touchAction = "none";
     }
 
-    const newX = dragStartRef.current.bx + dx;
-    const newY = clampY(dragStartRef.current.by + dy, badgeSize);
-
+    // RAF-throttled DOM update — no React involved
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
-      posRef.current = { x: newX, y: newY };
-      applyTransform(newX, newY, 1.1);
+      const clampedY = clampY(newY, badgeSize);
+      posRef.current = { x: newX, y: clampedY };
+      if (elementRef.current) {
+        elementRef.current.style.transform = `translate3d(${newX}px, ${clampedY}px, 0) scale(1.1)`;
+      }
     });
-  }, [isMobile, badgeSize, applyTransform]);
+  }, [isMobile, badgeSize]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
-    if (!dragStartRef.current || isMobile) return;
-    const wasDrag = dragActivatedRef.current;
-    dragStartRef.current = null;
+    if (pointerIdRef.current === null || isMobile) return;
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    pointerIdRef.current = null;
 
-    if (!wasDrag) {
-      setIsDragging(false);
-      return; // was a click, handled by onClick
-    }
+    // Clean up body styles
+    document.body.style.userSelect = "";
+    document.body.style.touchAction = "";
+
+    const wasDrag = dragActivatedRef.current;
+    isDraggingRef.current = false;
+    dragActivatedRef.current = false;
+
+    if (!wasDrag) return; // was a click — let onClick handle it
 
     // Snap to nearest edge
     const midX = window.innerWidth / 2;
@@ -150,32 +162,32 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     const finalX = side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
     const finalY = clampY(posRef.current.y, badgeSize);
 
-    // Animate snap
-    setIsAnimating(true);
     const el = elementRef.current;
     if (el) {
+      // Animate snap with CSS transition
       el.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
-      applyTransform(finalX, finalY, 1);
-      const onEnd = () => {
+      el.style.transform = `translate3d(${finalX}px, ${finalY}px, 0) scale(1)`;
+
+      const cleanup = () => {
         el.style.transition = "";
-        setIsAnimating(false);
+        el.style.willChange = "";
+        el.style.cursor = "grab";
       };
-      el.addEventListener("transitionend", onEnd, { once: true });
-      setTimeout(onEnd, 350); // fallback
+      el.addEventListener("transitionend", cleanup, { once: true });
+      setTimeout(cleanup, 350); // fallback
     }
 
     posRef.current = { x: finalX, y: finalY };
+    lastManualDragRef.current = Date.now();
+
+    // Single state sync AFTER drag ends
     const newPos: BadgePosition = { side, y: finalY };
     setPosition(newPos);
     savePosition(newPos);
-    lastManualDragRef.current = Date.now();
-    setIsDragging(false);
-  }, [isMobile, badgeSize, applyTransform]);
+  }, [isMobile, badgeSize]);
 
-  // Was the pointer event a click (not a drag)?
-  const wasClick = useCallback(() => {
-    return !dragActivatedRef.current;
-  }, []);
+  // Expose a ref-based check (no state) for click vs drag distinction
+  const wasClick = useCallback(() => !dragActivatedRef.current, []);
 
   // Smart repositioning on route change
   useEffect(() => {
@@ -183,22 +195,15 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     if (Date.now() - lastManualDragRef.current < MANUAL_DRAG_COOLDOWN) return;
 
     const smart = getSmartPosition(location.pathname);
-    // Convert fraction y to pixels
     const targetY = clampY(Math.round(window.innerHeight * smart.y), badgeSize);
     const targetX = smart.side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
 
-    const newPos: BadgePosition = { side: smart.side, y: targetY };
-
-    // Animate
     const el = elementRef.current;
     if (el) {
-      setIsAnimating(true);
       el.style.transition = "transform 500ms ease-in-out";
-      applyTransform(targetX, targetY);
+      el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
       const onEnd = () => {
         el.style.transition = "";
-        setIsAnimating(false);
-        // Attention pulse
         setShowAttention(true);
         setTimeout(() => setShowAttention(false), 2000);
       };
@@ -207,9 +212,10 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
     }
 
     posRef.current = { x: targetX, y: targetY };
+    const newPos: BadgePosition = { side: smart.side, y: targetY };
     setPosition(newPos);
     savePosition(newPos);
-  }, [location.pathname, isMobile, badgeSize, applyTransform]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.pathname, isMobile, badgeSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-clamp on resize
   useEffect(() => {
@@ -218,17 +224,18 @@ export function useGeniusBadgePosition(badgeSize: number, isMobile: boolean) {
       const clamped = clampY(posRef.current.y, badgeSize);
       const x = position.side === "left" ? EDGE_PADDING : window.innerWidth - badgeSize - EDGE_PADDING;
       posRef.current = { x, y: clamped };
-      applyTransform(x, clamped);
+      if (elementRef.current) {
+        elementRef.current.style.transform = `translate3d(${x}px, ${clamped}px, 0)`;
+      }
       setPosition((p) => ({ ...p, y: clamped }));
     };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
-  }, [isMobile, badgeSize, position.side, applyTransform]);
+  }, [isMobile, badgeSize, position.side]);
 
   return {
     position,
-    isDragging,
-    isAnimating,
+    isDraggingRef,
     showAttention,
     elementRef,
     onPointerDown,
