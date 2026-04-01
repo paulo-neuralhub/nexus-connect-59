@@ -149,3 +149,6 @@ verify_jwt = false
 
 [functions.genius-chat-v2]
 verify_jwt = false
+
+[functions.genius-generate-embeddings]
+verify_jwt = false
