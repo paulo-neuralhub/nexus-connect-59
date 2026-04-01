@@ -1,5 +1,5 @@
 /**
- * OfficeIntelligencePanel — Deep rejection & filing intelligence
+ * OfficeIntelligencePanel — Full jurisdiction intelligence with 9 sections
  * Reusable across backoffice and tenant app directories
  */
 import { useState } from "react";
@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import {
   ShieldAlert, CheckCircle, XCircle, ChevronDown, ChevronUp,
   BarChart3, Printer, Download, AlertTriangle, Brain, FileText,
-  Clock, TrendingUp, Globe,
+  Clock, TrendingUp, Globe, Lightbulb, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -53,6 +54,7 @@ export interface OfficeIntelligenceData {
   // Practices
   best_practices?: string[] | null;
   common_mistakes?: string[] | null;
+  preparation_tips?: string | null;
   // Market
   top_filing_sectors?: SectorEntry[] | null;
   top_filing_countries?: CountryEntry[] | null;
@@ -62,6 +64,15 @@ export interface OfficeIntelligenceData {
   genius_coverage_level?: string | null;
   genius_kb_chunks?: number | null;
   genius_last_kb_update?: string | null;
+  // Internal scores
+  tier?: number | null;
+  priority_score?: number | null;
+  digital_maturity_score?: number | null;
+  digital_score?: number | null;
+  data_completeness_score?: number | null;
+  data_quality_flag?: string | null;
+  data_quality_notes?: string | null;
+  latam_relevance_score?: number | null;
 }
 
 interface Props {
@@ -69,6 +80,8 @@ interface Props {
   isLoading?: boolean;
   error?: boolean;
   onRetry?: () => void;
+  /** Show internal scores section (backoffice only) */
+  showInternalScores?: boolean;
 }
 
 // ── Helpers ────────────────────────────────────────────
@@ -94,13 +107,22 @@ function DataQualityBadge({ office }: { office: OfficeIntelligenceData }) {
   const hasLegacy = Array.isArray(office.main_rejection_reasons) && office.main_rejection_reasons.length > 0;
   const hasRich = Array.isArray(office.common_rejection_reasons) && office.common_rejection_reasons.length > 0;
 
-  if (rich) return <Badge className="bg-emerald-600 text-white text-[10px] ml-2">Curated Intelligence</Badge>;
-  if (hasRich || hasLegacy) return <Badge variant="outline" className="text-amber-500 border-amber-500 text-[10px] ml-2">Automated Data</Badge>;
-  return <Badge variant="outline" className="text-neutral-400 text-[10px] ml-2">No Data</Badge>;
+  if (rich) return <Badge className="bg-emerald-600 text-white text-[10px] ml-2">Datos Curados</Badge>;
+  if (hasRich || hasLegacy) return <Badge variant="outline" className="text-amber-500 border-amber-500 text-[10px] ml-2">Datos Automáticos</Badge>;
+  return <Badge variant="outline" className="text-neutral-400 text-[10px] ml-2">Sin Datos</Badge>;
+}
+
+function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+      {icon}
+      {title}
+    </h3>
+  );
 }
 
 // ── Main Component ─────────────────────────────────────
-export function OfficeIntelligencePanel({ office, isLoading, error, onRetry }: Props) {
+export function OfficeIntelligencePanel({ office, isLoading, error, onRetry, showInternalScores = false }: Props) {
   if (isLoading) return <IntelligenceSkeleton />;
 
   if (error) {
@@ -126,6 +148,8 @@ export function OfficeIntelligencePanel({ office, isLoading, error, onRetry }: P
   const hasSectors = Array.isArray(office.top_filing_sectors) && office.top_filing_sectors.length > 0;
   const hasCountries = Array.isArray(office.top_filing_countries) && office.top_filing_countries.length > 0;
   const hasMarket = hasSectors || hasCountries;
+  const hasExaminerPatterns = office.examiner_patterns != null && Object.keys(office.examiner_patterns).length > 0;
+  const hasPreparationTips = !!office.preparation_tips;
   const hasAnyData = hasAnyRejection || hasBestPractices || hasMistakes || hasTimeline || hasMarket
     || office.annual_filing_volume || office.rejection_rate_pct != null;
 
@@ -145,7 +169,7 @@ export function OfficeIntelligencePanel({ office, isLoading, error, onRetry }: P
   }
 
   return (
-    <div className="space-y-6 print:space-y-4">
+    <div className="space-y-8 print:space-y-4">
       {/* Action bar */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center">
@@ -172,40 +196,120 @@ export function OfficeIntelligencePanel({ office, isLoading, error, onRetry }: P
         </div>
       </div>
 
-      {/* 1. KPI Cards */}
-      <KpiRow office={office} />
-
-      {/* 2. Rejection Reasons */}
-      {hasAnyRejection && (
-        <RejectionReasonsSection richReasons={richReasons} legacyReasons={legacyReasons} />
-      )}
-
-      {/* 3. Best Practices & Common Mistakes */}
-      {(hasBestPractices || hasMistakes) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <PracticesCard
-            title="Buenas Prácticas de Registro"
-            items={office.best_practices}
-            icon={<CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />}
-            emptyText="Sin datos disponibles"
-          />
-          <PracticesCard
-            title="Errores Comunes"
-            items={office.common_mistakes}
-            icon={<XCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />}
-            emptyText="Sin datos disponibles"
-          />
+      {/* §1 — KPI Cards */}
+      <section>
+        <SectionHeader icon={<BarChart3 className="h-5 w-5 text-primary" />} title="Resumen de Rendimiento" />
+        <div className="mt-3">
+          <KpiRow office={office} />
         </div>
+      </section>
+
+      {/* §2 — Processing Timeline */}
+      {hasTimeline && (
+        <>
+          <Separator />
+          <section>
+            <SectionHeader icon={<Clock className="h-5 w-5 text-primary" />} title="Línea Temporal de Procesamiento" />
+            <div className="mt-3">
+              <ProcessingTimeline office={office} />
+            </div>
+          </section>
+        </>
       )}
 
-      {/* 4. Processing Timeline */}
-      {hasTimeline && <ProcessingTimeline office={office} />}
+      {/* §3 — Rejection Analysis */}
+      {hasAnyRejection && (
+        <>
+          <Separator />
+          <section>
+            <RejectionReasonsSection richReasons={richReasons} legacyReasons={legacyReasons} />
+          </section>
+        </>
+      )}
 
-      {/* 5. Market Intelligence */}
-      {hasMarket && <MarketIntelligence office={office} />}
+      {/* §4 — Best Practices & Common Mistakes */}
+      {(hasBestPractices || hasMistakes) && (
+        <>
+          <Separator />
+          <section>
+            <SectionHeader icon={<CheckCircle className="h-5 w-5 text-emerald-500" />} title="Buenas Prácticas y Errores Comunes" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+              <PracticesCard
+                title="Buenas Prácticas de Registro"
+                items={office.best_practices}
+                icon={<CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />}
+                emptyText="Sin datos disponibles"
+              />
+              <PracticesCard
+                title="Errores Comunes"
+                items={office.common_mistakes}
+                icon={<XCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />}
+                emptyText="Sin datos disponibles"
+              />
+            </div>
+          </section>
+        </>
+      )}
 
-      {/* 6. GENIUS Coverage */}
-      {office.genius_coverage_score != null && <GeniusCoverage office={office} />}
+      {/* §5 — Preparation Tips */}
+      {hasPreparationTips && (
+        <>
+          <Separator />
+          <section>
+            <Card className="border-l-4 border-l-blue-500 bg-blue-50/10">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-blue-500" />
+                  Tips de Preparación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{office.preparation_tips}</p>
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
+
+      {/* §6 — Market Intelligence */}
+      {hasMarket && (
+        <>
+          <Separator />
+          <section>
+            <MarketIntelligence office={office} />
+          </section>
+        </>
+      )}
+
+      {/* §7 — Examiner Patterns */}
+      {hasExaminerPatterns && (
+        <>
+          <Separator />
+          <section>
+            <ExaminerPatternsSection patterns={office.examiner_patterns!} />
+          </section>
+        </>
+      )}
+
+      {/* §8 — GENIUS Coverage */}
+      {office.genius_coverage_score != null && (
+        <>
+          <Separator />
+          <section>
+            <GeniusCoverage office={office} />
+          </section>
+        </>
+      )}
+
+      {/* §9 — Internal Scores (backoffice only) */}
+      {showInternalScores && (
+        <>
+          <Separator />
+          <section>
+            <InternalScoresSection office={office} />
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -216,10 +320,13 @@ function KpiRow({ office }: { office: OfficeIntelligenceData }) {
   const cards: { label: string; value: string; sub?: string; color?: string; icon: React.ReactNode }[] = [];
 
   if (office.annual_filing_volume) {
+    const growthBadge = office.filing_volume_growth_pct != null
+      ? `${office.filing_volume_growth_pct > 0 ? "+" : ""}${office.filing_volume_growth_pct}%`
+      : undefined;
     cards.push({
       label: "Volumen de Solicitudes",
       value: fmt(office.annual_filing_volume),
-      sub: office.filing_volume_year ? `${office.filing_volume_year}` : undefined,
+      sub: [office.filing_volume_year ? `(${office.filing_volume_year})` : null, growthBadge].filter(Boolean).join(" "),
       icon: <FileText className="h-4 w-4" />,
     });
   }
@@ -255,11 +362,18 @@ function KpiRow({ office }: { office: OfficeIntelligenceData }) {
       icon: <TrendingUp className="h-4 w-4" />,
     });
   }
+  if (office.stats_tm_applications != null && office.stats_tm_registrations != null) {
+    cards.push({
+      label: "Solicitudes / Registros",
+      value: `${fmt(office.stats_tm_applications)} / ${fmt(office.stats_tm_registrations)}`,
+      icon: <BarChart3 className="h-4 w-4" />,
+    });
+  }
 
   if (cards.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {cards.map((c, i) => (
         <Card key={i} className="relative overflow-hidden">
           <CardContent className="p-4">
@@ -295,7 +409,7 @@ function RejectionReasonsSection({
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <ShieldAlert className="h-4 w-4 text-red-500" />
-          Principales Motivos de Rechazo
+          Análisis de Motivos de Rechazo
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-1">
@@ -310,8 +424,6 @@ function RejectionReasonsSection({
 function RejectionRow({ rank, reason, pct, notes }: { rank: number; reason: string; pct: number; notes?: string }) {
   const [open, setOpen] = useState(false);
   const color = barColor(pct);
-
-  // Extract legal article from reason if present (text in parentheses or after §)
   const articleMatch = reason.match(/(§[^)]+|Art\.\s*\d+[^,)]*|\d+\([a-z]\))/i);
   const article = articleMatch ? articleMatch[0] : null;
 
@@ -322,49 +434,29 @@ function RejectionRow({ rank, reason, pct, notes }: { rank: number; reason: stri
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="text-sm font-medium leading-snug">{reason}</span>
-            {article && (
-              <Badge variant="outline" className="text-[10px] shrink-0">{article}</Badge>
-            )}
+            {article && <Badge variant="outline" className="text-[10px] shrink-0">{article}</Badge>}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
-              />
+              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }} />
             </div>
             <span className="text-xs font-semibold w-10 text-right" style={{ color }}>{pct}%</span>
           </div>
         </div>
         {notes && (
-          <button
-            onClick={() => setOpen(!open)}
-            className="p-1 rounded hover:bg-muted transition-colors shrink-0"
-          >
+          <button onClick={() => setOpen(!open)} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
             {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         )}
       </div>
       {open && notes && (
-        <div className="ml-9 mt-2 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground leading-relaxed">
-          {notes}
-        </div>
+        <div className="ml-9 mt-2 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground leading-relaxed">{notes}</div>
       )}
     </div>
   );
 }
 
-function PracticesCard({
-  title,
-  items,
-  icon,
-  emptyText,
-}: {
-  title: string;
-  items?: string[] | null;
-  icon: React.ReactNode;
-  emptyText: string;
-}) {
+function PracticesCard({ title, items, icon, emptyText }: { title: string; items?: string[] | null; icon: React.ReactNode; emptyText: string }) {
   const hasItems = Array.isArray(items) && items.length > 0;
   return (
     <Card>
@@ -372,14 +464,12 @@ function PracticesCard({
         <CardTitle className="text-sm">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {hasItems ? (
-          items!.map((item, i) => (
-            <div key={i} className="flex items-start gap-2">
-              {icon}
-              <span className="text-sm">{item}</span>
-            </div>
-          ))
-        ) : (
+        {hasItems ? items!.map((item, i) => (
+          <div key={i} className="flex items-start gap-2">
+            {icon}
+            <span className="text-sm">{item}</span>
+          </div>
+        )) : (
           <p className="text-sm italic text-muted-foreground">{emptyText}</p>
         )}
       </CardContent>
@@ -396,7 +486,7 @@ function ProcessingTimeline({ office }: { office: OfficeIntelligenceData }) {
   const seg3 = Math.max(d3 - d2, 0);
 
   const stages = [
-    { label: "Solicitud", days: null },
+    { label: "Solicitud", days: null as number | null },
     { label: "Primera Acción", days: seg1 },
     { label: "Publicación", days: seg2 },
     { label: "Resolución", days: seg3 },
@@ -404,13 +494,7 @@ function ProcessingTimeline({ office }: { office: OfficeIntelligenceData }) {
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Clock className="h-4 w-4 text-primary" />
-          Línea de Tiempo del Proceso
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="py-5">
         {/* Desktop */}
         <div className="hidden sm:flex items-center justify-between">
           {stages.map((s, i) => (
@@ -426,9 +510,7 @@ function ProcessingTimeline({ office }: { office: OfficeIntelligenceData }) {
               </div>
               {i < stages.length - 1 && (
                 <div className="flex-1 flex flex-col items-center mx-2">
-                  <span className="text-[11px] text-muted-foreground font-medium mb-1">
-                    {daysToLabel(stages[i + 1].days)}
-                  </span>
+                  <span className="text-[11px] text-muted-foreground font-medium mb-1">{daysToLabel(stages[i + 1].days)}</span>
                   <div className="w-full h-0.5 bg-primary/20 relative">
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-4 border-l-primary/40 border-y-[3px] border-y-transparent" />
                   </div>
@@ -449,9 +531,7 @@ function ProcessingTimeline({ office }: { office: OfficeIntelligenceData }) {
               </div>
               <div>
                 <span className="text-sm font-medium">{s.label}</span>
-                {s.days != null && (
-                  <span className="text-xs text-muted-foreground ml-2">({daysToLabel(s.days)})</span>
-                )}
+                {s.days != null && <span className="text-xs text-muted-foreground ml-2">({daysToLabel(s.days)})</span>}
               </div>
             </div>
           ))}
@@ -477,13 +557,13 @@ function MarketIntelligence({ office }: { office: OfficeIntelligenceData }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sectors.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Sectores Principales</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Sectores más Activos</h4>
               <div className="space-y-2">
-                {sectors.slice(0, 6).map((s, i) => (
+                {sectors.slice(0, 8).map((s, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-sm w-32 truncate">{s.sector}</span>
+                    <span className="text-sm w-36 truncate">{s.sector}</span>
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full rounded-full bg-primary/60" style={{ width: `${s.pct}%` }} />
+                      <div className="h-full rounded-full bg-blue-500" style={{ width: `${s.pct}%` }} />
                     </div>
                     <span className="text-xs text-muted-foreground w-8 text-right">{s.pct}%</span>
                   </div>
@@ -493,13 +573,13 @@ function MarketIntelligence({ office }: { office: OfficeIntelligenceData }) {
           )}
           {countries.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Países Solicitantes</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Países de Origen</h4>
               <div className="space-y-2">
-                {countries.slice(0, 6).map((c, i) => (
+                {countries.slice(0, 8).map((c, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-sm w-32 truncate">{c.country}</span>
+                    <span className="text-sm w-36 truncate">{c.country}</span>
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full rounded-full bg-blue-500/60" style={{ width: `${c.pct}%` }} />
+                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${c.pct}%` }} />
                     </div>
                     <span className="text-xs text-muted-foreground w-8 text-right">{c.pct}%</span>
                   </div>
@@ -513,12 +593,56 @@ function MarketIntelligence({ office }: { office: OfficeIntelligenceData }) {
   );
 }
 
+function ExaminerPatternsSection({ patterns }: { patterns: Record<string, unknown> }) {
+  const peakMonths = patterns.peak_filing_months as string[] | string | undefined;
+  const avgWorkload = patterns.avg_examiner_workload as number | undefined;
+  const summerSlowdown = patterns.summer_slowdown as boolean | undefined;
+  const consistencyScore = patterns.consistency_score as number | undefined;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Users className="h-4 w-4 text-primary" />
+          Patrones de Examinadores
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {peakMonths && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium">Meses pico:</span>
+            <span className="text-muted-foreground">
+              {Array.isArray(peakMonths) ? peakMonths.join(", ") : String(peakMonths)}
+            </span>
+          </div>
+        )}
+        {avgWorkload != null && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium">Carga media:</span>
+            <span className="text-muted-foreground">{fmt(avgWorkload)} expedientes/examinador</span>
+          </div>
+        )}
+        {summerSlowdown === true && (
+          <Badge variant="outline" className="text-amber-500 border-amber-500 text-xs">Ralentización en verano</Badge>
+        )}
+        {consistencyScore != null && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium">Consistencia:</span>
+            <Progress value={consistencyScore} className="w-24 h-1.5" />
+            <span className="text-xs text-muted-foreground">{consistencyScore}%</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function GeniusCoverage({ office }: { office: OfficeIntelligenceData }) {
   const score = office.genius_coverage_score ?? 0;
-  const level = score >= 90 ? { label: "Full Coverage", cls: "bg-emerald-600 text-white" }
-    : score >= 75 ? { label: "High Coverage", cls: "bg-blue-600 text-white" }
-    : score >= 50 ? { label: "Partial Coverage", cls: "bg-amber-500 text-white" }
-    : { label: "Low Coverage", cls: "bg-red-500 text-white" };
+  const level = score >= 90 ? { label: "Cobertura Completa", cls: "bg-emerald-600 text-white" }
+    : score >= 75 ? { label: "Alta", cls: "bg-blue-600 text-white" }
+    : score >= 50 ? { label: "Parcial", cls: "bg-amber-500 text-white" }
+    : { label: "Baja", cls: "bg-red-500 text-white" };
 
   return (
     <Card>
@@ -529,9 +653,7 @@ function GeniusCoverage({ office }: { office: OfficeIntelligenceData }) {
           <Badge className={cn("text-xs", level.cls)}>{level.label}</Badge>
         </div>
         <div className="flex items-center gap-4 text-xs text-muted-foreground ml-auto">
-          {office.genius_kb_chunks != null && (
-            <span>{office.genius_kb_chunks} chunks</span>
-          )}
+          {office.genius_kb_chunks != null && <span>{office.genius_kb_chunks} chunks</span>}
           {office.genius_last_kb_update && (
             <span>Actualizado {formatDistanceToNow(new Date(office.genius_last_kb_update), { addSuffix: true, locale: es })}</span>
           )}
@@ -543,20 +665,69 @@ function GeniusCoverage({ office }: { office: OfficeIntelligenceData }) {
   );
 }
 
+function InternalScoresSection({ office }: { office: OfficeIntelligenceData }) {
+  const items: { label: string; value: string; progress?: number; badgeCls?: string }[] = [];
+
+  if (office.tier != null) {
+    items.push({ label: "Tier", value: `Tier ${office.tier}`, badgeCls: office.tier === 1 ? "bg-emerald-600 text-white" : office.tier === 2 ? "bg-blue-600 text-white" : "bg-muted text-foreground" });
+  }
+  if (office.priority_score != null) {
+    items.push({ label: "Priority Score", value: `${office.priority_score}/100`, progress: office.priority_score });
+  }
+  if (office.digital_maturity_score != null) {
+    items.push({ label: "Digital Maturity", value: `${office.digital_maturity_score}/100`, progress: office.digital_maturity_score });
+  }
+  if (office.data_completeness_score != null) {
+    items.push({ label: "Data Completeness", value: `${office.data_completeness_score}%`, progress: office.data_completeness_score, badgeCls: office.data_completeness_score >= 80 ? "bg-emerald-600 text-white" : undefined });
+  }
+  if (office.data_quality_flag) {
+    const isVerified = office.data_quality_flag === "green";
+    items.push({ label: "Data Quality", value: isVerified ? "Verificado" : "Pendiente", badgeCls: isVerified ? "bg-emerald-600 text-white" : "bg-amber-500 text-white" });
+  }
+  if (office.latam_relevance_score != null && office.latam_relevance_score > 0) {
+    items.push({ label: "LATAM Relevance", value: `${office.latam_relevance_score}/100`, progress: office.latam_relevance_score });
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <SectionHeader icon={<BarChart3 className="h-5 w-5 text-primary" />} title="Scores y Clasificación Interna" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-3">
+        {items.map((item, i) => (
+          <Card key={i}>
+            <CardContent className="p-3 space-y-1.5">
+              <span className="text-[11px] text-muted-foreground font-medium">{item.label}</span>
+              {item.badgeCls ? (
+                <Badge className={cn("text-xs", item.badgeCls)}>{item.value}</Badge>
+              ) : (
+                <p className="text-sm font-bold">{item.value}</p>
+              )}
+              {item.progress != null && !item.badgeCls && (
+                <Progress value={item.progress} className="h-1.5" />
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      {office.data_quality_notes && (
+        <p className="text-xs text-muted-foreground mt-2">Fuente: {String(office.data_quality_notes)}</p>
+      )}
+    </div>
+  );
+}
+
 // ── Skeleton ───────────────────────────────────────────
 function IntelligenceSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-lg" />
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
       </div>
+      <Skeleton className="h-24 rounded-lg" />
       <Card>
         <CardContent className="py-4 space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 rounded" style={{ width: `${90 - i * 12}%` }} />
-          ))}
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 rounded" style={{ width: `${90 - i * 12}%` }} />)}
         </CardContent>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

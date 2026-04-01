@@ -23400,6 +23400,56 @@ export type Database = {
           },
         ]
       }
+      organization_jurisdictions: {
+        Row: {
+          activated_at: string
+          activated_by: string | null
+          created_at: string
+          deactivated_at: string | null
+          id: string
+          is_active: boolean
+          jurisdiction_code: string
+          notes: string | null
+          organization_id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string
+          activated_by?: string | null
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction_code: string
+          notes?: string | null
+          organization_id: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string
+          activated_by?: string | null
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction_code?: string
+          notes?: string | null
+          organization_id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_jurisdictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_routing_rules: {
         Row: {
           auto_assign_leads: boolean | null
@@ -31643,6 +31693,12 @@ export type Database = {
           p_subject?: string
         }
         Returns: string
+      }
+      get_org_active_jurisdictions: {
+        Args: { p_org_id: string }
+        Returns: {
+          jurisdiction_code: string
+        }[]
       }
       get_org_by_stripe_customer: {
         Args: { p_customer_id: string }
