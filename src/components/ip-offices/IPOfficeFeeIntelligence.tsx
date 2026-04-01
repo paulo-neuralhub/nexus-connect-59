@@ -295,26 +295,6 @@ export function IPOfficeFeeIntelligence({ officeId, officeName }: Props) {
                   ))}
                 </div>
               )}
-              {p.researched_at && (
-                <p className="text-xs text-muted-foreground">
-                  Investigado el {formatDate(p.researched_at)}
-                </p>
-              )}
-              {researchSources.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {researchSources.map((src, i) => (
-                    <a
-                      key={i}
-                      href={String(src)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-primary hover:underline"
-                    >
-                      [{i + 1}]
-                    </a>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </CardContent>
