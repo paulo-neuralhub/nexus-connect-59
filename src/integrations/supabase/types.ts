@@ -31807,6 +31807,19 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_memories: { Args: never; Returns: undefined }
+      convert_currency: {
+        Args: {
+          p_amount: number
+          p_from_currency: string
+          p_to_currency: string
+        }
+        Returns: {
+          converted_amount: number
+          rate_date: string
+          rate_used: number
+          source: string
+        }[]
+      }
       delete_user_ai_data: { Args: { p_user_id: string }; Returns: undefined }
       expire_overdue_addons: { Args: never; Returns: number }
       expire_pending_approvals: { Args: never; Returns: number }
