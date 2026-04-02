@@ -124,12 +124,9 @@ export function GeniusChatEnhanced({
     }
   }, [initialConversationId, loadConversation]);
   
-  // Notify conversation change
-  useEffect(() => {
-    if (conversationId && onConversationChange) {
-      onConversationChange(conversationId);
-    }
-  }, [conversationId, onConversationChange]);
+  // NOTE: Do NOT notify onConversationChange via useEffect on conversationId.
+  // That causes a key change → remount → kills in-flight requests.
+  // Instead, we notify after sendMessage completes (see handleSubmit).
   
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -149,7 +146,7 @@ export function GeniusChatEnhanced({
     setInput('');
     
     try {
-      await sendMessage({
+      const result = await sendMessage({
         message,
         matterId: selectedMatterId,
         helpContext: helpMode
@@ -165,6 +162,10 @@ export function GeniusChatEnhanced({
             }
           : undefined,
       });
+      // Notify parent AFTER response received (avoids key-change remount mid-request)
+      if (result?._conversationId && onConversationChange) {
+        onConversationChange(result._conversationId);
+      }
     } catch (err) {
       toast({ 
         variant: 'destructive',

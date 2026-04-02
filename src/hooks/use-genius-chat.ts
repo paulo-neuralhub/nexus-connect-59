@@ -171,7 +171,8 @@ export function useGeniusChat(agentType: AgentType) {
       // Always invalidate conversations list
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
 
-      return data;
+      // Return data AND the conversationId so callers can sync AFTER response
+      return { ...data, _conversationId: conversationId };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
       setState(prev => ({ ...prev, isLoading: false, error }));
