@@ -375,7 +375,7 @@ export function GeniusAmbientBadge() {
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </button>
+        </div>
 
         {/* C) Hover personality tooltip */}
         {hoverMsg && !chatIsOpen && !panelOpen && !isDraggingRef.current && (
