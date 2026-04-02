@@ -313,6 +313,10 @@ export function GeniusChatEnhanced({
               currentMatterRef={matters.find(m => m.id === selectedMatterId)?.reference ?? null}
               matters={matters}
               onLinkToMatter={linkConversationToMatter}
+              onMatterLinked={(matter) => {
+                setSelectedMatterId(matter.id);
+                setContextMatter(matter.id);
+              }}
             />
           ))}
           
