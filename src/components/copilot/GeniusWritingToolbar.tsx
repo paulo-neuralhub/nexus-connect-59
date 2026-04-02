@@ -347,6 +347,16 @@ export function GeniusFullDraftMenu({ onDraftGenerated, context }: GeniusFullDra
         <div className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-xl border border-border min-w-[280px] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 z-[10001]">
           {mode === 'menu' && (
             <div className="p-2">
+              {context?.is_reply === 'true' && (
+                <button
+                  onClick={() => generateDraft('suggest_reply', `Analiza este email recibido y sugiere una respuesta profesional en el mismo idioma. Email recibido: ${context.original_email || ''}`)}
+                  disabled={isProcessing}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left hover:bg-muted/50 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <span>✦</span>
+                  <span>Sugerir respuesta</span>
+                </button>
+              )}
               <button
                 onClick={() => setMode('type')}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left hover:bg-muted/50 rounded-lg transition-colors"
