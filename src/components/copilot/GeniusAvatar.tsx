@@ -79,7 +79,7 @@ const CSS = `
 `;
 
 export function GeniusAvatar({
-  variant,
+  variant = "genius",
   size = "md",
   state = "idle",
   breathing = true,
