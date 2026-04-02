@@ -323,6 +323,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
           <CopilotSettings />
         </RequirePermission>
       )}
+
+      {activeTab === 'exchange-rates' && (
+        <RequirePermission permission="settings.view">
+          <ExchangeRatesSettings />
+        </RequirePermission>
+      )}
     </>
   );
 }
