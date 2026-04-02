@@ -23,6 +23,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { GeniusMessageRenderer } from './GeniusMessageRenderer';
+import { MatterLinker, shouldShowMatterLinker } from './MatterLinker';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useGeniusChat, useGeniusFeedback } from '@/hooks/use-genius-chat';
@@ -312,6 +313,10 @@ export function GeniusChatEnhanced({
               currentMatterRef={matters.find(m => m.id === selectedMatterId)?.reference ?? null}
               matters={matters}
               onLinkToMatter={linkConversationToMatter}
+              onMatterLinked={(matter) => {
+                setSelectedMatterId(matter.id);
+                setContextMatter(matter.id);
+              }}
             />
           ))}
           
@@ -481,6 +486,7 @@ function MessageBubble({
   currentMatterRef,
   matters,
   onLinkToMatter,
+  onMatterLinked,
 }: { 
   message: AIMessage;
   agentColor: string;
@@ -491,6 +497,7 @@ function MessageBubble({
   currentMatterRef: string | null;
   matters: Array<{ id: string; reference: string; title: string }>;
   onLinkToMatter: (matterId: string, matterRef: string) => void;
+  onMatterLinked: (matter: { id: string; reference: string }) => void;
 }) {
   const isUser = message.role === 'user';
   
@@ -534,8 +541,17 @@ function MessageBubble({
                       matters={matters}
                       onLinkToMatter={onLinkToMatter}
                     />
-          )}
+           )}
         </div>
+        
+        {/* MatterLinker — show below assistant messages when suggested and no matter linked */}
+        {!isUser && !currentMatterId && shouldShowMatterLinker(message.content) && (
+          <MatterLinker
+            conversationId={conversationId}
+            onLink={onLinkToMatter}
+            onMatterLinked={onMatterLinked}
+          />
+        )}
         
         {/* Actions taken */}
         {message.actions_taken && message.actions_taken.length > 0 && (
