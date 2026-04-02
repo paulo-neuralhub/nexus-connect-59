@@ -124,12 +124,9 @@ export function GeniusChatEnhanced({
     }
   }, [initialConversationId, loadConversation]);
   
-  // Notify conversation change
-  useEffect(() => {
-    if (conversationId && onConversationChange) {
-      onConversationChange(conversationId);
-    }
-  }, [conversationId, onConversationChange]);
+  // NOTE: Do NOT notify onConversationChange via useEffect on conversationId.
+  // That causes a key change → remount → kills in-flight requests.
+  // Instead, we notify after sendMessage completes (see handleSubmit).
   
   // Scroll to bottom on new messages
   useEffect(() => {
