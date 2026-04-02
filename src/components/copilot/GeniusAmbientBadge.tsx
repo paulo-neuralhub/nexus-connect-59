@@ -349,7 +349,8 @@ export function GeniusAmbientBadge() {
         {/* Sonar ring */}
         {showSonar && <div className="gb-sonar" />}
 
-        <button
+        <div
+          role="button"
           aria-label={tooltipText}
           className={`relative rounded-full flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2 ${
             bouncing ? "gb-bounce" : didDragEnd ? "gb-celebrate" : isFirstVisit ? "gb-entrance" : "gb-breathe"
@@ -360,6 +361,7 @@ export function GeniusAmbientBadge() {
             border: "2px solid transparent",
             borderRadius: "50%",
             transition: "box-shadow 200ms ease",
+            pointerEvents: "none",
           }}
         >
           <div className={`gb-float w-full h-full rounded-full overflow-hidden ${hoverMsg ? "gb-hover-tilt" : ""}`}>
@@ -373,7 +375,7 @@ export function GeniusAmbientBadge() {
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </button>
+        </div>
 
         {/* C) Hover personality tooltip */}
         {hoverMsg && !chatIsOpen && !panelOpen && !isDraggingRef.current && (
