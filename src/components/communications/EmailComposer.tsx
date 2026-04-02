@@ -327,20 +327,7 @@ export function EmailComposer({
 
           {/* Editor */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label>Mensaje</Label>
-              <GeniusFullDraftMenu
-                onDraftGenerated={(subj, bodyHtml) => {
-                  if (subj && !subject) setSubject(subj);
-                  setBody(bodyHtml);
-                }}
-                context={{
-                  page: window.location.pathname,
-                  ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
-                  ...(subject ? { email_subject: subject } : {}),
-                }}
-              />
-            </div>
+            <Label>Mensaje</Label>
             <TipTapEditor
               content={body}
               onChange={setBody}
@@ -389,39 +376,10 @@ export function EmailComposer({
             )}
           </div>
 
-          {/* Adjuntos */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          {/* Adjuntos (chips only — button moved to footer toolbar) */}
+          {attachments.length > 0 && (
+            <div className="space-y-1">
               <Label className="text-sm">Adjuntos</Label>
-              <label className="cursor-pointer">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7"
-                  disabled={isUploading}
-                  asChild
-                >
-                  <span>
-                    {isUploading ? (
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    ) : (
-                      <Paperclip className="w-3 h-3 mr-1" />
-                    )}
-                    Adjuntar
-                  </span>
-                </Button>
-                <input
-                  type="file"
-                  className="hidden"
-                  multiple
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-              </label>
-            </div>
-
-            {attachments.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {attachments.map((att, index) => (
                   <Badge
@@ -444,30 +402,75 @@ export function EmailComposer({
                   </Badge>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex-shrink-0 pt-4 border-t mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={() => sendEmail.mutate()}
-            disabled={sendEmail.isPending || to.length === 0 || !subject.trim()}
-          >
-            {sendEmail.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Enviar
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2 w-full">
+            {/* Left side: Adjuntar + Genius */}
+            <label className="cursor-pointer">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={isUploading}
+                asChild
+              >
+                <span>
+                  {isUploading ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Paperclip className="w-3 h-3 mr-1" />
+                  )}
+                  Adjuntar
+                </span>
+              </Button>
+              <input
+                type="file"
+                className="hidden"
+                multiple
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </label>
+
+            <GeniusFullDraftMenu
+              onDraftGenerated={(subj, bodyHtml) => {
+                if (subj && !subject) setSubject(subj);
+                setBody(bodyHtml);
+              }}
+              context={{
+                page: window.location.pathname,
+                ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
+                ...(subject ? { email_subject: subject } : {}),
+              }}
+            />
+
+            <div className="flex-1" />
+
+            {/* Right side: Cancel + Send */}
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => sendEmail.mutate()}
+              disabled={sendEmail.isPending || to.length === 0 || !subject.trim()}
+            >
+              {sendEmail.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
