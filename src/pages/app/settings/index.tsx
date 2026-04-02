@@ -26,6 +26,7 @@ import {
   Zap,
   Hash,
   Compass,
+  DollarSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
