@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Save, User } from 'lucide-react';
+import CurrencyPreferences from './CurrencyPreferences';
 
 export default function ProfileSettings() {
   const { user, profile } = useAuth();
