@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export interface GeniusAvatarProps {
-  variant: "nexus" | "genius";
+  variant?: "nexus" | "genius";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   state?: "idle" | "thinking" | "alert" | "success" | "error" | "greeting";
   breathing?: boolean;
