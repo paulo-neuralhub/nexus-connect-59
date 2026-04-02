@@ -207,16 +207,16 @@ export function useGeniusChat(agentType: AgentType) {
       }
 
       // Map DB columns to AIMessage interface
-      const messages: AIMessage[] = (data || []).map((m: any) => ({
+      const messages: AIMessage[] = (data || []).map((m) => ({
         id: m.id,
-        conversation_id: m.conversation_id,
-        role: m.role as AIMessage['role'],
+        conversation_id: m.conversation_id ?? '',
+        role: (m.role ?? 'user') as AIMessage['role'],
         content: m.content || '',
-        model_used: m.model,
-        created_at: m.created_at,
-        sources: m.metadata?.sources as AIMessage['sources'],
-        actions_taken: m.metadata?.actions_taken as AIMessage['actions_taken'],
-        feedback: m.metadata?.feedback as AIMessage['feedback'],
+        model_used: m.model ?? undefined,
+        created_at: m.created_at ?? new Date().toISOString(),
+        sources: (m.metadata as Record<string, unknown> | null)?.sources as AIMessage['sources'],
+        actions_taken: (m.metadata as Record<string, unknown> | null)?.actions_taken as AIMessage['actions_taken'],
+        feedback: (m.metadata as Record<string, unknown> | null)?.feedback as AIMessage['feedback'],
       }));
 
       setState(prev => ({
