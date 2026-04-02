@@ -26,6 +26,7 @@ import {
   Zap,
   Hash,
   Compass,
+  DollarSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RequirePermission, RequireRole } from '@/components/auth/RequirePermission';
@@ -56,6 +57,7 @@ import TemplatesSettingsSection from './sections/TemplatesSettingsSection';
 import { ServicesDashboard } from '@/components/services';
 import ModulesSettings from './sections/ModulesSettings';
 import CopilotSettings from './sections/CopilotSettings';
+import ExchangeRatesSettings from './sections/ExchangeRatesSettings';
 // Tabs for organization settings
 const ORG_TABS = [
   { id: 'general', label: 'General', icon: Building2, permission: 'settings.view' },
@@ -78,6 +80,7 @@ const ORG_TABS = [
   { id: 'deadlines', label: 'Reglas de Plazos', icon: CalendarClock, permission: 'settings.update' },
   { id: 'internal-reference', label: 'Referencia Interna', icon: Hash, permission: 'settings.update' },
   { id: 'copilot', label: 'CoPilot', icon: Compass, permission: 'settings.update' },
+  { id: 'exchange-rates', label: 'Tipos de Cambio', icon: DollarSign, permission: 'settings.view' },
 ];
 
 // Tabs for user settings
@@ -318,6 +321,12 @@ function OrganizationSettingsContent({ activeTab }: { activeTab: string }) {
       {activeTab === 'copilot' && (
         <RequirePermission permission="settings.update">
           <CopilotSettings />
+        </RequirePermission>
+      )}
+
+      {activeTab === 'exchange-rates' && (
+        <RequirePermission permission="settings.view">
+          <ExchangeRatesSettings />
         </RequirePermission>
       )}
     </>
