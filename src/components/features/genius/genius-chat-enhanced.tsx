@@ -146,7 +146,7 @@ export function GeniusChatEnhanced({
     setInput('');
     
     try {
-      await sendMessage({
+      const result = await sendMessage({
         message,
         matterId: selectedMatterId,
         helpContext: helpMode
@@ -162,6 +162,10 @@ export function GeniusChatEnhanced({
             }
           : undefined,
       });
+      // Notify parent AFTER response received (avoids key-change remount mid-request)
+      if (result?._conversationId && onConversationChange) {
+        onConversationChange(result._conversationId);
+      }
     } catch (err) {
       toast({ 
         variant: 'destructive',
