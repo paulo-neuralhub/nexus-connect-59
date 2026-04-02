@@ -38,6 +38,10 @@ export function useGeniusChat(agentType: AgentType) {
   });
   
   const contextMatterRef = useRef<string | undefined>(undefined);
+  // Use refs to avoid stale closures in sendMessage
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const isSendingRef = useRef(false);
 
   // Create new conversation
   const createConversation = useCallback(async (
@@ -71,61 +75,50 @@ export function useGeniusChat(agentType: AgentType) {
 
   // Send message
   const sendMessage = useCallback(async ({ message, matterId, helpContext }: SendMessageParams) => {
+    // Prevent double-send
+    if (isSendingRef.current) return;
+    isSendingRef.current = true;
+
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      let conversationId = state.conversationId;
+      // Read from ref to avoid stale closure
+      let conversationId = stateRef.current.conversationId;
 
-      // Create conversation if needed
+      // Create conversation BEFORE anything else
       if (!conversationId) {
         const contextType: ConversationContextType = matterId ? 'matter' : 'general';
         conversationId = await createConversation(contextType, matterId);
+        // Update state AND ref immediately
         setState(prev => ({ ...prev, conversationId }));
+        stateRef.current = { ...stateRef.current, conversationId };
         contextMatterRef.current = matterId;
       }
 
-      // Persist user message to DB first so it survives Edge Function failures
-      const { data: savedMsg, error: insertError } = await supabase
-        .from('ai_messages')
-        .insert({
-          conversation_id: conversationId,
-          role: 'user',
-          content: message,
-        })
-        .select('id, conversation_id, role, content, created_at')
-        .single();
-
-      const userMessage: AIMessage = savedMsg
-        ? {
-            ...savedMsg,
-            role: savedMsg.role as AIMessage['role'],
-          }
-        : {
-            id: `temp-user-${Date.now()}`,
-            conversation_id: conversationId,
-            role: 'user',
-            content: message,
-            created_at: new Date().toISOString(),
-          };
-
-      if (insertError) {
-        console.warn('Failed to persist user message, continuing with temp:', insertError);
-      }
+      // Add optimistic user message to UI immediately
+      const userMessage: AIMessage = {
+        id: `temp-user-${Date.now()}`,
+        conversation_id: conversationId,
+        role: 'user',
+        content: message,
+        created_at: new Date().toISOString(),
+      };
       
       setState(prev => ({
         ...prev,
         messages: [...prev.messages, userMessage],
       }));
 
-      // Build history for API
-      const history = state.messages.slice(-8).map(m => ({
+      // Build history from current messages (use ref for fresh data)
+      const currentMessages = stateRef.current.messages;
+      const history = currentMessages.slice(-8).map(m => ({
         role: m.role,
         content: m.content,
       }));
 
       const functionName = agentType === 'guide' && helpContext ? 'genius-help' : 'genius-chat-v2';
 
-      // Call Edge Function
+      // Call Edge Function with conversationId guaranteed
       const { data, error } = await supabase.functions.invoke(functionName, {
         body:
           functionName === 'genius-help'
@@ -134,9 +127,9 @@ export function useGeniusChat(agentType: AgentType) {
                 message,
                 history,
                 context: {
-                  currentPage: helpContext.currentPage,
-                  userLevel: helpContext.userLevel || 'beginner',
-                  recentActions: helpContext.recentActions || [],
+                  currentPage: helpContext!.currentPage,
+                  userLevel: helpContext!.userLevel || 'beginner',
+                  recentActions: helpContext!.recentActions || [],
                 },
               }
             : {
@@ -149,15 +142,17 @@ export function useGeniusChat(agentType: AgentType) {
 
       if (error) throw error;
 
-      // Add assistant message
+      // Add assistant message — always show even if conversationId state was late
+      const assistantContent = data?.message ?? data?.content ?? '';
       const assistantMessage: AIMessage = {
         id: `temp-assistant-${Date.now()}`,
         conversation_id: conversationId,
         role: 'assistant',
-        content: data.message ?? data.content ?? '',
-        actions_taken: data.actions ?? [],
-        sources: data.sources ?? [],
-        response_time_ms: data.responseTimeMs,
+        content: assistantContent,
+        model_used: data?.model,
+        actions_taken: data?.actions ?? [],
+        sources: data?.sources ?? [],
+        response_time_ms: data?.usage?.duration_ms,
         created_at: new Date().toISOString(),
       };
 
@@ -167,8 +162,9 @@ export function useGeniusChat(agentType: AgentType) {
         isLoading: false,
       }));
 
-      // If title was auto-generated, refresh sidebar immediately
-      if (data?.title_generated) {
+      // If title was auto-generated, refresh sidebar
+      if (data?.title_generated || data?.generated_title) {
+        queryClient.invalidateQueries({ queryKey: ['genius-conversations'] });
         queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
       }
 
@@ -180,17 +176,20 @@ export function useGeniusChat(agentType: AgentType) {
       const error = err instanceof Error ? err : new Error('Unknown error');
       setState(prev => ({ ...prev, isLoading: false, error }));
       throw error;
+    } finally {
+      isSendingRef.current = false;
     }
-  }, [state.conversationId, state.messages, createConversation, queryClient]);
+  }, [createConversation, queryClient, agentType]);
 
-  // Load existing conversation
+  // Load existing conversation — fetch BOTH user AND assistant messages
   const loadConversation = useCallback(async (id: string) => {
     setState(prev => ({ ...prev, isLoading: true, conversationId: id }));
 
     try {
+      // Fetch all messages (user + assistant) ordered chronologically
       const { data, error } = await supabase
         .from('ai_messages')
-        .select('*')
+        .select('id, conversation_id, role, content, model, created_at, metadata')
         .eq('conversation_id', id)
         .order('created_at', { ascending: true });
 
@@ -206,13 +205,18 @@ export function useGeniusChat(agentType: AgentType) {
         contextMatterRef.current = conv.matter_id;
       }
 
-      // Cast the data properly
-      const messages = (data || []).map((m: any) => ({
-        ...m,
-        sources: m.sources as AIMessage['sources'],
-        actions_taken: m.actions_taken as AIMessage['actions_taken'],
-        feedback: m.feedback as AIMessage['feedback'],
-      })) as AIMessage[];
+      // Map DB columns to AIMessage interface
+      const messages: AIMessage[] = (data || []).map((m: any) => ({
+        id: m.id,
+        conversation_id: m.conversation_id,
+        role: m.role as AIMessage['role'],
+        content: m.content || '',
+        model_used: m.model,
+        created_at: m.created_at,
+        sources: m.metadata?.sources as AIMessage['sources'],
+        actions_taken: m.metadata?.actions_taken as AIMessage['actions_taken'],
+        feedback: m.metadata?.feedback as AIMessage['feedback'],
+      }));
 
       setState(prev => ({
         ...prev,
@@ -247,7 +251,8 @@ export function useGeniusChat(agentType: AgentType) {
   // Link conversation to matter
   const linkConversationToMatter = useCallback(
     async (matterId: string, matterRef: string) => {
-      if (!state.conversationId || !currentOrganization?.id) return;
+      if (!stateRef.current.conversationId || !currentOrganization?.id) return;
+      const convId = stateRef.current.conversationId;
 
       const { data: matter } = await supabase
         .from('matters')
@@ -275,7 +280,7 @@ export function useGeniusChat(agentType: AgentType) {
             context_id: matterId,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', state.conversationId)
+          .eq('id', convId)
           .eq('organization_id', currentOrganization.id),
 
         supabase.from('matter_timeline_events').insert({
@@ -285,7 +290,7 @@ export function useGeniusChat(agentType: AgentType) {
           title: 'Consulta IP-GENIUS vinculada al expediente',
           description: `Conversación de IP-GENIUS indexada al expediente ${matterRef}`,
           source_table: 'ai_conversations',
-          source_id: state.conversationId,
+          source_id: convId,
           actor_type: 'staff',
           is_visible_in_portal: false,
           created_by: user?.id,
@@ -308,7 +313,7 @@ export function useGeniusChat(agentType: AgentType) {
         description: 'La conversación forma parte del historial del expediente',
       });
     },
-    [state.conversationId, currentOrganization?.id, user?.id, setContextMatter]
+    [currentOrganization?.id, user?.id, setContextMatter]
   );
 
   return {
