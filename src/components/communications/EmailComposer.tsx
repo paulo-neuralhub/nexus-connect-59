@@ -445,6 +445,7 @@ export function EmailComposer({
                 page: window.location.pathname,
                 ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
                 ...(subject ? { email_subject: subject } : {}),
+                ...(defaultBody ? { original_email: defaultBody, is_reply: 'true' } : {}),
               }}
             />
 
