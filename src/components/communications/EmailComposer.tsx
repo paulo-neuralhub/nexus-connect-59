@@ -436,25 +436,70 @@ export function EmailComposer({
         </div>
 
         <DialogFooter className="flex-shrink-0 pt-4 border-t mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={() => sendEmail.mutate()}
-            disabled={sendEmail.isPending || to.length === 0 || !subject.trim()}
-          >
-            {sendEmail.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Enviar
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2 w-full">
+            {/* Left side: Adjuntar + Genius */}
+            <label className="cursor-pointer">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={isUploading}
+                asChild
+              >
+                <span>
+                  {isUploading ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Paperclip className="w-3 h-3 mr-1" />
+                  )}
+                  Adjuntar
+                </span>
+              </Button>
+              <input
+                type="file"
+                className="hidden"
+                multiple
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </label>
+
+            <GeniusFullDraftMenu
+              onDraftGenerated={(subj, bodyHtml) => {
+                if (subj && !subject) setSubject(subj);
+                setBody(bodyHtml);
+              }}
+              context={{
+                page: window.location.pathname,
+                ...(selectedMatterId ? { matter_id: selectedMatterId } : {}),
+                ...(subject ? { email_subject: subject } : {}),
+              }}
+            />
+
+            <div className="flex-1" />
+
+            {/* Right side: Cancel + Send */}
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => sendEmail.mutate()}
+              disabled={sendEmail.isPending || to.length === 0 || !subject.trim()}
+            >
+              {sendEmail.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
