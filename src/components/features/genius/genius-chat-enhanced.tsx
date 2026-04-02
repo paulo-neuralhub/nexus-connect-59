@@ -482,6 +482,7 @@ function MessageBubble({
   currentMatterRef,
   matters,
   onLinkToMatter,
+  onMatterLinked,
 }: { 
   message: AIMessage;
   agentColor: string;
@@ -492,6 +493,7 @@ function MessageBubble({
   currentMatterRef: string | null;
   matters: Array<{ id: string; reference: string; title: string }>;
   onLinkToMatter: (matterId: string, matterRef: string) => void;
+  onMatterLinked: (matter: { id: string; reference: string }) => void;
 }) {
   const isUser = message.role === 'user';
   
