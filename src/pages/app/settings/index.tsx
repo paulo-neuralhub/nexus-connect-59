@@ -57,6 +57,7 @@ import TemplatesSettingsSection from './sections/TemplatesSettingsSection';
 import { ServicesDashboard } from '@/components/services';
 import ModulesSettings from './sections/ModulesSettings';
 import CopilotSettings from './sections/CopilotSettings';
+import ExchangeRatesSettings from './sections/ExchangeRatesSettings';
 // Tabs for organization settings
 const ORG_TABS = [
   { id: 'general', label: 'General', icon: Building2, permission: 'settings.view' },
