@@ -541,8 +541,17 @@ function MessageBubble({
                       matters={matters}
                       onLinkToMatter={onLinkToMatter}
                     />
-          )}
+           )}
         </div>
+        
+        {/* MatterLinker — show below assistant messages when suggested and no matter linked */}
+        {!isUser && !currentMatterId && shouldShowMatterLinker(message.content) && (
+          <MatterLinker
+            conversationId={conversationId}
+            onLink={onLinkToMatter}
+            onMatterLinked={onMatterLinked}
+          />
+        )}
         
         {/* Actions taken */}
         {message.actions_taken && message.actions_taken.length > 0 && (
