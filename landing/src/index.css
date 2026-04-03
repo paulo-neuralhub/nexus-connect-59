@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0C1425;
+  --color-ink-mid: #14213D;
+  --color-ink-light: #1B2D4F;
+  --color-gold: #FCA311;
+  --color-gold-muted: rgba(252, 163, 17, 0.15);
+  --color-teal: #429EBD;
+  --color-cyan: #7BBDE8;
+  --color-ice: #BDD8E9;
+  --color-emerald: #10B981;
+  --color-amber: #F6AE2D;
+  --color-danger: #EF4444;
+  --color-glass: rgba(255, 255, 255, 0.04);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-hover: rgba(255, 255, 255, 0.07);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --animate-float-1: float1 25s ease-in-out infinite;
+  --animate-float-2: float2 30s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 0.6s ease-out;
+  --animate-blink: blink 1s step-end infinite;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: #0C1425;
+  color: #FFFFFF;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection { background: rgba(252, 163, 17, 0.3); color: #fff; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0C1425; }
+::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, rgba(252,163,17,0.15), rgba(252,163,17,0.25)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, rgba(252,163,17,0.25), rgba(252,163,17,0.35)); }
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(0.95); }
+  66% { transform: translate(20px, -30px) scale(1.05); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(252, 163, 17, 0.6); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(252, 163, 17, 0); }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes float-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* Responsive grids */
+@media (max-width: 768px) {
+  .hero-grid,
+  .genius-grid,
+  .portal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .hero-grid { text-align: center; }
+  .modules-grid,
+  .security-grid,
+  .advantages-grid,
+  .surveillance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .dashboard-sidebar {
+    display: none !important;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .security-grid,
+  .advantages-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .surveillance-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ─── Design System Utilities ─── */
+
+@utility glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+@utility btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #FCA311 0%, #F6AE2D 100%);
+  color: #0C1425;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(252, 163, 17, 0.15);
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px rgba(252, 163, 17, 0.3), 0 6px 20px rgba(252, 163, 17, 0.2);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@utility btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+}
+
+@utility label-mono {
+  display: block;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@utility text-gradient-gold {
+  background: linear-gradient(135deg, #FCA311 0%, #F6AE2D 50%, #FCA311 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility text-gradient-teal {
+  background: linear-gradient(135deg, #429EBD 0%, #7BBDE8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
