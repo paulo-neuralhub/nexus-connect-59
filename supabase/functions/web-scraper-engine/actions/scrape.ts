@@ -8,6 +8,14 @@
  * 4. Optionally visit detail pages for more fields
  * 5. Save results to scraping_session
  * 6. Optionally create an import_job for the process-import pipeline
+ *
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  🔒 READ-ONLY MODE — This scraper NEVER modifies data on   ║
+ * ║  the target portal. After login, it only uses navigateTo()  ║
+ * ║  and clickAndGetHTML() (pagination). fill() is blocked by   ║
+ * ║  client.ts unless _isLoginStep. Dangerous click selectors   ║
+ * ║  (delete, edit, save, submit, etc.) are also blocked.       ║
+ * ╚══════════════════════════════════════════════════════════════╝
  */
 
 import { getServiceClient } from '../index.ts'
