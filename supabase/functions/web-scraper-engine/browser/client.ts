@@ -4,6 +4,20 @@
  * Manages headless Chrome sessions via Browserbase's managed service.
  * Falls back to Browserless if Browserbase is unavailable.
  *
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  🔒 READ-ONLY MODE — CRITICAL SECURITY INVARIANT           ║
+ * ║                                                              ║
+ * ║  This scraper operates in STRICT READ-ONLY mode on target   ║
+ * ║  portals. It MUST NEVER modify, delete, create, or submit   ║
+ * ║  any data on the client's portal.                            ║
+ * ║                                                              ║
+ * ║  Allowed write operations (login ONLY):                      ║
+ * ║  - fill: BLOCKED unless _isLoginStep === true                ║
+ * ║  - click: dangerous selectors BLOCKED unless _isLoginStep    ║
+ * ║                                                              ║
+ * ║  Everything else is navigation + HTML extraction.            ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ *
  * Environment variables:
  * - BROWSERBASE_API_KEY: API key for Browserbase
  * - BROWSERBASE_PROJECT_ID: Project ID for Browserbase
@@ -117,9 +131,17 @@ export async function navigateAndExtract(
   sessionId: string,
   steps: NavigationStepInput[]
 ): Promise<NavigateResult> {
-  // Execute steps via the Browserbase session
-  // For Phase 1: We use a simplified approach with fetch-based navigation
-  // The steps are serialized and sent to the browser service
+  // ── READ-ONLY VALIDATION (defense-in-depth) ──────────────
+  // Reject any 'fill' step that isn't part of the login sequence.
+  // This is a second layer of protection — executeStep() also checks.
+  for (const step of steps) {
+    if (step.action === 'fill' && !step._isLoginStep) {
+      throw new Error(
+        'SECURITY: fill action rejected — not a login step. ' +
+        'Scraper is READ-ONLY on target portals.'
+      )
+    }
+  }
 
   let lastResult: NavigateResult = {
     html: '',
@@ -141,6 +163,8 @@ export interface NavigationStepInput {
   selector?: string
   value?: string
   timeout?: number
+  /** Mark step as part of login sequence — only login steps can use 'fill' */
+  _isLoginStep?: boolean
 }
 
 async function executeSessionRequest(
@@ -175,6 +199,16 @@ async function executeStep(
     }
 
     case 'fill': {
+      // ── READ-ONLY GUARD ──────────────────────────────────
+      // 'fill' is ONLY allowed during login sequence.
+      // This prevents accidental form submissions, edits, or
+      // data modifications on the target portal.
+      if (!step._isLoginStep) {
+        throw new Error(
+          'SECURITY: fill action is restricted to login sequence only. ' +
+          'The scraper operates in READ-ONLY mode on target portals.'
+        )
+      }
       // Validate selector strictly before interpolation
       const safeSelector = escapeSelector(step.selector || '')
       // Value is passed via JSON.stringify — safe from injection
@@ -186,6 +220,28 @@ async function executeStep(
     }
 
     case 'click': {
+      // ── READ-ONLY GUARD ──────────────────────────────────
+      // Block clicks on dangerous elements (delete, edit, remove, submit forms)
+      // to ensure the scraper NEVER modifies data on the target portal.
+      const selectorLower = (step.selector || '').toLowerCase()
+      const DANGEROUS_PATTERNS = [
+        'delete', 'remove', 'eliminar', 'borrar', 'destroy',
+        'edit', 'editar', 'modify', 'modificar', 'update', 'actualizar',
+        'save', 'guardar', 'submit', 'enviar', 'create', 'crear', 'new', 'nuevo',
+        'approve', 'aprobar', 'reject', 'rechazar', 'confirm', 'confirmar',
+        'cancel', 'cancelar', 'close', 'cerrar',
+        'upload', 'subir', 'download', 'descargar',
+        'send', 'mail', 'email', 'notify', 'notificar',
+      ]
+      // Allow clicks on login buttons (marked as _isLoginStep) without restriction
+      if (!step._isLoginStep) {
+        for (const pattern of DANGEROUS_PATTERNS) {
+          if (selectorLower.includes(pattern)) {
+            console.warn(`[READ-ONLY] Blocked click on dangerous selector: ${step.selector}`)
+            return _previous // Silently skip — never click dangerous elements
+          }
+        }
+      }
       const safeSelector = escapeSelector(step.selector || '')
       await executeSessionRequest(sessionId, '/execute', {
         script: `(function(){var el=document.querySelector('${safeSelector}');if(el)el.click()})()`,

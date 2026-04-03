@@ -142,13 +142,21 @@ export async function clickAndGetHTML(
 /**
  * Replace {{username}}, {{password}}, and other placeholders
  * in navigation step values with actual credentials.
+ *
+ * IMPORTANT: All steps resolved here are marked as _isLoginStep = true
+ * because resolveCredentials is ONLY called from executeLoginSequence.
+ * This flag allows 'fill' and dangerous 'click' actions in client.ts,
+ * which are otherwise BLOCKED to enforce read-only mode on target portals.
  */
 function resolveCredentials(
   steps: NavigationStep[],
   credentials: Credentials
 ): NavigationStepInput[] {
   return steps.map(step => {
-    const resolved: NavigationStepInput = { ...step }
+    const resolved: NavigationStepInput = {
+      ...step,
+      _isLoginStep: true, // Mark as login — allows fill/click in client.ts
+    }
 
     if (resolved.value) {
       // Replace all {{key}} placeholders
