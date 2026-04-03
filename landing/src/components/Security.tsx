@@ -39,7 +39,7 @@ export default function Security() {
   }, [])
 
   return (
-    <section id="seguridad" ref={sectionRef} style={{ padding: '96px 24px' }}>
+    <section id="seguridad" ref={sectionRef} style={{ padding: '72px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <span className="reveal-child" style={{ ...labelMono, color: colors.emerald }}>SEGURIDAD</span>
         <h2 className="reveal-child" style={{

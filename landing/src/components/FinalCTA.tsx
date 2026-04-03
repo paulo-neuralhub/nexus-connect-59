@@ -25,7 +25,7 @@ export default function FinalCTA() {
   }, [])
 
   return (
-    <section ref={sectionRef} style={{ padding: '96px 24px' }}>
+    <section ref={sectionRef} style={{ padding: '72px 24px' }}>
       <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
         <h2 className="reveal-child" style={{
           fontFamily: fonts.sans, fontSize: 'clamp(32px, 4.5vw, 44px)',

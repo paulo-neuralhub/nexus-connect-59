@@ -43,7 +43,7 @@ export default function ModulesBento() {
   }, [])
 
   return (
-    <section id="modulos" ref={sectionRef} style={{ padding: '96px 24px' }}>
+    <section id="modulos" ref={sectionRef} style={{ padding: '72px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <span className="reveal-child" style={{ ...labelMono, color: colors.gold }}>MÓDULOS</span>
         <h2 className="reveal-child" style={{

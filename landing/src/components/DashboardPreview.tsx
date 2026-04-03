@@ -70,7 +70,7 @@ export default function DashboardPreview() {
   }, [])
 
   return (
-    <section id="dashboard" ref={sectionRef} style={{ padding: '128px 24px' }}>
+    <section id="dashboard" ref={sectionRef} style={{ padding: '80px 24px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <span className="reveal-child" style={{ ...labelMono, color: colors.cyan }}>PLATAFORMA</span>
         <h2 className="reveal-child" style={{

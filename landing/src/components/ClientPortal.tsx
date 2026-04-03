@@ -40,10 +40,10 @@ export default function ClientPortal() {
   }, [])
 
   return (
-    <section ref={sectionRef} style={{ padding: '128px 24px', position: 'relative', overflow: 'hidden' }}>
+    <section ref={sectionRef} style={{ padding: '80px 24px', position: 'relative', overflow: 'hidden' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
         {/* Header */}
-        <div className="reveal-child" style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 64px' }}>
+        <div className="reveal-child" style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 40px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '8px 16px', borderRadius: 999,

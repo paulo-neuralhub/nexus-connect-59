@@ -37,7 +37,7 @@ export default function FAQ() {
   }, [])
 
   return (
-    <section ref={sectionRef} style={{ padding: '96px 24px' }}>
+    <section ref={sectionRef} style={{ padding: '72px 24px' }}>
       <div style={{ maxWidth: 720, margin: '0 auto' }}>
         <span className="reveal-child" style={{ ...labelMono, color: colors.cyan }}>PREGUNTAS FRECUENTES</span>
         <h2 className="reveal-child" style={{

@@ -73,7 +73,7 @@ export default function ScheduleDemo() {
 
   return (
     <section id="agendar-demo" ref={sectionRef} style={{
-      padding: '96px 24px',
+      padding: '72px 24px',
       background: colors.inkMid,
       borderTop: `1px solid ${colors.glassBorder}`,
     }}>
