@@ -18,6 +18,7 @@ import { ExportModal } from './components/export-modal';
 import { ConnectorModal } from './components/connector-modal';
 import { MigratorTab } from './migrator-tab';
 import { UniversalTab } from './universal-tab';
+import { WebScrapingSourceModal } from './components/web-scraping-source-modal';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { InlineHelp } from '@/components/help';
@@ -30,6 +31,7 @@ export default function DataHubPage() {
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showConnectorModal, setShowConnectorModal] = useState(false);
+  const [showScrapingModal, setShowScrapingModal] = useState(false);
   
   const { data: imports = [] } = useImports();
   const { data: connectors = [] } = useDataConnectors();
@@ -61,6 +63,10 @@ export default function DataHubPage() {
         </div>
         
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowScrapingModal(true)}>
+            <Globe className="h-4 w-4 mr-2" />
+            Conectar Portal
+          </Button>
           <Button variant="outline" onClick={() => setShowExportModal(true)}>
             <Download className="h-4 w-4 mr-2" />
             Exportar
@@ -141,12 +147,13 @@ export default function DataHubPage() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
-          <OverviewTab 
-            imports={imports} 
+          <OverviewTab
+            imports={imports}
             connectors={connectors}
             onImport={() => setShowImportWizard(true)}
             onExport={() => setShowExportModal(true)}
             onAddConnector={() => setShowConnectorModal(true)}
+            onConnectPortal={() => setShowScrapingModal(true)}
           />
         </TabsContent>
         
@@ -182,27 +189,34 @@ export default function DataHubPage() {
         onOpenChange={setShowExportModal} 
       />
       
-      <ConnectorModal 
-        open={showConnectorModal} 
-        onOpenChange={setShowConnectorModal} 
+      <ConnectorModal
+        open={showConnectorModal}
+        onOpenChange={setShowConnectorModal}
+      />
+
+      <WebScrapingSourceModal
+        open={showScrapingModal}
+        onOpenChange={setShowScrapingModal}
       />
     </div>
   );
 }
 
 // Overview Tab
-function OverviewTab({ 
-  imports, 
-  connectors, 
-  onImport, 
-  onExport, 
-  onAddConnector 
+function OverviewTab({
+  imports,
+  connectors,
+  onImport,
+  onExport,
+  onAddConnector,
+  onConnectPortal,
 }: {
   imports: Import[];
   connectors: DataConnector[];
   onImport: () => void;
   onExport: () => void;
   onAddConnector: () => void;
+  onConnectPortal: () => void;
 }) {
   const recentImports = imports.slice(0, 5);
   const activeConnectors = connectors.filter(c => c.connection_status === 'connected');
@@ -225,13 +239,17 @@ function OverviewTab({
               <FileText className="h-8 w-8 mb-2 text-blue-600" />
               <span>Importar CSV</span>
             </Button>
+            <Button variant="outline" className="h-24 flex-col" onClick={onConnectPortal}>
+              <Globe className="h-8 w-8 mb-2 text-teal-600" />
+              <span>Conectar Portal Web</span>
+            </Button>
             <Button variant="outline" className="h-24 flex-col" onClick={onExport}>
               <Download className="h-8 w-8 mb-2 text-orange-600" />
               <span>Exportar Todo</span>
             </Button>
-            <Button variant="outline" className="h-24 flex-col" onClick={onAddConnector}>
+            <Button variant="outline" className="h-24 flex-col col-span-2" onClick={onAddConnector}>
               <Plug className="h-8 w-8 mb-2 text-purple-600" />
-              <span>Nuevo Conector</span>
+              <span>Nuevo Conector API</span>
             </Button>
           </div>
         </CardContent>
