@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import AuthLayout from '../components/auth/AuthLayout'
 
@@ -43,6 +43,15 @@ export default function LoginPage() {
       title="Acceder a tu cuenta"
       subtitle="Introduce tus credenciales para continuar"
     >
+      {/* Back to landing */}
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors mb-2 w-fit"
+      >
+        <ArrowLeft size={16} />
+        Volver al inicio
+      </Link>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* Email */}
         <div>
