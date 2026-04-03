@@ -434,6 +434,54 @@ export const KNOWN_SYSTEMS: Record<string, KnownSystem> = {
     field_mappings: {}
   },
 
+  puntoip_galena: {
+    id: 'puntoip_galena',
+    name: 'PuntoIP Galena',
+    vendor: 'PuntoIP Inc.',
+    description: 'Sistema legacy de gestion de PI (marcas, patentes, plazos). Solo acceso web, sin API.',
+    color: '#2E7D32',
+    capabilities: {
+      has_api: false,
+      has_export: false,
+      export_formats: [],
+      supports_webhooks: false,
+      supports_db_access: false,
+      supports_scraping: true
+    },
+    connection_templates: {
+      scraper: {
+        login_url: 'https://mkgalena.puntoip.info/',
+        base_url: 'https://mkgalena.puntoip.info',
+        rate_limit: {
+          requests_per_minute: 10,
+          delay_between_pages_ms: 3000,
+          max_concurrent: 1
+        }
+      }
+    },
+    known_entities: ['matters', 'contacts', 'deadlines', 'documents'],
+    field_mappings: {
+      matters: {
+        'Expediente': 'reference',
+        'Marca': 'mark_name',
+        'Estado': 'status',
+        'Clase': 'nice_classes',
+        'Titular': 'applicant_name',
+        'Fecha Solicitud': 'filing_date',
+        'Fecha Registro': 'registration_date',
+        'Fecha Vencimiento': 'expiry_date',
+        'Pais': 'jurisdiction'
+      },
+      contacts: {
+        'Nombre': 'name',
+        'Email': 'email',
+        'Telefono': 'phone',
+        'Empresa': 'company'
+      }
+    },
+    setup_guide: 'Requiere credenciales de acceso al portal web. Se usa web scraping para extraer datos.'
+  },
+
   darts_ip: {
     id: 'darts_ip',
     name: 'Darts-IP',
@@ -488,7 +536,12 @@ export const SYSTEM_ALIASES: Record<string, string> = {
   'pattsy': 'pattsy_wave',
   'pattsy wave': 'pattsy_wave',
   'darts': 'darts_ip',
-  'darts-ip': 'darts_ip'
+  'darts-ip': 'darts_ip',
+  'galena': 'puntoip_galena',
+  'puntoip': 'puntoip_galena',
+  'punto ip': 'puntoip_galena',
+  'puntoip galena': 'puntoip_galena',
+  'mkgalena': 'puntoip_galena'
 };
 
 // Función helper para detectar sistema desde texto
