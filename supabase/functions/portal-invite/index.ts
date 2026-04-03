@@ -1,11 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -13,17 +10,17 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Auth check
+    // Auth check (fixed: use getUser instead of deprecated getClaims)
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
-    if (claimsErr || !claimsData?.claims) {
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser(jwt);
+    if (authErr || !authUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
-    const userId = claimsData.claims.sub as string;
+    const userId = authUser.id;
 
     // Get org from profile
     const { data: profile } = await supabase
@@ -100,27 +97,26 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "invitation_create_failed", detail: invErr.message }), { status: 500, headers: corsHeaders });
     }
 
-    // STEP 6: Update crm_accounts
+    // STEP 6: Update crm_accounts (no token stored — security fix)
     await supabase
       .from("crm_accounts")
       .update({
         portal_invited_at: new Date().toISOString(),
-        portal_invitation_token: invitation.token,
         portal_invitation_expires_at: expiresAt,
       })
       .eq("id", crm_account_id);
 
-    // STEP 7: Send email (try/catch — mock if fails)
+    // STEP 7: Send email with absolute URL (fixed: was relative)
     let emailSent = false;
     try {
       const slug = org.portal_subdomain || orgId;
-      const acceptUrl = `/portal/${slug}/accept?token=${invitation.token}`;
+      const acceptUrl = `https://${slug}.ip-nexus.app/accept?token=${invitation.token}`;
       await supabase.functions.invoke("comm-send-email", {
         body: {
           organization_id: orgId,
           to: account.email,
           subject: `${org.name || "Tu despacho"} te ha invitado al portal`,
-          body_html: `<p>Hola,</p><p>Has sido invitado al portal de clientes. Haz clic para activar tu cuenta:</p><p><a href="${acceptUrl}">${acceptUrl}</a></p>${custom_message ? `<p>${custom_message}</p>` : ""}`,
+          body_html: `<p>Hola,</p><p>Has sido invitado al portal de clientes. Haz clic para activar tu cuenta:</p><p><a href="${acceptUrl}">Activar mi cuenta</a></p>${custom_message ? `<p>${custom_message}</p>` : ""}`,
         },
       });
       emailSent = true;
@@ -128,19 +124,17 @@ Deno.serve(async (req) => {
       emailSent = false;
     }
 
-    const slug = org.portal_subdomain || orgId;
-
+    // Response: no token exposed (security fix)
     return new Response(
       JSON.stringify({
         invitation_id: invitation.id,
-        token: invitation.token,
         expires_at: invitation.expires_at,
         email_sent: emailSent,
-        accept_url: `/portal/${slug}/accept?token=${invitation.token}`,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    const corsHeaders = getCorsHeaders(req);
     return new Response(JSON.stringify({ error: "internal_error", detail: String(err) }), { status: 500, headers: corsHeaders });
   }
 });

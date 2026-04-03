@@ -119,15 +119,20 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [impersonateSessionId, setImpersonateSessionId] = useState<string | null>(null);
 
-  const loadPortalData = useCallback(async (authUserId: string, authEmail: string) => {
+  const loadPortalData = useCallback(async (authUserId: string, authEmail: string, organizationId?: string) => {
     try {
-      // Query portal_access + crm_accounts + organizations
-      const { data: paData, error: paError } = await fromTable('portal_access')
+      // Query portal_access — scoped to organization when available
+      let query = fromTable('portal_access')
         .select('*')
         .eq('portal_user_id', authUserId)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle();
+        .eq('status', 'active');
+
+      // Scope to org if subdomain was resolved (prevents multi-org cross-leak)
+      if (organizationId) {
+        query = query.eq('organization_id', organizationId);
+      }
+
+      const { data: paData, error: paError } = await query.limit(1).maybeSingle();
 
       if (paError || !paData) {
         return null;
@@ -139,10 +144,10 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
         .eq('id', paData.crm_account_id)
         .single();
 
-      // Get organization
+      // Get organization (fixed: portal_subdomain not slug)
       const { data: orgData } = await fromTable('organizations')
         .select(`
-          id, slug, name, portal_name, logo_url,
+          id, portal_subdomain, name, portal_name, logo_url,
           primary_color, secondary_color,
           portal_chatbot_name, portal_show_ipnexus_branding,
           portal_footer_text
@@ -171,7 +176,7 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
 
       const orgInfo: PortalOrg = {
         id: orgData.id,
-        slug: orgData.slug || '',
+        slug: orgData.portal_subdomain || '',
         name: orgData.name || '',
         portal_name: orgData.portal_name,
         logo_url: orgData.logo_url,
@@ -206,10 +211,13 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
         contactId: caData.id,
       };
 
-      // Inject branding into DOM
+      // Inject branding into DOM (sanitized to prevent CSS injection)
+      const hexRe = /^#[0-9a-fA-F]{6}$/;
+      const safePrimary = hexRe.test(orgInfo.primary_color || '') ? orgInfo.primary_color! : '#1E40AF';
+      const safeSecondary = hexRe.test(orgInfo.secondary_color || '') ? orgInfo.secondary_color! : '#3B82F6';
       const root = document.documentElement;
-      root.style.setProperty('--portal-primary', orgInfo.primary_color || '#1E40AF');
-      root.style.setProperty('--portal-secondary', orgInfo.secondary_color || '#3B82F6');
+      root.style.setProperty('--portal-primary', safePrimary);
+      root.style.setProperty('--portal-secondary', safeSecondary);
       document.title = orgInfo.portal_name || `Portal ${orgInfo.name}`;
 
       setPortalAccess(paData);
@@ -247,11 +255,21 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
 
     init();
 
-    // Detect impersonation mode
+    // Detect impersonation mode — verify session exists server-side
     const params = new URLSearchParams(window.location.search);
-    if (params.has('impersonate')) {
-      setIsImpersonating(true);
-      setImpersonateSessionId(params.get('impersonate'));
+    const impersonateId = params.get('impersonate');
+    if (impersonateId) {
+      fromTable('portal_impersonation_sessions')
+        .select('id')
+        .eq('id', impersonateId)
+        .eq('is_active', true)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setIsImpersonating(true);
+            setImpersonateSessionId(impersonateId);
+          }
+        });
     }
 
     // Listen for auth changes
@@ -270,15 +288,13 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [loadPortalData]);
 
-  // Login with email/password (Supabase Auth)
-  const login = useCallback(async (email: string, _portalSlug: string) => {
-    // For portal clients, we use signInWithPassword
-    // The actual password login is handled by the portal-activate flow
-    // This is a placeholder for magic link flow
+  // Login with magic link — scoped to portal subdomain
+  const login = useCallback(async (email: string, portalSlug: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: false,
+        emailRedirectTo: `https://${portalSlug}.ip-nexus.app/auth/callback`,
       },
     });
 
