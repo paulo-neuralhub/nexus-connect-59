@@ -1,11 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -13,17 +10,17 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Auth
+    // Auth (fixed: use getUser instead of deprecated getClaims)
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
     const jwt = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(jwt);
-    if (claimsErr || !claimsData?.claims) {
+    const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser(jwt);
+    if (authErr || !authUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
-    const staffUserId = claimsData.claims.sub as string;
+    const staffUserId = authUser.id;
 
     // Get org + role from profile
     const { data: profile } = await supabase
@@ -100,11 +97,10 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           session_id: session.id,
-          token: session.id,
-          portal_url: `/portal/${slug}/dashboard?impersonate=${session.id}`,
+          portal_url: `https://${slug}.ip-nexus.app/dashboard?impersonate=${session.id}`,
           expires_in: 1800,
         }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     } else if (action === "end") {
       const { session_id, pages_visited } = body;
@@ -125,7 +121,7 @@ Deno.serve(async (req) => {
       }
 
       const durationSeconds = Math.round(
-        (Date.now() - new Date(existing.started_at).getTime()) / 1000
+        (Date.now() - new Date(existing.started_at).getTime()) / 1000,
       );
 
       await supabase
@@ -141,12 +137,13 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, duration_seconds: durationSeconds }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     } else {
       return new Response(JSON.stringify({ error: "invalid_action" }), { status: 400, headers: corsHeaders });
     }
   } catch (err) {
+    const corsHeaders = getCorsHeaders(req);
     return new Response(JSON.stringify({ error: "internal_error", detail: String(err) }), { status: 500, headers: corsHeaders });
   }
 });

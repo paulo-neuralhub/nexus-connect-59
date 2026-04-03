@@ -1,11 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -18,20 +15,21 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // STEP 1: Validate invitation
-    const { data: invitation, error: invErr } = await supabase
-      .from("portal_invitations")
-      .select("*")
-      .eq("token", token)
-      .eq("status", "pending")
-      .gt("expires_at", new Date().toISOString())
-      .single();
+    // STEP 1: Atomically claim invitation (prevents race condition)
+    const { data: invitation, error: claimErr } = await supabase.rpc(
+      "claim_portal_invitation",
+      { p_token: token },
+    );
 
-    if (invErr || !invitation) {
-      return new Response(JSON.stringify({ error: "invalid_or_expired_token" }), { status: 400, headers: corsHeaders });
+    if (claimErr || !invitation) {
+      return new Response(
+        JSON.stringify({ error: "invalid_or_expired_token" }),
+        { status: 400, headers: corsHeaders },
+      );
     }
 
-    // STEP 2: Create Supabase Auth user
+    // STEP 2: Create or find Supabase Auth user (handles multi-org)
+    let newUserId: string;
     const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
       email: invitation.email,
       password,
@@ -43,11 +41,31 @@ Deno.serve(async (req) => {
       },
     });
 
-    if (authErr || !authData.user) {
-      return new Response(JSON.stringify({ error: "user_creation_failed", detail: authErr?.message }), { status: 400, headers: corsHeaders });
+    if (authErr) {
+      // User already exists (multi-org case) — look up existing
+      if (authErr.message?.includes("already been registered") || authErr.message?.includes("already exists")) {
+        const { data: listData } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1,
+        });
+        const existing = listData?.users?.find((u) => u.email === invitation.email);
+        if (!existing) {
+          return new Response(
+            JSON.stringify({ error: "user_lookup_failed" }),
+            { status: 400, headers: corsHeaders },
+          );
+        }
+        newUserId = existing.id;
+      } else {
+        return new Response(
+          JSON.stringify({ error: "user_creation_failed", detail: authErr.message }),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+    } else {
+      newUserId = authData.user.id;
     }
 
-    const newUserId = authData.user.id;
     const perms = invitation.initial_permissions ?? {};
 
     // STEP 3: Insert portal_access
@@ -69,19 +87,13 @@ Deno.serve(async (req) => {
       can_sign_documents: perms.can_sign_documents ?? false,
     });
 
-    // STEP 4: Update invitation
-    await supabase
-      .from("portal_invitations")
-      .update({ status: "accepted", accepted_at: new Date().toISOString() })
-      .eq("id", invitation.id);
-
-    // STEP 5: Update crm_accounts
+    // STEP 4: Update crm_accounts
     await supabase
       .from("crm_accounts")
       .update({ portal_enabled: true, portal_user_id: newUserId })
       .eq("id", invitation.crm_account_id);
 
-    // STEP 6: Try comm_thread (silent)
+    // STEP 5: Try comm_thread (silent)
     try {
       await supabase.from("comm_threads").insert({
         organization_id: invitation.organization_id,
@@ -91,19 +103,19 @@ Deno.serve(async (req) => {
       });
     } catch (_) { /* continue */ }
 
-    // STEP 7: Welcome notification
+    // STEP 6: Welcome notification (fixed: notification_type, not type)
     await supabase.from("portal_notifications").insert({
       organization_id: invitation.organization_id,
       crm_account_id: invitation.crm_account_id,
       portal_user_id: newUserId,
-      type: "welcome",
+      notification_type: "welcome",
       title: "¡Bienvenido a tu portal!",
       message: "Tu cuenta ha sido activada. Explora tus expedientes y documentos.",
       priority: "normal",
       is_read: false,
     });
 
-    // STEP 8: Get org slug
+    // STEP 7: Get org slug
     const { data: org } = await supabase
       .from("organizations")
       .select("portal_subdomain")
@@ -113,10 +125,17 @@ Deno.serve(async (req) => {
     const slug = org?.portal_subdomain || invitation.organization_id;
 
     return new Response(
-      JSON.stringify({ success: true, portal_url: `/portal/${slug}/dashboard` }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: true,
+        portal_url: `https://${slug}.ip-nexus.app/dashboard`,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: "internal_error", detail: String(err) }), { status: 500, headers: corsHeaders });
+    const corsHeaders = getCorsHeaders(req);
+    return new Response(
+      JSON.stringify({ error: "internal_error", detail: String(err) }),
+      { status: 500, headers: corsHeaders },
+    );
   }
 });
