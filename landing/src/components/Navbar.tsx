@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const navItems = [
   { num: '01', label: 'Plataforma', href: '#dashboard' },
@@ -54,7 +55,7 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden lg:flex items-center gap-4">
-          <a href="https://app.ip-nexus.app" className="text-sm text-white/60 hover:text-white transition-colors">Acceder</a>
+          <Link to="/login" className="text-sm text-white/60 hover:text-white transition-colors">Acceder</Link>
           <a href="#hero" className="btn-gold !py-2.5 !px-5 !text-[13px]">Prueba Gratuita →</a>
         </div>
 
@@ -90,7 +91,7 @@ export default function Navbar() {
           ))}
           <div className="mt-auto flex flex-col gap-3">
             <a href="#" className="btn-gold text-center">Prueba Gratuita →</a>
-            <a href="https://app.ip-nexus.app" className="btn-glass text-center">Acceder</a>
+            <Link to="/login" className="btn-glass text-center">Acceder</Link>
           </div>
         </div>
       )}
