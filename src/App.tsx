@@ -239,7 +239,9 @@ import SyncPreferencesPage from "./pages/app/settings/offices/sync";
 import SyncHistoryPage from "./pages/app/settings/offices/history";
 import ImportDataPage from "./pages/app/docket/ImportDataPage";
 import ReviewQueuePage from "./pages/app/docket/ReviewQueuePage";
-// Migrator pages consolidated into Data Hub
+// Migrator pages
+import MigratorNewPage from "./pages/app/migrator/new";
+import MigrationDetailPage from "./pages/app/migrator/MigrationDetail";
 import FilingIndexPage from "./pages/app/filing";
 import NewFilingPage from "./pages/app/filing/new";
 import FilingDetailPage from "./pages/app/filing/[id]";
@@ -696,10 +698,10 @@ const App = () => (
                 <Route path="tools" element={<ToolsPage />} />
                 <Route path="tools/ocr" element={<Navigate to="/app/tools" replace />} />
                 <Route path="tools/comparador" element={<Navigate to="/app/tools" replace />} />
-                {/* Migrator redirect to Data Hub */}
+                {/* Migrator */}
                 <Route path="migrator" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
-                <Route path="migrator/new" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
-                <Route path="migrator/:id" element={<Navigate to="/app/data-hub?tab=migrator" replace />} />
+                <Route path="migrator/new" element={<MigratorNewPage />} />
+                <Route path="migrator/:id" element={<MigrationDetailPage />} />
                 <Route path="filing" element={<FilingIndexPage />} />
                 <Route path="filing/new" element={<NewFilingPage />} />
                 <Route path="filing/:id" element={<FilingDetailPage />} />

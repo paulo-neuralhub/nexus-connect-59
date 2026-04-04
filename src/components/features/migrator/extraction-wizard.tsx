@@ -179,7 +179,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
       const { data, error } = await supabase.functions.invoke('web-scraper-engine', {
         body: {
           action: 'scrape',
-          source_id: connection.id,
+          source_id: connection?.id,
           entity_types: selectedEntities,
           options: {
             speed,
@@ -603,7 +603,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                   className="w-full justify-start h-auto py-3"
                   onClick={() => {
                     handleClose();
-                    navigate('/app/migrator/new?connection=' + connection.id);
+                    navigate('/app/migrator/new?connection=' + connection?.id);
                   }}
                 >
                   <Download className="h-5 w-5 mr-3 shrink-0" />
