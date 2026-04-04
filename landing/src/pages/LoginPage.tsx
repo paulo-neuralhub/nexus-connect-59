@@ -16,7 +16,7 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     })
@@ -31,10 +31,22 @@ export default function LoginPage() {
       return
     }
 
-    // Supabase persists the session via PKCE + storageKey.
-    // Redirect to app root — the app has its own auth flow
-    window.location.href =
-      import.meta.env.VITE_APP_URL || 'https://app.ip-nexus.app'
+    // Transfer session to app subdomain via URL hash.
+    // Supabase JS automatically detects access_token + refresh_token in the hash
+    // and calls setSession() — same mechanism used for OAuth/magic-link callbacks.
+    const appUrl = import.meta.env.VITE_APP_URL || 'https://app.ip-nexus.app'
+    const session = data.session
+    if (session) {
+      const hashParams = new URLSearchParams({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        token_type: 'bearer',
+        type: 'access_token',
+      })
+      window.location.href = `${appUrl}#${hashParams.toString()}`
+    } else {
+      window.location.href = appUrl
+    }
   }
 
   return (
