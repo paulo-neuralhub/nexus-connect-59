@@ -3,10 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Plus, Play, CheckCircle2, Clock, AlertTriangle, ArrowRightLeft,
   Loader2, ArrowRight, Zap, RefreshCw, Monitor, Trash2, MoreHorizontal,
-  Download, Settings, TestTube2, ExternalLink
+  Download, Settings, TestTube2, ExternalLink, KeyRound
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,10 +35,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useMigrationProjects, useDeleteMigrationProject } from '@/hooks/use-migration';
-import { 
-  useMigrationConnections, 
-  useTestConnection, 
+import {
+  useMigrationConnections,
+  useTestConnection,
   useDeleteConnection,
+  useUpdateConnection,
 } from '@/hooks/use-migration-connections';
 import { ConnectionWizard, ExtractionWizard } from '@/components/features/migrator';
 import type { MigrationConnection } from '@/types/migration-advanced';
@@ -75,11 +86,47 @@ export function MigratorTab() {
   const deleteMutation = useDeleteMigrationProject();
   const testConnection = useTestConnection();
   const deleteConnection = useDeleteConnection();
-  
+  const updateConnection = useUpdateConnection();
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(null);
   const [showConnectionWizard, setShowConnectionWizard] = useState(false);
   const [extractionConnection, setExtractionConnection] = useState<MigrationConnection | null>(null);
+
+  // Edit credentials state
+  const [editingConnection, setEditingConnection] = useState<any | null>(null);
+  const [editUrl, setEditUrl] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEditCredentials = (conn: any) => {
+    setEditingConnection(conn);
+    setEditUrl(conn.connection_config?._temp_credentials?.base_url || '');
+    setEditUsername(conn.connection_config?._temp_credentials?.username || '');
+    setEditPassword('');
+  };
+
+  const saveCredentials = async () => {
+    if (!editingConnection) return;
+    setEditSaving(true);
+    try {
+      await updateConnection.mutateAsync({
+        id: editingConnection.id,
+        connection_config: {
+          ...editingConnection.connection_config,
+          _temp_credentials: {
+            base_url: editUrl,
+            username: editUsername,
+            password: editPassword,
+          },
+        },
+      });
+      setEditingConnection(null);
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -221,6 +268,10 @@ export function MigratorTab() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEditCredentials(conn)}>
+                              <KeyRound className="h-4 w-4 mr-2" />
+                              Editar Credenciales
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => testConnection.mutate(conn.id)}>
                               <TestTube2 className="h-4 w-4 mr-2" />
                               Probar Conexión
@@ -448,6 +499,66 @@ export function MigratorTab() {
         onOpenChange={(open) => { if (!open) setExtractionConnection(null); }}
         connection={extractionConnection!}
       />
+
+      {/* Edit Credentials Dialog */}
+      <Dialog open={!!editingConnection} onOpenChange={(open) => { if (!open) setEditingConnection(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-primary" />
+              Editar Credenciales
+            </DialogTitle>
+            <DialogDescription>
+              {editingConnection?.name} — Actualiza URL, usuario y contraseña
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-url">URL del Portal</Label>
+              <Input
+                id="edit-url"
+                placeholder="https://portal.ejemplo.com"
+                value={editUrl}
+                onChange={(e) => setEditUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-username">Usuario</Label>
+              <Input
+                id="edit-username"
+                placeholder="usuario"
+                value={editUsername}
+                onChange={(e) => setEditUsername(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-password">Contraseña</Label>
+              <Input
+                id="edit-password"
+                type="password"
+                placeholder="••••••••"
+                value={editPassword}
+                onChange={(e) => setEditPassword(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Las credenciales se almacenan de forma segura y solo se usan para la extracción de datos.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingConnection(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={saveCredentials}
+              disabled={editSaving || !editUrl || !editUsername || !editPassword}
+            >
+              {editSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Project Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
