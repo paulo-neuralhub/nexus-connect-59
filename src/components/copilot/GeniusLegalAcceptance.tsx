@@ -149,7 +149,7 @@ export function GeniusLegalAcceptance({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       {/* Dark backdrop */}
       <div className="absolute inset-0 bg-[rgba(15,23,41,0.7)] backdrop-blur-sm" />
 
