@@ -89,11 +89,31 @@ export async function scrape(params: ScrapeParams) {
     // 3. Login
     await updateSession(serviceClient, sessionId, { status: 'authenticating' })
 
-    context = await executeLoginSequence(
-      scraperConfig.navigation_config,
-      credentials,
-      { takeScreenshots: options.include_screenshots !== false }
-    )
+    try {
+      context = await executeLoginSequence(
+        scraperConfig.navigation_config,
+        credentials,
+        { takeScreenshots: options.include_screenshots !== false }
+      )
+    } catch (loginError: any) {
+      // Save screenshots from failed login for debugging
+      const failedContext = (loginError as any)._context
+      await updateSession(serviceClient, sessionId, {
+        status: 'error',
+        error_log: [{
+          page: 'login',
+          error: loginError.message,
+          timestamp: new Date().toISOString(),
+          recoverable: false,
+        }],
+        completed_at: new Date().toISOString(),
+      })
+      throw loginError
+    }
+
+    // Log post-login URL for debugging
+    console.log(`[scrape] Login completed. URL: ${context.currentUrl}`)
+    console.log(`[scrape] Screenshots captured: ${context.screenshots.length}`)
 
     await updateSession(serviceClient, sessionId, {
       status: 'authenticated',
