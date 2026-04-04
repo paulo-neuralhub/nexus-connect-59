@@ -10,7 +10,8 @@ import { PortalAuthProvider } from "@/hooks/usePortalAuth";
 import { BrandingProvider } from "@/components/branding";
 
 // Pages
-import Landing from "./pages/Landing";
+// Landing page now served by ip-nexus.app (landing project)
+// import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -434,8 +435,8 @@ const App = () => (
               <TooltipProvider delayDuration={0}>
                 <AnalyticsProvider>
                 <Routes>
-                {/* Landing Pages */}
-                <Route path="/" element={<Landing />} />
+                {/* Root redirects to protected dashboard — public landing is at ip-nexus.app */}
+                <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/spider" element={<SpiderLandingPage />} />
                 <Route path="/docket" element={<DocketLandingPage />} />
                 <Route path="/nexus" element={<NexusLandingPage />} />
