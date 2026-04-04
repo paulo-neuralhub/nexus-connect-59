@@ -45,36 +45,43 @@ const GALENA_CONFIG: SystemScraperConfig = {
       action: 'goto',
       url: 'https://mkgalena.puntoip.info/',
     },
-    // Step 2: Wait for login form to load
+    // Step 2: Wait for login form to load (generic — first input on page)
     {
       action: 'wait',
-      selector: 'input[type="text"], input[name="username"], #username, input[name="login"]',
-      timeout: 10000,
+      selector: 'input[type="text"], input[type="email"], input[name="username"], input[name="login"], input[name="user"], input[name="usuario"]',
+      timeout: 15000,
     },
-    // Step 3: Fill username
-    // NOTE: Selector needs verification after first discover
+    // Step 3: Take screenshot of login page (for debugging)
+    {
+      action: 'screenshot',
+    },
+    // Step 4: Fill username (try multiple selectors)
     {
       action: 'fill',
-      selector: 'input[type="text"], input[name="username"], #username, input[name="login"]',
+      selector: 'input[type="text"], input[type="email"], input[name="username"], input[name="login"], input[name="user"], input[name="usuario"]',
       value: '{{username}}',
     },
-    // Step 4: Fill password
+    // Step 5: Fill password
     {
       action: 'fill',
-      selector: 'input[type="password"], input[name="password"], #password',
+      selector: 'input[type="password"], input[name="password"], input[name="clave"], input[name="pass"]',
       value: '{{password}}',
     },
-    // Step 5: Click login button
+    // Step 6: Click login button
     {
       action: 'click',
-      selector: 'input[type="submit"], button[type="submit"], #login-button, .btn-login',
+      selector: 'input[type="submit"], button[type="submit"], button.btn, .btn-login, button.login, #login-button, form button, form input[type="button"]',
       timeout: 5000,
     },
-    // Step 6: Wait for dashboard/main page to load
+    // Step 7: Wait for page change after login (very generic — just wait for body to update)
     {
       action: 'wait',
-      selector: '.dashboard, .main-content, #content, .container, nav, .menu',
-      timeout: 15000,
+      selector: 'body',
+      timeout: 10000,
+    },
+    // Step 8: Take screenshot of result (dashboard or error)
+    {
+      action: 'screenshot',
     },
   ],
 

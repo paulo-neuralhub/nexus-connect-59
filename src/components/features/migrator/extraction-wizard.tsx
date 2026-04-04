@@ -614,26 +614,55 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <div className="grid gap-2">
                 <Button
                   className="w-full justify-start h-auto py-3"
-                  onClick={() => {
-                    handleClose();
-                    navigate('/app/migrator/new?connection=' + connection?.id);
+                  onClick={async () => {
+                    if (!sessionId) {
+                      toast.error('No hay sesión de extracción');
+                      return;
+                    }
+                    // Send extracted data directly to import pipeline
+                    try {
+                      toast.info('Enviando datos al pipeline de importación...');
+                      const orgId = currentOrganization?.id || connection?.organization_id;
+                      const { data: importResult, error: importError } = await supabase.functions.invoke('process-import', {
+                        body: {
+                          action: 'create-from-scraping',
+                          session_id: sessionId,
+                          connection_id: connection?.id,
+                        },
+                        headers: {
+                          'x-organization-id': orgId!,
+                        },
+                      });
+                      if (importError) {
+                        toast.error('Error al crear importación');
+                      } else {
+                        toast.success(`Importación creada: ${importResult?.job_id?.slice(0, 8) || 'OK'}...`);
+                        handleClose();
+                        navigate('/app/data-hub?tab=migrator');
+                      }
+                    } catch (err: any) {
+                      toast.error(`Error: ${err.message}`);
+                    }
                   }}
                 >
                   <Download className="h-5 w-5 mr-3 shrink-0" />
                   <div className="text-left">
-                    <p className="font-medium">Revisar y Mapear Campos</p>
-                    <p className="text-xs opacity-80">Mapear los datos extraídos a los campos de IP-NEXUS</p>
+                    <p className="font-medium">Importar a IP-NEXUS</p>
+                    <p className="text-xs opacity-80">Enviar los datos extraídos directamente al sistema</p>
                   </div>
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start h-auto py-3"
-                  onClick={handleClose}
+                  onClick={() => {
+                    toast.success('Datos guardados. Puedes importarlos después desde Data Hub.');
+                    handleClose();
+                  }}
                 >
                   <Clock className="h-5 w-5 mr-3 shrink-0" />
                   <div className="text-left">
-                    <p className="font-medium">Configurar Después</p>
-                    <p className="text-xs text-muted-foreground">Los datos quedan guardados para procesar cuando quieras</p>
+                    <p className="font-medium">Guardar para Después</p>
+                    <p className="text-xs text-muted-foreground">Los datos quedan en la sesión para procesar cuando quieras</p>
                   </div>
                 </Button>
               </div>

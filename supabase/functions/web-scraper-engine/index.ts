@@ -28,13 +28,21 @@ export function getAnonClient(authHeader: string) {
 
 async function authenticateRequest(req: Request) {
   const authHeader = req.headers.get('Authorization')
+  console.log(`[auth] Authorization header present: ${!!authHeader}, starts with Bearer: ${authHeader?.startsWith('Bearer ')}`)
+  console.log(`[auth] Origin: ${req.headers.get('Origin')}`)
+
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Unauthorized')
+    console.error('[auth] FAIL: No valid Authorization header')
+    throw new Error('Unauthorized: missing or invalid Authorization header')
   }
 
   const anonClient = getAnonClient(authHeader)
   const { data: { user }, error } = await anonClient.auth.getUser()
-  if (error || !user) throw new Error('Unauthorized')
+  if (error || !user) {
+    console.error(`[auth] FAIL: getUser error: ${error?.message || 'no user'}`)
+    throw new Error(`Unauthorized: ${error?.message || 'user not found'}`)
+  }
+  console.log(`[auth] User authenticated: ${user.email}`)
 
   // Get organization_id from request header (multi-org support)
   const orgId = req.headers.get('x-organization-id')

@@ -71,17 +71,22 @@ export async function executeLoginSequence(
       // All login steps are marked as login (allows fill/click)
       const isLoginStep = true
 
+      console.log(`[navigator] Step ${i}: ${step.action}${step.selector ? ` → ${step.selector.slice(0, 60)}` : ''}${resolvedUrl ? ` → ${resolvedUrl}` : ''}`)
+
       switch (step.action) {
         case 'goto':
           if (resolvedUrl) {
             await session.browser.navigate(resolvedUrl)
             context.currentUrl = resolvedUrl
+            console.log(`[navigator] Navigated to: ${resolvedUrl}`)
           }
           break
 
         case 'fill':
           if (step.selector && resolvedValue !== undefined) {
             await session.browser.fill(step.selector, resolvedValue, isLoginStep)
+            // Log fill but NEVER log the actual value (could be password)
+            console.log(`[navigator] Filled: ${step.selector.slice(0, 60)}`)
           }
           break
 
@@ -89,6 +94,7 @@ export async function executeLoginSequence(
           if (step.selector) {
             await session.browser.click(step.selector, isLoginStep)
             await delay(step.timeout || 2000)
+            console.log(`[navigator] Clicked: ${step.selector.slice(0, 60)}`)
           }
           break
 
@@ -99,13 +105,44 @@ export async function executeLoginSequence(
               step.timeout || 10000
             )
             if (!found) {
+              // Take diagnostic screenshot before failing
+              console.warn(`[navigator] Wait timeout for: ${step.selector}`)
+              try {
+                const diagBase64 = await session.browser.screenshot()
+                if (diagBase64) {
+                  context.screenshots.push({
+                    step: `step_${i}_wait_TIMEOUT`,
+                    timestamp: new Date().toISOString(),
+                    base64: diagBase64,
+                  })
+                }
+                // Log current URL and page title for diagnosis
+                const info = await session.browser.getPageInfo()
+                console.warn(`[navigator] Current URL at timeout: ${info.url}`)
+                console.warn(`[navigator] Page title at timeout: ${info.title}`)
+              } catch (_e) { /* non-critical */ }
+
               throw new Error(`Timeout waiting for element: ${step.selector}`)
             }
+            console.log(`[navigator] Found element: ${step.selector.slice(0, 60)}`)
           }
           break
 
         case 'screenshot':
-          // Handled below
+          // Explicit screenshot step
+          try {
+            const ssBase64 = await session.browser.screenshot()
+            if (ssBase64) {
+              context.screenshots.push({
+                step: `step_${i}_screenshot`,
+                timestamp: new Date().toISOString(),
+                base64: ssBase64,
+              })
+              console.log(`[navigator] Screenshot captured: step_${i}`)
+            }
+          } catch (_e) {
+            console.warn(`[navigator] Screenshot failed at step ${i}`)
+          }
           break
 
         case 'extract':
@@ -113,7 +150,7 @@ export async function executeLoginSequence(
           break
       }
 
-      // Take screenshot after significant steps
+      // Also take screenshot after significant steps (if enabled)
       if (options.takeScreenshots && ['goto', 'click', 'wait'].includes(step.action)) {
         try {
           const base64 = await session.browser.screenshot()
@@ -124,7 +161,7 @@ export async function executeLoginSequence(
               base64,
             })
           }
-        } catch {
+        } catch (_e) {
           // Screenshot failure is non-critical
         }
       }
