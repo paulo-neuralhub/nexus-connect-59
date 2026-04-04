@@ -443,13 +443,11 @@ export function MigratorTab() {
       />
 
       {/* Extraction Wizard (for web_portal connections) */}
-      {extractionConnection && (
-        <ExtractionWizard
-          open={!!extractionConnection}
-          onOpenChange={(open) => { if (!open) setExtractionConnection(null); }}
-          connection={extractionConnection}
-        />
-      )}
+      <ExtractionWizard
+        open={!!extractionConnection}
+        onOpenChange={(open) => { if (!open) setExtractionConnection(null); }}
+        connection={extractionConnection!}
+      />
 
       {/* Delete Project Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

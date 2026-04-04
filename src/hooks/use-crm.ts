@@ -185,10 +185,10 @@ export function usePipelines() {
     queryKey: ['pipelines', currentOrganization?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .select(`
           *,
-          stages:pipeline_stages(*)
+          stages:crm_pipeline_stages(*)
         `)
         .eq('organization_id', currentOrganization!.id)
         .eq('is_active', true)
@@ -210,10 +210,10 @@ export function usePipeline(id: string | undefined) {
     queryKey: ['pipeline', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .select(`
           *,
-          stages:pipeline_stages(*)
+          stages:crm_pipeline_stages(*)
         `)
         .eq('id', id!)
         .single();
@@ -235,7 +235,7 @@ export function useCreatePipeline() {
     mutationFn: async (data: { name: string; pipeline_type: string; stages: { name: string; color: string; probability: number; is_won_stage?: boolean; is_lost_stage?: boolean }[] }) => {
       // Create pipeline
       const { data: pipeline, error: pipelineError } = await supabase
-        .from('pipelines')
+        .from('crm_pipelines')
         .insert({ 
           name: data.name,
           pipeline_type: data.pipeline_type,
@@ -258,7 +258,7 @@ export function useCreatePipeline() {
       }));
       
       const { error: stagesError } = await supabase
-        .from('pipeline_stages')
+        .from('crm_pipeline_stages')
         .insert(stages);
       if (stagesError) throw stagesError;
       

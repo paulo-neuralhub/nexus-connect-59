@@ -199,14 +199,14 @@ export function useDashboardMetrics() {
         
         // Month invoices total
         fromTable('invoices')
-          .select('total_amount')
+          .select('total')
           .eq('organization_id', organizationId)
           .gte('invoice_date', monthStart)
           .lte('invoice_date', monthEnd),
       ]);
 
       const monthlyTotal = (invoicesRes.data ?? []).reduce(
-        (sum: number, inv: { total_amount?: number | null }) => sum + (inv.total_amount ?? 0),
+        (sum: number, inv: { total?: number | null }) => sum + (inv.total ?? 0),
         0
       );
 

@@ -68,7 +68,7 @@ type WizardStep = 'entities' | 'configure' | 'extracting' | 'complete';
 interface ExtractionWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  connection: MigrationConnection;
+  connection: MigrationConnection | null;
 }
 
 // =====================================================
@@ -147,8 +147,8 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
   const [logs, setLogs] = useState<{ time: string; type: 'info' | 'success' | 'error' | 'warning'; msg: string }[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const systemName = connection.name;
-  const portalUrl = connection.connection_config?._temp_credentials?.url || connection.connection_config?.base_url || '';
+  const systemName = connection?.name || 'Sistema';
+  const portalUrl = connection?.connection_config?._temp_credentials?.url || connection?.connection_config?.base_url || '';
 
   function toggleEntity(id: string) {
     setSelectedEntities((prev) =>
