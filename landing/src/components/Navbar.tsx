@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 
 const navItems = [
   { num: '01', label: 'Plataforma', href: '#dashboard' },
