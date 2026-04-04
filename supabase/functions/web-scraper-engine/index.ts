@@ -44,7 +44,7 @@ async function authenticateRequest(req: Request) {
   const serviceClient = getServiceClient()
   const { data: membership } = await serviceClient
     .from('memberships')
-    .select('organization_id, role_id')
+    .select('organization_id, role')
     .eq('user_id', user.id)
     .eq('organization_id', orgId)
     .single()
@@ -54,7 +54,7 @@ async function authenticateRequest(req: Request) {
   return {
     user,
     organization_id: membership.organization_id,
-    role_id: membership.role_id,
+    role: membership.role,
   }
 }
 
