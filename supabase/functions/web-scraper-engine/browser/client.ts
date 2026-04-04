@@ -1,8 +1,9 @@
 /**
- * Browserbase API Client
+ * Browserbase CDP Client
  *
- * Manages headless Chrome sessions via Browserbase's managed service.
- * Falls back to Browserless if Browserbase is unavailable.
+ * Manages headless Chrome sessions via Browserbase using Chrome DevTools Protocol
+ * over WebSocket. This replaces the previous REST-based approach which used
+ * non-existent Browserbase endpoints.
  *
  * ╔══════════════════════════════════════════════════════════════╗
  * ║  🔒 READ-ONLY MODE — CRITICAL SECURITY INVARIANT           ║
@@ -21,140 +22,15 @@
  * Environment variables:
  * - BROWSERBASE_API_KEY: API key for Browserbase
  * - BROWSERBASE_PROJECT_ID: Project ID for Browserbase
- * - BROWSERLESS_API_KEY: (fallback) API key for Browserless
  */
 
-export interface BrowserSession {
-  id: string
-  wsUrl: string       // WebSocket URL for CDP connection
-  status: 'running' | 'completed' | 'error'
-  provider: 'browserbase' | 'browserless'
-}
+// ── Types ──────────────────────────────────────────────────
 
 export interface NavigateResult {
   html: string
   url: string
   title: string
-  status: number
-  screenshot?: string  // Base64 encoded PNG
-}
-
-// ── Browserbase API ─────────────────────────────────────────
-
-const BROWSERBASE_API = 'https://www.browserbase.com/v1'
-
-async function browserbaseRequest(
-  path: string,
-  options: RequestInit = {},
-  timeoutMs: number = 30000
-): Promise<any> {
-  const apiKey = Deno.env.get('BROWSERBASE_API_KEY')
-  if (!apiKey) throw new Error('BROWSERBASE_API_KEY not configured')
-
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
-
-  try {
-    const response = await fetch(`${BROWSERBASE_API}${path}`, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-bb-api-key': apiKey,
-        ...options.headers,
-      },
-    })
-
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(`Browserbase API error ${response.status}`)
-    }
-
-    return response.json()
-  } finally {
-    clearTimeout(timeout)
-  }
-}
-
-// ── Session Management ──────────────────────────────────────
-
-export async function createBrowserSession(): Promise<BrowserSession> {
-  const projectId = Deno.env.get('BROWSERBASE_PROJECT_ID')
-  if (!projectId) throw new Error('BROWSERBASE_PROJECT_ID not configured')
-
-  const data = await browserbaseRequest('/sessions', {
-    method: 'POST',
-    body: JSON.stringify({
-      projectId,
-      browserSettings: {
-        // Standard Chrome with reasonable viewport
-        viewport: { width: 1280, height: 900 },
-        // Block unnecessary resources for faster loading
-        blockAds: true,
-      },
-      // Keep session alive for up to 15 minutes
-      keepAlive: true,
-      timeout: 900000,
-    }),
-  })
-
-  return {
-    id: data.id,
-    wsUrl: data.connectUrl || `wss://connect.browserbase.com?apiKey=${Deno.env.get('BROWSERBASE_API_KEY')}&sessionId=${data.id}`,
-    status: 'running',
-    provider: 'browserbase',
-  }
-}
-
-export async function closeBrowserSession(sessionId: string): Promise<void> {
-  try {
-    await browserbaseRequest(`/sessions/${sessionId}`, {
-      method: 'POST',
-      body: JSON.stringify({ status: 'REQUEST_RELEASE' }),
-    })
-  } catch (error) {
-    // Non-critical: session may have already expired
-    console.warn(`[browser-client] Failed to close session ${sessionId}:`, error)
-  }
-}
-
-// ── Page Navigation via REST (no WebSocket needed) ──────────
-
-/**
- * Execute a sequence of navigation steps and return the final page HTML.
- *
- * This uses Browserbase's REST Content API which is simpler than CDP.
- * For Phase 1, we use the content API to get rendered HTML.
- * Phase 2+ can upgrade to CDP WebSocket for real-time interaction.
- */
-export async function navigateAndExtract(
-  sessionId: string,
-  steps: NavigationStepInput[]
-): Promise<NavigateResult> {
-  // ── READ-ONLY VALIDATION (defense-in-depth) ──────────────
-  // Reject any 'fill' step that isn't part of the login sequence.
-  // This is a second layer of protection — executeStep() also checks.
-  for (const step of steps) {
-    if (step.action === 'fill' && !step._isLoginStep) {
-      throw new Error(
-        'SECURITY: fill action rejected — not a login step. ' +
-        'Scraper is READ-ONLY on target portals.'
-      )
-    }
-  }
-
-  let lastResult: NavigateResult = {
-    html: '',
-    url: '',
-    title: '',
-    status: 0,
-  }
-
-  for (const step of steps) {
-    lastResult = await executeStep(sessionId, step, lastResult)
-  }
-
-  return lastResult
+  screenshot?: string
 }
 
 export interface NavigationStepInput {
@@ -163,67 +39,242 @@ export interface NavigationStepInput {
   selector?: string
   value?: string
   timeout?: number
-  /** Mark step as part of login sequence — only login steps can use 'fill' */
   _isLoginStep?: boolean
 }
 
-async function executeSessionRequest(
-  sessionId: string,
-  path: string,
-  body: any,
-  timeoutMs: number = 15000
-): Promise<any> {
-  return browserbaseRequest(
-    `/sessions/${sessionId}${path}`,
-    { method: 'POST', body: JSON.stringify(body) },
-    timeoutMs
-  )
-}
+// ── CDP Browser Class ──────────────────────────────────────
 
-async function executeStep(
-  sessionId: string,
-  step: NavigationStepInput,
-  _previous: NavigateResult
-): Promise<NavigateResult> {
-  switch (step.action) {
-    case 'goto': {
-      const data = await executeSessionRequest(
-        sessionId, '/navigate', { url: step.url }, 30000
-      )
-      return {
-        html: data.html || '',
-        url: step.url || '',
-        title: data.title || '',
-        status: data.status || 200,
-      }
-    }
+export class CDPBrowser {
+  private ws: WebSocket | null = null
+  private messageId = 0
+  private pending = new Map<number, { resolve: (v: any) => void; reject: (e: Error) => void; timer: number }>()
+  private cdpSessionId: string | null = null
+  private bbSessionId: string
+  private closed = false
 
-    case 'fill': {
-      // ── READ-ONLY GUARD ──────────────────────────────────
-      // 'fill' is ONLY allowed during login sequence.
-      // This prevents accidental form submissions, edits, or
-      // data modifications on the target portal.
-      if (!step._isLoginStep) {
-        throw new Error(
-          'SECURITY: fill action is restricted to login sequence only. ' +
-          'The scraper operates in READ-ONLY mode on target portals.'
-        )
-      }
-      // Validate selector strictly before interpolation
-      const safeSelector = escapeSelector(step.selector || '')
-      // Value is passed via JSON.stringify — safe from injection
-      const safeValue = JSON.stringify(step.value || '')
-      await executeSessionRequest(sessionId, '/execute', {
-        script: `(function(){var el=document.querySelector('${safeSelector}');if(el){el.value='';el.focus();el.value=${safeValue};el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}})()`,
+  private constructor(bbSessionId: string) {
+    this.bbSessionId = bbSessionId
+  }
+
+  /**
+   * Create a new browser session via Browserbase and connect via CDP WebSocket.
+   */
+  static async create(): Promise<CDPBrowser> {
+    const apiKey = Deno.env.get('BROWSERBASE_API_KEY')
+    const projectId = Deno.env.get('BROWSERBASE_PROJECT_ID')
+    if (!apiKey) throw new Error('BROWSERBASE_API_KEY not configured')
+    if (!projectId) throw new Error('BROWSERBASE_PROJECT_ID not configured')
+
+    // Create session via REST API
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
+
+    try {
+      const response = await fetch('https://api.browserbase.com/v1/sessions', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-bb-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          projectId,
+          browserSettings: {
+            viewport: { width: 1280, height: 900 },
+            blockAds: true,
+          },
+        }),
       })
-      return _previous
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Browserbase session creation failed (${response.status}): ${text.slice(0, 200)}`)
+      }
+
+      const data = await response.json()
+      const browser = new CDPBrowser(data.id)
+
+      // Connect via CDP WebSocket
+      const wsUrl = data.connectUrl || `wss://connect.browserbase.com?sessionId=${data.id}&apiKey=${apiKey}`
+      await browser.connectWebSocket(wsUrl)
+
+      return browser
+    } finally {
+      clearTimeout(timeout)
+    }
+  }
+
+  /**
+   * Connect to Chrome via CDP WebSocket and attach to the default page.
+   */
+  private connectWebSocket(wsUrl: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const connectTimeout = setTimeout(() => {
+        reject(new Error('CDP WebSocket connection timeout (15s)'))
+      }, 15000)
+
+      this.ws = new WebSocket(wsUrl)
+
+      this.ws.onopen = async () => {
+        clearTimeout(connectTimeout)
+        try {
+          // Get available targets
+          const targets = await this.sendCDP('Target.getTargets')
+          const pageTarget = targets?.targetInfos?.find((t: any) => t.type === 'page')
+
+          if (pageTarget) {
+            // Attach to the page target with flatten mode
+            const result = await this.sendCDP('Target.attachToTarget', {
+              targetId: pageTarget.targetId,
+              flatten: true,
+            })
+            this.cdpSessionId = result?.sessionId
+          }
+
+          // Enable required CDP domains
+          await this.sendCDP('Page.enable')
+          await this.sendCDP('Runtime.enable')
+
+          resolve()
+        } catch (e) {
+          reject(e)
+        }
+      }
+
+      this.ws.onerror = (event: Event) => {
+        clearTimeout(connectTimeout)
+        reject(new Error('CDP WebSocket connection failed'))
+      }
+
+      this.ws.onclose = () => {
+        this.closed = true
+      }
+
+      this.ws.onmessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(String(event.data))
+          // Match responses by id
+          if (data.id !== undefined && this.pending.has(data.id)) {
+            const handler = this.pending.get(data.id)!
+            clearTimeout(handler.timer)
+            this.pending.delete(data.id)
+            if (data.error) {
+              handler.reject(new Error(data.error.message || 'CDP error'))
+            } else {
+              handler.resolve(data.result)
+            }
+          }
+          // Events (no id) are ignored for now — we use polling instead
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    })
+  }
+
+  /**
+   * Send a CDP command and wait for the response.
+   */
+  private sendCDP(method: string, params?: any, timeoutMs = 30000): Promise<any> {
+    if (this.closed || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      throw new Error('CDP connection is closed')
     }
 
-    case 'click': {
-      // ── READ-ONLY GUARD ──────────────────────────────────
-      // Block clicks on dangerous elements (delete, edit, remove, submit forms)
-      // to ensure the scraper NEVER modifies data on the target portal.
-      const selectorLower = (step.selector || '').toLowerCase()
+    const id = ++this.messageId
+    const msg: any = { id, method }
+    if (params) msg.params = params
+    if (this.cdpSessionId) msg.sessionId = this.cdpSessionId
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id)
+        reject(new Error(`CDP timeout (${timeoutMs}ms): ${method}`))
+      }, timeoutMs) as unknown as number
+
+      this.pending.set(id, { resolve, reject, timer })
+      this.ws!.send(JSON.stringify(msg))
+    })
+  }
+
+  // ── Public API ─────────────────────────────────────────────
+
+  /** Navigate to a URL and wait for page load. */
+  async navigate(url: string): Promise<void> {
+    await this.sendCDP('Page.navigate', { url })
+    await this.waitForLoad()
+  }
+
+  /** Evaluate a JavaScript expression and return the result. */
+  async evaluate(expression: string): Promise<any> {
+    const result = await this.sendCDP('Runtime.evaluate', {
+      expression,
+      returnByValue: true,
+      userGesture: true,
+      awaitPromise: false,
+    })
+
+    if (result?.exceptionDetails) {
+      const msg = result.exceptionDetails.exception?.description
+        || result.exceptionDetails.text
+        || 'JS evaluation error'
+      throw new Error(msg)
+    }
+
+    return result?.result?.value
+  }
+
+  /** Get the full HTML of the current page. */
+  async getHTML(): Promise<string> {
+    return (await this.evaluate('document.documentElement.outerHTML')) || ''
+  }
+
+  /** Get page info (HTML, URL, title). */
+  async getPageInfo(): Promise<NavigateResult> {
+    const json = await this.evaluate(
+      `JSON.stringify({url: window.location.href, title: document.title})`
+    )
+    const info = JSON.parse(json || '{}')
+    const html = await this.getHTML()
+    return { html, url: info.url || '', title: info.title || '' }
+  }
+
+  /**
+   * Fill a form field. ONLY allowed during login (_isLoginStep).
+   * Security: This is the ONLY mutation allowed, and only for authentication.
+   */
+  async fill(selector: string, value: string, isLoginStep: boolean): Promise<void> {
+    if (!isLoginStep) {
+      throw new Error(
+        'SECURITY: fill action is restricted to login sequence only. ' +
+        'The scraper operates in READ-ONLY mode on target portals.'
+      )
+    }
+    validateSelector(selector)
+    const escaped = escapeForJS(selector)
+    const escapedValue = escapeForJS(value)
+    await this.evaluate(`
+      (function() {
+        var el = document.querySelector('${escaped}');
+        if (!el) return false;
+        el.focus();
+        el.value = '';
+        el.value = '${escapedValue}';
+        el.dispatchEvent(new Event('input', {bubbles: true}));
+        el.dispatchEvent(new Event('change', {bubbles: true}));
+        return true;
+      })()
+    `)
+  }
+
+  /**
+   * Click an element. Dangerous selectors are blocked unless _isLoginStep.
+   */
+  async click(selector: string, isLoginStep: boolean): Promise<void> {
+    validateSelector(selector)
+
+    // Block dangerous clicks unless login step
+    if (!isLoginStep) {
+      const selectorLower = selector.toLowerCase()
       const DANGEROUS_PATTERNS = [
         'delete', 'remove', 'eliminar', 'borrar', 'destroy',
         'edit', 'editar', 'modify', 'modificar', 'update', 'actualizar',
@@ -233,93 +284,164 @@ async function executeStep(
         'upload', 'subir', 'download', 'descargar',
         'send', 'mail', 'email', 'notify', 'notificar',
       ]
-      // Allow clicks on login buttons (marked as _isLoginStep) without restriction
-      if (!step._isLoginStep) {
-        for (const pattern of DANGEROUS_PATTERNS) {
-          if (selectorLower.includes(pattern)) {
-            console.warn(`[READ-ONLY] Blocked click on dangerous selector: ${step.selector}`)
-            return _previous // Silently skip — never click dangerous elements
-          }
+      for (const pattern of DANGEROUS_PATTERNS) {
+        if (selectorLower.includes(pattern)) {
+          console.warn(`[READ-ONLY] Blocked click on dangerous selector: ${selector}`)
+          return // Silently skip
         }
       }
-      const safeSelector = escapeSelector(step.selector || '')
-      await executeSessionRequest(sessionId, '/execute', {
-        script: `(function(){var el=document.querySelector('${safeSelector}');if(el)el.click()})()`,
+    }
+
+    const escaped = escapeForJS(selector)
+    await this.evaluate(`
+      (function() {
+        var el = document.querySelector('${escaped}');
+        if (el) el.click();
+      })()
+    `)
+  }
+
+  /** Wait for an element to appear on the page. */
+  async waitForSelector(selector: string, timeoutMs = 10000): Promise<boolean> {
+    validateSelector(selector)
+    const escaped = escapeForJS(selector)
+    const start = Date.now()
+    const maxWait = Math.min(timeoutMs, 30000)
+
+    while (Date.now() - start < maxWait) {
+      try {
+        const found = await this.evaluate(`!!document.querySelector('${escaped}')`)
+        if (found) return true
+      } catch {
+        // Ignore transient errors during polling
+      }
+      await delay(500)
+    }
+
+    return false
+  }
+
+  /** Take a screenshot (base64 PNG). */
+  async screenshot(): Promise<string> {
+    try {
+      const result = await this.sendCDP('Page.captureScreenshot', {
+        format: 'png',
+        quality: 70,
       })
-      if (step.timeout) {
-        await delay(Math.min(step.timeout, 10000))
-      } else {
-        await delay(2000)
-      }
-      return _previous
+      return result?.data || ''
+    } catch {
+      return ''
     }
+  }
 
-    case 'wait': {
-      const safeSelector = escapeSelector(step.selector || '')
-      const maxWait = Math.min(step.timeout || 10000, 30000)
-      const startTime = Date.now()
-
-      while (Date.now() - startTime < maxWait) {
-        const checkData = await executeSessionRequest(sessionId, '/execute', {
-          script: `!!document.querySelector('${safeSelector}')`,
-        }, 10000)
-        if (checkData.result === true) return _previous
-        await delay(500)
+  /** Wait for page load to complete. */
+  private async waitForLoad(timeoutMs = 15000): Promise<void> {
+    const start = Date.now()
+    while (Date.now() - start < timeoutMs) {
+      try {
+        const ready = await this.evaluate('document.readyState')
+        if (ready === 'complete' || ready === 'interactive') {
+          await delay(500) // Extra wait for JS rendering
+          return
+        }
+      } catch {
+        // Page might be navigating — retry
       }
-      throw new Error('Timeout waiting for element')
+      await delay(300)
     }
+    // Don't throw — some legacy pages never reach "complete"
+    console.warn('[CDPBrowser] Page load timeout — proceeding anyway')
+  }
 
-    case 'get_html':
-    case 'extract': {
-      const htmlData = await executeSessionRequest(sessionId, '/execute', {
-        script: `JSON.stringify({html:document.documentElement.outerHTML,url:window.location.href,title:document.title})`,
-      }, 20000)
-      const pageInfo = JSON.parse(htmlData.result || '{}')
-      return {
-        html: pageInfo.html || '',
-        url: pageInfo.url || '',
-        title: pageInfo.title || '',
-        status: 200,
+  /** Close the browser session and release resources. */
+  async close(): Promise<void> {
+    if (this.closed) return
+    this.closed = true
+
+    // Close WebSocket
+    try { this.ws?.close() } catch { /* ignore */ }
+
+    // Clear pending requests
+    for (const [id, handler] of this.pending) {
+      clearTimeout(handler.timer)
+      handler.reject(new Error('Browser session closed'))
+    }
+    this.pending.clear()
+
+    // Release Browserbase session via REST
+    try {
+      const apiKey = Deno.env.get('BROWSERBASE_API_KEY')
+      if (apiKey) {
+        await fetch(`https://api.browserbase.com/v1/sessions/${this.bbSessionId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-bb-api-key': apiKey,
+          },
+          body: JSON.stringify({ status: 'REQUEST_RELEASE' }),
+        })
       }
+    } catch {
+      // Non-critical: session may have already expired
     }
+  }
 
-    case 'screenshot': {
-      const ssData = await browserbaseRequest(
-        `/sessions/${sessionId}/screenshot`,
-        { method: 'GET' },
-        15000
-      )
-      return {
-        ..._previous,
-        screenshot: ssData.base64 || ssData.image || '',
-      }
-    }
-
-    default:
-      return _previous
+  /** Get the Browserbase session ID. */
+  get sessionId(): string {
+    return this.bbSessionId
   }
 }
 
-// ── Utilities ───────────────────────────────────────────────
+// ── Backward-compatible exports ────────────────────────────
+// These maintain the interface used by navigator.ts and other files
 
-// Strict allowlist for CSS selectors — reject anything outside safe chars
-// Strict CSS selector allowlist — only valid CSS selector characters
+export interface BrowserSession {
+  id: string
+  browser: CDPBrowser
+}
+
+export async function createBrowserSession(): Promise<BrowserSession> {
+  const browser = await CDPBrowser.create()
+  return { id: browser.sessionId, browser }
+}
+
+export async function closeBrowserSession(sessionOrId: string | BrowserSession): Promise<void> {
+  // For backward compatibility — if called with just a session ID,
+  // we release via REST. If called with a BrowserSession, close the browser.
+  if (typeof sessionOrId === 'string') {
+    try {
+      const apiKey = Deno.env.get('BROWSERBASE_API_KEY')
+      if (apiKey) {
+        await fetch(`https://api.browserbase.com/v1/sessions/${sessionOrId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-bb-api-key': apiKey,
+          },
+          body: JSON.stringify({ status: 'REQUEST_RELEASE' }),
+        })
+      }
+    } catch { /* non-critical */ }
+  } else {
+    await sessionOrId.browser.close()
+  }
+}
+
+// ── Utilities ──────────────────────────────────────────────
+
 const SAFE_SELECTOR_RE = /^[a-zA-Z0-9\s\-_#.\[\]=:()>"'*,+~>]+$/
 
-function validateSelector(selector: string): string {
+function validateSelector(selector: string): void {
   if (!selector || selector.length > 500) {
     throw new Error('Invalid selector: empty or too long')
   }
   if (!SAFE_SELECTOR_RE.test(selector)) {
-    throw new Error(`Invalid selector: contains unsafe characters`)
+    throw new Error('Invalid selector: contains unsafe characters')
   }
-  return selector
 }
 
-function escapeSelector(selector: string): string {
-  // Validate first, then escape — backslashes FIRST, then quotes
-  validateSelector(selector)
-  return selector.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+function escapeForJS(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
 function delay(ms: number): Promise<void> {

@@ -1,16 +1,14 @@
 /**
  * Navigation Step Executor
  *
- * Translates WebScraperConfig navigation steps into browser service calls.
+ * Translates WebScraperConfig navigation steps into CDPBrowser calls.
  * Handles credential injection (replaces {{username}}/{{password}} placeholders).
  */
 
 import {
   type BrowserSession,
-  type NavigationStepInput,
+  type CDPBrowser,
   createBrowserSession,
-  closeBrowserSession,
-  navigateAndExtract,
 } from './client.ts'
 
 // ── Types ───────────────────────────────────────────────────
@@ -26,11 +24,12 @@ export interface NavigationStep {
 export interface Credentials {
   username: string
   password: string
-  [key: string]: string  // Additional fields if needed
+  [key: string]: string
 }
 
 export interface NavigationContext {
   session: BrowserSession
+  browser: CDPBrowser
   credentials: Credentials
   currentUrl: string
   screenshots: { step: string; timestamp: string; base64?: string }[]
@@ -40,48 +39,89 @@ export interface NavigationContext {
 
 /**
  * Execute a login sequence using navigation steps and credentials.
- * Returns the navigation context with the authenticated session.
+ * Returns the navigation context with the authenticated browser session.
  */
 export async function executeLoginSequence(
   steps: NavigationStep[],
   credentials: Credentials,
   options: { takeScreenshots?: boolean } = {}
 ): Promise<NavigationContext> {
-  // Create browser session
   const session = await createBrowserSession()
 
   const context: NavigationContext = {
     session,
+    browser: session.browser,
     credentials,
     currentUrl: '',
     screenshots: [],
   }
 
   try {
-    // Inject credentials into step values
-    const resolvedSteps = resolveCredentials(steps, credentials)
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i]
 
-    // Execute each step
-    for (let i = 0; i < resolvedSteps.length; i++) {
-      const step = resolvedSteps[i]
+      // Resolve credential placeholders
+      const resolvedValue = step.value
+        ? step.value.replace(/\{\{(\w+)\}\}/g, (_, key) => credentials[key] || '')
+        : undefined
+      const resolvedUrl = step.url
+        ? step.url.replace(/\{\{(\w+)\}\}/g, (_, key) => credentials[key] || '')
+        : undefined
 
-      const result = await navigateAndExtract(session.id, [step])
+      // All login steps are marked as login (allows fill/click)
+      const isLoginStep = true
 
-      if (result.url) {
-        context.currentUrl = result.url
+      switch (step.action) {
+        case 'goto':
+          if (resolvedUrl) {
+            await session.browser.navigate(resolvedUrl)
+            context.currentUrl = resolvedUrl
+          }
+          break
+
+        case 'fill':
+          if (step.selector && resolvedValue !== undefined) {
+            await session.browser.fill(step.selector, resolvedValue, isLoginStep)
+          }
+          break
+
+        case 'click':
+          if (step.selector) {
+            await session.browser.click(step.selector, isLoginStep)
+            await delay(step.timeout || 2000)
+          }
+          break
+
+        case 'wait':
+          if (step.selector) {
+            const found = await session.browser.waitForSelector(
+              step.selector,
+              step.timeout || 10000
+            )
+            if (!found) {
+              throw new Error(`Timeout waiting for element: ${step.selector}`)
+            }
+          }
+          break
+
+        case 'screenshot':
+          // Handled below
+          break
+
+        case 'extract':
+          // No-op during login — extraction happens later
+          break
       }
 
       // Take screenshot after significant steps
-      if (options.takeScreenshots && ['goto', 'click'].includes(step.action)) {
+      if (options.takeScreenshots && ['goto', 'click', 'wait'].includes(step.action)) {
         try {
-          const ssResult = await navigateAndExtract(session.id, [
-            { action: 'screenshot' },
-          ])
-          if (ssResult.screenshot) {
+          const base64 = await session.browser.screenshot()
+          if (base64) {
             context.screenshots.push({
               step: `step_${i}_${step.action}`,
               timestamp: new Date().toISOString(),
-              base64: ssResult.screenshot,
+              base64,
             })
           }
         } catch {
@@ -90,89 +130,55 @@ export async function executeLoginSequence(
       }
     }
 
+    // Update current URL after login
+    try {
+      const info = await session.browser.getPageInfo()
+      context.currentUrl = info.url
+    } catch { /* non-critical */ }
+
     return context
   } catch (error) {
-    // Close session on error
-    await closeBrowserSession(session.id)
+    // Close browser on login failure
+    await session.browser.close()
     throw error
   }
 }
 
 /**
- * Navigate to a URL within an existing session.
+ * Navigate to a URL within an existing browser session.
+ * Returns the page HTML.
  */
 export async function navigateTo(
-  sessionId: string,
+  browser: CDPBrowser,
   url: string
 ): Promise<string> {
-  const result = await navigateAndExtract(sessionId, [
-    { action: 'goto', url },
-    { action: 'get_html' },
-  ])
-  return result.html
+  await browser.navigate(url)
+  return await browser.getHTML()
 }
 
 /**
- * Get the current page's HTML from an existing session.
+ * Get the current page's HTML from an existing browser session.
  */
-export async function getCurrentPageHTML(sessionId: string): Promise<string> {
-  const result = await navigateAndExtract(sessionId, [
-    { action: 'get_html' },
-  ])
-  return result.html
+export async function getCurrentPageHTML(browser: CDPBrowser): Promise<string> {
+  return await browser.getHTML()
 }
 
 /**
  * Click a pagination element and get the resulting page HTML.
+ * This is a READ-ONLY click (not login step) — dangerous selectors are blocked.
  */
 export async function clickAndGetHTML(
-  sessionId: string,
+  browser: CDPBrowser,
   selector: string,
   waitMs: number = 2000
 ): Promise<string> {
-  const result = await navigateAndExtract(sessionId, [
-    { action: 'click', selector, timeout: waitMs },
-    { action: 'get_html' },
-  ])
-  return result.html
+  await browser.click(selector, false) // isLoginStep = false
+  await delay(waitMs)
+  return await browser.getHTML()
 }
 
-// ── Credential Resolution ───────────────────────────────────
+// ── Utilities ───────────────────────────────────────────────
 
-/**
- * Replace {{username}}, {{password}}, and other placeholders
- * in navigation step values with actual credentials.
- *
- * IMPORTANT: All steps resolved here are marked as _isLoginStep = true
- * because resolveCredentials is ONLY called from executeLoginSequence.
- * This flag allows 'fill' and dangerous 'click' actions in client.ts,
- * which are otherwise BLOCKED to enforce read-only mode on target portals.
- */
-function resolveCredentials(
-  steps: NavigationStep[],
-  credentials: Credentials
-): NavigationStepInput[] {
-  return steps.map(step => {
-    const resolved: NavigationStepInput = {
-      ...step,
-      _isLoginStep: true, // Mark as login — allows fill/click in client.ts
-    }
-
-    if (resolved.value) {
-      // Replace all {{key}} placeholders
-      resolved.value = resolved.value.replace(
-        /\{\{(\w+)\}\}/g,
-        (_match, key) => credentials[key] || ''
-      )
-    }
-
-    if (resolved.url) {
-      resolved.url = resolved.url.replace(
-        /\{\{(\w+)\}\}/g,
-        (_match, key) => credentials[key] || ''
-      )
-    }
-
-    return resolved
-  })
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

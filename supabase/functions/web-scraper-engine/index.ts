@@ -139,21 +139,32 @@ serve(async (req: Request) => {
       )
     }
 
-    // Verify source belongs to user's organization (for source-based actions)
-    if (source_id) {
+    // Verify source/connection belongs to user's organization
+    if (source_id && !['encrypt-credentials'].includes(action)) {
       const serviceClient = getServiceClient()
-      const { data: source } = await serviceClient
-        .from('import_sources')
+      // Check migration_connections first (primary table for web portal connections)
+      const { data: connection } = await serviceClient
+        .from('migration_connections')
         .select('id, organization_id')
         .eq('id', source_id)
         .eq('organization_id', auth.organization_id)
         .single()
 
-      if (!source) {
-        return new Response(
-          JSON.stringify({ error: 'Source not found or access denied' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+      if (!connection) {
+        // Fallback: check import_sources for backward compatibility
+        const { data: source } = await serviceClient
+          .from('import_sources')
+          .select('id, organization_id')
+          .eq('id', source_id)
+          .eq('organization_id', auth.organization_id)
+          .single()
+
+        if (!source) {
+          return new Response(
+            JSON.stringify({ error: 'Connection not found or access denied' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
       }
     }
 
