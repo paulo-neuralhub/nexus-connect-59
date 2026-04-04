@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Plus, Play, CheckCircle2, Clock, AlertTriangle, ArrowRightLeft,
-  Loader2, ArrowRight, Zap, RefreshCw, Monitor, Trash2, MoreHorizontal
+  Loader2, ArrowRight, Zap, RefreshCw, Monitor, Trash2, MoreHorizontal,
+  Download, Settings, TestTube2, ExternalLink
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -29,7 +30,8 @@ import {
   useTestConnection, 
   useDeleteConnection,
 } from '@/hooks/use-migration-connections';
-import { ConnectionWizard } from '@/components/features/migrator';
+import { ConnectionWizard, ExtractionWizard } from '@/components/features/migrator';
+import type { MigrationConnection } from '@/types/migration-advanced';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -77,6 +79,7 @@ export function MigratorTab() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(null);
   const [showConnectionWizard, setShowConnectionWizard] = useState(false);
+  const [extractionConnection, setExtractionConnection] = useState<MigrationConnection | null>(null);
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -197,10 +200,12 @@ export function MigratorTab() {
               {connections.map((conn) => {
                 const source = SOURCE_SYSTEMS[conn.system_type] || { name: conn.system_type, color: 'bg-slate-500' };
                 const status = CONNECTION_STATUS[conn.status] || CONNECTION_STATUS.pending;
-                
+                const isConnected = conn.status === 'connected';
+                const isTesting = testConnection.isPending && testConnection.variables === conn.id;
+
                 return (
-                  <Card key={conn.id}>
-                    <CardContent className="pt-6">
+                  <Card key={conn.id} className="flex flex-col">
+                    <CardContent className="pt-6 flex-1">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className={cn("w-3 h-3 rounded-full", source.color)} />
@@ -215,25 +220,78 @@ export function MigratorTab() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => testConnection.mutate(conn.id)}>
+                              <TestTube2 className="h-4 w-4 mr-2" />
                               Probar Conexión
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem onClick={() => {
+                              if (conn.system_type === 'web_portal') {
+                                setExtractionConnection(conn as unknown as MigrationConnection);
+                              } else {
+                                navigate(`/app/migrator/new?connection=${conn.id}`);
+                              }
+                            }}>
+                              <Download className="h-4 w-4 mr-2" />
+                              {conn.system_type === 'web_portal' ? 'Extraer Datos' : 'Migrar desde aquí'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => setDeleteConnectionId(conn.id)}
                             >
+                              <Trash2 className="h-4 w-4 mr-2" />
                               Eliminar
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+
                       <div className="mt-4 flex items-center justify-between">
-                        <Badge className={status.color}>{status.label}</Badge>
+                        <Badge className={status.color}>
+                          {isTesting ? (
+                            <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Probando...</>
+                          ) : (
+                            status.label
+                          )}
+                        </Badge>
                         {conn.last_successful_connection && (
                           <span className="text-xs text-muted-foreground">
-                            Última sync: {formatDistanceToNow(new Date(conn.last_successful_connection), { addSuffix: true, locale: es })}
+                            Última: {formatDistanceToNow(new Date(conn.last_successful_connection), { addSuffix: true, locale: es })}
                           </span>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="mt-4 flex gap-2">
+                        {isConnected ? (
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => {
+                              if (conn.system_type === 'web_portal') {
+                                setExtractionConnection(conn as unknown as MigrationConnection);
+                              } else {
+                                navigate(`/app/migrator/new?connection=${conn.id}`);
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            {conn.system_type === 'web_portal' ? 'Extraer Datos' : 'Iniciar Migración'}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            disabled={isTesting}
+                            onClick={() => testConnection.mutate(conn.id)}
+                          >
+                            {isTesting ? (
+                              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Probando...</>
+                            ) : (
+                              <><TestTube2 className="h-4 w-4 mr-2" />Probar Conexión</>
+                            )}
+                          </Button>
                         )}
                       </div>
                     </CardContent>
@@ -383,6 +441,15 @@ export function MigratorTab() {
         open={showConnectionWizard}
         onOpenChange={setShowConnectionWizard}
       />
+
+      {/* Extraction Wizard (for web_portal connections) */}
+      {extractionConnection && (
+        <ExtractionWizard
+          open={!!extractionConnection}
+          onOpenChange={(open) => { if (!open) setExtractionConnection(null); }}
+          connection={extractionConnection}
+        />
+      )}
 
       {/* Delete Project Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

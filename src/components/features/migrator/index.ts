@@ -7,3 +7,4 @@ export { SyncHistory } from './sync-history';
 export type { SyncHistoryEntry } from './sync-history';
 export { AIFieldMapper } from './ai-field-mapper';
 export type { MappingConfig } from './ai-field-mapper';
+export { ExtractionWizard } from './extraction-wizard';
