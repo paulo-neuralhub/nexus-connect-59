@@ -7,7 +7,6 @@
  * 3. Extract data with pagination
  * 4. Optionally visit detail pages for more fields
  * 5. Save results to scraping_session
- * 6. Optionally create an import_job for the process-import pipeline
  *
  * ╔══════════════════════════════════════════════════════════════╗
  * ║  🔒 READ-ONLY MODE — This scraper NEVER modifies data on   ║
@@ -20,20 +19,20 @@
 
 import { getServiceClient } from '../index.ts'
 import { executeLoginSequence, navigateTo, clickAndGetHTML } from '../browser/navigator.ts'
-import { closeBrowserSession } from '../browser/client.ts'
 import { extractList, extractDetailPage, type ExtractionRule } from '../browser/parser.ts'
-import { getSystemConfig } from '../systems/galena.ts'
+import { loadConnectionAndCredentials } from '../_shared/connection-loader.ts'
 
 interface ScrapeParams {
   source_id: string
-  session_id?: string   // Resume existing session
   organization_id: string
   user_id: string
-  entity_types: string[]  // ['matters', 'contacts', 'deadlines']
+  entity_types: string[]
   options: {
+    speed?: string
     max_pages?: number
     max_items?: number
     include_details?: boolean
+    include_screenshots?: boolean
     create_import_job?: boolean
     delay_between_pages_ms?: number
   }
@@ -49,38 +48,30 @@ export async function scrape(params: ScrapeParams) {
   } = params
 
   const serviceClient = getServiceClient()
-  const maxPages = Math.min(options.max_pages || 20, 50) // Hard cap: 50 pages
-  const maxItems = Math.min(options.max_items || 5000, 10000) // Hard cap: 10k items
+  const maxPages = Math.min(options.max_pages || 20, 50)
+  const maxItems = Math.min(options.max_items || 5000, 10000)
   const includeDetails = options.include_details !== false
-  const delayMs = options.delay_between_pages_ms || 3000
 
-  // 1. Load source + credentials
-  const { data: source } = await serviceClient
-    .from('import_sources')
-    .select('*')
-    .eq('id', source_id)
-    .single()
+  // Calculate delay based on speed setting
+  let delayMs = options.delay_between_pages_ms || 3000
+  if (options.speed === 'conservative') delayMs = 6000
+  else if (options.speed === 'moderate') delayMs = 3000
+  else if (options.speed === 'fast') delayMs = 1500
 
-  if (!source) throw new Error('Import source not found')
+  // 1. Load connection + credentials
+  const { connection, credentials, scraperConfig } = await loadConnectionAndCredentials(
+    source_id,
+    organization_id
+  )
 
-  const { data: credentialsRaw } = await serviceClient
-    .rpc('decrypt_source_credentials', { p_source_id: source_id })
-
-  if (!credentialsRaw) throw new Error('Failed to decrypt credentials')
-
-  const credentials = typeof credentialsRaw === 'string'
-    ? JSON.parse(credentialsRaw)
-    : credentialsRaw
-
-  const scraperConfig = source.scraper_config || getSystemConfig(source.system_id)
-  if (!scraperConfig) throw new Error('No scraper config found')
+  if (!scraperConfig) throw new Error('No scraper config found for this connection')
 
   // 2. Create scraping session
   const { data: session, error: sessionError } = await serviceClient
     .from('scraping_sessions')
     .insert({
       organization_id,
-      source_id,
+      connection_id: source_id,
       status: 'initializing',
       created_by: user_id,
     })
@@ -88,11 +79,10 @@ export async function scrape(params: ScrapeParams) {
     .single()
 
   if (sessionError || !session) {
-    throw new Error('Failed to create scraping session')
+    throw new Error(`Failed to create scraping session: ${sessionError?.message || 'unknown error'}`)
   }
 
   const sessionId = session.id
-
   let context: any = null
 
   try {
@@ -102,7 +92,7 @@ export async function scrape(params: ScrapeParams) {
     context = await executeLoginSequence(
       scraperConfig.navigation_config,
       credentials,
-      { takeScreenshots: true }
+      { takeScreenshots: options.include_screenshots !== false }
     )
 
     await updateSession(serviceClient, sessionId, {
@@ -116,12 +106,22 @@ export async function scrape(params: ScrapeParams) {
     let totalRequests = 0
     const errors: any[] = []
 
-    for (const entityType of entity_types) {
+    for (const entityType of (entity_types || [])) {
       const rules: ExtractionRule | undefined = scraperConfig.extraction_rules?.[entityType]
       if (!rules) {
         errors.push({
           page: entityType,
           error: `No extraction rules found for entity type: ${entityType}`,
+          timestamp: new Date().toISOString(),
+          recoverable: false,
+        })
+        continue
+      }
+
+      if (!rules.list_url) {
+        errors.push({
+          page: entityType,
+          error: `No list URL configured for entity type: ${entityType}. Run "discover" first.`,
           timestamp: new Date().toISOString(),
           recoverable: false,
         })
@@ -137,7 +137,7 @@ export async function scrape(params: ScrapeParams) {
       // Navigate to entity list page
       let html: string
       try {
-        html = await navigateTo(context.session.id, rules.list_url)
+        html = await navigateTo(context.browser, rules.list_url)
         totalRequests++
       } catch (error: any) {
         errors.push({
@@ -154,7 +154,6 @@ export async function scrape(params: ScrapeParams) {
       let currentPage = 1
 
       while (currentPage <= maxPages) {
-        // Extract list items from current page
         const items = extractList(html, rules)
         allItems.push(...items)
         totalItems += items.length
@@ -163,13 +162,9 @@ export async function scrape(params: ScrapeParams) {
           items_scraped: totalItems,
           pages_processed: currentPage,
           requests_made: totalRequests,
-          last_activity_at: new Date().toISOString(),
         })
 
-        // Hard cap on total items to prevent unbounded memory
         if (totalItems >= maxItems) break
-
-        // Check for pagination
         if (!rules.pagination || currentPage >= maxPages) break
 
         // Try to go to next page
@@ -177,7 +172,7 @@ export async function scrape(params: ScrapeParams) {
           let nextHtml: string
           if (rules.pagination.type === 'click' && rules.pagination.selector) {
             nextHtml = await clickAndGetHTML(
-              context.session.id,
+              context.browser,
               rules.pagination.selector,
               delayMs
             )
@@ -185,36 +180,31 @@ export async function scrape(params: ScrapeParams) {
           } else if (rules.pagination.type === 'url_param' && rules.pagination.param_name) {
             const nextUrl = new URL(rules.list_url)
             nextUrl.searchParams.set(rules.pagination.param_name, String(currentPage + 1))
-            nextHtml = await navigateTo(context.session.id, nextUrl.toString())
+            nextHtml = await navigateTo(context.browser, nextUrl.toString())
             totalRequests++
           } else {
-            break // Unknown pagination type
+            break
           }
 
-          // Extract from next page directly (avoid double-extraction)
           const nextItems = extractList(nextHtml, rules)
           if (nextItems.length === 0) break
 
           allItems.push(...nextItems)
           totalItems += nextItems.length
           currentPage++
-          // Skip the extractList at top of loop — use continue to jump to pagination check
           html = nextHtml
 
           await updateSession(serviceClient, sessionId, {
             items_scraped: totalItems,
             pages_processed: currentPage,
             requests_made: totalRequests,
-            last_activity_at: new Date().toISOString(),
           })
 
           if (totalItems >= maxItems) break
         } catch {
-          // Pagination failed — likely no more pages
-          break
+          break // Pagination failed — likely no more pages
         }
 
-        // Rate limiting delay
         await delay(delayMs)
       }
 
@@ -227,22 +217,18 @@ export async function scrape(params: ScrapeParams) {
 
         for (let i = 0; i < allItems.length; i++) {
           const item = allItems[i]
-
-          // Build detail URL from pattern
           const detailUrl = buildDetailUrl(rules.detail_url_pattern, item)
           if (!detailUrl) continue
 
           try {
-            const detailHtml = await navigateTo(context.session.id, detailUrl)
+            const detailHtml = await navigateTo(context.browser, detailUrl)
             totalRequests++
 
             const detailData = extractDetailPage(detailHtml, rules.fields)
-            // Merge detail data into item (detail overrides list data)
             Object.assign(item, detailData, { _detail_url: detailUrl })
 
             await updateSession(serviceClient, sessionId, {
               requests_made: totalRequests,
-              last_activity_at: new Date().toISOString(),
             })
           } catch (error: any) {
             errors.push({
@@ -253,7 +239,6 @@ export async function scrape(params: ScrapeParams) {
             })
           }
 
-          // Rate limit between detail page visits
           await delay(Math.max(delayMs / 2, 1000))
         }
       }
@@ -272,58 +257,30 @@ export async function scrape(params: ScrapeParams) {
     })
 
     // 6. Close browser session
-    await closeBrowserSession(context.session.id)
-
-    // 7. Optionally create import job
-    let importJobId = null
-    if (options.create_import_job && totalItems > 0) {
-      const { data: importJob } = await serviceClient
-        .from('import_jobs')
-        .insert({
-          organization_id,
-          source_type: 'web_scraper',
-          status: 'mapping',
-          records_total: totalItems,
-          metadata: {
-            scraping_session_id: sessionId,
-            entity_types,
-            source_id,
-          },
-        })
-        .select()
-        .single()
-
-      if (importJob) {
-        importJobId = importJob.id
-        await updateSession(serviceClient, sessionId, {
-          import_job_id: importJob.id,
-        })
-      }
-    }
+    await context.browser.close()
 
     return {
       success: true,
       session_id: sessionId,
-      import_job_id: importJobId,
-      summary: {
-        entities_scraped: Object.keys(extractedData),
+      extracted_data: extractedData,
+      stats: {
+        total_items: totalItems,
+        pages_processed: Object.values(extractedData).length,
         items_by_entity: Object.fromEntries(
           Object.entries(extractedData).map(([k, v]) => [k, v.length])
         ),
-        total_items: totalItems,
         total_requests: totalRequests,
         errors_count: errors.length,
-        duration_ms: Date.now() - new Date(session.created_at).getTime(),
       },
       message: `Scraping completed. Extracted ${totalItems} items across ${entity_types.length} entity types.`,
     }
   } catch (error: any) {
-    // Close browser session to avoid leak + cost
-    if (context?.session?.id) {
-      try { await closeBrowserSession(context.session.id) } catch { /* non-critical */ }
+    // Close browser to avoid leak
+    if (context?.browser) {
+      try { await context.browser.close() } catch { /* non-critical */ }
     }
 
-    // Append to existing error log instead of overwriting
+    // Append to error log
     const { data: currentSession } = await serviceClient
       .from('scraping_sessions')
       .select('error_log')
@@ -334,7 +291,12 @@ export async function scrape(params: ScrapeParams) {
 
     await updateSession(serviceClient, sessionId, {
       status: 'error',
-      error_log: [...existingErrors, { page: 'global', error: error.message, timestamp: new Date().toISOString(), recoverable: false }],
+      error_log: [...existingErrors, {
+        page: 'global',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        recoverable: false,
+      }],
       completed_at: new Date().toISOString(),
     })
 
@@ -356,7 +318,6 @@ async function updateSession(
 }
 
 function buildDetailUrl(pattern: string, item: any): string | null {
-  // Pattern like: /expediente/{{reference}} or /mark/{{id}}
   let url = pattern
   const matches = pattern.match(/\{\{(\w+)\}\}/g)
   if (!matches) return pattern
@@ -364,7 +325,7 @@ function buildDetailUrl(pattern: string, item: any): string | null {
   for (const match of matches) {
     const key = match.replace(/\{\{|\}\}/g, '')
     const value = item[key] || item[`_${key}`]
-    if (!value) return null // Can't build URL without required field
+    if (!value) return null
     url = url.replace(match, encodeURIComponent(String(value)))
   }
 

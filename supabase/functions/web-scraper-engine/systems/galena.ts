@@ -220,9 +220,38 @@ export function getSystemConfig(systemId: string | null): SystemScraperConfig | 
     'galena': GALENA_CONFIG,
     'puntoip_galena': GALENA_CONFIG,
     'puntoip': GALENA_CONFIG,
+    'web_portal': GALENA_CONFIG, // Default for web_portal type — Galena is our first client
   }
 
   return configs[systemId.toLowerCase()] || null
+}
+
+/**
+ * Try to detect the system from connection metadata.
+ * Falls back to Galena config for web_portal types with puntoip URLs.
+ */
+export function detectSystemConfig(
+  systemType: string | null,
+  connectionName: string | null,
+  baseUrl: string | null
+): SystemScraperConfig | null {
+  // Direct match
+  const directMatch = getSystemConfig(systemType)
+  if (directMatch) return directMatch
+
+  // Detect by name
+  const nameLower = (connectionName || '').toLowerCase()
+  if (nameLower.includes('galena') || nameLower.includes('puntoip')) {
+    return GALENA_CONFIG
+  }
+
+  // Detect by URL
+  const urlLower = (baseUrl || '').toLowerCase()
+  if (urlLower.includes('puntoip') || urlLower.includes('galena')) {
+    return GALENA_CONFIG
+  }
+
+  return null
 }
 
 /**

@@ -48,6 +48,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/contexts/organization-context';
 import type { MigrationConnection } from '@/types/migration-advanced';
 
 // =====================================================
@@ -131,6 +132,7 @@ const SPEED_OPTIONS = [
 // =====================================================
 
 export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionWizardProps) {
+  const { currentOrganization } = useOrganization();
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>('entities');
   const [selectedEntities, setSelectedEntities] = useState<string[]>(['matters', 'deadlines']);
@@ -176,6 +178,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
       // Call the web-scraper-engine edge function
       addLog('info', 'Conectando con el portal...');
 
+      const orgId = currentOrganization?.id || connection?.organization_id;
       const { data, error } = await supabase.functions.invoke('web-scraper-engine', {
         body: {
           action: 'scrape',
@@ -186,10 +189,20 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
             include_screenshots: includeScreenshots,
           },
         },
+        headers: {
+          'x-organization-id': orgId!,
+        },
       });
 
       if (error) {
-        addLog('error', `Error de conexión: ${error.message}`);
+        // supabase-js sets data=null on non-2xx; real body is in error.context
+        let detail = error.message;
+        try {
+          const body = await (error as any).context?.json?.();
+          if (body?.error) detail = body.error;
+        } catch (_e) { /* ignore parse errors */ }
+        addLog('error', `Error de conexión: ${detail}`);
+        console.error('[ExtractionWizard] Edge function error:', { error, detail });
         setExtractionStatus('error');
         return;
       }

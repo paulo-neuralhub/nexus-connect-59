@@ -7,6 +7,7 @@
 
 import { getServiceClient } from '../index.ts'
 import { closeBrowserSession } from '../browser/client.ts'
+// closeBrowserSession accepts a string (session ID) for backward compatibility
 
 interface CancelParams {
   session_id: string

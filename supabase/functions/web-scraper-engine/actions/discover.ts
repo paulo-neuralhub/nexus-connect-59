@@ -10,32 +10,18 @@
  * This is used to build ExtractionRules for unknown portals.
  */
 
-import { getServiceClient } from '../index.ts'
+import { loadConnectionAndCredentials } from '../_shared/connection-loader.ts'
 import { executeLoginSequence, navigateTo, getCurrentPageHTML } from '../browser/navigator.ts'
-import { closeBrowserSession } from '../browser/client.ts'
 import { discoverPageStructure, type PageStructure } from '../browser/parser.ts'
-import { getSystemConfig } from '../systems/galena.ts'
 
 interface DiscoverParams {
   source_id: string
   organization_id: string
   user_id: string
   options: {
-    max_pages?: number      // Max pages to explore (default: 5)
-    explore_links?: boolean // Follow navigation links (default: true)
+    max_pages?: number
+    explore_links?: boolean
   }
-}
-
-interface DiscoveryResult {
-  success: boolean
-  pages_explored: number
-  structure: {
-    main_page: PageStructure
-    sub_pages: { url: string; structure: PageStructure }[]
-  }
-  detected_entities: DetectedEntity[]
-  suggested_extraction_rules: Record<string, any>
-  message: string
 }
 
 interface DetectedEntity {
@@ -46,31 +32,17 @@ interface DetectedEntity {
   confidence: number
 }
 
-export async function discover(params: DiscoverParams): Promise<DiscoveryResult> {
-  const { source_id, options } = params
-  const maxPages = Math.min(options.max_pages || 5, 10) // Cap at 10
+export async function discover(params: DiscoverParams) {
+  const { source_id, organization_id, options } = params
+  const maxPages = Math.min(options.max_pages || 5, 10)
   const exploreLinks = options.explore_links !== false
-  const serviceClient = getServiceClient()
 
-  // 1. Load source + decrypt credentials
-  const { data: source } = await serviceClient
-    .from('import_sources')
-    .select('*')
-    .eq('id', source_id)
-    .single()
+  // 1. Load connection + credentials
+  const { credentials, scraperConfig } = await loadConnectionAndCredentials(
+    source_id,
+    organization_id
+  )
 
-  if (!source) throw new Error('Import source not found')
-
-  const { data: credentialsRaw } = await serviceClient
-    .rpc('decrypt_source_credentials', { p_source_id: source_id })
-
-  if (!credentialsRaw) throw new Error('Failed to decrypt credentials')
-
-  const credentials = typeof credentialsRaw === 'string'
-    ? JSON.parse(credentialsRaw)
-    : credentialsRaw
-
-  const scraperConfig = source.scraper_config || getSystemConfig(source.system_id)
   if (!scraperConfig?.navigation_config) {
     throw new Error('No navigation config found')
   }
@@ -84,7 +56,7 @@ export async function discover(params: DiscoverParams): Promise<DiscoveryResult>
 
   try {
     // 3. Discover main page structure
-    const mainHTML = await getCurrentPageHTML(context.session.id)
+    const mainHTML = await getCurrentPageHTML(context.browser)
     const mainStructure = discoverPageStructure(mainHTML)
 
     // 4. Explore sub-pages from navigation links
@@ -93,7 +65,6 @@ export async function discover(params: DiscoverParams): Promise<DiscoveryResult>
     visited.add(context.currentUrl)
 
     if (exploreLinks && mainStructure.navigation.length > 0) {
-      // Prioritize navigation links that look like entity pages
       const entityKeywords = [
         'marca', 'expediente', 'caso', 'plazo', 'vencimiento',
         'cliente', 'titular', 'contacto', 'documento', 'clase',
@@ -120,23 +91,21 @@ export async function discover(params: DiscoverParams): Promise<DiscoveryResult>
         visited.add(url)
 
         try {
-          const html = await navigateTo(context.session.id, url)
+          const html = await navigateTo(context.browser, url)
           const structure = discoverPageStructure(html)
           subPages.push({ url, structure })
-
-          // Rate limit between page loads
           await delay(1500)
         } catch {
-          // Non-critical: some links may fail
+          // Non-critical
         }
       }
     }
 
-    // 5. Detect entities from discovered structure
+    // 5. Detect entities
     const detectedEntities = detectEntities(mainStructure, subPages)
 
     // 6. Close session
-    await closeBrowserSession(context.session.id)
+    await context.browser.close()
 
     return {
       success: true,
@@ -150,7 +119,7 @@ export async function discover(params: DiscoverParams): Promise<DiscoveryResult>
       message: `Discovered ${detectedEntities.length} potential entities across ${1 + subPages.length} pages.`,
     }
   } catch (error) {
-    await closeBrowserSession(context.session.id)
+    await context.browser.close()
     throw error
   }
 }
@@ -163,13 +132,11 @@ function detectEntities(
 ): DetectedEntity[] {
   const entities: DetectedEntity[] = []
 
-  // Check main page tables
   for (const table of mainPage.tables) {
     const entity = classifyTable(table.headers, '', table.rowCount)
     if (entity) entities.push(entity)
   }
 
-  // Check sub-page tables
   for (const page of subPages) {
     for (const table of page.structure.tables) {
       const entity = classifyTable(table.headers, page.url, table.rowCount)
@@ -177,7 +144,6 @@ function detectEntities(
     }
   }
 
-  // Deduplicate by name
   const unique = new Map<string, DetectedEntity>()
   for (const entity of entities) {
     const existing = unique.get(entity.name)
@@ -196,7 +162,6 @@ function classifyTable(
 ): DetectedEntity | null {
   const headerStr = headers.join(' ').toLowerCase()
 
-  // Matters/Trademarks detection
   const matterKeywords = ['marca', 'expediente', 'número', 'numero', 'referencia', 'estado',
     'clase', 'titular', 'trademark', 'mark', 'case', 'reference', 'status']
   const matterScore = matterKeywords.filter(k => headerStr.includes(k)).length
@@ -206,12 +171,11 @@ function classifyTable(
       name: 'matters',
       probable_url: url,
       table_headers: headers,
-      estimated_count: Math.max(rowCount - 1, 0), // Subtract header row
+      estimated_count: Math.max(rowCount - 1, 0),
       confidence: Math.min(matterScore / 4, 1.0),
     }
   }
 
-  // Deadlines detection
   const deadlineKeywords = ['plazo', 'vencimiento', 'fecha', 'deadline', 'due', 'renewal', 'renovación']
   const deadlineScore = deadlineKeywords.filter(k => headerStr.includes(k)).length
 
@@ -225,7 +189,6 @@ function classifyTable(
     }
   }
 
-  // Contacts/Clients detection
   const contactKeywords = ['nombre', 'email', 'teléfono', 'telefono', 'cliente', 'contacto',
     'name', 'email', 'phone', 'client', 'contact']
   const contactScore = contactKeywords.filter(k => headerStr.includes(k)).length
@@ -243,8 +206,6 @@ function classifyTable(
   return null
 }
 
-// ── Extraction Rule Suggestions ─────────────────────────────
-
 function buildSuggestedRules(
   entities: DetectedEntity[],
   baseUrl: string
@@ -254,14 +215,13 @@ function buildSuggestedRules(
   for (const entity of entities) {
     rules[entity.name] = {
       list_url: entity.probable_url || baseUrl,
-      list_selector: 'table tbody tr', // Default: table rows
+      list_selector: 'table tbody tr',
       fields: buildFieldSuggestions(entity.table_headers, entity.name),
       pagination: {
         type: 'click',
         selector: '.pagination .next, .pager .next, a[rel="next"]',
         max_pages: 20,
       },
-      _note: 'These selectors are suggestions. Verify and adjust after manual inspection.',
     }
   }
 
@@ -277,8 +237,6 @@ function buildFieldSuggestions(
   for (let i = 0; i < headers.length; i++) {
     const header = headers[i].toLowerCase()
     const selector = `td:nth-child(${i + 1})`
-
-    // Map common header names to IP-NEXUS fields
     let fieldName = `column_${i}`
 
     if (entityType === 'matters') {
@@ -296,7 +254,6 @@ function buildFieldSuggestions(
       else if (header.match(/email|correo/)) fieldName = 'email'
       else if (header.match(/tel|phone/)) fieldName = 'phone'
       else if (header.match(/empresa|company/)) fieldName = 'company'
-      else if (header.match(/país|pais|country/)) fieldName = 'country'
     } else if (entityType === 'deadlines') {
       if (header.match(/marca|matter|caso/)) fieldName = 'matter_reference'
       else if (header.match(/fecha|date|plazo|deadline|vencimiento/)) fieldName = 'due_date'
@@ -312,8 +269,6 @@ function buildFieldSuggestions(
 
   return fields
 }
-
-// ── Utilities ───────────────────────────────────────────────
 
 function resolveUrl(href: string, baseUrl: string): string {
   if (href.startsWith('http')) return href

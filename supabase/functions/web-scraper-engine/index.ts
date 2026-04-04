@@ -139,21 +139,32 @@ serve(async (req: Request) => {
       )
     }
 
-    // Verify source belongs to user's organization (for source-based actions)
-    if (source_id) {
+    // Verify source/connection belongs to user's organization
+    if (source_id && !['encrypt-credentials'].includes(action)) {
       const serviceClient = getServiceClient()
-      const { data: source } = await serviceClient
-        .from('import_sources')
+      // Check migration_connections first (primary table for web portal connections)
+      const { data: connection } = await serviceClient
+        .from('migration_connections')
         .select('id, organization_id')
         .eq('id', source_id)
         .eq('organization_id', auth.organization_id)
         .single()
 
-      if (!source) {
-        return new Response(
-          JSON.stringify({ error: 'Source not found or access denied' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+      if (!connection) {
+        // Fallback: check import_sources for backward compatibility
+        const { data: source } = await serviceClient
+          .from('import_sources')
+          .select('id, organization_id')
+          .eq('id', source_id)
+          .eq('organization_id', auth.organization_id)
+          .single()
+
+        if (!source) {
+          return new Response(
+            JSON.stringify({ error: 'Connection not found or access denied' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
       }
     }
 
@@ -176,14 +187,22 @@ serve(async (req: Request) => {
   } catch (error: any) {
     console.error('[web-scraper-engine] Error:', error.message)
 
-    const status = error.message === 'Unauthorized' ? 401
-      : error.message.includes('not found') ? 404
+    const msg = error.message || 'Unknown error'
+    const status = msg === 'Unauthorized' ? 401
+      : msg.includes('not found') ? 404
+      : msg.includes('Missing x-organization-id') ? 400
       : 500
 
-    // Never leak internal details
-    const safeMessage = status === 500
-      ? 'Internal server error during scraping operation'
-      : error.message
+    // Return descriptive message for known errors, generic for unknown
+    const KNOWN_ERRORS = [
+      'Unauthorized', 'Missing x-organization-id',
+      'not found', 'access denied', 'No membership',
+      'source_id is required', 'session_id is required',
+      'No scraper config', 'No navigation config',
+      'credentials', 'BROWSERBASE',
+    ]
+    const isKnown = KNOWN_ERRORS.some(k => msg.includes(k))
+    const safeMessage = isKnown ? msg : `Internal error: ${msg.slice(0, 150)}`
 
     return new Response(
       JSON.stringify({ error: safeMessage }),
