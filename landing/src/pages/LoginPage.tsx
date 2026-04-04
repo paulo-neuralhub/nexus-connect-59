@@ -32,9 +32,9 @@ export default function LoginPage() {
     }
 
     // Supabase persists the session via PKCE + storageKey.
-    // Redirect to app — session is read by supabase.auth.getSession() on app.ip-nexus.app
+    // Redirect to app root — the app has its own auth flow
     window.location.href =
-      import.meta.env.VITE_APP_URL || 'https://app.ip-nexus.app/dashboard'
+      import.meta.env.VITE_APP_URL || 'https://app.ip-nexus.app'
   }
 
   return (
