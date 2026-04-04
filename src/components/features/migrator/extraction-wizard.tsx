@@ -200,7 +200,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
         try {
           const body = await (error as any).context?.json?.();
           if (body?.error) detail = body.error;
-        } catch { /* ignore parse errors */ }
+        } catch (_e) { /* ignore parse errors */ }
         addLog('error', `Error de conexión: ${detail}`);
         console.error('[ExtractionWizard] Edge function error:', { error, detail });
         setExtractionStatus('error');
