@@ -48,6 +48,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/contexts/organization-context';
 import type { MigrationConnection } from '@/types/migration-advanced';
 
 // =====================================================
@@ -131,6 +132,7 @@ const SPEED_OPTIONS = [
 // =====================================================
 
 export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionWizardProps) {
+  const { currentOrganization } = useOrganization();
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>('entities');
   const [selectedEntities, setSelectedEntities] = useState<string[]>(['matters', 'deadlines']);
@@ -176,6 +178,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
       // Call the web-scraper-engine edge function
       addLog('info', 'Conectando con el portal...');
 
+      const orgId = currentOrganization?.id || connection?.organization_id;
       const { data, error } = await supabase.functions.invoke('web-scraper-engine', {
         body: {
           action: 'scrape',
@@ -185,6 +188,9 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
             speed,
             include_screenshots: includeScreenshots,
           },
+        },
+        headers: {
+          'x-organization-id': orgId!,
         },
       });
 
