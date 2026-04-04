@@ -195,7 +195,14 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
       });
 
       if (error) {
-        addLog('error', `Error de conexión: ${error.message}`);
+        // supabase-js sets data=null on non-2xx; real body is in error.context
+        let detail = error.message;
+        try {
+          const body = await (error as any).context?.json?.();
+          if (body?.error) detail = body.error;
+        } catch { /* ignore parse errors */ }
+        addLog('error', `Error de conexión: ${detail}`);
+        console.error('[ExtractionWizard] Edge function error:', { error, detail });
         setExtractionStatus('error');
         return;
       }

@@ -187,14 +187,22 @@ serve(async (req: Request) => {
   } catch (error: any) {
     console.error('[web-scraper-engine] Error:', error.message)
 
-    const status = error.message === 'Unauthorized' ? 401
-      : error.message.includes('not found') ? 404
+    const msg = error.message || 'Unknown error'
+    const status = msg === 'Unauthorized' ? 401
+      : msg.includes('not found') ? 404
+      : msg.includes('Missing x-organization-id') ? 400
       : 500
 
-    // Never leak internal details
-    const safeMessage = status === 500
-      ? 'Internal server error during scraping operation'
-      : error.message
+    // Return descriptive message for known errors, generic for unknown
+    const KNOWN_ERRORS = [
+      'Unauthorized', 'Missing x-organization-id',
+      'not found', 'access denied', 'No membership',
+      'source_id is required', 'session_id is required',
+      'No scraper config', 'No navigation config',
+      'credentials', 'BROWSERBASE',
+    ]
+    const isKnown = KNOWN_ERRORS.some(k => msg.includes(k))
+    const safeMessage = isKnown ? msg : `Internal error: ${msg.slice(0, 150)}`
 
     return new Response(
       JSON.stringify({ error: safeMessage }),
