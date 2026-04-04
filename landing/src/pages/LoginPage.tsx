@@ -34,7 +34,9 @@ export default function LoginPage() {
     // Transfer session to app subdomain via URL hash.
     // Supabase JS automatically detects access_token + refresh_token in the hash
     // and calls setSession() — same mechanism used for OAuth/magic-link callbacks.
-    const appUrl = import.meta.env.VITE_APP_URL || 'https://app.ip-nexus.app'
+    // We redirect to /app/dashboard (not /dashboard) because the main app's
+    // protected routes live under /app/* with AuthGuard.
+    const appBase = 'https://app.ip-nexus.app'
     const session = data.session
     if (session) {
       const hashParams = new URLSearchParams({
@@ -43,9 +45,9 @@ export default function LoginPage() {
         token_type: 'bearer',
         type: 'access_token',
       })
-      window.location.href = `${appUrl}#${hashParams.toString()}`
+      window.location.href = `${appBase}/app/dashboard#${hashParams.toString()}`
     } else {
-      window.location.href = appUrl
+      window.location.href = appBase
     }
   }
 
