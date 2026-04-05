@@ -47,6 +47,13 @@ const ENTITY_FIELDS: Record<string, Record<string, string>> = {
     publication_number: 'Numero de publicacion',
     publication_date: 'Fecha de publicacion',
     priority_date: 'Fecha de prioridad',
+    owner_country: 'Pais del propietario/titular (ej: Francia)',
+    client_country: 'Pais del cliente (ej: Suiza)',
+    correspondent_country: 'Pais del tramitante/corresponsal (ej: Mexico)',
+    contact_name: 'Contacto (persona dentro del cliente que gestiona)',
+    contact_email: 'Email del contacto',
+    source_modified_at: 'Fecha de ultima modificacion en sistema origen',
+    source_modified_by: 'Quien hizo la ultima modificacion en sistema origen',
   },
   ip_actions: {
     title: 'Titulo de la accion',
@@ -201,6 +208,13 @@ function normalizeCountry(raw: string): string {
 const DATE_FIELDS = new Set([
   'filing_date', 'registration_date', 'expiry_date',
   'proof_of_use_date', 'first_use_date', 'publication_date', 'priority_date',
+  'source_modified_at',
+])
+
+// Country fields that should be normalized (name → ISO code)
+const COUNTRY_FIELDS = new Set([
+  'jurisdiction', 'jurisdiction_code',
+  'owner_country', 'client_country', 'correspondent_country',
 ])
 
 // ── Auth ────────────────────────────────────────────────────
@@ -524,14 +538,25 @@ async function importData(params: {
             continue
           }
 
-          if (targetField === 'jurisdiction' || targetField === 'jurisdiction_code') {
-            // Try to resolve country name to ISO code
+          if (COUNTRY_FIELDS.has(targetField)) {
+            // Normalize any country field: name → ISO code + original name
             const code = normalizeCountry(value)
-            if (code.length === 2) {
-              mapped['jurisdiction_code'] = code
-              mapped['jurisdiction'] = value
+            if (targetField === 'jurisdiction' || targetField === 'jurisdiction_code') {
+              if (code.length === 2) {
+                mapped['jurisdiction_code'] = code
+                mapped['jurisdiction'] = value
+              } else {
+                mapped[targetField] = value
+              }
             } else {
-              mapped[targetField] = value
+              // owner_country, client_country, correspondent_country
+              const codeField = targetField + '_code'
+              if (code.length === 2) {
+                mapped[codeField] = code
+                mapped[targetField] = value
+              } else {
+                mapped[targetField] = value
+              }
             }
             continue
           }

@@ -324,6 +324,13 @@ export const AVAILABLE_FIELDS: Record<
     { value: 'publication_number', label: 'Nº publicación' },
     { value: 'publication_date', label: 'Fecha publicación' },
     { value: 'priority_date', label: 'Fecha de prioridad' },
+    { value: 'owner_country', label: 'País del propietario' },
+    { value: 'client_country', label: 'País del cliente' },
+    { value: 'correspondent_country', label: 'País del tramitante' },
+    { value: 'contact_name', label: 'Contacto (persona)' },
+    { value: 'contact_email', label: 'Email del contacto' },
+    { value: 'source_modified_at', label: 'Fecha última modificación (origen)' },
+    { value: 'source_modified_by', label: 'Modificado por (origen)' },
   ],
   ip_actions: [
     { value: 'title', label: 'Título de la acción' },
