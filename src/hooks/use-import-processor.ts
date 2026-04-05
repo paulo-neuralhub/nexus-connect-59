@@ -310,7 +310,8 @@ export const AVAILABLE_FIELDS: Record<
     { value: 'goods_services', label: 'Productos/Servicios' },
     { value: 'owner_name', label: 'Propietario/Titular' },
     { value: 'applicant_name', label: 'Solicitante' },
-    { value: 'client_ref', label: 'Cliente / Referencia' },
+    { value: 'client_ref', label: 'Cliente (nombre)' },
+    { value: 'client_reference', label: 'Referencia del cliente' },
     { value: 'agent_name', label: 'Agente / Oficina' },
     { value: 'correspondent_name', label: 'Tramitante' },
     { value: 'inventor_name', label: 'Inventor (patentes)' },
@@ -331,6 +332,7 @@ export const AVAILABLE_FIELDS: Record<
     { value: 'contact_email', label: 'Email del contacto' },
     { value: 'source_modified_at', label: 'Fecha última modificación (origen)' },
     { value: 'source_modified_by', label: 'Modificado por (origen)' },
+    { value: 'legacy_internal_id', label: 'ID interno sistema origen' },
   ],
   ip_actions: [
     { value: 'title', label: 'Título de la acción' },

@@ -37,7 +37,8 @@ const ENTITY_FIELDS: Record<string, Record<string, string>> = {
     goods_services: 'Productos y servicios (texto descriptivo)',
     owner_name: 'Propietario / titular',
     applicant_name: 'Solicitante',
-    client_ref: 'Cliente / referencia de cliente',
+    client_ref: 'Cliente (nombre del cliente)',
+    client_reference: 'Referencia que el cliente da a su solicitud (REF CLIENTE)',
     agent_name: 'Agente / oficina de PI',
     correspondent_name: 'Tramitante / corresponsal',
     physical_folder: 'Carpeta fisica / referencia de archivo',
@@ -54,6 +55,7 @@ const ENTITY_FIELDS: Record<string, Record<string, string>> = {
     contact_email: 'Email del contacto',
     source_modified_at: 'Fecha de ultima modificacion en sistema origen',
     source_modified_by: 'Quien hizo la ultima modificacion en sistema origen',
+    legacy_internal_id: 'ID interno numerico del sistema de origen (diferente del codigo)',
   },
   ip_actions: {
     title: 'Titulo de la accion',
