@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useOrganization } from '@/contexts/organization-context'
 import { useAuth } from '@/contexts/auth-context'
 import { toast } from 'sonner'
+import * as XLSX from 'xlsx'
 
 // ── TIPOS ────────────────────────────────────────────────
 
@@ -26,7 +27,54 @@ export interface ImportResult {
   errors: Array<{ row: number; error: string }>
 }
 
-export type EntityType = 'matters' | 'contacts' | 'crm_accounts'
+export type EntityType = 'matters' | 'contacts' | 'crm_accounts' | 'ip_actions'
+
+// ── PARSE FILE IN BROWSER ───────────────────────────────
+
+function parseFileInBrowser(file: File): Promise<{
+  headers: string[]
+  rows: any[][]
+}> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const arrayBuffer = e.target?.result as ArrayBuffer
+        const fileExt = file.name.split('.').pop()?.toLowerCase()
+
+        let headers: string[] = []
+        let rows: any[][] = []
+
+        if (fileExt === 'csv') {
+          const text = new TextDecoder().decode(arrayBuffer)
+          const lines = text.split('\n').filter(l => l.trim())
+          if (lines.length === 0) throw new Error('Archivo CSV vacío')
+          const separator = lines[0].includes(';') ? ';' : ','
+          headers = lines[0].split(separator).map(c => c.trim().replace(/"/g, ''))
+          rows = lines.slice(1).map(line =>
+            line.split(separator).map(c => c.trim().replace(/"/g, ''))
+          )
+        } else {
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+          const data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][]
+          if (data.length === 0) throw new Error('Archivo Excel vacío')
+          headers = (data[0] as string[]).map(c => String(c || '').trim())
+          rows = data.slice(1).filter(row =>
+            row.some((cell: any) => cell !== undefined && cell !== null && cell !== '')
+          )
+        }
+
+        headers = headers.filter(c => c && c.length > 0)
+        resolve({ headers, rows })
+      } catch (err) {
+        reject(err)
+      }
+    }
+    reader.onerror = () => reject(new Error('Error leyendo archivo'))
+    reader.readAsArrayBuffer(file)
+  })
+}
 
 // ── HOOK PRINCIPAL ───────────────────────────────────────
 
@@ -38,7 +86,7 @@ export function useImportProcessor() {
   const orgId = currentOrganization?.id
   const userId = user?.id
 
-  // FASE A — Subir archivo y parsear columnas
+  // FASE A — Subir archivo y parsear columnas (IN BROWSER)
   const parseFile = useMutation({
     mutationFn: async (file: File): Promise<ParseResult> => {
       if (!orgId || !userId) throw new Error('Sin organización')
@@ -50,6 +98,7 @@ export function useImportProcessor() {
         const timestamp = Date.now()
         const filePath = `${orgId}/${timestamp}_${file.name}`
 
+        // 1. Upload original file to storage (for audit/reference)
         const { error: uploadError } = await supabase.storage
           .from('imports')
           .upload(filePath, file, {
@@ -61,40 +110,57 @@ export function useImportProcessor() {
 
         toast.loading('Analizando estructura...', { id: toastId })
 
+        // 2. Parse file in browser (NO edge function needed!)
+        const { headers, rows } = await parseFileInBrowser(file)
+        const columns = headers
+        const preview = rows.slice(0, 10)
+
+        toast.loading(`Guardando ${rows.length} filas parseadas...`, { id: toastId })
+
+        // 3. Upload parsed data as JSON to storage
+        const parsedPath = `${orgId}/${timestamp}_parsed.json`
+        const parsedBlob = new Blob(
+          [JSON.stringify({ headers, rows })],
+          { type: 'application/json' }
+        )
+
+        const { error: parsedUploadError } = await supabase.storage
+          .from('imports')
+          .upload(parsedPath, parsedBlob, {
+            cacheControl: '3600',
+            upsert: false,
+          })
+
+        if (parsedUploadError) throw new Error(`Error guardando datos: ${parsedUploadError.message}`)
+
+        // 4. Create import_job with all metadata
         const { data: job, error: jobError } = await supabase
           .from('import_jobs')
           .insert({
             organization_id: orgId,
             source_type: fileExt === 'csv' ? 'csv' : 'excel',
-            status: 'pending',
+            status: 'mapping',
             source_file_url: filePath,
             created_by: userId,
+            metadata: {
+              detected_columns: columns,
+              preview_rows: preview,
+              file_type: fileExt,
+              total_rows_estimate: rows.length,
+              parsed_file_url: parsedPath,
+            },
           })
           .select()
           .single()
 
         if (jobError) throw new Error(jobError.message)
 
-        const { data, error: fnError } = await supabase.functions
-          .invoke('process-import', {
-            body: {
-              action: 'parse',
-              job_id: job.id,
-              file_url: filePath,
-              file_type: fileExt,
-              organization_id: orgId,
-            },
-          })
-
-        if (fnError) throw new Error(fnError.message)
-        if (data?.error) throw new Error(data.error)
-
-        toast.success(`${data.columns.length} columnas detectadas`, { id: toastId })
+        toast.success(`${columns.length} columnas · ${rows.length} filas detectadas`, { id: toastId })
 
         return {
           jobId: job.id,
-          columns: data.columns,
-          preview: data.preview,
+          columns,
+          preview,
         }
       } catch (error: any) {
         toast.error(error.message, { id: toastId })
@@ -224,18 +290,58 @@ export const AVAILABLE_FIELDS: Record<
   Array<{ value: string; label: string }>
 > = {
   matters: [
+    { value: 'title', label: 'Título / Nombre' },
     { value: 'mark_name', label: 'Nombre de marca' },
     { value: 'reference', label: 'Referencia interna' },
+    { value: 'legacy_system_id', label: 'ID sistema origen' },
     { value: 'status', label: 'Estado' },
+    { value: 'status_detail', label: 'Estado detallado' },
+    { value: 'ip_type', label: 'Tipo PI (trademark/patent/design)' },
+    { value: 'ip_subtype', label: 'Subtipo (Nominativa, Mixta, etc.)' },
     { value: 'filing_date', label: 'Fecha de presentación' },
     { value: 'registration_date', label: 'Fecha de registro' },
     { value: 'expiry_date', label: 'Fecha de vencimiento' },
-    { value: 'jurisdiction', label: 'Jurisdicción' },
+    { value: 'application_number', label: 'Nº de solicitud' },
+    { value: 'registration_number', label: 'Nº de registro' },
+    { value: 'certificate_number', label: 'Nº de certificado' },
+    { value: 'jurisdiction', label: 'Jurisdicción / País' },
+    { value: 'jurisdiction_code', label: 'Código de país (ISO)' },
     { value: 'nice_classes', label: 'Clases de Niza' },
-    { value: 'applicant_name', label: 'Titular/Solicitante' },
-    { value: 'agent_reference', label: 'Referencia del agente' },
-    { value: 'matter_type', label: 'Tipo de expediente' },
+    { value: 'goods_services', label: 'Productos/Servicios' },
+    { value: 'owner_name', label: 'Propietario/Titular' },
+    { value: 'applicant_name', label: 'Solicitante' },
+    { value: 'client_ref', label: 'Cliente / Referencia' },
+    { value: 'agent_name', label: 'Agente / Oficina' },
+    { value: 'correspondent_name', label: 'Tramitante' },
+    { value: 'inventor_name', label: 'Inventor (patentes)' },
+    { value: 'physical_folder', label: 'Carpeta física' },
+    { value: 'notes', label: 'Notas' },
     { value: 'description', label: 'Descripción' },
+    { value: 'figure_description', label: 'Descripción de figura' },
+    { value: 'mark_image_url', label: 'URL imagen marca' },
+    { value: 'proof_of_use_date', label: 'Fecha prueba de uso' },
+    { value: 'first_use_date', label: 'Fecha primer uso' },
+    { value: 'publication_number', label: 'Nº publicación' },
+    { value: 'publication_date', label: 'Fecha publicación' },
+    { value: 'priority_date', label: 'Fecha de prioridad' },
+  ],
+  ip_actions: [
+    { value: 'title', label: 'Título de la acción' },
+    { value: 'reference', label: 'Referencia' },
+    { value: 'action_type', label: 'Tipo de acción' },
+    { value: 'action_category', label: 'Categoría (offensive/defensive)' },
+    { value: 'status', label: 'Estado' },
+    { value: 'plaintiff_name', label: 'Demandante' },
+    { value: 'defendant_name', label: 'Demandado' },
+    { value: 'base_mark_name', label: 'Marca base' },
+    { value: 'opposed_mark_name', label: 'Marca opuesta' },
+    { value: 'filing_number', label: 'Nº solicitud' },
+    { value: 'filing_date', label: 'Fecha presentación' },
+    { value: 'jurisdiction', label: 'Jurisdicción' },
+    { value: 'nice_classes', label: 'Clases Niza' },
+    { value: 'legal_basis', label: 'Fundamento legal' },
+    { value: 'agent_name', label: 'Agente/Abogado' },
+    { value: 'legacy_system_id', label: 'ID sistema origen' },
   ],
   contacts: [
     { value: 'name', label: 'Nombre completo' },
