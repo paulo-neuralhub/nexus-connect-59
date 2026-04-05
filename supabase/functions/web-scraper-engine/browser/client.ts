@@ -52,6 +52,15 @@ export class CDPBrowser {
   private bbSessionId: string
   private closed = false
 
+  // ── Network capture ──
+  private _networkRequests: { url: string; method: string; type: string; requestId?: string }[] = []
+  private _networkResponses: { requestId: string; url: string; status: number; mimeType: string }[] = []
+  private _captureNetwork = false
+
+  // ── Execution contexts (frame → contextId) ──
+  private _executionContexts = new Map<string, number>()  // frameId → contextId
+  private _contextFrameMap = new Map<number, string>()     // contextId → frameId
+
   private constructor(bbSessionId: string) {
     this.bbSessionId = bbSessionId
   }
@@ -164,7 +173,51 @@ export class CDPBrowser {
               handler.resolve(data.result)
             }
           }
-          // Events (no id) are ignored for now — we use polling instead
+
+          // ── Event handling (no id) ──
+          if (data.id === undefined && data.method) {
+            // Capture network requests
+            if (data.method === 'Network.requestWillBeSent' && this._captureNetwork) {
+              const req = data.params?.request
+              if (req?.url) {
+                this._networkRequests.push({
+                  url: req.url,
+                  method: req.method || 'GET',
+                  type: data.params.type || 'Other',
+                  requestId: data.params.requestId || '',
+                })
+              }
+            }
+            // Capture network responses
+            if (data.method === 'Network.responseReceived' && this._captureNetwork) {
+              const resp = data.params?.response
+              const reqId = data.params?.requestId
+              if (resp?.url && reqId) {
+                this._networkResponses.push({
+                  requestId: reqId,
+                  url: resp.url,
+                  status: resp.status || 0,
+                  mimeType: resp.mimeType || '',
+                })
+              }
+            }
+            // Track execution contexts (for frame-aware evaluation)
+            if (data.method === 'Runtime.executionContextCreated') {
+              const ctx = data.params?.context
+              if (ctx?.id && ctx?.auxData?.frameId) {
+                this._executionContexts.set(ctx.auxData.frameId, ctx.id)
+                this._contextFrameMap.set(ctx.id, ctx.auxData.frameId)
+              }
+            }
+            if (data.method === 'Runtime.executionContextDestroyed') {
+              const ctxId = data.params?.executionContextId
+              if (ctxId) {
+                const frameId = this._contextFrameMap.get(ctxId)
+                if (frameId) this._executionContexts.delete(frameId)
+                this._contextFrameMap.delete(ctxId)
+              }
+            }
+          }
         } catch {
           // Ignore parse errors
         }
@@ -174,8 +227,9 @@ export class CDPBrowser {
 
   /**
    * Send a CDP command and wait for the response.
+   * NOTE: Made public in v33 to support Input.dispatchMouseEvent for trusted clicks.
    */
-  private sendCDP(method: string, params?: any, timeoutMs = 30000): Promise<any> {
+  public sendCDP(method: string, params?: any, timeoutMs = 30000): Promise<any> {
     if (this.closed || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
       throw new Error('CDP connection is closed')
     }
@@ -332,6 +386,137 @@ export class CDPBrowser {
     } catch {
       return ''
     }
+  }
+
+  // ── Network Capture API ──────────────────────────────────
+
+  /** Enable network request capture. Call before navigating. */
+  async enableNetworkCapture(): Promise<void> {
+    this._captureNetwork = true
+    this._networkRequests = []
+    await this.sendCDP('Network.enable')
+  }
+
+  /** Get all captured network requests. */
+  getNetworkRequests(): { url: string; method: string; type: string }[] {
+    return [...this._networkRequests]
+  }
+
+  /** Clear captured requests (keep capture enabled). */
+  clearNetworkRequests(): void {
+    this._networkRequests = []
+    this._networkResponses = []
+  }
+
+  /** Get all captured network responses. */
+  getNetworkResponses(): { requestId: string; url: string; status: number; mimeType: string }[] {
+    return [...this._networkResponses]
+  }
+
+  /** Get the body of a captured network response by requestId. */
+  async getResponseBody(requestId: string): Promise<string> {
+    try {
+      const result = await this.sendCDP('Network.getResponseBody', { requestId })
+      if (result?.base64Encoded) {
+        // Decode base64 response
+        return atob(result.body || '')
+      }
+      return result?.body || ''
+    } catch {
+      return ''
+    }
+  }
+
+  // ── Frame API ──────────────────────────────────────────
+
+  /** Get the full frame tree (all frames/iframes). */
+  async getFrameTree(): Promise<any> {
+    return await this.sendCDP('Page.getFrameTree')
+  }
+
+  /** Get all frame URLs in a flat list. */
+  async getAllFrameUrls(): Promise<{ frameId: string; url: string; name: string }[]> {
+    const tree = await this.getFrameTree()
+    const frames: { frameId: string; url: string; name: string }[] = []
+
+    function walk(node: any) {
+      if (node?.frame) {
+        frames.push({
+          frameId: node.frame.id,
+          url: node.frame.url || '',
+          name: node.frame.name || '',
+        })
+      }
+      if (node?.childFrames) {
+        for (const child of node.childFrames) walk(child)
+      }
+    }
+    walk(tree?.frameTree || tree)
+
+    return frames
+  }
+
+  /**
+   * Evaluate JavaScript in a specific frame by frameId.
+   * Uses the execution context tracked from Runtime.executionContextCreated events.
+   * Falls back to creating an isolated world if context not found.
+   */
+  async evaluateInFrame(frameId: string, expression: string): Promise<any> {
+    let contextId = this._executionContexts.get(frameId)
+
+    // Fallback: create isolated world for the frame
+    if (!contextId) {
+      try {
+        const world = await this.sendCDP('Page.createIsolatedWorld', {
+          frameId,
+          worldName: 'scraper',
+          grantUniveralAccess: true,
+        })
+        contextId = world?.executionContextId
+      } catch {
+        // Isolated world not supported or frame gone
+      }
+    }
+
+    if (!contextId) {
+      throw new Error(`No execution context for frame: ${frameId}`)
+    }
+
+    const result = await this.sendCDP('Runtime.evaluate', {
+      expression,
+      contextId,
+      returnByValue: true,
+      userGesture: true,
+      awaitPromise: false,
+    })
+
+    if (result?.exceptionDetails) {
+      const msg = result.exceptionDetails.exception?.description
+        || result.exceptionDetails.text
+        || 'JS evaluation error'
+      throw new Error(msg)
+    }
+
+    return result?.result?.value
+  }
+
+  /**
+   * Try to evaluate an expression in ALL frames until one succeeds.
+   * Returns { frameId, value } or null.
+   */
+  async evaluateInAnyFrame(expression: string): Promise<{ frameId: string; value: any } | null> {
+    const frames = await this.getAllFrameUrls()
+    for (const frame of frames) {
+      try {
+        const value = await this.evaluateInFrame(frame.frameId, expression)
+        if (value !== undefined && value !== null) {
+          return { frameId: frame.frameId, value }
+        }
+      } catch {
+        // Try next frame
+      }
+    }
+    return null
   }
 
   /** Wait for page load to complete. */

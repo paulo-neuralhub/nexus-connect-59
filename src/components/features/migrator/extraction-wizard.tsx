@@ -44,6 +44,7 @@ import {
   AlertTriangle,
   Settings2,
   Download,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -64,7 +65,7 @@ interface ExtractionEntity {
   estimatedItems?: number;
 }
 
-type WizardStep = 'entities' | 'configure' | 'extracting' | 'complete';
+type WizardStep = 'entities' | 'configure' | 'extracting' | 'complete' | 'mapping' | 'importing';
 
 interface ExtractionWizardProps {
   open: boolean;
@@ -148,6 +149,17 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
   const [errors, setErrors] = useState<string[]>([]);
   const [logs, setLogs] = useState<{ time: string; type: 'info' | 'success' | 'error' | 'warning'; msg: string }[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Mapping review state
+  const [importJobId, setImportJobId] = useState<string | null>(null);
+  const [aiMapping, setAiMapping] = useState<Record<string, string | null> | null>(null);
+  const [aiConfidence, setAiConfidence] = useState<number>(0);
+  const [unmappedColumns, setUnmappedColumns] = useState<string[]>([]);
+  const [detectedColumns, setDetectedColumns] = useState<string[]>([]);
+  const [confirmedMapping, setConfirmedMapping] = useState<Record<string, string>>({});
+  const [mappingLoading, setMappingLoading] = useState(false);
+  const [importProgress, setImportProgress] = useState({ processed: 0, failed: 0, total: 0 });
+  const [importResult, setImportResult] = useState<any>(null);
 
   const systemName = connection?.name || 'Sistema';
   const portalUrl = connection?.connection_config?._temp_credentials?.url || connection?.connection_config?.base_url || '';
@@ -614,16 +626,17 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <div className="grid gap-2">
                 <Button
                   className="w-full justify-start h-auto py-3"
+                  disabled={mappingLoading}
                   onClick={async () => {
                     if (!sessionId) {
                       toast.error('No hay sesión de extracción');
                       return;
                     }
-                    // Send extracted data directly to import pipeline
+                    setMappingLoading(true);
                     try {
-                      toast.info('Enviando datos al pipeline de importación...');
+                      toast.info('Analizando datos con IA para mapeo de campos...');
                       const orgId = currentOrganization?.id || connection?.organization_id;
-                      const { data: importResult, error: importError } = await supabase.functions.invoke('process-import', {
+                      const { data: result, error: err } = await supabase.functions.invoke('process-import', {
                         body: {
                           action: 'create-from-scraping',
                           session_id: sessionId,
@@ -633,22 +646,44 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                           'x-organization-id': orgId!,
                         },
                       });
-                      if (importError) {
-                        toast.error('Error al crear importación');
-                      } else {
-                        toast.success(`Importación creada: ${importResult?.job_id?.slice(0, 8) || 'OK'}...`);
-                        handleClose();
-                        navigate('/app/data-hub?tab=migrator');
+                      if (err) {
+                        console.error('Mapping error:', err);
+                        toast.error(`Error al analizar datos: ${err.message || JSON.stringify(err)}`);
+                        setMappingLoading(false);
+                        return;
                       }
+                      // Store AI mapping results
+                      const entityJob = result?.entity_jobs?.[0];
+                      setImportJobId(result?.job_id || entityJob?.job_id);
+                      if (entityJob?.mapping) {
+                        setAiMapping(entityJob.mapping.mapping || {});
+                        setAiConfidence(entityJob.mapping.confidence || 0);
+                        setUnmappedColumns(entityJob.mapping.unmapped || []);
+                        // Initialize confirmed mapping from AI suggestion
+                        const initial: Record<string, string> = {};
+                        for (const [col, field] of Object.entries(entityJob.mapping.mapping || {})) {
+                          if (field && field !== 'null') initial[col] = field as string;
+                        }
+                        setConfirmedMapping(initial);
+                        setDetectedColumns(Object.keys(entityJob.mapping.mapping || {}));
+                      }
+                      toast.success('Análisis de IA completado. Revisa el mapeo de campos.');
+                      setStep('mapping');
                     } catch (err: any) {
                       toast.error(`Error: ${err.message}`);
+                    } finally {
+                      setMappingLoading(false);
                     }
                   }}
                 >
-                  <Download className="h-5 w-5 mr-3 shrink-0" />
+                  {mappingLoading ? (
+                    <Loader2 className="h-5 w-5 mr-3 shrink-0 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-5 w-5 mr-3 shrink-0" />
+                  )}
                   <div className="text-left">
-                    <p className="font-medium">Importar a IP-NEXUS</p>
-                    <p className="text-xs opacity-80">Enviar los datos extraídos directamente al sistema</p>
+                    <p className="font-medium">{mappingLoading ? 'Analizando con IA...' : 'Mapear e Importar a IP-NEXUS'}</p>
+                    <p className="text-xs opacity-80">IA analiza los campos → tú confirmas → se importan los datos</p>
                   </div>
                 </Button>
                 <Button
@@ -667,6 +702,238 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                 </Button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ─── STEP: MAPPING REVIEW ─── */}
+        {step === 'mapping' && aiMapping && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-blue-500" />
+              <h3 className="text-lg font-semibold">Mapeo de Campos — Revisión</h3>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              La IA ha analizado las {detectedColumns.length} columnas extraídas y sugiere el siguiente mapeo.
+              Revisa y ajusta antes de importar.
+            </p>
+
+            {/* Confidence indicator */}
+            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium">Confianza de IA</span>
+                  <span className={cn('text-sm font-bold', aiConfidence >= 0.8 ? 'text-green-600' : aiConfidence >= 0.5 ? 'text-yellow-600' : 'text-red-600')}>
+                    {Math.round(aiConfidence * 100)}%
+                  </span>
+                </div>
+                <Progress value={aiConfidence * 100} className="h-2" />
+              </div>
+              <Badge variant={aiConfidence >= 0.8 ? 'default' : 'outline'}>
+                {Object.keys(confirmedMapping).length} / {detectedColumns.length} mapeados
+              </Badge>
+            </div>
+
+            {/* Mapping table */}
+            <ScrollArea className="max-h-[350px]">
+              <div className="space-y-1">
+                <div className="grid grid-cols-[1fr,auto,1fr] gap-2 px-2 py-1 text-xs font-medium text-muted-foreground uppercase">
+                  <span>Campo Origen (Galena)</span>
+                  <span>→</span>
+                  <span>Campo IP-NEXUS</span>
+                </div>
+                <Separator />
+                {detectedColumns.map((col) => {
+                  const mappedTo = confirmedMapping[col] || null;
+                  const isUnmapped = !mappedTo;
+                  return (
+                    <div
+                      key={col}
+                      className={cn(
+                        'grid grid-cols-[1fr,auto,1fr] gap-2 items-center px-2 py-2 rounded text-sm',
+                        isUnmapped ? 'bg-yellow-50 dark:bg-yellow-900/10' : 'bg-green-50 dark:bg-green-900/10'
+                      )}
+                    >
+                      <span className="font-mono text-xs truncate" title={col}>{col}</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                      <Select
+                        value={mappedTo || '_skip'}
+                        onValueChange={(val) => {
+                          setConfirmedMapping((prev) => {
+                            const next = { ...prev };
+                            if (val === '_skip') {
+                              delete next[col];
+                            } else {
+                              next[col] = val;
+                            }
+                            return next;
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue placeholder="No mapear" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_skip">
+                            <span className="text-muted-foreground">— No mapear —</span>
+                          </SelectItem>
+                          <SelectItem value="mark_name">Nombre de marca</SelectItem>
+                          <SelectItem value="reference">Referencia / Expediente</SelectItem>
+                          <SelectItem value="status">Estado</SelectItem>
+                          <SelectItem value="filing_date">Fecha de presentación</SelectItem>
+                          <SelectItem value="registration_date">Fecha de registro</SelectItem>
+                          <SelectItem value="expiry_date">Fecha de vencimiento</SelectItem>
+                          <SelectItem value="jurisdiction">Jurisdicción / País</SelectItem>
+                          <SelectItem value="nice_classes">Clases de Niza</SelectItem>
+                          <SelectItem value="applicant_name">Titular / Solicitante</SelectItem>
+                          <SelectItem value="agent_reference">Agente / Oficina</SelectItem>
+                          <SelectItem value="matter_type">Tipo (marca/patente)</SelectItem>
+                          <SelectItem value="description">Descripción</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+
+            {/* Unmapped columns warning */}
+            {unmappedColumns.length > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-sm">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-yellow-800 dark:text-yellow-400">
+                    {unmappedColumns.length} columnas sin mapeo claro
+                  </p>
+                  <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">
+                    {unmappedColumns.join(', ')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep('complete')}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={Object.keys(confirmedMapping).length === 0}
+                onClick={async () => {
+                  if (!importJobId) {
+                    toast.error('No hay job de importación');
+                    return;
+                  }
+                  setStep('importing');
+                  setImportProgress({ processed: 0, failed: 0, total: itemsScraped });
+                  try {
+                    const orgId = currentOrganization?.id || connection?.organization_id;
+                    const { data: result, error: err } = await supabase.functions.invoke('process-import', {
+                      body: {
+                        action: 'import',
+                        job_id: importJobId,
+                        confirmed_mapping: confirmedMapping,
+                        entity_type: 'matters',
+                        organization_id: orgId,
+                      },
+                      headers: {
+                        'x-organization-id': orgId!,
+                      },
+                    });
+                    if (err) {
+                      toast.error(`Error al importar: ${err.message}`);
+                      setStep('mapping');
+                      return;
+                    }
+                    setImportResult(result);
+                    setImportProgress({
+                      processed: result?.processed || 0,
+                      failed: result?.failed || 0,
+                      total: result?.total || itemsScraped,
+                    });
+                    toast.success(`Importación completada: ${result?.processed || 0} registros importados`);
+                  } catch (err: any) {
+                    toast.error(`Error: ${err.message}`);
+                    setStep('mapping');
+                  }
+                }}
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Confirmar e Importar ({Object.keys(confirmedMapping).length} campos mapeados)
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ─── STEP: IMPORTING ─── */}
+        {step === 'importing' && (
+          <div className="space-y-4 py-8 text-center">
+            {!importResult ? (
+              <>
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-500" />
+                <h3 className="text-lg font-semibold">Importando datos a IP-NEXUS...</h3>
+                <p className="text-sm text-muted-foreground">
+                  Procesando {importProgress.total.toLocaleString()} registros con el mapeo confirmado.
+                  Esto puede tomar unos minutos.
+                </p>
+                <Progress value={importProgress.total > 0 ? ((importProgress.processed + importProgress.failed) / importProgress.total) * 100 : 0} />
+                <p className="text-xs text-muted-foreground">
+                  {importProgress.processed} importados, {importProgress.failed} fallidos
+                </p>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-12 w-12 mx-auto text-green-500" />
+                <h3 className="text-lg font-semibold">Importación Completada</h3>
+                <div className="grid grid-cols-3 gap-3 text-sm max-w-sm mx-auto">
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <p className="text-2xl font-bold text-green-600">{importResult.processed}</p>
+                      <p className="text-xs text-muted-foreground">Importados</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <p className="text-2xl font-bold text-yellow-600">{importResult.duplicates || 0}</p>
+                      <p className="text-xs text-muted-foreground">Actualizados</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <p className="text-2xl font-bold text-red-600">{importResult.failed}</p>
+                      <p className="text-xs text-muted-foreground">Fallidos</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                {importResult.errors?.length > 0 && (
+                  <div className="text-left max-w-sm mx-auto">
+                    <p className="text-xs font-medium text-red-600 mb-1">Primeros errores:</p>
+                    <ScrollArea className="max-h-24">
+                      {importResult.errors.slice(0, 5).map((e: any, i: number) => (
+                        <p key={i} className="text-xs text-muted-foreground truncate">
+                          Fila {e.row}: {e.error}
+                        </p>
+                      ))}
+                    </ScrollArea>
+                  </div>
+                )}
+                <div className="flex gap-2 justify-center mt-4">
+                  <Button
+                    onClick={() => {
+                      handleClose();
+                      navigate('/app/docket');
+                    }}
+                  >
+                    Ver en DOCKET
+                  </Button>
+                  <Button variant="outline" onClick={handleClose}>
+                    Cerrar
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </DialogContent>
