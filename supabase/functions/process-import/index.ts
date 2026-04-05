@@ -714,6 +714,247 @@ async function importData(params: {
   }
 }
 
+// ── PHASE D: IMPORT CHUNK (lightweight — receives rows in request body) ──
+
+async function importChunk(params: {
+  job_id: string
+  headers: string[]
+  rows: any[][]
+  confirmed_mapping: Record<string, string>
+  entity_type: string
+  organization_id: string
+  chunk_index: number
+  total_chunks: number
+  records_total?: number
+}) {
+  const {
+    job_id, headers, rows, confirmed_mapping,
+    entity_type, organization_id, chunk_index, total_chunks, records_total,
+  } = params
+
+  const table = entity_type === 'matters' ? 'matters'
+    : entity_type === 'contacts' ? 'contacts'
+    : entity_type === 'ip_actions' ? 'ip_actions'
+    : 'crm_accounts'
+
+  // First chunk: set job to 'importing'
+  if (chunk_index === 0) {
+    await supabaseAdmin.from('import_jobs').update({
+      status: 'importing',
+      records_total: records_total || 0,
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('id', job_id)
+  }
+
+  let processed = 0
+  let failed = 0
+  let duplicates = 0
+  const errors: any[] = []
+  const mappedBatch: Record<string, any>[] = []
+
+  // Map columns to fields for each row in this chunk
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r]
+    try {
+      const mapped: Record<string, any> = { organization_id }
+
+      for (const [sourceCol, targetField] of Object.entries(confirmed_mapping)) {
+        if (!targetField || targetField === 'null') continue
+        const colIndex = headers.indexOf(sourceCol)
+        if (colIndex === -1) continue
+
+        let value = row[colIndex]
+        if (value === undefined || value === null || value === '') continue
+        value = String(value).trim()
+        if (!value) continue
+
+        if (targetField === 'status') {
+          const result = normalizeStatus(value)
+          mapped['status'] = result.status
+          mapped['status_detail'] = result.status_detail
+          continue
+        }
+
+        if (targetField === 'nice_classes') {
+          mapped[targetField] = value.split(/[,;\s]+/)
+            .map((c: string) => parseInt(c.trim()))
+            .filter((n: number) => !isNaN(n) && n > 0)
+          continue
+        }
+
+        if (DATE_FIELDS.has(targetField)) {
+          const date = new Date(value)
+          if (!isNaN(date.getTime())) {
+            mapped[targetField] = date.toISOString()
+          }
+          continue
+        }
+
+        if (COUNTRY_FIELDS.has(targetField)) {
+          const code = normalizeCountry(value)
+          if (targetField === 'jurisdiction' || targetField === 'jurisdiction_code') {
+            if (code.length === 2) {
+              mapped['jurisdiction_code'] = code
+              mapped['jurisdiction'] = value
+            } else {
+              mapped[targetField] = value
+            }
+          } else {
+            const codeField = targetField + '_code'
+            if (code.length === 2) {
+              mapped[codeField] = code
+              mapped[targetField] = value
+            } else {
+              mapped[targetField] = value
+            }
+          }
+          continue
+        }
+
+        mapped[targetField] = value
+      }
+
+      // Sync title <-> mark_name for matters
+      if (entity_type === 'matters') {
+        if (mapped.title && !mapped.mark_name) mapped.mark_name = mapped.title
+        if (mapped.mark_name && !mapped.title) mapped.title = mapped.mark_name
+        if (!mapped.title && !mapped.mark_name && !mapped.reference) {
+          errors.push({ row: chunk_index * rows.length + r, error: 'Falta title, mark_name o reference' })
+          failed++
+          continue
+        }
+      }
+
+      mappedBatch.push(mapped)
+    } catch (rowError: any) {
+      errors.push({ row: chunk_index * rows.length + r, error: rowError.message })
+      failed++
+    }
+  }
+
+  if (mappedBatch.length > 0) {
+    // Batch dedup check against DB (matters only)
+    let toInsert = mappedBatch
+    if (entity_type === 'matters') {
+      const reviewQueue: Record<string, any>[] = []
+
+      const legacyIds = mappedBatch
+        .filter(m => m.legacy_system_id)
+        .map(m => m.legacy_system_id)
+
+      const existingLegacyIds = new Set<string>()
+      if (legacyIds.length > 0) {
+        const { data: existing } = await supabaseAdmin
+          .from(table).select('legacy_system_id')
+          .eq('organization_id', organization_id)
+          .in('legacy_system_id', legacyIds)
+        for (const e of existing || []) {
+          if (e.legacy_system_id) existingLegacyIds.add(e.legacy_system_id)
+        }
+      }
+
+      const refs = mappedBatch
+        .filter(m => m.reference && !existingLegacyIds.has(m.legacy_system_id))
+        .map(m => m.reference)
+
+      const existingRefs = new Set<string>()
+      if (refs.length > 0) {
+        const { data: existing } = await supabaseAdmin
+          .from(table).select('reference')
+          .eq('organization_id', organization_id)
+          .in('reference', refs)
+        for (const e of existing || []) {
+          if (e.reference) existingRefs.add(e.reference)
+        }
+      }
+
+      toInsert = []
+      for (const mapped of mappedBatch) {
+        const isDup =
+          (mapped.legacy_system_id && existingLegacyIds.has(mapped.legacy_system_id)) ||
+          (mapped.reference && existingRefs.has(mapped.reference))
+
+        if (isDup) {
+          reviewQueue.push({
+            organization_id,
+            import_job_id: job_id,
+            entity_type,
+            proposed_data: mapped,
+            conflict_type: 'duplicate',
+            status: 'pending',
+          })
+          duplicates++
+        } else {
+          toInsert.push(mapped)
+        }
+      }
+
+      if (reviewQueue.length > 0) {
+        await supabaseAdmin.from('import_review_queue').insert(reviewQueue)
+      }
+    }
+
+    // Batch insert
+    if (toInsert.length > 0) {
+      const { error: insertError } = await supabaseAdmin.from(table).insert(toInsert)
+      if (insertError) {
+        // Fallback: insert one by one to find which rows fail
+        for (const singleRow of toInsert) {
+          const { error: singleError } = await supabaseAdmin.from(table).insert(singleRow)
+          if (singleError) {
+            errors.push({
+              row: 0,
+              error: singleError.message,
+              data: singleRow.title || singleRow.reference || singleRow.legacy_system_id,
+            })
+            failed++
+          } else {
+            processed++
+          }
+        }
+      } else {
+        processed += toInsert.length
+      }
+    }
+  }
+
+  // Update cumulative progress in DB
+  const { data: currentJob } = await supabaseAdmin
+    .from('import_jobs')
+    .select('records_processed, records_failed, metadata')
+    .eq('id', job_id)
+    .single()
+
+  const cumProcessed = (currentJob?.records_processed || 0) + processed
+  const cumFailed = (currentJob?.records_failed || 0) + failed
+  const currentMeta = (currentJob?.metadata || {}) as any
+  const cumDuplicates = (currentMeta?.duplicates_found || 0) + duplicates
+
+  const isLastChunk = chunk_index === total_chunks - 1
+  const updatePayload: any = {
+    records_processed: cumProcessed,
+    records_failed: cumFailed,
+    metadata: {
+      ...currentMeta,
+      duplicates_found: cumDuplicates,
+      chunks_completed: chunk_index + 1,
+      total_chunks,
+    },
+    updated_at: new Date().toISOString(),
+  }
+
+  if (isLastChunk) {
+    updatePayload.status = cumFailed === 0 ? 'completed' : 'completed_with_errors'
+    updatePayload.completed_at = new Date().toISOString()
+    updatePayload.error_log = errors.length > 0 ? errors.slice(0, 200) : null
+  }
+
+  await supabaseAdmin.from('import_jobs').update(updatePayload).eq('id', job_id)
+
+  return { processed, failed, duplicates, errors: errors.slice(0, 10) }
+}
+
 // ── MAIN HANDLER ────────────────────────────────────────────
 
 serve(async (req) => {
@@ -734,6 +975,8 @@ serve(async (req) => {
       result = await mapFields(body)
     } else if (action === 'import') {
       result = await importData(body)
+    } else if (action === 'import-chunk') {
+      result = await importChunk(body)
     } else {
       throw new Error(`Accion desconocida: ${action}`)
     }

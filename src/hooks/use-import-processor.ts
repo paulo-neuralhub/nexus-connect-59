@@ -207,7 +207,7 @@ export function useImportProcessor() {
     },
   })
 
-  // FASE C — Importar datos reales
+  // FASE C — Importar datos en tandas (chunked, background-safe)
   const importData = useMutation({
     mutationFn: async (params: {
       jobId: string
@@ -216,23 +216,84 @@ export function useImportProcessor() {
     }): Promise<ImportResult> => {
       if (!orgId) throw new Error('Sin organización')
 
-      const toastId = toast.loading('Importando registros...')
+      const toastId = toast.loading('Preparando importación...')
 
       try {
-        const { data, error: fnError } = await supabase.functions
-          .invoke('process-import', {
-            body: {
-              action: 'import',
-              job_id: params.jobId,
-              confirmed_mapping: params.confirmedMapping,
-              entity_type: params.entityType,
-              organization_id: orgId,
-            },
-          })
+        // 1. Get job metadata to find parsed JSON URL
+        const { data: job, error: jobError } = await supabase
+          .from('import_jobs')
+          .select('metadata')
+          .eq('id', params.jobId)
+          .single()
 
-        if (fnError) throw new Error(fnError.message)
-        if (data?.error) throw new Error(data.error)
+        if (jobError || !job) throw new Error('Job no encontrado')
+        const meta = job.metadata as any
+        const parsedUrl = meta?.parsed_file_url
+        if (!parsedUrl) throw new Error('No se encontraron datos parseados. Re-suba el archivo.')
 
+        // 2. Download parsed JSON in browser (fast, no edge function needed)
+        toast.loading('Descargando datos parseados...', { id: toastId })
+        const { data: blob, error: dlError } = await supabase.storage
+          .from('imports')
+          .download(parsedUrl)
+
+        if (dlError || !blob) throw new Error(`Error descargando datos: ${dlError?.message}`)
+
+        const text = await blob.text()
+        const parsed = JSON.parse(text)
+        const headers: string[] = parsed.headers
+        const allRows: any[][] = parsed.rows
+        const totalRows = allRows.length
+
+        // 3. Split into chunks and process each one
+        const CHUNK_SIZE = 500
+        const totalChunks = Math.ceil(totalRows / CHUNK_SIZE)
+        let totalProcessed = 0
+        let totalFailed = 0
+        let totalDuplicates = 0
+        const allErrors: Array<{ row: number; error: string }> = []
+
+        toast.loading(`Importando 0 de ${totalRows} registros (0/${totalChunks} tandas)...`, {
+          id: toastId,
+          duration: Infinity,
+        })
+
+        for (let i = 0; i < totalChunks; i++) {
+          const chunkRows = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+
+          const { data, error: fnError } = await supabase.functions
+            .invoke('process-import', {
+              body: {
+                action: 'import-chunk',
+                job_id: params.jobId,
+                headers,
+                rows: chunkRows,
+                confirmed_mapping: params.confirmedMapping,
+                entity_type: params.entityType,
+                organization_id: orgId,
+                chunk_index: i,
+                total_chunks: totalChunks,
+                records_total: totalRows,
+              },
+            })
+
+          if (fnError) throw new Error(fnError.message)
+          if (data?.error) throw new Error(data.error)
+
+          totalProcessed += data.processed || 0
+          totalFailed += data.failed || 0
+          totalDuplicates += data.duplicates || 0
+          if (data.errors) allErrors.push(...data.errors)
+
+          // Update persistent toast with progress
+          const progress = Math.round(((i + 1) / totalChunks) * 100)
+          toast.loading(
+            `Importando ${totalProcessed + totalFailed + totalDuplicates} de ${totalRows} registros (${i + 1}/${totalChunks} tandas) — ${progress}%`,
+            { id: toastId, duration: Infinity }
+          )
+        }
+
+        // 4. Done — invalidate queries
         queryClient.invalidateQueries({ queryKey: ['matters'] })
         queryClient.invalidateQueries({ queryKey: ['docket'] })
         queryClient.invalidateQueries({ queryKey: ['expedientes'] })
@@ -241,15 +302,20 @@ export function useImportProcessor() {
         queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
         queryClient.invalidateQueries({ queryKey: ['imports'] })
 
-        const { processed, failed, duplicates } = data
         toast.success(
-          `${processed} registros importados${
-            duplicates > 0 ? ` · ${duplicates} en revisión` : ''
-          }${failed > 0 ? ` · ${failed} con error` : ''}`,
+          `${totalProcessed} registros importados${
+            totalDuplicates > 0 ? ` · ${totalDuplicates} en revisión` : ''
+          }${totalFailed > 0 ? ` · ${totalFailed} con error` : ''}`,
           { id: toastId }
         )
 
-        return data as ImportResult
+        return {
+          total: totalRows,
+          processed: totalProcessed,
+          failed: totalFailed,
+          duplicates: totalDuplicates,
+          errors: allErrors.slice(0, 20),
+        }
       } catch (error: any) {
         toast.error(`Error: ${error.message}`, { id: toastId })
         throw error

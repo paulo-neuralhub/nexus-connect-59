@@ -93,14 +93,15 @@ const INITIAL_STATE: WizardState = {
 
 const ENTITY_LABELS: Record<EntityType, string> = {
   matters: 'Expedientes de PI',
+  ip_actions: 'Acciones PI',
   contacts: 'Contactos',
   crm_accounts: 'Cuentas / Clientes',
 }
 
 const SOURCE_SYSTEMS = [
-  'Anaqua', 'PatSnap', 'CPA Global', 'Dennemeyer',
+  'PuntoIP Galena', 'Anaqua', 'PatSnap', 'CPA Global', 'Dennemeyer',
   'IPAN', 'Thomson CompuMark', 'Corsearch',
-  'Questel Orbit', 'Excel propio', 'Otro',
+  'Questel Orbit', 'FileMaker', 'Excel propio', 'Otro',
 ]
 
 // ── COMPONENTE PRINCIPAL ─────────────────────────────────
@@ -126,7 +127,13 @@ export function ImportWizardModal({
   const updateState = (patch: Partial<WizardState>) =>
     setState(prev => ({ ...prev, ...patch }))
 
+  // Allow closing during import — mutation continues in background with toast
   const handleClose = () => {
+    if (state.step === 4 && importData.isPending) {
+      // Import is running — close modal but mutation + toast continue
+      onOpenChange(false)
+      return
+    }
     setState(INITIAL_STATE)
     setSourceSystem('')
     onOpenChange(false)
@@ -239,21 +246,30 @@ export function ImportWizardModal({
     })
   }
 
-  const handleStartImport = async () => {
+  const handleStartImport = () => {
     if (!state.jobId) return
+    updateState({ step: 4 })
 
-    try {
-      updateState({ step: 4 })
-      const result = await importData.mutateAsync({
-        jobId: state.jobId,
-        confirmedMapping: state.confirmedMapping,
-        entityType: state.entityType,
-      })
-      updateState({ step: 5, result })
-    } catch {
+    // Fire-and-forget: mutation runs in background with toast progress
+    importData.mutate({
+      jobId: state.jobId,
+      confirmedMapping: state.confirmedMapping,
+      entityType: state.entityType,
+    })
+  }
+
+  // Watch mutation completion to transition to Step 5
+  useEffect(() => {
+    if (state.step === 4 && importData.isSuccess && importData.data) {
+      updateState({ step: 5, result: importData.data })
+    }
+  }, [state.step, importData.isSuccess, importData.data])
+
+  useEffect(() => {
+    if (state.step === 4 && importData.isError) {
       updateState({ step: 3 })
     }
-  }
+  }, [state.step, importData.isError])
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -322,6 +338,7 @@ export function ImportWizardModal({
             jobStatus={jobStatus}
             total={jobStatus?.records_total || 0}
             processed={jobStatus?.records_processed || 0}
+            onClose={handleClose}
           />
         )}
 
@@ -952,15 +969,20 @@ function Step3Shadow({
 // ── STEP 4 — Progreso de importación ─────────────────────
 
 function Step4Progress({
-  jobStatus, total, processed,
+  jobStatus, total, processed, onClose,
 }: {
   jobStatus: any
   total: number
   processed: number
+  onClose?: () => void
 }) {
   const progress = total > 0
     ? Math.round((processed / total) * 100)
     : 0
+
+  const chunksInfo = (jobStatus?.metadata as any)?.chunks_completed
+    ? `Tanda ${(jobStatus?.metadata as any)?.chunks_completed} de ${(jobStatus?.metadata as any)?.total_chunks}`
+    : null
 
   return (
     <div className="py-12 text-center space-y-6">
@@ -974,6 +996,7 @@ function Step4Progress({
         </p>
         <p className="text-sm text-muted-foreground">
           {processed} de {total || '?'} procesados
+          {chunksInfo && <span className="ml-1">({chunksInfo})</span>}
         </p>
       </div>
 
@@ -985,9 +1008,15 @@ function Step4Progress({
       </div>
 
       <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-        Este proceso puede tardar unos minutos según
-        el tamaño del archivo. No cierres esta ventana.
+        Puedes cerrar esta ventana y la importacion
+        continuara en segundo plano. Te notificaremos cuando termine.
       </p>
+
+      {onClose && (
+        <Button variant="outline" size="sm" onClick={onClose}>
+          Continuar en segundo plano
+        </Button>
+      )}
     </div>
   )
 }
