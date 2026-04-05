@@ -243,6 +243,97 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
     connection?.connection_config?.base_url ||
     '';
 
+  // ── Resume: check for existing sessions when dialog opens ──
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const [existingSession, setExistingSession] = useState<{
+    id: string;
+    status: string;
+    items_scraped: number;
+    current_page: string | null;
+    created_at: string;
+    import_job_id: string | null;
+    has_matters: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!open || !connection?.id) return;
+
+    // Only check once per dialog open
+    if (resumeChecked) return;
+
+    async function checkExistingSession() {
+      try {
+        const { data: sessions } = await supabase
+          .from('scraping_sessions')
+          .select('id, status, items_scraped, current_page, created_at, import_job_id, extracted_data')
+          .eq('source_id', connection!.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (sessions?.[0] && sessions[0].items_scraped > 0) {
+          const s = sessions[0];
+          const extractedData = s.extracted_data as any;
+          const hasMatterData = extractedData?.matters && Array.isArray(extractedData.matters) && extractedData.matters.length > 0;
+
+          setExistingSession({
+            id: s.id,
+            status: s.status,
+            items_scraped: s.items_scraped,
+            current_page: s.current_page,
+            created_at: s.created_at,
+            import_job_id: s.import_job_id,
+            has_matters: hasMatterData,
+          });
+        }
+      } catch {
+        // Silently ignore
+      } finally {
+        setResumeChecked(true);
+      }
+    }
+
+    checkExistingSession();
+  }, [open, connection?.id, resumeChecked]);
+
+  // Reset resumeChecked when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setResumeChecked(false);
+      setExistingSession(null);
+    }
+  }, [open]);
+
+  // ── Resume from existing session ──
+  function handleResume() {
+    if (!existingSession) return;
+
+    setSessionId(existingSession.id);
+    setItemsScraped(existingSession.items_scraped);
+    setTotalItems(ESTIMATED_TOTAL);
+
+    // Parse letter from current_page
+    const letter = parseLetterFromPage(existingSession.current_page);
+    if (letter) setCurrentLetter(letter);
+
+    if (existingSession.status === 'completed' && existingSession.items_scraped > 0) {
+      // Session completed with data → go directly to mapping step
+      setExtractionStatus('completed');
+      setStep('complete');
+    } else if (existingSession.status === 'scraping' || existingSession.status === 'authenticating' || existingSession.status === 'authenticated') {
+      // Session still running → resume polling
+      setExtractionStatus('running');
+      setStep('extracting');
+      setStartTime(Date.now());
+      startPolling(connection!.id);
+    } else if (existingSession.status === 'error' && existingSession.items_scraped > 0) {
+      // Session errored but has data → go to mapping
+      setExtractionStatus('completed');
+      setStep('complete');
+    }
+
+    setExistingSession(null); // Hide resume banner
+  }
+
   // ── Elapsed timer ──
   useEffect(() => {
     if (startTime && (step === 'connecting' || step === 'extracting') && extractionStatus === 'running') {
@@ -475,12 +566,12 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
   // ── Close handler ──
   function handleClose() {
     if (extractionStatus === 'running' && (step === 'connecting' || step === 'extracting')) {
-      if (!confirm('¿Seguro que quieres cerrar? La extracción se cancelará.')) return;
+      if (!confirm('¿Seguro que quieres cerrar? La extracción continuará en segundo plano — podrás retomar desde el botón "Continuar".')) return;
     }
     // Cleanup intervals
     if (pollRef.current) clearInterval(pollRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
-    // Reset state
+    // Reset wizard UI state (NOT session data in DB)
     setStep('entities');
     setExtractionStatus('idle');
     setItemsScraped(0);
@@ -500,6 +591,9 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
     setDetectedColumns([]);
     setConfirmedMapping({});
     setImportResult(null);
+    // Reset resume check so next open re-checks for sessions
+    setResumeChecked(false);
+    setExistingSession(null);
     onOpenChange(false);
   }
 
@@ -661,6 +755,41 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
         {/* ━━━ STEP 1: SELECT ENTITIES ━━━ */}
         {step === 'entities' && (
           <div className="space-y-4 py-4">
+            {/* ── Resume banner: show when there's an existing session with data ── */}
+            {existingSession && (
+              <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center shrink-0">
+                      <RefreshCw className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                        Extracción anterior encontrada
+                      </h4>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                        {existingSession.items_scraped.toLocaleString()} registros extraídos
+                        {existingSession.status === 'completed' && ' — Listo para mapeo IA'}
+                        {existingSession.status === 'scraping' && ' — Extracción en curso'}
+                        {existingSession.status === 'error' && ' — Extracción parcial (con errores)'}
+                      </p>
+                      <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 mt-0.5">
+                        Sesión: {new Date(existingSession.created_at).toLocaleString('es')}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="shrink-0"
+                      onClick={handleResume}
+                    >
+                      <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
+                      Continuar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div>
               <h3 className="font-medium mb-1">¿Qué datos quieres extraer?</h3>
               <p className="text-sm text-muted-foreground">
