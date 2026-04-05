@@ -163,6 +163,33 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Consolidate lucide-react icons into a single chunk (was 1200+ files)
+          'vendor-icons': ['lucide-react'],
+          // Group large vendor libraries
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+          ],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-charts': ['recharts'],
+          'vendor-pdf': ['jspdf'],
+          'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+        },
+      },
+    },
+    // Increase chunk size warning limit (some vendor chunks will be large)
+    chunkSizeWarningLimit: 1500,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
