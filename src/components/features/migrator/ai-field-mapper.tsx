@@ -450,15 +450,15 @@ function FieldMappingRow({
                 <SelectTrigger className="h-8">
                   <SelectValue placeholder="Seleccionar campo..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-72 overflow-y-auto">
                   {Object.entries(IP_NEXUS_FIELDS).map(([entity, fields]) => (
                     <div key={entity}>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase sticky top-0 bg-popover z-10">
                         {entity}
                       </div>
                       {fields.map(f => (
-                        <SelectItem 
-                          key={`${entity}.${f.name}`} 
+                        <SelectItem
+                          key={`${entity}.${f.name}`}
                           value={`${entity}.${f.name}`}
                         >
                           {f.label}

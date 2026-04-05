@@ -1,13 +1,16 @@
 /**
- * Action: scrape — v35
+ * Action: scrape — v36
  *
  * Frame-aware CDP + Network Response Interception + Ext.NET DirectEvent support.
  *
- * Key fix in v35:
- * - v34 BUG: fieldIds[0] was NumberField_ExpedienteCodigo — putting "a" in a number
- *   field silently fails. Fix: find TextField_Denominacion (brand name) for letter search.
- *   Priority: Denominacion > Nombre > Contacto > first non-NumberField.
- * - v34 confirmed: limit detection works, dialog fields found, Buscar button works.
+ * Key fix in v36:
+ * - v35 BUG: When CDP timeout occurs during batch search (e.g. letter "f"),
+ *   the error bubbles to the entity catch → final save OVERWRITES incrementally
+ *   saved data with empty local variables → items_scraped drops to 0.
+ *   Fix: (1) clickBuscarAndCollect never throws (internal try-catch returns error in result),
+ *   (2) batch loop tracks consecutive failures and breaks at 3,
+ *   (3) final save MERGES with DB data instead of overwriting,
+ *   (4) grid extraction has its own try-catch to fall back to network responses.
  * - Batched alphabetical search on the Denominacion (brand name) field.
  *
  * ╔══════════════════════════════════════════════════════════════╗
@@ -1286,9 +1289,11 @@ export async function scrape(params: any) {
             // v33 proved: empty search → "supera el límite (14496)" — need to search by letter
             if (buscarBtnId && !timedOut()) {
               // Helper: click Buscar and collect results/errors
+              // v36: wrapped in try-catch — NEVER throws, returns error in result object
               async function clickBuscarAndCollect(
                 browser: any, btnId: string, fieldValue: string | null, fieldIds: string[]
               ): Promise<{ items: any[], error: string | null, limitExceeded: boolean, responsePreview: string }> {
+               try {
                 browser.clearNetworkRequests()
 
                 // Set field values: clear all, then set search text field
@@ -1354,24 +1359,27 @@ export async function scrape(params: any) {
                 const gridCount = await pollGrid(browser, 4, 1500)
                 if (gridCount > 0) {
                   // Extract data from grid store
-                  const storeData = await browser.evaluate(`
-                    (function() {
-                      var grids = Ext.ComponentQuery.query('gridpanel');
-                      for (var g = 0; g < grids.length; g++) {
-                        var s = grids[g].getStore();
-                        if (s && s.getCount() > 0) {
-                          var records = [];
-                          s.each(function(rec) { records.push(rec.data); });
-                          return JSON.stringify(records);
-                        }
-                      }
-                      return '[]';
-                    })()
-                  `)
+                  // v36: wrapped in try-catch so CDP timeout falls through to network response check
                   try {
+                    const storeData = await browser.evaluate(`
+                      (function() {
+                        var grids = Ext.ComponentQuery.query('gridpanel');
+                        for (var g = 0; g < grids.length; g++) {
+                          var s = grids[g].getStore();
+                          if (s && s.getCount() > 0) {
+                            var records = [];
+                            s.each(function(rec) { records.push(rec.data); });
+                            return JSON.stringify(records);
+                          }
+                        }
+                        return '[]';
+                      })()
+                    `)
                     const parsed = JSON.parse(storeData || '[]')
                     if (parsed.length > 0) return { items: parsed, error: null, limitExceeded: false, responsePreview: `grid:${parsed.length}` }
-                  } catch {}
+                  } catch (gridExtErr: any) {
+                    console.warn(`[scrape]   Grid extraction CDP error: ${gridExtErr.message} — falling back to network`)
+                  }
                 }
 
                 // Check network responses
@@ -1399,6 +1407,11 @@ export async function scrape(params: any) {
                 }
 
                 return { items: [], error: null, limitExceeded: false, responsePreview: 'no_data' }
+               } catch (cbcErr: any) {
+                // v36: Never throw from clickBuscarAndCollect — return error in result
+                console.warn(`[scrape]   clickBuscarAndCollect fatal error: ${cbcErr.message}`)
+                return { items: [], error: cbcErr.message, limitExceeded: false, responsePreview: `error:${cbcErr.message.substring(0, 100)}` }
+               }
               }
 
               // Get dialog field IDs for filling search criteria
@@ -1439,10 +1452,17 @@ export async function scrape(params: any) {
                 const letters = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('')
                 const allItems: any[] = []
                 const seenIds = new Set<string>()
+                let consecutiveFailures = 0 // v36: track CDP failures to break early
 
                 for (const letter of letters) {
                   if (timedOut()) {
                     console.log(`[scrape]   ⏱ Timeout during batch search at letter "${letter}", collected ${allItems.length} so far`)
+                    break
+                  }
+                  // v36: Stop if CDP connection appears dead (3+ consecutive failures)
+                  if (consecutiveFailures >= 3) {
+                    console.warn(`[scrape]   ⛔ ${consecutiveFailures} consecutive CDP failures — stopping batch (collected ${allItems.length} items)`)
+                    errors.push({ page: `batch_stopped`, error: `Stopped after ${consecutiveFailures} consecutive CDP failures`, timestamp: ts(), recoverable: true })
                     break
                   }
 
@@ -1451,6 +1471,30 @@ export async function scrape(params: any) {
                   })
 
                   const result = await clickBuscarAndCollect(context.browser, buscarBtnId!, letter, fieldIds)
+
+                  // v36: Check for errors returned by clickBuscarAndCollect (never throws now)
+                  if (result.error) {
+                    consecutiveFailures++
+                    console.warn(`[scrape]   Letter "${letter}" error (${consecutiveFailures}/3): ${result.error}`)
+                    errors.push({ page: `batch_letter_${letter}`, error: result.error, timestamp: ts(), recoverable: true })
+                    // Save progress so far on error
+                    if (allItems.length > 0) {
+                      try {
+                        await serviceClient
+                          .from('scraping_sessions')
+                          .update({
+                            items_scraped: allItems.length,
+                            extracted_data: { ...extractedData, [entityType]: allItems },
+                            last_activity_at: new Date().toISOString(),
+                          })
+                          .eq('id', sessionId)
+                        console.log(`[scrape] 💾 Error-save: ${allItems.length} records preserved`)
+                      } catch {}
+                    }
+                    await delay(2000) // Extra delay before retry
+                    continue
+                  }
+                  consecutiveFailures = 0 // Reset on success
 
                   if (result.items.length > 0) {
                     // Deduplicate by first field value (Codigo or Id)
@@ -1874,22 +1918,56 @@ export async function scrape(params: any) {
     }
 
     // ═══════════════════════════════════════════════════════
-    // 5. SAVE RESULTS
+    // 5. SAVE RESULTS (v36: MERGE with DB to preserve incremental saves)
     // ═══════════════════════════════════════════════════════
-    // Merge debug data
     const { data: csData } = await serviceClient
       .from('scraping_sessions')
-      .select('extracted_data')
+      .select('extracted_data, items_scraped')
       .eq('id', sessionId)
       .single()
-    const savedDebug = csData?.extracted_data?._debug_v19 || debug
-    extractedData._debug_v19 = savedDebug
+    const dbData = csData?.extracted_data || {}
+    const savedDebug = dbData._debug_v19 || debug
+
+    // v36: Merge local extractedData with DB data (from incremental saves)
+    // This prevents overwriting incrementally-saved data when a CDP timeout
+    // causes the entity extraction to error before setting local variables.
+    const mergedData: Record<string, any> = {}
+    // Start with DB data as base
+    for (const [key, value] of Object.entries(dbData)) {
+      mergedData[key] = value
+    }
+    // Overlay local data — prefer local ONLY when it has real entity data
+    for (const [key, value] of Object.entries(extractedData)) {
+      if (key.startsWith('_')) {
+        mergedData[key] = value // metadata keys: always take local version
+      } else if (Array.isArray(value) && value.length > 0) {
+        mergedData[key] = value // local has entity data, use it
+      }
+      // else: keep DB version (from incremental save) — don't overwrite with empty
+    }
+    mergedData._debug_v19 = savedDebug
+
+    // v36: items_scraped — take the MAX of local count and DB count
+    // This prevents resetting to 0 when local totalItems wasn't updated due to error
+    const dbItemCount = csData?.items_scraped || 0
+    const finalItemCount = Math.max(totalItems, dbItemCount)
+
+    // Count actual items in merged data for accuracy
+    let mergedItemTotal = 0
+    for (const [key, value] of Object.entries(mergedData)) {
+      if (!key.startsWith('_') && Array.isArray(value)) {
+        mergedItemTotal += value.length
+      }
+    }
+    const bestItemCount = Math.max(finalItemCount, mergedItemTotal)
+
+    console.log(`[scrape] Final save: local=${totalItems}, db=${dbItemCount}, merged=${mergedItemTotal}, final=${bestItemCount}`)
 
     await updateSession(serviceClient, sessionId, {
       status: 'completed',
-      extracted_data: extractedData,
+      extracted_data: mergedData,
       error_log: errors,
-      items_scraped: totalItems,
+      items_scraped: bestItemCount,
       requests_made: totalRequests,
       completed_at: ts(),
     })
@@ -1898,8 +1976,10 @@ export async function scrape(params: any) {
     // 6. AUTO-CREATE IMPORT JOB
     // ═══════════════════════════════════════════════════════
     let importJobId: string | null = null
-    if (totalItems > 0) {
+    if (bestItemCount > 0) {
       try {
+        // v36: Use mergedData for column detection
+        const mattersData = mergedData.matters || extractedData.matters || []
         const { data: importJob, error: importError } = await serviceClient
           .from('import_jobs')
           .insert({
@@ -1907,14 +1987,14 @@ export async function scrape(params: any) {
             created_by: user_id,
             source_type: 'web_scraping',
             status: 'mapping',
-            records_total: totalItems,
+            records_total: bestItemCount,
             entity_type: 'matters',
             metadata: {
               source: 'web_scraping',
               session_id: sessionId,
               entity_type: 'matters',
-              detected_columns: Object.keys(extractedData.matters?.[0] || {}).filter(k => !k.startsWith('_')),
-              total_rows_estimate: totalItems,
+              detected_columns: Object.keys(mattersData[0] || {}).filter(k => !k.startsWith('_')),
+              total_rows_estimate: bestItemCount,
             },
           })
           .select('id')
@@ -1940,11 +2020,11 @@ export async function scrape(params: any) {
       success: true,
       session_id: sessionId,
       import_job_id: importJobId,
-      extracted_data: extractedData,
+      extracted_data: mergedData,
       stats: {
-        total_items: totalItems,
+        total_items: bestItemCount,
         items_by_entity: Object.fromEntries(
-          Object.entries(extractedData)
+          Object.entries(mergedData)
             .filter(([k]) => !k.startsWith('_'))
             .map(([k, v]) => [k, Array.isArray(v) ? v.length : 0])
         ),
@@ -1952,7 +2032,7 @@ export async function scrape(params: any) {
         errors_count: errors.length,
       },
       debug: savedDebug,
-      message: `Extracted ${totalItems} items.`,
+      message: `Extracted ${bestItemCount} items.`,
     }
   } catch (error: any) {
     if (context?.browser) { try { await context.browser.close() } catch {} }

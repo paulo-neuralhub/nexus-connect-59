@@ -443,6 +443,17 @@ export function MatterDetailHeader({
                   {matter.reference}
                 </span>
               )}
+
+              {/* Legacy System ID — only shown for imported/extracted records */}
+              {(matter as any).legacy_system_id && (
+                <span className="flex items-center gap-1.5 text-amber-600">
+                  <Hash className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs">
+                    ID origen: {(matter as any).legacy_system_id}
+                    {(matter as any).legacy_system_name && ` (${(matter as any).legacy_system_name})`}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </div>

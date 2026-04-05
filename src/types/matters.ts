@@ -52,6 +52,9 @@ export interface Matter {
   // NEW: Mark image and gallery
   mark_image_url?: string | null;
   images?: string[] | null;
+  // Legacy system tracking (imported/extracted records)
+  legacy_system_id?: string | null;
+  legacy_system_name?: string | null;
   created_at: string;
   updated_at: string;
   created_by?: string | null;
