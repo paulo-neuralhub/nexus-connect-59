@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -23,17 +23,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   ArrowLeft,
   ArrowRight,
   FileText,
   Users,
   Calendar,
   FolderOpen,
-  DollarSign,
   RefreshCw,
   Globe,
   Play,
-  Pause,
   Square,
   CheckCircle2,
   XCircle,
@@ -43,8 +47,11 @@ import {
   Zap,
   AlertTriangle,
   Settings2,
-  Download,
   ArrowRightLeft,
+  PlugZap,
+  Database,
+  Brain,
+  Import,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -65,7 +72,20 @@ interface ExtractionEntity {
   estimatedItems?: number;
 }
 
-type WizardStep = 'entities' | 'configure' | 'extracting' | 'complete' | 'mapping' | 'importing';
+type WizardStep =
+  | 'entities'
+  | 'configure'
+  | 'connecting'
+  | 'extracting'
+  | 'complete'
+  | 'mapping'
+  | 'importing';
+
+interface BatchEntry {
+  letter: string;
+  count: number;
+  status: 'completed' | 'in-progress';
+}
 
 interface ExtractionWizardProps {
   open: boolean;
@@ -76,6 +96,10 @@ interface ExtractionWizardProps {
 // =====================================================
 // CONSTANTS
 // =====================================================
+
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const ESTIMATED_TOTAL = 14_496;
+const POLL_INTERVAL_MS = 3_000;
 
 const EXTRACTION_ENTITIES: ExtractionEntity[] = [
   {
@@ -128,6 +152,46 @@ const SPEED_OPTIONS = [
   { value: 'fast', label: 'Rápido', desc: '40 req/min — Solo si el servidor lo permite', delay: 1500 },
 ];
 
+const WIZARD_STEPS: { key: WizardStep; label: string; icon: typeof Globe }[] = [
+  { key: 'entities', label: 'Entidades', icon: Database },
+  { key: 'configure', label: 'Configurar', icon: Settings2 },
+  { key: 'connecting', label: 'Conectando', icon: PlugZap },
+  { key: 'extracting', label: 'Extrayendo', icon: RefreshCw },
+  { key: 'complete', label: 'Mapeo IA', icon: Brain },
+  { key: 'mapping', label: 'Importar', icon: Import },
+];
+
+// Step ordering for comparisons
+const STEP_ORDER: Record<WizardStep, number> = {
+  entities: 0,
+  configure: 1,
+  connecting: 2,
+  extracting: 3,
+  complete: 4,
+  mapping: 5,
+  importing: 6,
+};
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function parseLetterFromPage(currentPage: string | null): string | null {
+  if (!currentPage) return null;
+  const match = currentPage.match(/letra\s+(\w)/i);
+  return match ? match[1].toUpperCase() : null;
+}
+
+function getLetterIndex(letter: string): number {
+  return ALPHABET.indexOf(letter.toUpperCase());
+}
+
 // =====================================================
 // COMPONENT
 // =====================================================
@@ -135,20 +199,27 @@ const SPEED_OPTIONS = [
 export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionWizardProps) {
   const { currentOrganization } = useOrganization();
   const navigate = useNavigate();
+
+  // Wizard navigation
   const [step, setStep] = useState<WizardStep>('entities');
   const [selectedEntities, setSelectedEntities] = useState<string[]>(['matters', 'deadlines']);
   const [speed, setSpeed] = useState('conservative');
   const [includeScreenshots, setIncludeScreenshots] = useState(true);
 
-  // Extraction state
+  // Extraction progress state
   const [extractionStatus, setExtractionStatus] = useState<'idle' | 'running' | 'paused' | 'completed' | 'error'>('idle');
-  const [currentEntity, setCurrentEntity] = useState<string | null>(null);
   const [itemsScraped, setItemsScraped] = useState(0);
   const [totalItems, setTotalItems] = useState<number | null>(null);
   const [pagesProcessed, setPagesProcessed] = useState(0);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [logs, setLogs] = useState<{ time: string; type: 'info' | 'success' | 'error' | 'warning'; msg: string }[]>([]);
+  const [currentPage, setCurrentPage] = useState<string | null>(null);
+  const [currentLetter, setCurrentLetter] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [errorLog, setErrorLog] = useState<string | null>(null);
+  const [batches, setBatches] = useState<BatchEntry[]>([]);
+
+  // Timer
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // Mapping review state
   const [importJobId, setImportJobId] = useState<string | null>(null);
@@ -161,115 +232,361 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
   const [importProgress, setImportProgress] = useState({ processed: 0, failed: 0, total: 0 });
   const [importResult, setImportResult] = useState<any>(null);
 
-  const systemName = connection?.name || 'Sistema';
-  const portalUrl = connection?.connection_config?._temp_credentials?.url || connection?.connection_config?.base_url || '';
+  // Refs for cleanup
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevItemsRef = useRef(0);
 
+  const systemName = connection?.name || 'Sistema';
+  const portalUrl =
+    connection?.connection_config?._temp_credentials?.url ||
+    connection?.connection_config?.base_url ||
+    '';
+
+  // ── Elapsed timer ──
+  useEffect(() => {
+    if (startTime && (step === 'connecting' || step === 'extracting') && extractionStatus === 'running') {
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [startTime, step, extractionStatus]);
+
+  // ── Batch tracking ──
+  // When currentLetter or itemsScraped change, update batch entries
+  useEffect(() => {
+    if (!currentLetter) return;
+
+    setBatches((prev) => {
+      const existing = prev.find((b) => b.letter === currentLetter);
+      if (existing) {
+        // Update in-progress batch with latest count delta
+        return prev.map((b) =>
+          b.letter === currentLetter ? { ...b, count: itemsScraped - prev.filter((x) => x.letter !== currentLetter && x.status === 'completed').reduce((sum, x) => sum + x.count, 0), status: 'in-progress' as const } : b
+        );
+      }
+
+      // Mark previous in-progress as completed, add new one
+      const updated = prev.map((b) =>
+        b.status === 'in-progress'
+          ? { ...b, count: prevItemsRef.current - prev.filter((x) => x.status === 'completed' && x.letter !== b.letter).reduce((sum, x) => sum + x.count, 0), status: 'completed' as const }
+          : b
+      );
+      updated.push({ letter: currentLetter, count: 0, status: 'in-progress' });
+      return updated;
+    });
+
+    prevItemsRef.current = itemsScraped;
+  }, [currentLetter, itemsScraped]);
+
+  // ── Cleanup on unmount ──
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  // ── Computed values ──
+  const effectiveTotal = totalItems || ESTIMATED_TOTAL;
+  const progressPercent = Math.min(Math.round((itemsScraped / effectiveTotal) * 100), 99);
+  const letterIndex = currentLetter ? getLetterIndex(currentLetter) : -1;
+  const letterProgress = letterIndex >= 0 ? letterIndex + 1 : 0;
+
+  // Time estimation
+  const estimatedRemainingSeconds = (() => {
+    if (elapsedSeconds < 10 || itemsScraped < 10) return null; // Not enough data
+    const rate = itemsScraped / elapsedSeconds; // items per second
+    const remaining = effectiveTotal - itemsScraped;
+    if (rate <= 0) return null;
+    return Math.round(remaining / rate);
+  })();
+
+  // ── Entity toggling ──
   function toggleEntity(id: string) {
     setSelectedEntities((prev) =>
       prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]
     );
   }
 
-  function addLog(type: 'info' | 'success' | 'error' | 'warning', msg: string) {
-    setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString(), type, msg }]);
-  }
+  // ── Polling function ──
+  const startPolling = useCallback((sourceId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
 
+    pollRef.current = setInterval(async () => {
+      try {
+        const { data: sessions } = await supabase
+          .from('scraping_sessions')
+          .select('id, status, current_page, items_scraped, items_total, pages_processed, error_log')
+          .eq('source_id', sourceId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (!sessions?.[0]) return;
+
+        const s = sessions[0];
+        setSessionId(s.id);
+        setItemsScraped(s.items_scraped || 0);
+        setTotalItems(s.items_total);
+        setCurrentPage(s.current_page);
+        setPagesProcessed(s.pages_processed || 0);
+        setErrorLog(s.error_log);
+
+        // Parse letter from current_page
+        const letter = parseLetterFromPage(s.current_page);
+        if (letter) setCurrentLetter(letter);
+
+        // Auto-transition based on status
+        if (s.status === 'scraping') {
+          setStep((prev) => (prev === 'connecting' ? 'extracting' : prev));
+        }
+        if (s.status === 'completed') {
+          setExtractionStatus('completed');
+          setStep('complete');
+          if (pollRef.current) clearInterval(pollRef.current);
+          if (timerRef.current) clearInterval(timerRef.current);
+
+          // Finalize batches: mark last in-progress as completed
+          setBatches((prev) =>
+            prev.map((b) => (b.status === 'in-progress' ? { ...b, status: 'completed' as const } : b))
+          );
+        }
+        if (s.status === 'error') {
+          setExtractionStatus('error');
+          if (pollRef.current) clearInterval(pollRef.current);
+          if (timerRef.current) clearInterval(timerRef.current);
+        }
+      } catch {
+        // Silently ignore poll errors
+      }
+    }, POLL_INTERVAL_MS);
+  }, []);
+
+  // ── Start extraction ──
   async function startExtraction() {
-    setStep('extracting');
+    const sourceId = connection?.id;
+    if (!sourceId) {
+      toast.error('No hay conexión configurada');
+      return;
+    }
+
+    // Reset state
+    setStep('connecting');
     setExtractionStatus('running');
     setItemsScraped(0);
+    setTotalItems(null);
     setPagesProcessed(0);
-    setErrors([]);
-    setLogs([]);
+    setCurrentPage(null);
+    setCurrentLetter(null);
+    setSessionId(null);
+    setErrorLog(null);
+    setBatches([]);
+    setStartTime(Date.now());
+    setElapsedSeconds(0);
+    prevItemsRef.current = 0;
 
-    addLog('info', `Iniciando extracción desde ${systemName}...`);
-    addLog('info', `Entidades seleccionadas: ${selectedEntities.join(', ')}`);
-    addLog('info', `Velocidad: ${SPEED_OPTIONS.find(s => s.value === speed)?.label}`);
+    const orgId = currentOrganization?.id || connection?.organization_id;
 
+    // Fire the edge function (don't fully await -- we poll for progress)
+    const edgeFnPromise = supabase.functions.invoke('web-scraper-engine', {
+      body: {
+        action: 'scrape',
+        source_id: sourceId,
+        entity_types: selectedEntities,
+        options: {
+          speed,
+          include_screenshots: includeScreenshots,
+        },
+      },
+      headers: {
+        'x-organization-id': orgId!,
+      },
+    });
+
+    // Start polling immediately
+    startPolling(sourceId);
+
+    // Also await the promise to handle fatal errors
     try {
-      // Call the web-scraper-engine edge function
-      addLog('info', 'Conectando con el portal...');
-
-      const orgId = currentOrganization?.id || connection?.organization_id;
-      const { data, error } = await supabase.functions.invoke('web-scraper-engine', {
-        body: {
-          action: 'scrape',
-          source_id: connection?.id,
-          entity_types: selectedEntities,
-          options: {
-            speed,
-            include_screenshots: includeScreenshots,
-          },
-        },
-        headers: {
-          'x-organization-id': orgId!,
-        },
-      });
+      const { data, error } = await edgeFnPromise;
 
       if (error) {
-        // supabase-js sets data=null on non-2xx; real body is in error.context
         let detail = error.message;
         try {
           const body = await (error as any).context?.json?.();
           if (body?.error) detail = body.error;
-        } catch (_e) { /* ignore parse errors */ }
-        addLog('error', `Error de conexión: ${detail}`);
+        } catch {
+          // ignore parse errors
+        }
         console.error('[ExtractionWizard] Edge function error:', { error, detail });
-        setExtractionStatus('error');
+
+        // Only set error if we haven't already transitioned to completed via polling
+        setExtractionStatus((prev) => {
+          if (prev === 'completed') return prev;
+          toast.error(`Error de conexión: ${detail}`);
+          return 'error';
+        });
+        if (pollRef.current) clearInterval(pollRef.current);
+        if (timerRef.current) clearInterval(timerRef.current);
         return;
       }
 
-      if (data?.session_id) {
-        setSessionId(data.session_id);
-        addLog('success', `Sesión de extracción creada: ${data.session_id.slice(0, 8)}...`);
-      }
-
-      if (data?.success === false) {
-        addLog('error', data.message || 'Error desconocido');
-        setExtractionStatus('error');
-        return;
-      }
-
-      // If synchronous response with extracted data
-      if (data?.extracted_data || data?.success) {
+      // Synchronous response with immediate data (unlikely for long scrapes, but handle it)
+      if (data?.success !== false && (data?.extracted_data || data?.stats)) {
         const total = data?.stats?.total_items || data?.items_scraped || 0;
         setItemsScraped(total);
         setTotalItems(total);
         setPagesProcessed(data?.stats?.pages_processed || 1);
-        addLog('success', `Extracción completada: ${total} registros obtenidos`);
+        if (data?.session_id) setSessionId(data.session_id);
         setExtractionStatus('completed');
         setStep('complete');
-        return;
+        if (pollRef.current) clearInterval(pollRef.current);
+        if (timerRef.current) clearInterval(timerRef.current);
       }
 
-      // For async/long-running: poll status
-      addLog('info', 'Extracción en curso... Monitoreando progreso.');
-      // The scraper engine will handle the actual scraping
-      // For now, mark as completed since the request was successful
-      addLog('success', 'Solicitud de extracción enviada correctamente');
-      setExtractionStatus('completed');
-      setStep('complete');
+      if (data?.session_id && !sessionId) {
+        setSessionId(data.session_id);
+      }
 
+      // If the edge function returned error in body
+      if (data?.success === false) {
+        setExtractionStatus((prev) => {
+          if (prev === 'completed') return prev;
+          toast.error(data.message || 'Error desconocido');
+          return 'error';
+        });
+        if (pollRef.current) clearInterval(pollRef.current);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
     } catch (err: any) {
-      addLog('error', `Error inesperado: ${err.message}`);
-      setExtractionStatus('error');
+      setExtractionStatus((prev) => {
+        if (prev === 'completed') return prev;
+        toast.error(`Error inesperado: ${err.message}`);
+        return 'error';
+      });
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   }
 
+  // ── Close handler ──
   function handleClose() {
-    if (extractionStatus === 'running') {
+    if (extractionStatus === 'running' && (step === 'connecting' || step === 'extracting')) {
       if (!confirm('¿Seguro que quieres cerrar? La extracción se cancelará.')) return;
     }
+    // Cleanup intervals
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
     // Reset state
     setStep('entities');
     setExtractionStatus('idle');
-    setLogs([]);
-    setErrors([]);
     setItemsScraped(0);
+    setTotalItems(null);
+    setPagesProcessed(0);
+    setCurrentPage(null);
+    setCurrentLetter(null);
+    setSessionId(null);
+    setErrorLog(null);
+    setBatches([]);
+    setStartTime(null);
+    setElapsedSeconds(0);
+    setImportJobId(null);
+    setAiMapping(null);
+    setAiConfidence(0);
+    setUnmappedColumns([]);
+    setDetectedColumns([]);
+    setConfirmedMapping({});
+    setImportResult(null);
     onOpenChange(false);
   }
 
-  const progress = totalItems ? Math.round((itemsScraped / totalItems) * 100) : 0;
+  // ── AI Mapping handler ──
+  async function handleStartMapping() {
+    if (!sessionId) {
+      toast.error('No hay sesión de extracción');
+      return;
+    }
+    setMappingLoading(true);
+    try {
+      toast.info('Analizando datos con IA para mapeo de campos...');
+      const orgId = currentOrganization?.id || connection?.organization_id;
+      const { data: result, error: err } = await supabase.functions.invoke('process-import', {
+        body: {
+          action: 'create-from-scraping',
+          session_id: sessionId,
+          connection_id: connection?.id,
+          organization_id: orgId,
+        },
+      });
+      if (err) {
+        console.error('Mapping error:', err);
+        toast.error(`Error al analizar datos: ${err.message || JSON.stringify(err)}`);
+        setMappingLoading(false);
+        return;
+      }
+      // Store AI mapping results
+      const entityJob = result?.entity_jobs?.[0];
+      setImportJobId(result?.job_id || entityJob?.job_id);
+      if (entityJob?.mapping) {
+        setAiMapping(entityJob.mapping.mapping || {});
+        setAiConfidence(entityJob.mapping.confidence || 0);
+        setUnmappedColumns(entityJob.mapping.unmapped || []);
+        // Initialize confirmed mapping from AI suggestion
+        const initial: Record<string, string> = {};
+        for (const [col, field] of Object.entries(entityJob.mapping.mapping || {})) {
+          if (field && field !== 'null') initial[col] = field as string;
+        }
+        setConfirmedMapping(initial);
+        setDetectedColumns(Object.keys(entityJob.mapping.mapping || {}));
+      }
+      toast.success('Análisis de IA completado. Revisa el mapeo de campos.');
+      setStep('mapping');
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setMappingLoading(false);
+    }
+  }
+
+  // ── Import handler ──
+  async function handleImport() {
+    if (!importJobId) {
+      toast.error('No hay job de importación');
+      return;
+    }
+    setStep('importing');
+    setImportProgress({ processed: 0, failed: 0, total: itemsScraped });
+    try {
+      const orgId = currentOrganization?.id || connection?.organization_id;
+      const { data: result, error: err } = await supabase.functions.invoke('process-import', {
+        body: {
+          action: 'import',
+          job_id: importJobId,
+          confirmed_mapping: confirmedMapping,
+          entity_type: 'matters',
+          organization_id: orgId,
+        },
+      });
+      if (err) {
+        toast.error(`Error al importar: ${err.message}`);
+        setStep('mapping');
+        return;
+      }
+      setImportResult(result);
+      setImportProgress({
+        processed: result?.processed || 0,
+        failed: result?.failed || 0,
+        total: result?.total || itemsScraped,
+      });
+      toast.success(`Importación completada: ${result?.processed || 0} registros importados`);
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+      setStep('mapping');
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -284,35 +601,64 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
           </DialogDescription>
         </DialogHeader>
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-4">
-          {(['entities', 'configure', 'extracting'] as const).map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors',
-                  step === s || (step === 'complete' && i <= 2)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {step === 'complete' || (['configure', 'extracting'].includes(step) && i === 0) || (step === 'extracting' && i <= 1) ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <span className="text-sm hidden sm:inline">
-                {s === 'entities' ? 'Entidades' : s === 'configure' ? 'Configurar' : 'Extraer'}
-              </span>
-              {i < 2 && <div className="w-8 h-px bg-border" />}
-            </div>
-          ))}
-        </div>
+        {/* ━━━ SIX-STEP WIZARD INDICATOR ━━━ */}
+        <TooltipProvider delayDuration={200}>
+          <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1">
+            {WIZARD_STEPS.map((ws, i) => {
+              const isCurrent = step === ws.key || (step === 'importing' && ws.key === 'mapping');
+              const isPast = STEP_ORDER[step] > STEP_ORDER[ws.key] || (step === 'importing' && STEP_ORDER[ws.key] < STEP_ORDER['mapping']);
+              const Icon = ws.icon;
+
+              return (
+                <div key={ws.key} className="flex items-center gap-1 shrink-0">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={cn(
+                          'w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300',
+                          isCurrent && 'bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1 ring-offset-background',
+                          isPast && 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
+                          !isCurrent && !isPast && 'bg-muted text-muted-foreground'
+                        )}
+                      >
+                        {isPast ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : isCurrent && (step === 'connecting' || step === 'extracting') ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Icon className="h-3.5 w-3.5" />
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      {ws.label}
+                    </TooltipContent>
+                  </Tooltip>
+                  <span
+                    className={cn(
+                      'text-xs hidden sm:inline font-medium transition-colors',
+                      isCurrent ? 'text-foreground' : 'text-muted-foreground'
+                    )}
+                  >
+                    {ws.label}
+                  </span>
+                  {i < WIZARD_STEPS.length - 1 && (
+                    <div
+                      className={cn(
+                        'w-6 h-px mx-0.5',
+                        isPast ? 'bg-green-400 dark:bg-green-600' : 'bg-border'
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </TooltipProvider>
 
         <Separator />
 
-        {/* ===== STEP 1: SELECT ENTITIES ===== */}
+        {/* ━━━ STEP 1: SELECT ENTITIES ━━━ */}
         {step === 'entities' && (
           <div className="space-y-4 py-4">
             <div>
@@ -337,10 +683,12 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                   >
                     <CardContent className="p-4 flex items-center gap-4">
                       <Checkbox checked={isSelected} />
-                      <div className={cn(
-                        'w-10 h-10 rounded-lg flex items-center justify-center',
-                        isSelected ? 'bg-primary/10' : 'bg-muted'
-                      )}>
+                      <div
+                        className={cn(
+                          'w-10 h-10 rounded-lg flex items-center justify-center',
+                          isSelected ? 'bg-primary/10' : 'bg-muted'
+                        )}
+                      >
                         <Icon className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-muted-foreground')} />
                       </div>
                       <div className="flex-1">
@@ -362,10 +710,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <Button variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => setStep('configure')}
-                disabled={selectedEntities.length === 0}
-              >
+              <Button onClick={() => setStep('configure')} disabled={selectedEntities.length === 0}>
                 Siguiente
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -373,7 +718,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
           </div>
         )}
 
-        {/* ===== STEP 2: CONFIGURE ===== */}
+        {/* ━━━ STEP 2: CONFIGURE ━━━ */}
         {step === 'configure' && (
           <div className="space-y-6 py-4">
             <div>
@@ -439,7 +784,9 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                   onCheckedChange={(checked) => setIncludeScreenshots(checked as boolean)}
                 />
                 <div>
-                  <Label htmlFor="screenshots" className="cursor-pointer">Capturar screenshots</Label>
+                  <Label htmlFor="screenshots" className="cursor-pointer">
+                    Capturar screenshots
+                  </Label>
                   <p className="text-xs text-muted-foreground">
                     Guarda capturas de pantalla para auditoría y debugging
                   </p>
@@ -453,8 +800,8 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <div>
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Seguridad</p>
                 <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                  Las credenciales se usan exclusivamente para extraer tus datos.
-                  Nunca se almacenan en texto plano ni se comparten con terceros.
+                  Las credenciales se usan exclusivamente para extraer tus datos. Nunca se almacenan en texto plano ni se
+                  comparten con terceros.
                 </p>
               </div>
             </div>
@@ -472,94 +819,238 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
           </div>
         )}
 
-        {/* ===== STEP 3: EXTRACTING ===== */}
+        {/* ━━━ STEP 3: CONNECTING ━━━ */}
+        {step === 'connecting' && (
+          <div className="space-y-6 py-8">
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                {/* Pulsing outer ring */}
+                <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+                <div className="relative w-20 h-20 rounded-full bg-primary/5 border-2 border-primary/20 flex items-center justify-center">
+                  <PlugZap className="h-8 w-8 text-primary animate-pulse" />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold mb-1">Conectando al portal...</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                Autenticándose en <strong>{systemName}</strong> e inicializando la sesión de extracción.
+              </p>
+            </div>
+
+            {/* Timer */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>{formatDuration(elapsedSeconds)} transcurrido</span>
+            </div>
+
+            {/* Status details */}
+            {currentPage && (
+              <div className="text-center text-sm text-muted-foreground">
+                {currentPage}
+              </div>
+            )}
+
+            {extractionStatus === 'error' && (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                  <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800 dark:text-red-200">Error de conexión</p>
+                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                      {errorLog || 'No se pudo conectar con el portal. Verifica las credenciales.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <Button variant="outline" onClick={handleClose}>
+                    Cerrar
+                  </Button>
+                  <Button onClick={startExtraction}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ━━━ STEP 4: EXTRACTING WITH REAL PROGRESS ━━━ */}
         {step === 'extracting' && (
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
+            {/* Header */}
             <div className="flex items-center justify-between">
-              <h3 className="font-medium">Extracción en curso</h3>
+              <h3 className="font-medium flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+                Extrayendo datos de {systemName}
+              </h3>
               <Badge
                 variant="outline"
                 className={cn(
                   'gap-1',
-                  extractionStatus === 'running' && 'text-blue-500',
-                  extractionStatus === 'error' && 'text-red-500',
-                  extractionStatus === 'completed' && 'text-green-500'
+                  extractionStatus === 'running' && 'text-blue-500 border-blue-200',
+                  extractionStatus === 'error' && 'text-red-500 border-red-200',
+                  extractionStatus === 'completed' && 'text-green-500 border-green-200'
                 )}
               >
                 {extractionStatus === 'running' && <Loader2 className="h-3 w-3 animate-spin" />}
                 {extractionStatus === 'error' && <XCircle className="h-3 w-3" />}
                 {extractionStatus === 'completed' && <CheckCircle2 className="h-3 w-3" />}
-                {extractionStatus === 'running' ? 'Extrayendo...' :
-                  extractionStatus === 'error' ? 'Error' : 'Completado'}
+                {extractionStatus === 'running'
+                  ? 'Extrayendo...'
+                  : extractionStatus === 'error'
+                    ? 'Error'
+                    : 'Completado'}
               </Badge>
             </div>
 
-            {/* Progress */}
-            {totalItems !== null && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progreso</span>
-                  <span className="text-muted-foreground">
-                    {itemsScraped.toLocaleString()} / {totalItems.toLocaleString()}
-                  </span>
+            {/* Current batch indicator */}
+            {currentLetter && extractionStatus === 'running' && (
+              <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-100 dark:border-blue-900">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                  <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{currentLetter}</span>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Buscando letra {currentLetter}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    Letra {letterProgress} de 26
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                    {Math.round((letterProgress / 26) * 100)}%
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* Current entity */}
-            {currentEntity && (
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">
-                  Extrayendo: <strong className="capitalize">{currentEntity}</strong>
+            {/* Overall progress bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Progreso general</span>
+                <span className="font-medium tabular-nums">
+                  {extractionStatus === 'completed' ? '100' : progressPercent}%
                 </span>
               </div>
-            )}
+              <Progress
+                value={extractionStatus === 'completed' ? 100 : progressPercent}
+                className="h-2.5"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>
+                  {itemsScraped.toLocaleString()} registros
+                  {totalItems ? ` / ${totalItems.toLocaleString()}` : ` (est. ~${effectiveTotal.toLocaleString()})`}
+                </span>
+                <span>{pagesProcessed} páginas procesadas</span>
+              </div>
+            </div>
 
-            {/* Stats */}
+            {/* Stats row */}
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">{itemsScraped}</p>
-                <p className="text-xs text-muted-foreground">Extraídos</p>
+                <p className="text-2xl font-bold tabular-nums">{itemsScraped.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Registros</p>
               </div>
               <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">{pagesProcessed}</p>
-                <p className="text-xs text-muted-foreground">Páginas</p>
+                <p className="text-2xl font-bold tabular-nums">{formatDuration(elapsedSeconds)}</p>
+                <p className="text-xs text-muted-foreground">Transcurrido</p>
               </div>
               <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">{errors.length}</p>
-                <p className="text-xs text-muted-foreground">Errores</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {estimatedRemainingSeconds !== null
+                    ? `~${formatDuration(estimatedRemainingSeconds)}`
+                    : '--:--'}
+                </p>
+                <p className="text-xs text-muted-foreground">Restante</p>
               </div>
             </div>
 
-            {/* Activity log */}
+            {/* Alphabet letter grid */}
             <div>
-              <h4 className="text-sm font-medium mb-2">Actividad</h4>
-              <ScrollArea className="h-40 rounded border">
-                <div className="p-2 space-y-1 text-xs font-mono">
-                  {logs.map((log, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        'flex gap-2',
-                        log.type === 'error' && 'text-red-500',
-                        log.type === 'warning' && 'text-amber-500',
-                        log.type === 'success' && 'text-green-500'
-                      )}
-                    >
-                      <span className="text-muted-foreground shrink-0">{log.time}</span>
-                      <span>{log.msg}</span>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                Progreso por letra
+              </h4>
+              <div className="flex flex-wrap gap-1">
+                {ALPHABET.map((letter) => {
+                  const batch = batches.find((b) => b.letter === letter);
+                  const isActive = currentLetter === letter && extractionStatus === 'running';
+                  const isDone = batch?.status === 'completed';
+                  const isPending = !batch;
+
+                  return (
+                    <TooltipProvider key={letter} delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={cn(
+                              'w-7 h-7 rounded text-xs font-semibold flex items-center justify-center transition-all',
+                              isDone && 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
+                              isActive && 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 ring-2 ring-blue-300 dark:ring-blue-700 animate-pulse',
+                              isPending && 'bg-muted text-muted-foreground/50'
+                            )}
+                          >
+                            {letter}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          {isDone
+                            ? `${letter} — ${batch.count} registros`
+                            : isActive
+                              ? `${letter} — en curso...`
+                              : `${letter} — pendiente`}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Controls */}
-            <div className="flex gap-2 pt-2">
-              {extractionStatus === 'error' && (
-                <>
+            {/* Batch log */}
+            {batches.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                  Últimas tandas
+                </h4>
+                <ScrollArea className="max-h-32">
+                  <div className="space-y-1">
+                    {[...batches].reverse().map((batch) => (
+                      <div
+                        key={batch.letter}
+                        className="flex items-center gap-2 text-sm py-1 px-2 rounded hover:bg-muted/50"
+                      >
+                        {batch.status === 'completed' ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                        ) : (
+                          <Loader2 className="h-3.5 w-3.5 text-blue-500 animate-spin shrink-0" />
+                        )}
+                        <span className="font-medium w-4">{batch.letter}</span>
+                        <span className="text-muted-foreground">
+                          {batch.status === 'completed'
+                            ? `— ${batch.count} registros`
+                            : '— en curso...'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+
+            {/* Error display */}
+            {extractionStatus === 'error' && (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                  <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800 dark:text-red-200">Error durante la extracción</p>
+                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                      {errorLog || 'Ocurrió un error inesperado. Puedes reintentar.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
                   <Button variant="outline" onClick={handleClose} className="flex-1">
                     Cerrar
                   </Button>
@@ -567,19 +1058,33 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Reintentar
                   </Button>
-                </>
-              )}
-              {extractionStatus === 'running' && (
-                <Button variant="destructive" onClick={() => setExtractionStatus('error')}>
-                  <Square className="h-4 w-4 mr-2" />
+                </div>
+              </div>
+            )}
+
+            {/* Cancel button during running */}
+            {extractionStatus === 'running' && (
+              <div className="flex justify-end pt-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-red-600"
+                  onClick={() => {
+                    if (!confirm('¿Cancelar la extracción en curso?')) return;
+                    if (pollRef.current) clearInterval(pollRef.current);
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    setExtractionStatus('error');
+                  }}
+                >
+                  <Square className="h-3.5 w-3.5 mr-1.5" />
                   Cancelar
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ===== STEP 4: COMPLETE ===== */}
+        {/* ━━━ STEP 5: COMPLETE + AI MAPPING TRIGGER ━━━ */}
         {step === 'complete' && (
           <div className="space-y-6 py-4">
             <div className="text-center py-6">
@@ -611,12 +1116,28 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                     <span className="font-medium">{pagesProcessed}</span>
                   </div>
                   <div className="flex justify-between p-2 bg-muted rounded">
-                    <span className="text-muted-foreground">Errores</span>
-                    <span className={cn('font-medium', errors.length > 0 ? 'text-red-500' : 'text-green-500')}>
-                      {errors.length}
-                    </span>
+                    <span className="text-muted-foreground">Tiempo</span>
+                    <span className="font-medium">{formatDuration(elapsedSeconds)}</span>
                   </div>
                 </div>
+
+                {/* Completed batches summary */}
+                {batches.length > 0 && (
+                  <div className="pt-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      Letras procesadas: {batches.filter((b) => b.status === 'completed').length}/26
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {batches
+                        .filter((b) => b.status === 'completed')
+                        .map((b) => (
+                          <Badge key={b.letter} variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                            {b.letter}: {b.count}
+                          </Badge>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -627,61 +1148,20 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                 <Button
                   className="w-full justify-start h-auto py-3"
                   disabled={mappingLoading}
-                  onClick={async () => {
-                    if (!sessionId) {
-                      toast.error('No hay sesión de extracción');
-                      return;
-                    }
-                    setMappingLoading(true);
-                    try {
-                      toast.info('Analizando datos con IA para mapeo de campos...');
-                      const orgId = currentOrganization?.id || connection?.organization_id;
-                      const { data: result, error: err } = await supabase.functions.invoke('process-import', {
-                        body: {
-                          action: 'create-from-scraping',
-                          session_id: sessionId,
-                          connection_id: connection?.id,
-                          organization_id: orgId,
-                        },
-                      });
-                      if (err) {
-                        console.error('Mapping error:', err);
-                        toast.error(`Error al analizar datos: ${err.message || JSON.stringify(err)}`);
-                        setMappingLoading(false);
-                        return;
-                      }
-                      // Store AI mapping results
-                      const entityJob = result?.entity_jobs?.[0];
-                      setImportJobId(result?.job_id || entityJob?.job_id);
-                      if (entityJob?.mapping) {
-                        setAiMapping(entityJob.mapping.mapping || {});
-                        setAiConfidence(entityJob.mapping.confidence || 0);
-                        setUnmappedColumns(entityJob.mapping.unmapped || []);
-                        // Initialize confirmed mapping from AI suggestion
-                        const initial: Record<string, string> = {};
-                        for (const [col, field] of Object.entries(entityJob.mapping.mapping || {})) {
-                          if (field && field !== 'null') initial[col] = field as string;
-                        }
-                        setConfirmedMapping(initial);
-                        setDetectedColumns(Object.keys(entityJob.mapping.mapping || {}));
-                      }
-                      toast.success('Análisis de IA completado. Revisa el mapeo de campos.');
-                      setStep('mapping');
-                    } catch (err: any) {
-                      toast.error(`Error: ${err.message}`);
-                    } finally {
-                      setMappingLoading(false);
-                    }
-                  }}
+                  onClick={handleStartMapping}
                 >
                   {mappingLoading ? (
                     <Loader2 className="h-5 w-5 mr-3 shrink-0 animate-spin" />
                   ) : (
-                    <ArrowRight className="h-5 w-5 mr-3 shrink-0" />
+                    <Brain className="h-5 w-5 mr-3 shrink-0" />
                   )}
                   <div className="text-left">
-                    <p className="font-medium">{mappingLoading ? 'Analizando con IA...' : 'Mapear e Importar a IP-NEXUS'}</p>
-                    <p className="text-xs opacity-80">IA analiza los campos → tú confirmas → se importan los datos</p>
+                    <p className="font-medium">
+                      {mappingLoading ? 'Analizando con IA...' : 'Mapear e Importar a IP-NEXUS'}
+                    </p>
+                    <p className="text-xs opacity-80">
+                      IA analiza los campos, tú confirmas, se importan los datos
+                    </p>
                   </div>
                 </Button>
                 <Button
@@ -695,7 +1175,9 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                   <Clock className="h-5 w-5 mr-3 shrink-0" />
                   <div className="text-left">
                     <p className="font-medium">Guardar para Después</p>
-                    <p className="text-xs text-muted-foreground">Los datos quedan en la sesión para procesar cuando quieras</p>
+                    <p className="text-xs text-muted-foreground">
+                      Los datos quedan en la sesión para procesar cuando quieras
+                    </p>
                   </div>
                 </Button>
               </div>
@@ -703,7 +1185,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
           </div>
         )}
 
-        {/* ─── STEP: MAPPING REVIEW ─── */}
+        {/* ━━━ STEP 6: MAPPING REVIEW (preserved from original) ━━━ */}
         {step === 'mapping' && aiMapping && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -712,8 +1194,8 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
             </div>
 
             <p className="text-sm text-muted-foreground">
-              La IA ha analizado las {detectedColumns.length} columnas extraídas y sugiere el siguiente mapeo.
-              Revisa y ajusta antes de importar.
+              La IA ha analizado las {detectedColumns.length} columnas extraídas y sugiere el siguiente mapeo. Revisa y
+              ajusta antes de importar.
             </p>
 
             {/* Confidence indicator */}
@@ -721,7 +1203,16 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium">Confianza de IA</span>
-                  <span className={cn('text-sm font-bold', aiConfidence >= 0.8 ? 'text-green-600' : aiConfidence >= 0.5 ? 'text-yellow-600' : 'text-red-600')}>
+                  <span
+                    className={cn(
+                      'text-sm font-bold',
+                      aiConfidence >= 0.8
+                        ? 'text-green-600'
+                        : aiConfidence >= 0.5
+                          ? 'text-yellow-600'
+                          : 'text-red-600'
+                    )}
+                  >
                     {Math.round(aiConfidence * 100)}%
                   </span>
                 </div>
@@ -737,7 +1228,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <div className="space-y-1">
                 <div className="grid grid-cols-[1fr,auto,1fr] gap-2 px-2 py-1 text-xs font-medium text-muted-foreground uppercase">
                   <span>Campo Origen (Galena)</span>
-                  <span>→</span>
+                  <span></span>
                   <span>Campo IP-NEXUS</span>
                 </div>
                 <Separator />
@@ -749,10 +1240,14 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                       key={col}
                       className={cn(
                         'grid grid-cols-[1fr,auto,1fr] gap-2 items-center px-2 py-2 rounded text-sm',
-                        isUnmapped ? 'bg-yellow-50 dark:bg-yellow-900/10' : 'bg-green-50 dark:bg-green-900/10'
+                        isUnmapped
+                          ? 'bg-yellow-50 dark:bg-yellow-900/10'
+                          : 'bg-green-50 dark:bg-green-900/10'
                       )}
                     >
-                      <span className="font-mono text-xs truncate" title={col}>{col}</span>
+                      <span className="font-mono text-xs truncate" title={col}>
+                        {col}
+                      </span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground" />
                       <Select
                         value={mappedTo || '_skip'}
@@ -819,41 +1314,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
               <Button
                 className="flex-1"
                 disabled={Object.keys(confirmedMapping).length === 0}
-                onClick={async () => {
-                  if (!importJobId) {
-                    toast.error('No hay job de importación');
-                    return;
-                  }
-                  setStep('importing');
-                  setImportProgress({ processed: 0, failed: 0, total: itemsScraped });
-                  try {
-                    const orgId = currentOrganization?.id || connection?.organization_id;
-                    const { data: result, error: err } = await supabase.functions.invoke('process-import', {
-                      body: {
-                        action: 'import',
-                        job_id: importJobId,
-                        confirmed_mapping: confirmedMapping,
-                        entity_type: 'matters',
-                        organization_id: orgId,
-                      },
-                    });
-                    if (err) {
-                      toast.error(`Error al importar: ${err.message}`);
-                      setStep('mapping');
-                      return;
-                    }
-                    setImportResult(result);
-                    setImportProgress({
-                      processed: result?.processed || 0,
-                      failed: result?.failed || 0,
-                      total: result?.total || itemsScraped,
-                    });
-                    toast.success(`Importación completada: ${result?.processed || 0} registros importados`);
-                  } catch (err: any) {
-                    toast.error(`Error: ${err.message}`);
-                    setStep('mapping');
-                  }
-                }}
+                onClick={handleImport}
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Confirmar e Importar ({Object.keys(confirmedMapping).length} campos mapeados)
@@ -862,7 +1323,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
           </div>
         )}
 
-        {/* ─── STEP: IMPORTING ─── */}
+        {/* ━━━ STEP 7: IMPORTING (preserved from original) ━━━ */}
         {step === 'importing' && (
           <div className="space-y-4 py-8 text-center">
             {!importResult ? (
@@ -870,10 +1331,16 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-500" />
                 <h3 className="text-lg font-semibold">Importando datos a IP-NEXUS...</h3>
                 <p className="text-sm text-muted-foreground">
-                  Procesando {importProgress.total.toLocaleString()} registros con el mapeo confirmado.
-                  Esto puede tomar unos minutos.
+                  Procesando {importProgress.total.toLocaleString()} registros con el mapeo confirmado. Esto puede tomar
+                  unos minutos.
                 </p>
-                <Progress value={importProgress.total > 0 ? ((importProgress.processed + importProgress.failed) / importProgress.total) * 100 : 0} />
+                <Progress
+                  value={
+                    importProgress.total > 0
+                      ? ((importProgress.processed + importProgress.failed) / importProgress.total) * 100
+                      : 0
+                  }
+                />
                 <p className="text-xs text-muted-foreground">
                   {importProgress.processed} importados, {importProgress.failed} fallidos
                 </p>
