@@ -641,9 +641,7 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                           action: 'create-from-scraping',
                           session_id: sessionId,
                           connection_id: connection?.id,
-                        },
-                        headers: {
-                          'x-organization-id': orgId!,
+                          organization_id: orgId,
                         },
                       });
                       if (err) {
@@ -837,9 +835,6 @@ export function ExtractionWizard({ open, onOpenChange, connection }: ExtractionW
                         confirmed_mapping: confirmedMapping,
                         entity_type: 'matters',
                         organization_id: orgId,
-                      },
-                      headers: {
-                        'x-organization-id': orgId!,
                       },
                     });
                     if (err) {
